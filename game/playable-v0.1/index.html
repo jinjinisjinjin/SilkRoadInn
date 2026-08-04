@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>丝路食肆｜长卷试玩原型</title>
+    <link rel="icon" href="../../assets/food-icons/hubing/hubing_lv02_lubing_cutout.png" type="image/png" />
+    <link rel="stylesheet" href="./styles.css?v=merge-fix-v18" />
+  </head>
+  <body>
+    <main class="phone" id="app">
+      <section class="game-page board-page active" id="boardPage">
+        <section class="top">
+          <div class="logo">丝路食肆</div>
+          <div class="resources">
+            <span class="resource-pill coin-resource"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="coins">0</b></span>
+            <span class="resource-pill plus-resource"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="stamina">0</b><button id="staminaPlusBtn" class="resource-plus" aria-label="补充驼铃">+</button></span>
+            <span class="resource-pill plus-resource ruby-resource"><i class="ruby-icon" aria-hidden="true"></i><b id="gems">0</b><button id="gemPlusBtn" class="resource-plus" aria-label="补充红宝石">+</button></span>
+          </div>
+          <div class="order-row">
+            <div class="order-side-rail" aria-label="棋盘快捷入口">
+              <button id="repairSideBtn" class="side-entry repair-side-entry" aria-label="进入流沙驿修缮">
+                <img src="./assets/ui/ui_station_tavern.png" alt="" />
+                <i></i>
+              </button>
+              <button id="rewardBagBtn" class="side-entry reward-bag-entry" aria-label="打开奖励行囊">
+                <img src="./assets/ui/ui_bag_inventory.png" alt="" />
+              </button>
+            </div>
+            <div class="orders" id="orders"></div>
+          </div>
+        </section>
+        <section class="board-wrap">
+          <button id="generateBtn" class="board-tool"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>补磨坊</span></button>
+          <div class="board" id="board"></div>
+        </section>
+        <section class="board-bottom-hud" aria-label="棋盘底部操作区">
+          <button id="storageBtn" class="hud-icon-btn storage-entry" aria-label="打开仓库">
+            <img src="./assets/ui/ui_storage_cabinet_closed.png" alt="" />
+          </button>
+          <div class="selected board-detail-strip">
+            <button id="selectedDetailBtn" class="selected-copy" aria-label="查看棋子详情">
+              <strong id="selectedName">未选中</strong>
+              <span id="selectedText">点击磨坊生成食材，或拖拽案板上的食物。</span>
+            </button>
+            <button id="sellBtn" class="selected-sell danger">
+              <b>出售</b>
+              <span><img src="./assets/ui/ui_coin_copper.png" alt="" />+0</span>
+            </button>
+          </div>
+          <button id="stationHudBtn" class="hud-icon-btn station-entry" aria-label="前往流沙驿">
+            <img src="./assets/ui/ui_station_tavern.png" alt="" />
+          </button>
+          <p id="keeperLine" class="keeper-line-hidden">先点案板上的磨坊，消耗驼铃收下一份麦面。</p>
+        </section>
+      </section>
+
+      <section class="game-page inn-page" id="innPage" hidden>
+        <header class="inn-head">
+          <div>
+            <span>流沙驿</span>
+            <h1 id="innLevelName">Lv1 破旧流沙驿</h1>
+          </div>
+          <b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="innCoins">0</span></b>
+          <button id="innUpgradeBtn" class="primary">升级驿站</button>
+        </header>
+        <section class="inn-scene" id="innScene"></section>
+        <section class="inn-panel scene-panel">
+          <div class="inn-progress scene-progress">
+            <div>
+              <strong id="innScoreText">主线修缮</strong>
+              <span id="innUpgradeText">完成订单赚铜币，再回到流沙驿点亮修缮节点。</span>
+            </div>
+          </div>
+          <div class="furniture-shop mainline-dock" id="furnitureShop"></div>
+          <p class="inn-story" id="innStoryLine">流沙驿还显破旧，先添几件能接待旅人的家具。</p>
+        </section>
+      </section>
+      <nav class="tabbar" hidden>
+        <button id="boardReturnBtn" data-tab="board"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>后厨</span></button>
+        <button id="stationBtn" data-tab="inn"><img src="./assets/ui/ui_station_tavern.png" alt="" /><span>流沙驿</span></button>
+        <button id="codexBtn" data-tab="codex"><img src="./assets/ui/ui_codex_scroll.png" alt="" /><span>食单</span></button>
+        <button id="bagBtn" data-tab="bag"><img src="./assets/ui/ui_bag_inventory.png" alt="" /><span>行囊</span></button>
+      </nav>
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay" hidden>
+      <div class="loading-card">
+        <i></i>
+        <b id="loadingTitle">正在展开流沙驿驿院全景</b>
+        <span id="loadingText">加载修缮分包资源，请稍候。</span>
+        <button id="loadingRetryBtn" hidden>重新加载</button>
+      </div>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+
+    <section id="repairPlayerLayer" class="repair-player-layer" hidden aria-label="修缮场景">
+      <iframe id="repairPlayerFrame" title="修缮场景" allow="fullscreen"></iframe>
+    </section>
+
+    <dialog id="codexModal" class="modal">
+      <div class="modal-inner">
+        <button class="close" data-close="codexModal">×</button>
+        <h2>《丝路食单》</h2>
+        <div class="codex-list" id="codexList"></div>
+      </div>
+    </dialog>
+    <dialog id="codexDetailModal" class="modal">
+      <div class="modal-inner codex-detail">
+        <button class="close" data-close="codexDetailModal">×</button>
+        <img id="codexDetailIcon" alt="" />
+        <div class="codex-detail-title"><h2 id="codexDetailName"></h2><span id="codexDetailModern"></span></div>
+        <p class="codex-short" id="codexDetailShort"></p>
+        <section><h3>食单札记</h3><p id="codexDetailLong"></p></section>
+        <section><h3>出处备注</h3><p id="codexDetailSource"></p></section>
+      </div>
+    </dialog>
+    <dialog id="unlockModal" class="modal">
+      <div class="modal-inner unlock">
+        <h2>收入《丝路食单》</h2>
+        <img id="unlockIcon" alt="" /><h3 id="unlockName"></h3><p id="unlockText"></p>
+        <div class="modal-actions"><button data-close="unlockModal">知道了</button><button id="viewCodexFromUnlock" class="primary">查看食单</button></div>
+      </div>
+    </dialog>
+    <dialog id="storyModal" class="modal">
+      <div class="modal-inner story-detail">
+        <button class="close" data-close="storyModal">×</button>
+        <div class="story-head"><img id="storyAvatar" alt="" /><div><h2 id="storyTitle"></h2><span id="storySpeaker"></span></div></div>
+        <p id="storyText"></p>
+      </div>
+    </dialog>
+    <dialog id="repairModal" class="modal repair-modal">
+      <div class="modal-inner repair-detail">
+        <button class="close" data-close="repairModal">×</button>
+        <div class="repair-hero"><div><span>主线任务</span><h2 id="repairTitle">门前有客</h2></div><img id="repairAvatar" alt="" /></div>
+        <p id="repairStory"></p>
+        <div class="repair-reward"><span id="repairRewardLabel">奖励</span><b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="repairCost">0</span></b></div>
+        <div class="repair-choice-list" id="repairChoices"></div>
+        <button id="repairConfirmBtn" class="repair-cost-gate" disabled><img src="./assets/ui/ui_coin_copper.png" alt="" /><span id="repairCoinProgress">0/0</span></button>
+      </div>
+    </dialog>
+    <dialog id="repairGuideModal" class="modal repair-modal">
+      <div class="modal-inner repair-detail guide-detail">
+        <button class="close" data-close="repairGuideModal">×</button>
+        <div class="repair-hero"><div><span>主线推进</span><h2 id="repairGuideTitle">可以修缮流沙驿了</h2></div><img id="repairGuideAvatar" src="./assets/keeper_portrait.png" alt="掌柜" /></div>
+        <p id="repairGuideText">积攒足够铜钱，修缮驿站扩建空间。</p>
+        <div class="modal-actions single"><button id="repairGuideBtn" class="primary">知道了</button></div>
+      </div>
+    </dialog>
+    <dialog id="upgradeUnlockModal" class="modal repair-modal">
+      <div class="modal-inner repair-detail unlock-summary">
+        <div class="repair-hero"><div><span>驿站升级</span><h2 id="upgradeUnlockTitle">新功能已解锁</h2></div><img src="./assets/ui/ui_station_tavern.png" alt="" /></div>
+        <div class="unlock-sequence" id="upgradeUnlockList"></div>
+        <div class="modal-actions single"><button id="upgradeReturnBtn" class="primary">知道了</button></div>
+      </div>
+    </dialog>
+    <dialog id="orderDetailModal" class="modal">
+      <div class="modal-inner order-detail">
+        <button class="close" data-close="orderDetailModal">×</button>
+        <div class="order-detail-head"><img id="orderDetailAvatar" class="order-detail-avatar" alt="" /><div><h2 id="orderDetailNpc"></h2><p id="orderDetailDialogue"></p></div></div>
+        <section class="order-detail-demand"><div id="orderDetailDemandList" class="order-detail-demand-list"></div></section>
+        <section class="order-recipe-box"><h3>合成提示</h3><p id="orderDetailRecipe"></p></section>
+        <div class="modal-actions"><button id="orderDetailCodexBtn">查看食单</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
+      </div>
+    </dialog>
+    <dialog id="bagModal" class="modal">
+      <div class="modal-inner">
+        <button class="close" data-close="bagModal">×</button>
+        <h2>行囊</h2><p class="modal-note">可临时收起3件食物，给案板腾地方。</p>
+        <div class="bag-list" id="bagList"></div>
+        <section class="debug-panel">
+          <h3>原型调试</h3>
+          <div class="debug-actions">
+            <button id="debugStaminaBtn">+8驼铃</button>
+            <button id="debugDoughBtn">放入麦面</button>
+            <button id="debugRenovationBtn">预览修缮页</button>
+            <button id="debugNextRepairBtn">推进修缮条件</button>
+            <button id="debugLv1UpgradeBtn">Lv1待扩建</button>
+            <button id="debugClearBtn" class="danger">清空案板</button>
+          </div>
+        </section>
+        <div class="modal-actions single"><button id="resetBtn" class="danger">重置原型进度</button></div>
+      </div>
+    </dialog>
+    <dialog id="storageModal" class="modal storage-cabinet-modal">
+      <div class="storage-cabinet">
+        <button class="close" data-close="storageModal">×</button>
+        <div class="storage-title">柜中仓位</div>
+        <div class="storage-interior"><div class="storage-slot-scroll" id="storageSlotList"></div></div>
+        <div class="storage-drawer"></div>
+      </div>
+    </dialog>
+    <dialog id="pieceDetailModal" class="modal piece-detail-modal">
+      <div class="modal-inner piece-detail-inner">
+        <button class="close" data-close="pieceDetailModal">×</button>
+        <img id="pieceDetailIcon" alt="" />
+        <h2 id="pieceDetailName">棋子详情</h2>
+        <p id="pieceDetailMeta"></p>
+        <p id="pieceDetailText"></p>
+      </div>
+    </dialog>
+
+    <script src="./app.js?v=merge-fix-v18"></script>
+  </body>
+</html>

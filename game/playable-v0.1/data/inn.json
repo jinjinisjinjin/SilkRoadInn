@@ -1,0 +1,113 @@
+{
+  "version": "0.3",
+  "levels": [
+    {
+      "level": 1,
+      "name": "破旧流沙驿",
+      "repairTarget": 60,
+      "upgradeCost": 120,
+      "tasks": [
+        { "label": "门面修整", "slots": ["front"], "count": 1 },
+        { "label": "接待布置", "slots": ["floor"], "count": 1 },
+        { "label": "灯火照明", "furnitureIds": ["cinnabar_lantern"], "count": 1 }
+      ],
+      "story": "门前风沙还重，先添桌椅与灯盏，让旅人愿意停脚。",
+      "upgradeStory": "旧门帘换下，炉火重新照到门外。流沙驿从破旧驿站，变成能正式迎客的敦煌食肆。",
+      "unlocks": ["奶房自动生成器", "肉铺与香料架预告", "更多常驻顾客预告"]
+    },
+    {
+      "level": 2,
+      "name": "翻新敦煌食肆",
+      "repairTarget": 160,
+      "upgradeCost": 420,
+      "tasks": [
+        { "label": "后厨分区", "slots": ["kitchen"], "count": 1 },
+        { "label": "香料陈设", "slots": ["wall"], "count": 1 },
+        { "label": "接待升级", "slots": ["floor", "front"], "count": 3 }
+      ],
+      "story": "后厨渐渐有了章法，可以分出奶食、香料与肉食小案。",
+      "upgradeStory": "商旅不再只是买饼就走，开始在流沙驿里围桌歇脚。",
+      "unlocks": ["果摊自动生成器", "酒水线预告", "宴席订单"]
+    },
+    {
+      "level": 3,
+      "name": "丝路名店",
+      "repairTarget": 320,
+      "upgradeCost": 1200,
+      "tasks": [
+        { "label": "壁画陈设", "furnitureIds": ["mural_corner"], "count": 1 },
+        { "label": "雅间装点", "slots": ["wall", "front"], "count": 3 },
+        { "label": "宴客陈设", "slots": ["floor", "kitchen"], "count": 3 }
+      ],
+      "story": "厢房、酒水、壁画角逐渐齐备，远路客人开始专程寻来。",
+      "upgradeStory": "流沙驿的名声顺着驼铃传向更远的商路。",
+      "unlocks": ["典藏图鉴", "高阶宴席订单", "Lv4预告"]
+    },
+    {
+      "level": 4,
+      "name": "西域第一楼",
+      "repairTarget": 999,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "整本食单终于有了归处，流沙驿成为丝路上最亮的一盏灯。",
+      "upgradeStory": "Lv4 已是当前原型终点。",
+      "unlocks": []
+    }
+  ],
+  "furniture": [
+    {
+      "id": "simple_table",
+      "name": "榆木小案",
+      "cost": 35,
+      "repairValue": 15,
+      "unlockLevel": 1,
+      "slot": "floor",
+      "flavor": "能让旅人坐下吃一张热饼。"
+    },
+    {
+      "id": "ochre_curtain",
+      "name": "赭黄门帘",
+      "cost": 45,
+      "repairValue": 18,
+      "unlockLevel": 1,
+      "slot": "front",
+      "flavor": "沙风里一眼能看见流沙驿还开着门。"
+    },
+    {
+      "id": "cinnabar_lantern",
+      "name": "朱砂小灯",
+      "cost": 60,
+      "repairValue": 24,
+      "unlockLevel": 1,
+      "slot": "front",
+      "flavor": "黄昏后也有一处温暖亮色。"
+    },
+    {
+      "id": "stone_mill",
+      "name": "石磨角落",
+      "cost": 90,
+      "repairValue": 35,
+      "unlockLevel": 2,
+      "slot": "kitchen",
+      "flavor": "让谷物线有更扎实的手作感。"
+    },
+    {
+      "id": "spice_shelf",
+      "name": "香料木架",
+      "cost": 110,
+      "repairValue": 42,
+      "unlockLevel": 2,
+      "slot": "wall",
+      "flavor": "胡商带来的香料终于有了归处。"
+    },
+    {
+      "id": "mural_corner",
+      "name": "忍冬纹壁角",
+      "cost": 180,
+      "repairValue": 70,
+      "unlockLevel": 3,
+      "slot": "wall",
+      "flavor": "把敦煌壁画气质带进食肆。"
+    }
+  ]
+}

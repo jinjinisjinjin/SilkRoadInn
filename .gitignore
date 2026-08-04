@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Preview temp files
+preview-*.pid
+preview-*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Archive of archives (don't double-nest)
+archive/worktrees/
+
+# Playwright transient debug logs (not source)
+.playwright-cli/
+
+# WorkBuddy local workspace data (not source)
+.workbuddy/
+
+# 大体积二进制资源（设计预览/美术概念/旧版本备份），另行管理不入库
+# 需要时可从本地或云盘取
+art/
+archive/
+design/

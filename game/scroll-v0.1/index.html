@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>丝路食肆 修缮大地图原型</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="phone" id="app">
+      <header class="hud">
+        <div>
+          <span>流沙驿</span>
+          <h1>边城修缮</h1>
+        </div>
+        <div class="resources">
+          <b><span class="coin-mark"></span><span id="coinTotal">620</span></b>
+          <b>Lv1</b>
+        </div>
+      </header>
+
+      <section class="map-shell">
+        <div class="map-viewport" id="mapViewport" aria-label="流沙驿边城修缮地图">
+          <div class="map-stage" id="mapStage">
+            <img src="./assets/inn-map-v06.png" alt="" class="map-art" draggable="false" />
+            <div class="hotspots" id="hotspots"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dock">
+        <div>
+          <span id="chapterLabel">Lv1 主线</span>
+          <strong id="currentTitle">重新开门</strong>
+        </div>
+        <button class="coin-gate" id="coinGate" type="button" aria-label="进入当前修缮">
+          <span class="coin-mark"></span>
+          <b id="coinGateText">0/0</b>
+          <i><em id="coinGateFill"></em></i>
+        </button>
+        <button id="focusCurrentBtn">当前点</button>
+        <button id="resetBtn">重置</button>
+      </section>
+    </main>
+
+    <dialog class="sheet" id="placeSheet">
+      <form method="dialog" class="sheet-inner">
+        <button class="close" value="close" aria-label="关闭">×</button>
+        <div class="sheet-head">
+          <span id="placeState">可修缮</span>
+          <h2 id="placeName">流沙驿门楼</h2>
+        </div>
+        <div class="sheet-cost" id="sheetCost">
+          <span class="coin-mark"></span>
+          <b id="sheetCostText">0/0</b>
+          <i><em id="sheetCostFill"></em></i>
+        </div>
+        <p id="placeText"></p>
+        <section class="detail-scene" id="detailScene" aria-label="点位内修缮示图">
+          <div class="scene-sky"></div>
+          <div class="scene-wall">
+            <i></i>
+            <i></i>
+            <i></i>
+          </div>
+          <div class="scene-floor"></div>
+          <div class="scene-props">
+            <span class="prop prop-a"></span>
+            <span class="prop prop-b"></span>
+            <span class="prop prop-c"></span>
+            <span class="prop prop-d"></span>
+            <span class="prop prop-e"></span>
+            <span class="prop prop-f"></span>
+            <span class="prop prop-g"></span>
+            <span class="prop prop-h"></span>
+            <span class="prop prop-i"></span>
+          </div>
+          <div class="room-markers" id="roomMarkers"></div>
+        </section>
+        <div class="room-progress" id="roomProgress">
+          <span>细修进度</span>
+          <b id="roomProgressText">0/0</b>
+          <i><em id="roomProgressFill"></em></i>
+        </div>
+        <div class="micro-repairs" id="microRepairs"></div>
+        <div class="choice-list" id="choiceList"></div>
+        <div class="sheet-actions">
+          <button id="repairBtn" class="primary" value="repair">修缮</button>
+          <button value="close">稍后</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

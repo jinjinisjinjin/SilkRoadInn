@@ -1,0 +1,826 @@
+{
+  "version": "0.1",
+  "board": {
+    "tutorial": {
+      "columns": 5,
+      "rows": 6
+    },
+    "lv1": {
+      "columns": 6,
+      "rows": 8
+    },
+    "futureLv2Candidate": {
+      "columns": 7,
+      "rows": 8
+    }
+  },
+  "inventory": {
+    "initialBagSlots": 3,
+    "sellConfirmMinLevel": 5
+  },
+  "stories": [
+    {
+      "id": "story_arrival",
+      "title": "第一缕炉烟",
+      "speaker": "掌柜",
+      "npcId": "keeper_portrait",
+      "unlock": {
+        "always": true
+      },
+      "text": "爷爷留下的食单缺了大半，流沙驿的炉火却还没灭。先接下近处旅人的小单，把这间老驿站重新热起来。"
+    },
+    {
+      "id": "story_local_help",
+      "title": "门前有客",
+      "speaker": "敦煌女店客",
+      "npcId": "npc_dunhuang_woman",
+      "unlock": {
+        "completedOrderIds": [
+          "order_011_dunhuang_woman_lubing"
+        ]
+      },
+      "text": "你这炉饼有旧驿站的味道。门帘若换亮些，路过的人远远就知道这里还开着门。"
+    },
+    {
+      "id": "story_kitchen_repair",
+      "title": "后厨小修",
+      "speaker": "城外农户",
+      "npcId": "npc_farmer",
+      "unlock": {
+        "completedRepairs": [
+          "tutorial_complete"
+        ],
+        "completedOrderIds": [
+          "order_011_dunhuang_woman_lubing"
+        ]
+      },
+      "text": "案板稳了，炉膛也顺了。再把后厨分出干湿两处，往后做奶食、香料饼才不乱。"
+    },
+    {
+      "id": "story_codex_phase",
+      "title": "食单有痕",
+      "speaker": "佛寺女施主",
+      "npcId": "npc_temple_donor",
+      "unlock": {
+        "completedRepairs": [
+          "kitchen_repair"
+        ],
+        "completedOrderIds": [
+          "order_005_monk_humabing"
+        ]
+      },
+      "text": "食谱记下来，不只是为了买卖。许多人走过沙州，只留下一点吃食和话音，也该有人替他们存着。"
+    },
+    {
+      "id": "story_lv1_complete",
+      "title": "炉火重明",
+      "speaker": "佛寺女施主",
+      "npcId": "npc_temple_donor",
+      "unlock": {
+        "completedRepairs": [
+          "codex_first_phase"
+        ]
+      },
+      "text": "食单亮在墙上，炉火稳在后厨，流沙驿终于能让每一位赶路人知道：这里有一处可以坐下吃饭的地方。"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "tutorial_complete",
+      "chapter": 1,
+      "name": "前厅客座",
+      "sceneName": "前厅客座",
+      "speaker": "孟氏",
+      "npcId": "npc_dunhuang_woman",
+      "repairCost": 120,
+      "repairValue": 60,
+      "scenePosition": "front",
+      "playerPointId": "02",
+      "playerUrl": "../../design/previews/02_前厅客座/player_v0.1/index.html?embedded=1",
+      "longscrollRegionIds": [
+        2
+      ],
+      "storyText": "周甲的炉饼刚出炉，孟氏便停在门前。先让人坐得下来，流沙驿才算真的开了门。",
+      "completionText": "孟氏轻轻拍去长凳上的浮尘。前厅终于能让赶路的人坐下，流沙驿也有了第一处人声。",
+      "conditions": {
+        "completedOrderIds": [
+          "order_001_guard_lubing"
+        ]
+      },
+      "rewards": {
+        "unlockOrderRefresh": true
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "kitchen_repair",
+      "chapter": 1,
+      "name": "小修后厨",
+      "sceneName": "炉灶重整",
+      "speaker": "城外农户",
+      "npcId": "npc_farmer",
+      "repairCost": 175,
+      "repairValue": 45,
+      "scenePosition": "kitchen",
+      "playerPointId": "04",
+      "playerUrl": "../../design/previews/04_后厨灶间/player_v0.1/index.html",
+      "longscrollRegionIds": [
+        4
+      ],
+      "storyText": "订单多起来后，旧案板开始摇晃。城外农户送来一捆麦秆，说后厨若能分清磨面、和面、烘烤的位置，胡饼才会一炉比一炉稳。",
+      "completionText": "刘大把最后一块松动的灶砖按稳。炉火终于不再呛人，后厨也能从容地出下一炉饼。",
+      "conditions": {
+        "completedRepairs": [
+          "tutorial_complete"
+        ],
+        "completedOrderIds": [
+          "order_011_dunhuang_woman_lubing"
+        ]
+      },
+      "rewards": {
+        "staminaMax": 30,
+        "staminaRecoverMinutes": 5,
+        "giftPacks": [
+          {
+            "id": "gift_milk_room_parts_01",
+            "quantity": 1
+          }
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "codex_first_phase",
+      "chapter": 1,
+      "name": "食单初成",
+      "sceneName": "食单上墙",
+      "speaker": "佛寺女施主",
+      "npcId": "npc_temple_donor",
+      "repairCost": 180,
+      "repairValue": 62,
+      "scenePosition": "wall",
+      "playerPointId": "11",
+      "playerUrl": "../../design/previews/11_食单壁/player_v0.1/index.html",
+      "longscrollRegionIds": [
+        11
+      ],
+      "storyText": "复原的食谱渐渐多了，佛寺女施主说：这些吃食不只是买卖，也是来往沙州的人留下的痕迹。该给《丝路食单》一处能被看见的位置。",
+      "completionText": "周氏将写好的食单贴上墙面。来往的人终于能读见，这间小店替多少旅人留住了味道。",
+      "conditions": {
+        "completedRepairs": [
+          "kitchen_repair"
+        ],
+        "completedOrderIds": [
+          "order_005_monk_humabing"
+        ]
+      },
+      "rewards": {
+        "unlockOrders": [
+          "order_009_mystery_suibing"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_livestock_pen_parts_01",
+            "quantity": 1
+          }
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv2_front_feast",
+      "chapter": 2,
+      "name": "前厅开席",
+      "sceneName": "前厅开席",
+      "speaker": "粟特胡商",
+      "npcId": "npc_sogdian_merchant",
+      "repairCost": 80,
+      "repairValue": 72,
+      "scenePosition": "yard",
+      "playerPointId": "03",
+      "playerUrl": "../../design/previews/03_前厅开席/player_repair_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        3
+      ],
+      "storyText": "食单挂稳后，胡商替你把开张的消息带到街上。前厅再亮堂些，才接得住新来的客人。",
+      "completionText": "前厅开席，西市的脚步声开始朝流沙驿聚来。",
+      "conditions": {
+        "completedRepairs": [
+          "codex_first_phase"
+        ],
+        "completedOrderIds": [
+          "order_014_musician_youhubing"
+        ]
+      },
+      "rewards": {
+        "coins": 120,
+        "storyFlags": [
+          "frontFeastReady"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv2_west_market",
+      "chapter": 2,
+      "name": "西市开张",
+      "sceneName": "西市开张",
+      "speaker": "粟特胡商",
+      "npcId": "npc_sogdian_merchant",
+      "repairCost": 95,
+      "repairValue": 78,
+      "scenePosition": "front",
+      "playerPointId": "05",
+      "playerUrl": "../../design/previews/05_西市开张/player_repair_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        5
+      ],
+      "storyText": "前厅有了人声，西市摊前也该点起能叫人停步的灯。",
+      "completionText": "西市开张，雨夜乳糜的订单随着客人一道送进门来。",
+      "conditions": {
+        "completedRepairs": [
+          "lv2_front_feast"
+        ],
+        "completedOrderIds": [
+          "order_004_changan_lubing"
+        ]
+      },
+      "rewards": {
+        "coins": 145,
+        "storyFlags": [
+          "westMarketOpen"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv2_flower_rack",
+      "chapter": 2,
+      "name": "花架留客",
+      "sceneName": "花架留客",
+      "speaker": "孟氏",
+      "npcId": "npc_dunhuang_woman",
+      "repairCost": 110,
+      "repairValue": 84,
+      "scenePosition": "kitchen",
+      "playerPointId": "06",
+      "playerUrl": "../../design/previews/06_花架留客/player_repair_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        6
+      ],
+      "storyText": "雨落在花架上，孟氏想给赶路人留一处避雨等热食的地方。",
+      "completionText": "花架下留住了雨，也留住了问夜宿的客人。",
+      "conditions": {
+        "completedRepairs": [
+          "lv2_west_market"
+        ],
+        "completedOrderIds": [
+          "order_006_camel_worker_youhubing"
+        ]
+      },
+      "rewards": {
+        "coins": 170,
+        "storyFlags": [
+          "flowerRackKept"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv2_north_shop",
+      "chapter": 2,
+      "name": "北铺开张",
+      "sceneName": "北铺开张",
+      "speaker": "求法僧人",
+      "npcId": "npc_pilgrim_monk",
+      "repairCost": 130,
+      "repairValue": 90,
+      "scenePosition": "wall",
+      "playerPointId": "15",
+      "playerUrl": "../../design/previews/15_北铺开张/player_repair_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        15
+      ],
+      "storyText": "花架下的客人问起北边铺面。先有一间能留人的屋，远路客才肯歇脚。",
+      "completionText": "北铺开张，流沙驿第一次真正留住了远路客。",
+      "conditions": {
+        "completedRepairs": [
+          "lv2_flower_rack"
+        ],
+        "completedOrderIds": [
+          "order_007_persian_attendant_congchi"
+        ]
+      },
+      "rewards": {
+        "coins": 195,
+        "storyFlags": [
+          "northShopOpen"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv2_south_shop",
+      "chapter": 2,
+      "name": "南铺开张",
+      "sceneName": "南铺开张",
+      "speaker": "回鹘牧民",
+      "npcId": "npc_uighur_herder",
+      "repairCost": 150,
+      "repairValue": 96,
+      "scenePosition": "yard",
+      "playerPointId": "16",
+      "playerUrl": "../../design/previews/16_南铺开张/player_repair_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        16
+      ],
+      "storyText": "北铺留住了人，南边摊主也愿意同你搭棚，把水路和生意接起来。",
+      "completionText": "南铺开张，邻里凑齐了修井的人手。",
+      "conditions": {
+        "completedRepairs": [
+          "lv2_north_shop"
+        ],
+        "completedOrderIds": [
+          "order_008_uighur_yangrou"
+        ]
+      },
+      "rewards": {
+        "coins": 225,
+        "storyFlags": [
+          "southShopOpen"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv2_well",
+      "chapter": 2,
+      "name": "井台初成",
+      "sceneName": "井台初成",
+      "speaker": "周甲",
+      "npcId": "npc_shazhou_guard",
+      "repairCost": 170,
+      "repairValue": 104,
+      "scenePosition": "front",
+      "playerPointId": "17-18",
+      "playerUrl": "../../design/previews/17+18_井台初成/player_repair_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        17,
+        18
+      ],
+      "storyText": "铺面多了，水路不能断。周甲带着邻里来收拾井台。",
+      "completionText": "井台见了清水，市井初聚也有了共同照看的根。",
+      "conditions": {
+        "completedRepairs": [
+          "lv2_south_shop"
+        ],
+        "completedOrderIds": [
+          "order_009_mystery_suibing"
+        ]
+      },
+      "rewards": {
+        "coins": 250,
+        "storyFlags": [
+          "lv2Complete",
+          "wellReady"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv3_upper_hall",
+      "chapter": 3,
+      "name": "楼馆迎宾",
+      "sceneName": "楼馆迎宾",
+      "speaker": "求法僧人",
+      "npcId": "npc_pilgrim_monk",
+      "repairCost": 190,
+      "repairValue": 112,
+      "scenePosition": "kitchen",
+      "playerPointId": "07",
+      "playerUrl": "../../design/previews/07_楼馆迎宾/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        7
+      ],
+      "storyText": "井台有了清水，夜里来的僧人望向楼上的廊台：有灯，才有一处能停脚。",
+      "completionText": "回廊亮起灯，旅人终于有地方歇脚。",
+      "conditions": {
+        "completedRepairs": [
+          "lv2_well"
+        ],
+        "completedOrderIds": [
+          "order_010_caravan_gulouzi"
+        ]
+      },
+      "rewards": {
+        "coins": 280,
+        "storyFlags": [
+          "upperHallReady"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv3_north_court",
+      "chapter": 3,
+      "name": "北院安居",
+      "sceneName": "北院安居",
+      "speaker": "求法僧人",
+      "npcId": "npc_pilgrim_monk",
+      "repairCost": 215,
+      "repairValue": 120,
+      "scenePosition": "wall",
+      "playerPointId": "08",
+      "playerUrl": "../../design/previews/08_北院安居/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        8
+      ],
+      "storyText": "楼馆有了灯，僧人却还缺一处能够安睡的小院。",
+      "completionText": "北院安稳下来，长安使者也在这里卸下风尘。",
+      "conditions": {
+        "completedRepairs": [
+          "lv3_upper_hall"
+        ],
+        "completedOrderIds": [
+          "order_015_monk_rumi"
+        ]
+      },
+      "rewards": {
+        "coins": 320,
+        "storyFlags": [
+          "northCourtSettled"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv3_west_gate",
+      "chapter": 3,
+      "name": "西门整饬",
+      "sceneName": "西门整饬",
+      "speaker": "长安使者",
+      "npcId": "npc_changan_envoy",
+      "repairCost": 245,
+      "repairValue": 128,
+      "scenePosition": "yard",
+      "playerPointId": "09",
+      "playerUrl": "../../design/previews/09_西门整饬/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        9
+      ],
+      "storyText": "北院安顿下来，使者提醒：西门的风沙口也该整饬。",
+      "completionText": "西门可以通行，来客不再被风沙堵在城外。",
+      "conditions": {
+        "completedRepairs": [
+          "lv3_north_court"
+        ],
+        "completedOrderIds": [
+          "order_016_uighur_milk"
+        ]
+      },
+      "rewards": {
+        "coins": 365,
+        "storyFlags": [
+          "westGateCleared"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv3_east_court",
+      "chapter": 3,
+      "name": "东院留客",
+      "sceneName": "东院留客",
+      "speaker": "长安侍女",
+      "npcId": "npc_changan_maid",
+      "repairCost": 275,
+      "repairValue": 136,
+      "scenePosition": "front",
+      "playerPointId": "10",
+      "playerUrl": "../../design/previews/10_东院留客/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        10
+      ],
+      "storyText": "西门通了，候房的旅人需要一处坐下喝水的院子。",
+      "completionText": "东院留住了人，也留住了一桌慢慢说话的时光。",
+      "conditions": {
+        "completedRepairs": [
+          "lv3_west_gate"
+        ],
+        "completedOrderIds": [
+          "order_017_temple_laojiang"
+        ]
+      },
+      "rewards": {
+        "coins": 420,
+        "storyFlags": [
+          "eastCourtReady"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv3_garden",
+      "chapter": 3,
+      "name": "花影庭园",
+      "sceneName": "花影庭园",
+      "speaker": "佛寺女施主",
+      "npcId": "npc_temple_donor",
+      "repairCost": 310,
+      "repairValue": 144,
+      "scenePosition": "kitchen",
+      "playerPointId": "12",
+      "playerUrl": "../../design/previews/12_花影庭园/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        12
+      ],
+      "storyText": "东院有了坐席，也该留一处记下旅途、慢慢说话的庭园。",
+      "completionText": "花影重新落在石径上，札记里也有了归处。",
+      "conditions": {
+        "completedRepairs": [
+          "lv3_east_court"
+        ],
+        "completedOrderIds": [
+          "order_018_traveler_lubing_rumi"
+        ]
+      },
+      "rewards": {
+        "coins": 480,
+        "storyFlags": [
+          "gardenAwake"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv3_watchtower",
+      "chapter": 3,
+      "name": "望楼通途",
+      "sceneName": "望楼通途",
+      "speaker": "周氏",
+      "npcId": "npc_temple_donor",
+      "repairCost": 350,
+      "repairValue": 152,
+      "scenePosition": "wall",
+      "playerPointId": "13-14",
+      "playerUrl": "../../design/previews/13+14_望楼通途/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        13,
+        14
+      ],
+      "storyText": "周氏收起札记说：望楼与远路重新通起来，四方的故事才会相遇。",
+      "completionText": "望楼见远，三张札记也一同回到流沙驿。",
+      "conditions": {
+        "completedRepairs": [
+          "lv3_garden"
+        ],
+        "completedOrderIds": [
+          "order_019_sogdian_huma_laojiang"
+        ]
+      },
+      "rewards": {
+        "coins": 550,
+        "storyFlags": [
+          "roadReopened"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_south_shed",
+      "chapter": 4,
+      "name": "南棚聚货",
+      "sceneName": "南棚聚货",
+      "speaker": "康十一",
+      "npcId": "npc_caravan_leader",
+      "repairCost": 460,
+      "repairValue": 170,
+      "scenePosition": "front",
+      "playerPointId": "19",
+      "playerUrl": "../../design/previews/19_南棚聚货/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        19
+      ],
+      "storyText": "食单挂起后，康十一带来一车杂货：先有整齐的货位，商队才肯停驻。",
+      "completionText": "南棚理好货位，第一车杂货开始在市集周转。",
+      "conditions": {
+        "completedRepairs": [
+          "lv3_watchtower"
+        ],
+        "completedOrderIds": [
+          "order_demo_board_combo_01"
+        ]
+      },
+      "rewards": {
+        "coins": 760,
+        "storyFlags": [
+          "lv3Complete",
+          "menuOnWall",
+          "southShedStocked"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_central_market",
+      "chapter": 4,
+      "name": "中市开席",
+      "sceneName": "中市开席",
+      "speaker": "康十一",
+      "npcId": "npc_caravan_leader",
+      "repairCost": 520,
+      "repairValue": 180,
+      "scenePosition": "kitchen",
+      "playerPointId": "20",
+      "playerUrl": "../../design/previews/20_中市开席/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        20
+      ],
+      "storyText": "南棚聚起货物，中市也该摆开长席，让四方来客有处落座。",
+      "completionText": "中市摆开长席，摊主们约好把南街一同收拾出来。",
+      "conditions": {
+        "completedRepairs": [
+          "lv4_south_shed"
+        ],
+        "completedOrderIds": [
+          "order_demo_board_combo_02"
+        ]
+      },
+      "rewards": {
+        "coins": 870,
+        "storyFlags": [
+          "centralMarketReady"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_south_street",
+      "chapter": 4,
+      "name": "南市连街",
+      "sceneName": "南市连街",
+      "speaker": "粟特胡商",
+      "npcId": "npc_sogdian_merchant",
+      "repairCost": 590,
+      "repairValue": 190,
+      "scenePosition": "wall",
+      "playerPointId": "21-23",
+      "playerUrl": "../../design/previews/21-22-23_南市连街/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        21,
+        22,
+        23
+      ],
+      "storyText": "中市开席后，三间南铺愿意一同连街，把各自的招牌都点起来。",
+      "completionText": "三铺相连，市声从南街一路传到巷口。",
+      "conditions": {
+        "completedRepairs": [
+          "lv4_central_market"
+        ],
+        "completedOrderIds": [
+          "order_demo_board_combo_03"
+        ]
+      },
+      "rewards": {
+        "coins": 1000,
+        "storyFlags": [
+          "southStreetLinked"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_lanes",
+      "chapter": 4,
+      "name": "巷路相接",
+      "sceneName": "巷路相接",
+      "speaker": "孟氏",
+      "npcId": "npc_dunhuang_woman",
+      "repairCost": 670,
+      "repairValue": 200,
+      "scenePosition": "yard",
+      "playerPointId": "24",
+      "playerUrl": "../../design/previews/24_巷路相接/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        24
+      ],
+      "storyText": "长街有了人声，巷路的断处更该打通，让夜归人也能循灯回来。",
+      "completionText": "巷路贯通，东棚的货与夜归人的脚步都能顺着灯影抵达。",
+      "conditions": {
+        "completedRepairs": [
+          "lv4_south_street"
+        ],
+        "completedOrderIds": [
+          "order_021_lanes_continuation"
+        ]
+      },
+      "rewards": {
+        "coins": 1140,
+        "storyFlags": [
+          "lanesOpen"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_east_shed",
+      "chapter": 4,
+      "name": "东棚盈市",
+      "sceneName": "东棚盈市",
+      "speaker": "康十一",
+      "npcId": "npc_caravan_leader",
+      "repairCost": 760,
+      "repairValue": 210,
+      "scenePosition": "front",
+      "playerPointId": "25",
+      "playerUrl": "../../design/previews/25_东棚盈市/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        25
+      ],
+      "storyText": "巷路相接后，东棚的货物终于能顺路送来。",
+      "completionText": "东棚货满，邻里把清点好的物资送往东院。",
+      "conditions": {
+        "completedRepairs": [
+          "lv4_lanes"
+        ],
+        "completedOrderIds": [
+          "order_022_shed_continuation"
+        ]
+      },
+      "rewards": {
+        "coins": 1280,
+        "storyFlags": [
+          "eastShedFull"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_east_court",
+      "chapter": 4,
+      "name": "东院焕新",
+      "sceneName": "东院焕新",
+      "speaker": "长安侍女",
+      "npcId": "npc_changan_maid",
+      "repairCost": 860,
+      "repairValue": 220,
+      "scenePosition": "kitchen",
+      "playerPointId": "26",
+      "playerUrl": "../../design/previews/26_东院焕新/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        26
+      ],
+      "storyText": "东棚丰盈起来，东院也该接住往来的人与一日的歇脚。",
+      "completionText": "东院焕新，住客与摊主终于有了可共同照看的院子。",
+      "conditions": {
+        "completedRepairs": [
+          "lv4_east_shed"
+        ],
+        "completedOrderIds": [
+          "order_023_court_continuation"
+        ]
+      },
+      "rewards": {
+        "coins": 1440,
+        "storyFlags": [
+          "eastCourtBright"
+        ]
+      },
+      "renovationChoices": []
+    },
+    {
+      "id": "lv4_lantern_city",
+      "chapter": 4,
+      "name": "灯火连城",
+      "sceneName": "灯火连城",
+      "speaker": "康十一",
+      "npcId": "npc_caravan_leader",
+      "repairCost": 980,
+      "repairValue": 240,
+      "scenePosition": "wall",
+      "playerPointId": "27",
+      "playerUrl": "../../design/previews/27_灯火连城/player_preview_v0.1/index.html",
+      "longscrollRegionIds": [
+        27
+      ],
+      "storyText": "市集与院落都已亮起，最后把这一段巷路的灯火连成一城。",
+      "completionText": "一盏接一盏，流沙驿与整条街巷重新亮成了灯火。",
+      "conditions": {
+        "completedRepairs": [
+          "lv4_east_court"
+        ],
+        "completedOrderIds": [
+          "order_024_lantern_continuation"
+        ]
+      },
+      "rewards": {
+        "coins": 1620,
+        "storyFlags": [
+          "lv4Complete",
+          "lanternsLinked"
+        ]
+      },
+      "renovationChoices": []
+    }
+  ]
+}

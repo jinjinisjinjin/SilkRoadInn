@@ -1,0 +1,540 @@
+{
+  "version": "0.1",
+  "maxVisibleOrders": 3,
+  "autoRefreshMinutes": 20,
+  "freeRefreshPerDay": 3,
+  "orders": [
+    {
+      "id": "order_demo_board_combo_01",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒 周甲",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 16,
+        "codexExp": 2
+      },
+      "weight": 30,
+      "unlock": "tutorial_start",
+      "dialogue": "饼食配乳，赶路的人吃着稳。"
+    },
+    {
+      "id": "order_demo_board_combo_02",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 28,
+        "codexExp": 4
+      },
+      "weight": 28,
+      "unlock": "tutorial_start",
+      "dialogue": "胡麻香、葡萄甜，正像商路上的一餐。"
+    },
+    {
+      "id": "order_demo_board_combo_03",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "meat_07_zhiyangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 42,
+        "codexExp": 5
+      },
+      "weight": 26,
+      "unlock": "tutorial_start",
+      "dialogue": "炙肉添些香料，再配几枚甜枣。"
+    },
+    {
+      "id": "order_001_guard_lubing",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 80,
+        "codexExp": 2
+      },
+      "weight": 20,
+      "unlock": "tutorial_start",
+      "dialogue": "你阿爷从前也这样烤饼。流沙驿开着，我就来。"
+    },
+    {
+      "id": "order_002_farmer_dough",
+      "npcId": "npc_farmer",
+      "npcName": "刘大（城外农户）",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 45,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "after_order_1",
+      "dialogue": "今年麦磨得细，先替我备两团面。等炉灶补稳，我再替你去街口招呼人。"
+    },
+    {
+      "id": "order_015_monk_rumi",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 8,
+        "codexExp": 2
+      },
+      "weight": 18,
+      "unlock": "tutorial_start",
+      "dialogue": "行脚至此，若有一碗乳糜，便能缓一缓风沙。"
+    },
+    {
+      "id": "order_016_uighur_milk",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 5,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "tutorial_start",
+      "dialogue": "新乳趁早用，路上人喝了才有力气。"
+    },
+    {
+      "id": "order_018_traveler_lubing_rumi",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 18,
+        "codexExp": 4
+      },
+      "weight": 14,
+      "unlock": "tutorial_start",
+      "dialogue": "一张炉饼配一碗乳糜，路上吃着稳妥。"
+    },
+    {
+      "id": "order_003_sogdian_humabing",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 70,
+        "codexExp": 4
+      },
+      "weight": 15,
+      "unlock": "codex_hubing_03",
+      "dialogue": "饼面有胡麻香，像撒马尔罕路上的炉火。你后厨的炉火稳了，我便把这一香带去商路上。"
+    },
+    {
+      "id": "order_011_dunhuang_woman_lubing",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 55,
+        "codexExp": 2
+      },
+      "weight": 18,
+      "unlock": "tutorial_start",
+      "dialogue": "趁炉火还热，给我留一张路上能揣着走的饼。前厅修好了，我便替你守着门前的第一桌客。"
+    },
+    {
+      "id": "order_012_changan_maid_lubing",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 14,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "after_order_1",
+      "dialogue": "主人要赶路，吩咐我备些干净便携的饼食。"
+    },
+    {
+      "id": "order_020_guard_lubing_bundle",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "周甲",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 75,
+        "codexExp": 3
+      },
+      "weight": 0,
+      "unlock": "after_order_1",
+      "dialogue": "驿外换岗的人多，我带两张刚出炉的饼去。后厨那边的灶砖，也该给你凑齐了。"
+    },
+    {
+      "id": "order_013_temple_donor_humabing",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 60,
+        "codexExp": 4
+      },
+      "weight": 9,
+      "unlock": "codex_hubing_03",
+      "dialogue": "供食贵在洁净，胡麻香也要稳妥。等你把食单贴上墙，后来的人便知道这炉火从何而来。"
+    },
+    {
+      "id": "order_014_musician_youhubing",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 32,
+        "codexExp": 8
+      },
+      "weight": 8,
+      "unlock": "codex_hubing_04",
+      "dialogue": "一曲唱罢，油润些的饼正好压住风沙。"
+    },
+    {
+      "id": "order_004_changan_lubing",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 13,
+        "codexExp": 3
+      },
+      "weight": 13,
+      "unlock": "after_order_3",
+      "dialogue": "长安也时兴胡饼，沙州这一炉倒不输西市。"
+    },
+    {
+      "id": "order_005_monk_humabing",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 50,
+        "codexExp": 4
+      },
+      "weight": 10,
+      "unlock": "codex_hubing_03",
+      "dialogue": "路远食简，芝麻香足以安顿一餐。留一张给我，也留一笔给这间驿站的食单。"
+    },
+    {
+      "id": "order_006_camel_worker_youhubing",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 30,
+        "codexExp": 8
+      },
+      "weight": 9,
+      "unlock": "codex_hubing_04",
+      "dialogue": "油润些的饼，过沙碛才顶饿。"
+    },
+    {
+      "id": "order_007_persian_attendant_congchi",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "hubing_05_congchihubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 68,
+        "codexExp": 14
+      },
+      "weight": 7,
+      "unlock": "codex_hubing_05",
+      "dialogue": "葱豉咸香，正好压住一路风尘。"
+    },
+    {
+      "id": "order_008_uighur_yangrou",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "hubing_06_yangrouhubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 150,
+        "codexExp": 24
+      },
+      "weight": 5,
+      "unlock": "codex_hubing_06",
+      "dialogue": "羊肉入饼，这才像能走远路的吃食。"
+    },
+    {
+      "id": "order_009_mystery_suibing",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "hubing_07_suibing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 340,
+        "codexExp": 45,
+        "codexShard": 1
+      },
+      "weight": 3,
+      "unlock": "codex_hubing_07",
+      "dialogue": "髓脂香厚，此法不是寻常小店都记得。"
+    },
+    {
+      "id": "order_010_caravan_gulouzi",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "hubing_08_gulouzi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 760,
+        "codexExp": 90,
+        "completeLv1": true
+      },
+      "weight": 0,
+      "unlock": "final_lv1_order",
+      "dialogue": "层层羊肉与椒豉，足够让整支商队记住流沙驿。"
+    },
+    {
+      "id": "order_017_temple_laojiang",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 15,
+        "codexExp": 4
+      },
+      "weight": 10,
+      "unlock": "codex_dairy_03",
+      "dialogue": "酪浆清润，供食前也要备得洁净。"
+    },
+    {
+      "id": "order_019_sogdian_huma_laojiang",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 32,
+        "codexExp": 7
+      },
+      "weight": 8,
+      "unlock": "codex_dairy_03",
+      "dialogue": "胡麻香配酪浆，像商路两端的味道碰在一处。"
+    },
+    {
+      "id": "order_021_lanes_continuation",
+      "npcId": "npc_caravan_leader",
+      "npcName": "康十一",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 80,
+        "codexExp": 4
+      },
+      "weight": 10,
+      "unlock": "tutorial_start",
+      "dialogue": "南街连成一片，再备些饼和鲜乳，远路客人才愿一路逛下来。"
+    },
+    {
+      "id": "order_022_shed_continuation",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "孟氏",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 105,
+        "codexExp": 5
+      },
+      "weight": 10,
+      "unlock": "tutorial_start",
+      "dialogue": "东棚该热闹起来了。巷口刚通，让路过的人都能闻见饼香。"
+    },
+    {
+      "id": "order_023_court_continuation",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 120,
+        "codexExp": 5
+      },
+      "weight": 10,
+      "unlock": "tutorial_start",
+      "dialogue": "东院焕新了，主人想在这里歇一歇。备些酪浆和甜果，算是给驿站的贺礼。"
+    },
+    {
+      "id": "order_024_lantern_continuation",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 160,
+        "codexExp": 6
+      },
+      "weight": 0,
+      "unlock": "tutorial_start",
+      "dialogue": "最后再留一盏灯的吃食。油饼配乳糜，走过这条街的人都会记住流沙驿。"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "version": "0.1",
+  "staminaName": "驼铃",
+  "initial": {
+    "max": 100,
+    "startValue": 18,
+    "recoverMinutes": 6
+  },
+  "afterKitchenRepair": {
+    "max": 100,
+    "recoverMinutes": 5
+  },
+  "costs": {
+    "generateItem": 1
+  },
+  "dailyBonuses": {
+    "firstLogin": 12,
+    "adBonus": {
+      "timesPerDay": 3,
+      "amount": 8
+    },
+    "coinPurchase": [
+      { "costCoins": 80, "amount": 6 },
+      { "costCoins": 160, "amount": 6 }
+    ]
+  },
+  "generationTables": [
+    {
+      "id": "gen_tutorial_first_10",
+      "unlock": "new_player_first_10_generations",
+      "items": [
+        { "itemId": "hubing_01_dough", "weight": 100 }
+      ]
+    },
+    {
+      "id": "gen_after_humabing",
+      "unlock": "codex_hubing_03",
+      "items": [
+        { "itemId": "hubing_01_dough", "weight": 90 },
+        { "itemId": "hubing_02_lubing", "weight": 10 }
+      ]
+    },
+    {
+      "id": "gen_after_youhubing",
+      "unlock": "codex_hubing_04",
+      "items": [
+        { "itemId": "hubing_01_dough", "weight": 82 },
+        { "itemId": "hubing_02_lubing", "weight": 15 },
+        { "itemId": "hubing_03_humabing", "weight": 3 }
+      ]
+    },
+    {
+      "id": "gen_after_8_orders",
+      "unlock": "completed_orders_8",
+      "items": [
+        { "itemId": "hubing_01_dough", "weight": 75 },
+        { "itemId": "hubing_02_lubing", "weight": 20 },
+        { "itemId": "hubing_03_humabing", "weight": 5 }
+      ]
+    }
+  ]
+}

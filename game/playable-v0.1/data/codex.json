@@ -1,0 +1,166 @@
+{
+  "version": "0.1",
+  "codexName": "丝路食单",
+  "entries": [
+    {
+      "id": "codex_hubing_01",
+      "itemId": "hubing_01_dough",
+      "name": "麦面剂",
+      "modernName": "基础面团",
+      "shortText": "一团麦面，是流沙驿炉火的开端。",
+      "longText": "古代“饼”常泛指面制食物，并不只等于现代薄饼。沙州敦煌位于河西走廊，小麦面食适合做成便携主食，供驿卒、商旅、僧人路途中食用。本级为游戏基础食材，用来表现从麦面到炉烤饼食的起点。",
+      "confidence": "B",
+      "sourceNote": "唐代面食与河西驿路饮食的策划归纳，待绑定更精确文献。"
+    },
+    {
+      "id": "codex_hubing_02",
+      "itemId": "hubing_02_lubing",
+      "name": "炉饼",
+      "modernName": "素烤饼",
+      "shortText": "入炉一烘，麦香能跟人走很远。",
+      "longText": "炉烤面食便于携带和保存，适合丝路旅人。《齐民要术》记有烧饼做法，说明早期烤制饼食已有成熟工艺。本级用“炉饼”概括素面入炉烤熟的基础阶段，不绑定具体敦煌文书名称。",
+      "confidence": "B",
+      "sourceNote": "参考《齐民要术》烧饼相关做法；敦煌文书编号待考。"
+    },
+    {
+      "id": "codex_hubing_03",
+      "itemId": "hubing_03_humabing",
+      "name": "胡麻饼",
+      "modernName": "芝麻烤饼",
+      "shortText": "饼面撒胡麻，一口尝到西域风。",
+      "longText": "胡麻即芝麻，长期与丝路物产交流相关。唐代胡饼常被视为外来风味面点，芝麻饼、胡饼等类别在隋唐饮食叙述中常见。本级强调“胡麻增香”的可视化变化，适合作为玩家第一次感知西域风味的节点。",
+      "confidence": "A-",
+      "sourceNote": "唐代胡饼与胡麻风味有文献基础；具体敦煌出处待补。"
+    },
+    {
+      "id": "codex_hubing_04",
+      "itemId": "hubing_04_youhubing",
+      "name": "油胡饼",
+      "modernName": "油酥芝麻饼",
+      "shortText": "一点油酥，让干粮也有温润香气。",
+      "longText": "隋唐五代饼食中可见素饼、油饼、肉饼、芝麻饼等分类。油脂能改善口感并提升热量，适合长途旅行。本级为“胡饼+油脂工艺”的策划归纳，不直接宣称为某一敦煌专名。",
+      "confidence": "B",
+      "sourceNote": "基于唐五代饼食分类和油脂食用逻辑，待补精确出处。"
+    },
+    {
+      "id": "codex_hubing_05",
+      "itemId": "hubing_05_congchihubing",
+      "name": "葱豉胡饼",
+      "modernName": "葱豉香烤饼",
+      "shortText": "葱白与豉汁，是唐人熟悉的咸香。",
+      "longText": "《齐民要术》烧饼法中出现羊肉、葱白、豉汁及盐等调味组合，可支撑葱豉咸香作为古代烤饼风味。MVP中先将其设为从素饼向肉馅饼过渡的调味阶段。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》烧饼法中的葱白、豉汁等调味元素。"
+    },
+    {
+      "id": "codex_hubing_06",
+      "itemId": "hubing_06_yangrouhubing",
+      "name": "羊肉胡饼",
+      "modernName": "羊肉馅烤饼",
+      "shortText": "羊肉入饼，最能慰藉风沙路。",
+      "longText": "羊肉是西北与草原饮食中的重要肉食，与面饼结合也符合北方和西域饮食逻辑。《齐民要术》烧饼法已有羊肉、葱白、豉汁组合。本级可作为粟特胡商、回鹘牧民、驼队脚夫偏爱的高热量食物。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》烧饼法中的羊肉馅与调味组合。"
+    },
+    {
+      "id": "codex_hubing_07",
+      "itemId": "hubing_07_suibing",
+      "name": "髓饼",
+      "modernName": "髓脂烤饼",
+      "shortText": "髓脂入面，饼香厚得像黄昏。",
+      "longText": "《齐民要术》记有“髓饼”做法，以髓脂、蜜和面，置胡饼炉中烤熟，并强调肥美、可经久。本级是胡饼线中最明确的古法锚点之一，适合作为稀有订单目标。需注意：它不是敦煌文书专名，出处应写作古代农书饮食做法。",
+      "confidence": "A",
+      "sourceNote": "参考《齐民要术》制髓饼法。"
+    },
+    {
+      "id": "codex_hubing_08",
+      "itemId": "hubing_08_gulouzi",
+      "name": "古楼子",
+      "modernName": "层叠羊肉胡饼",
+      "shortText": "层层肉香，是商队宴席上的压轴饼。",
+      "longText": "古楼子可作为豪华胡饼类高阶食物，资料中常描述其以羊肉馅、牛油、椒豉层层铺入胡饼后入炉烧烤。MVP中将其作为Lv1压轴图鉴，定位为宴席级、稀有订单食物，不作为普通路边小吃。",
+      "confidence": "A-",
+      "sourceNote": "古楼子出处和原文语境后续仍需专项核验。"
+    },
+    {
+      "id": "codex_dairy_01",
+      "itemId": "dairy_01_milk",
+      "name": "鲜乳",
+      "modernName": "基础乳品",
+      "shortText": "一盏新乳，把草原气息带进驿站。",
+      "longText": "乳类食物与西北畜牧生活关系密切，适合表现回鹘牧民、驼队旅人带来的日常乳食。MVP中作为奶食线的基础食材，强调从鲜乳到酪、酥的加工起点。",
+      "confidence": "B",
+      "sourceNote": "古代乳食与丝路畜牧饮食的策划归纳，敦煌具体文书编号待考。"
+    },
+    {
+      "id": "codex_dairy_02",
+      "itemId": "dairy_02_rumi",
+      "name": "乳糜",
+      "modernName": "奶粥/乳米糜",
+      "shortText": "乳与谷同煮，是旅途中温软的一餐。",
+      "longText": "乳糜可理解为乳与谷物结合的温软食物，和佛教故事中“献糜”意象有文化联系。游戏中用它承接求法僧人订单，但不把具体壁画情节直接等同为敦煌日常食谱。",
+      "confidence": "B",
+      "sourceNote": "乳糜和佛教献糜题材有文献、图像基础；敦煌对应洞窟与文书编号待专项核验。"
+    },
+    {
+      "id": "codex_dairy_03",
+      "itemId": "dairy_03_laojiang",
+      "name": "酪浆",
+      "modernName": "发酵乳饮",
+      "shortText": "乳味微酸，最能解一路燥热。",
+      "longText": "酪、浆等乳制品词汇见于古代饮食语境，发酵乳饮也符合草原与西北饮食经验。本级用于表现鲜乳经过放置、发酵后的饮用形态。",
+      "confidence": "B",
+      "sourceNote": "古代乳食术语与游牧饮食基础明确，敦煌编号待补。"
+    },
+    {
+      "id": "codex_dairy_04",
+      "itemId": "dairy_04_ganlao",
+      "name": "干酪",
+      "modernName": "凝乳奶酪",
+      "shortText": "水分收去，乳香就能带得更远。",
+      "longText": "将乳凝固、压干可提升保存性，更适合长途商旅携带。MVP中将干酪作为奶食线的便携阶段，服务于丝路旅行场景。",
+      "confidence": "B",
+      "sourceNote": "基于乳制品保存逻辑与西北畜牧饮食归纳，待补精确史料。"
+    },
+    {
+      "id": "codex_dairy_05",
+      "itemId": "dairy_05_suyou",
+      "name": "酥油",
+      "modernName": "乳脂",
+      "shortText": "乳脂炼成酥油，灯火和食香都更厚。",
+      "longText": "酥油是乳脂类制品，和高原、草原饮食及宗教供养场景都有联系。游戏中暂作为高阶乳脂节点，用于后续寺院、商旅高价值订单。",
+      "confidence": "B",
+      "sourceNote": "酥油相关历史语境较广，敦煌专题出处待核。"
+    },
+    {
+      "id": "codex_dairy_06",
+      "itemId": "dairy_06_milao",
+      "name": "蜜酪",
+      "modernName": "蜜调酪食",
+      "shortText": "酪中添蜜，风沙里也有一点甜。",
+      "longText": "蜂蜜与乳酪组合能形成更甜润的乳食。MVP中将其作为奶食线从日常乳制品走向宴席甜食的过渡，需后续补足具体唐五代饮食出处。",
+      "confidence": "C+",
+      "sourceNote": "策划归纳名目，正式版本需进一步考据。"
+    },
+    {
+      "id": "codex_dairy_07",
+      "itemId": "dairy_07_tihusu",
+      "name": "醍醐酥",
+      "modernName": "精制乳酥",
+      "shortText": "乳中精华，入口细密如壁画金粉。",
+      "longText": "“醍醐”常被用来指乳中精华，也带有宗教隐喻。游戏中将其视觉化为高阶精制乳酥，用于稀有订单和典藏图鉴。",
+      "confidence": "B-",
+      "sourceNote": "醍醐相关传统语义明确；作为具体食物形态仍需专项考据。"
+    },
+    {
+      "id": "codex_dairy_08",
+      "itemId": "dairy_08_fo_rumi",
+      "name": "供佛乳糜",
+      "modernName": "高阶典藏乳糜",
+      "shortText": "一碗乳糜，也能写进长路的愿心。",
+      "longText": "高阶乳糜用于表现乳食、谷物与供养叙事的结合，是奶食线的典藏终点。正式剧情应避免直接编造某一敦煌文书专名，需在美术与文案阶段补充确证出处。",
+      "confidence": "B-",
+      "sourceNote": "宗教供养与乳糜意象有基础，敦煌精确来源待核。"
+    }
+  ]
+}
