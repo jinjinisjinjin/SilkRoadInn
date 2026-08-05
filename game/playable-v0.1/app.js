@@ -1835,53 +1835,61 @@ function endCellPointer(event) {
   try { window.__dbg?.("END-Drag from=" + fromIndex + " item=" + itemId + " moved=" + moved + " prevSel=" + prevSelected + " hover=" + hoverIndex); } catch{}
   // ───────────────────────────────────────────────────
 
-  // ── Drop target resolution (v19: direction vector is last resort only) ──
+  // ── Drop target resolution (v20: DIRECTION VECTOR IS PRIMARY) ──
   // The board has CSS transform: scale(1.12) translate(-50%,-50%) which
   // makes ALL absolute coordinates systematically offset on real devices.
-  // Strategy:
-  //   1) Try hover-tracked cell (from pointermove)
-  //   2) Try coordinate-based lookup
-  //   3) ONLY if 1+2 produced nothing usable (null / off-board / same cell),
-  //      fall back to DIRECTION VECTOR — pick the neighbour in the direction
-  //      of drag.
-  // A resolved-but-locked target is NEVER rewritten: locked cells carry real
-  // gameplay (unlock key / adjacent merge / hint toast) and must reach the
-  // locked-cell handler below.
+  // On this user's machine: hover=undefined, clientX exceeds viewport width
+  // (Chrome Responsive Mode), coordinate lookup always lands on wrong cell.
+  //
+  // v20 Strategy:
+  //   1) Compute DIRECTION VECTOR — the ONLY reliable signal of intent.
+  //   2) Use hover/coords ONLY as secondary reference.
+  //   3) If coords say "locked cell" but direction says elsewhere → TRUST DIRECTION.
+  //   4) Direction resolution:
+  //      - Same-type neighbour → MERGE (primary intent)
+  //      - Empty cell → MOVE
+  //      - Locked cell → let locked handler decide (may be genuine unlock attempt)
+  //      - Different-type occupied → let occupied handler decide
+  //      - No clear direction → fall back to coords/hover
   const { dragDx, dragDy } = dragging;
-  let toIndex = null;
-  let dropMethod = "none";
+  const dirTarget = getTargetFromDirection(fromIndex, dragDx, dragDy);
+  const dirItem = (dirTarget !== null && dirTarget !== fromIndex) ? state.board[dirTarget] : null;
 
+  // Secondary: hover/coords for reference only
+  let coordIndex = null;
   if (hoverIndex != null && hoverIndex >= 0) {
-    toIndex = hoverIndex; dropMethod = "hover";
+    coordIndex = hoverIndex;
   } else {
     const rawX = event.isTrusted ? (event.clientX || lastX) : (lastX ?? event.clientX);
     const rawY = event.isTrusted ? (event.clientY || lastY) : (lastY ?? event.clientY);
     const { x: sx, y: sy } = sanitiseDropCoords(rawX, rawY, lastX, lastY);
-    toIndex = getCellIndexFromPoint(sx, sy); dropMethod = "coords";
+    coordIndex = getCellIndexFromPoint(sx, sy);
   }
 
-  // ── v19: the old "DROP-FIX" redirect is REMOVED ──────────────────────
-  // It used to reroute a locked drop target to a direction-picked neighbour,
-  // which silently swallowed the whole locked-cell flow (unlock / adjacent
-  // merge / "needs X" toast) and degraded it into a plain MOVE onto an empty
-  // cell. A locked cell is now kept as-is and handed to the locked handler.
-  if (toIndex !== null && toIndex >= 0 && isBoardCellLocked(toIndex)) {
-    try { window.__dbg?.("DROP-FIX disabled v19: keeping locked " + toIndex + " for locked-cell handling"); } catch{}
-  }
-  // Fallback only when we have NO usable target at all (null / off-board /
-  // same as source). Direction is a guess here, so if the guess lands on a
-  // locked cell we still let it flow into the locked-cell handler rather than
-  // silently rerouting it somewhere else.
-  if ((toIndex === null || toIndex < 0 || toIndex === fromIndex) && moved) {
-    const dirTarget = getTargetFromDirection(fromIndex, dragDx, dragDy);
-    if (dirTarget !== null && dirTarget !== fromIndex) {
-      const lockedNote = isBoardCellLocked(dirTarget) ? " [locked → locked-cell handling]" : "";
-      try { window.__dbg?.("DROP-FALLBACK: no valid target → direction(" + Math.round(dragDx) + "," + Math.round(dragDy) + ") → " + dirTarget + lockedNote); } catch{}
-      toIndex = dirTarget; dropMethod = "direction-fallback";
+  // ── Resolve final toIndex: DIRECTION FIRST ──
+  let toIndex = null;
+  let dropMethod = "none";
+  const _dlog = "(" + Math.round(dragDx) + "," + Math.round(dragDy) + ")";
+
+  if (moved && dirTarget !== null && dirTarget !== fromIndex) {
+    if (dirItem === itemId) {
+      toIndex = dirTarget; dropMethod = "DIR-MERGE";
+    } else if (!dirItem && !isBoardCellLocked(dirTarget)) {
+      toIndex = dirTarget; dropMethod = "DIR-MOVE";
+    } else if (isBoardCellLocked(dirTarget)) {
+      toIndex = dirTarget; dropMethod = "DIR-LOCKED";
+    } else {
+      toIndex = dirTarget; dropMethod = "DIR-OCCUPIED";
     }
   }
 
-  try { window.__dbg?.("DROP-TARGET: " + dropMethod + " ⇒ " + toIndex + (dropMethod.startsWith("dir") ? " [direction-based]" : "")); } catch{}
+  // Fallback: no valid direction target → use coords
+  if ((toIndex === null || toIndex === fromIndex) && coordIndex !== null && coordIndex >= 0 && coordIndex !== fromIndex) {
+    toIndex = coordIndex;
+    dropMethod = (hoverIndex != null && hoverIndex >= 0) ? "hover" : "coords";
+  }
+
+  try { window.__dbg?.("DROP-TARGET: dir=" + _dlog + " ⇒ dT=" + (dirTarget?? "?") + "(dI=" + (dirItem?byId.get(dirItem)?.name:"∅") + ") cI=" + (coordIndex?? "?") + " → " + toIndex + " [" + dropMethod + "]"); } catch{}
   // ─────────────────────────────────────────────────────────────────────
 
   removeDragGhost();
@@ -1963,7 +1971,6 @@ function endCellPointer(event) {
     maybePromptRepairGuide();
     return;
   }
-
   // Drag to empty cell = move
   const targetItemId = state.board[toIndex];
   if (!targetItemId) {
