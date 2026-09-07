@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>丝路食肆｜长卷试玩原型</title>
-    <link rel="icon" href="../../assets/food-icons/hubing/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=merge-fix-v20" />
+    <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
+    <link rel="stylesheet" href="./styles.css?v=order-gifts-ruby-v1" />
   </head>
   <body>
     <main class="phone" id="app">
@@ -43,9 +43,8 @@
               <strong id="selectedName">未选中</strong>
               <span id="selectedText">点击磨坊生成食材，或拖拽案板上的食物。</span>
             </button>
-            <button id="sellBtn" class="selected-sell danger">
-              <b>出售</b>
-              <span><img src="./assets/ui/ui_coin_copper.png" alt="" />+0</span>
+            <button id="sellBtn" class="selected-sell unavailable" aria-label="当前棋子不可处理" disabled>
+              <span class="selected-action-placeholder" aria-hidden="true"></span>
             </button>
           </div>
           <button id="stationHudBtn" class="hud-icon-btn station-entry" aria-label="前往流沙驿">
@@ -65,6 +64,7 @@
           <button id="innUpgradeBtn" class="primary">升级驿站</button>
         </header>
         <section class="inn-scene" id="innScene"></section>
+        <div class="order-gift-progress-float" id="orderGiftProgress" aria-label="章节订单礼包"></div>
         <section class="inn-panel scene-panel">
           <div class="inn-progress scene-progress">
             <div>
@@ -75,6 +75,9 @@
           <div class="furniture-shop mainline-dock" id="furnitureShop"></div>
           <p class="inn-story" id="innStoryLine">流沙驿还显破旧，先添几件能接待旅人的家具。</p>
         </section>
+        <button id="innKitchenBtn" class="inn-kitchen-entry" type="button" aria-label="返回后厨" title="后厨">
+          <img src="./assets/ui/ui_kitchen_entry.png" alt="" />
+        </button>
       </section>
       <nav class="tabbar" hidden>
         <button id="boardReturnBtn" data-tab="board"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>后厨</span></button>
@@ -200,6 +203,6 @@
       </div>
     </dialog>
 
-    <script src="./app.js?v=merge-fix-v20"></script>
+    <script src="./app.js?v=order-gifts-ruby-v1"></script>
   </body>
 </html>

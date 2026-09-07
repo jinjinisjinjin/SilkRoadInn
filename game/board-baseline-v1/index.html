@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>丝路食肆 - 正式棋盘页预览</title>
+  <link rel="stylesheet" href="./styles.css?v=detail-polish2" />
+</head>
+<body>
+  <main class="game-shell" id="game">
+    <section class="top-hud" aria-label="资源">
+      <div class="resource-chip coin-chip">
+        <img src="./assets/coin.png" alt="" />
+        <span id="coins">38</span>
+      </div>
+      <div class="resource-chip">
+        <img src="./assets/bell.png" alt="" />
+        <span id="energy">99</span>
+        <button type="button" aria-label="补充驼铃">+</button>
+      </div>
+      <div class="resource-chip">
+        <span class="ruby-gem" aria-hidden="true"></span>
+        <span id="gems">6</span>
+        <button type="button" aria-label="购买红宝石">+</button>
+      </div>
+    </section>
+
+    <aside class="order-side-tools" aria-label="快捷入口">
+      <button type="button" class="side-icon active" id="repairEntry" aria-label="进入修缮">
+        <img src="./assets/station.png" alt="" />
+      </button>
+      <button type="button" class="side-icon" id="bagEntry" aria-label="打开行囊">
+        <img src="./assets/bag.png" alt="" />
+      </button>
+    </aside>
+
+    <section class="orders-strip" id="orders" aria-label="食客订单"></section>
+
+    <section class="board-stage" aria-label="后厨棋盘">
+      <div class="board" id="board"></div>
+    </section>
+
+    <section class="bottom-hud" aria-label="底部操作区">
+      <button type="button" class="storage-entry" id="storageEntry" aria-label="打开仓库">
+        <img src="./assets/storage.png" alt="" />
+      </button>
+      <button type="button" class="piece-info" id="pieceInfo" aria-label="查看棋子详情">
+        <span id="pieceTitle">未选中</span>
+        <small id="pieceMeta">点击棋盘中的食材或食盒</small>
+        <span class="sell-pill disabled" id="sellBtn">出售</span>
+      </button>
+      <button type="button" class="inn-entry" id="innEntry" aria-label="流沙驿入口">
+        <img src="./assets/station.png" alt="" />
+      </button>
+    </section>
+
+    <div class="modal" id="storageModal" aria-hidden="true">
+      <div class="cabinet-panel" role="dialog" aria-label="仓库">
+        <button type="button" class="close-modal" id="closeStorage" aria-label="关闭">×</button>
+        <div class="cabinet-title">柜中暂存</div>
+        <div class="cabinet-grid" id="cabinetGrid"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="detailModal" aria-hidden="true">
+      <div class="scroll-panel" role="dialog" aria-label="棋子详情">
+        <button type="button" class="close-modal" id="closeDetail" aria-label="关闭">×</button>
+        <h2 id="detailName">棋子详情</h2>
+        <p id="detailCopy">选中棋子后可查看等级、售价和用途。</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </main>
+  <script src="./app.js?v=detail-polish2"></script>
+</body>
+</html>

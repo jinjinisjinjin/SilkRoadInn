@@ -213,7 +213,7 @@
         ]
       },
       "rewards": {
-        "coins": 120,
+        "coins": 80,
         "storyFlags": [
           "frontFeastReady"
         ]
@@ -246,7 +246,7 @@
         ]
       },
       "rewards": {
-        "coins": 145,
+        "coins": 95,
         "storyFlags": [
           "westMarketOpen"
         ]
@@ -279,7 +279,7 @@
         ]
       },
       "rewards": {
-        "coins": 170,
+        "coins": 110,
         "storyFlags": [
           "flowerRackKept"
         ]
@@ -312,7 +312,7 @@
         ]
       },
       "rewards": {
-        "coins": 195,
+        "coins": 130,
         "storyFlags": [
           "northShopOpen"
         ]
@@ -345,7 +345,7 @@
         ]
       },
       "rewards": {
-        "coins": 225,
+        "coins": 150,
         "storyFlags": [
           "southShopOpen"
         ]
@@ -379,7 +379,7 @@
         ]
       },
       "rewards": {
-        "coins": 250,
+        "coins": 170,
         "storyFlags": [
           "lv2Complete",
           "wellReady"
@@ -413,7 +413,7 @@
         ]
       },
       "rewards": {
-        "coins": 280,
+        "coins": 190,
         "storyFlags": [
           "upperHallReady"
         ]
@@ -446,7 +446,7 @@
         ]
       },
       "rewards": {
-        "coins": 320,
+        "coins": 215,
         "storyFlags": [
           "northCourtSettled"
         ]
@@ -479,7 +479,7 @@
         ]
       },
       "rewards": {
-        "coins": 365,
+        "coins": 245,
         "storyFlags": [
           "westGateCleared"
         ]
@@ -512,7 +512,7 @@
         ]
       },
       "rewards": {
-        "coins": 420,
+        "coins": 275,
         "storyFlags": [
           "eastCourtReady"
         ]
@@ -545,7 +545,7 @@
         ]
       },
       "rewards": {
-        "coins": 480,
+        "coins": 310,
         "storyFlags": [
           "gardenAwake"
         ]
@@ -579,7 +579,7 @@
         ]
       },
       "rewards": {
-        "coins": 550,
+        "coins": 350,
         "storyFlags": [
           "roadReopened"
         ]
@@ -612,7 +612,7 @@
         ]
       },
       "rewards": {
-        "coins": 760,
+        "coins": 460,
         "storyFlags": [
           "lv3Complete",
           "menuOnWall",
@@ -647,7 +647,7 @@
         ]
       },
       "rewards": {
-        "coins": 870,
+        "coins": 520,
         "storyFlags": [
           "centralMarketReady"
         ]
@@ -682,7 +682,7 @@
         ]
       },
       "rewards": {
-        "coins": 1000,
+        "coins": 590,
         "storyFlags": [
           "southStreetLinked"
         ]
@@ -715,7 +715,7 @@
         ]
       },
       "rewards": {
-        "coins": 1140,
+        "coins": 670,
         "storyFlags": [
           "lanesOpen"
         ]
@@ -748,7 +748,7 @@
         ]
       },
       "rewards": {
-        "coins": 1280,
+        "coins": 760,
         "storyFlags": [
           "eastShedFull"
         ]
@@ -781,7 +781,7 @@
         ]
       },
       "rewards": {
-        "coins": 1440,
+        "coins": 860,
         "storyFlags": [
           "eastCourtBright"
         ]
@@ -814,13 +814,135 @@
         ]
       },
       "rewards": {
-        "coins": 1620,
+        "coins": 980,
         "storyFlags": [
           "lv4Complete",
           "lanternsLinked"
         ]
       },
       "renovationChoices": []
+    }
+  ],
+  "orderProgressPacks": [
+    {
+      "id": "gift_order_ch1_4",
+      "chapter": 1,
+      "threshold": 4,
+      "name": "第1章·4单礼盒",
+      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 10,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch1_8",
+      "chapter": 1,
+      "threshold": 8,
+      "name": "第1章·8单礼盒",
+      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 15,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch1_12",
+      "chapter": 1,
+      "threshold": 12,
+      "name": "第1章·12单礼盒",
+      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 20,
+      "rubyQuantity": 1,
+      "materialQuantity": 2
+    },
+    {
+      "id": "gift_order_ch2_4",
+      "chapter": 2,
+      "threshold": 4,
+      "name": "第2章·4单礼盒",
+      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 15,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch2_8",
+      "chapter": 2,
+      "threshold": 8,
+      "name": "第2章·8单礼盒",
+      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 20,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch2_12",
+      "chapter": 2,
+      "threshold": 12,
+      "name": "第2章·12单礼盒",
+      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 25,
+      "rubyQuantity": 1,
+      "materialQuantity": 2
+    },
+    {
+      "id": "gift_order_ch3_4",
+      "chapter": 3,
+      "threshold": 4,
+      "name": "第3章·4单礼盒",
+      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 20,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch3_8",
+      "chapter": 3,
+      "threshold": 8,
+      "name": "第3章·8单礼盒",
+      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 25,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch3_12",
+      "chapter": 3,
+      "threshold": 12,
+      "name": "第3章·12单礼盒",
+      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 30,
+      "rubyQuantity": 1,
+      "materialQuantity": 2
+    },
+    {
+      "id": "gift_order_ch4_4",
+      "chapter": 4,
+      "threshold": 4,
+      "name": "第4章·4单礼盒",
+      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 25,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch4_8",
+      "chapter": 4,
+      "threshold": 8,
+      "name": "第4章·8单礼盒",
+      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 30,
+      "rubyQuantity": 1,
+      "materialQuantity": 1
+    },
+    {
+      "id": "gift_order_ch4_12",
+      "chapter": 4,
+      "threshold": 12,
+      "name": "第4章·12单礼盒",
+      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "coinAmount": 35,
+      "rubyQuantity": 1,
+      "materialQuantity": 2
     }
   ]
 }
