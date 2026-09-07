@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=4, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#21140f" />
+    <title>流沙驿修缮候选预览</title>
+    <link rel="stylesheet" href="../shared/repair-engine/styles.css" />
+  </head>
+  <body>
+    <main id="sceneViewport" class="scene-viewport">
+      <div id="sceneWorld" class="scene-world" aria-hidden="true">
+        <img id="baseImage" class="scene-image" alt="" draggable="false" />
+        <div id="overlayStack" class="overlay-stack"></div>
+      </div>
+    </main>
+
+    <button id="completion" class="completion" type="button" hidden>
+      <span class="completion-copy">
+        <span id="completionTitle" class="completion-title"></span>
+        <strong class="completion-heading">修缮完成</strong>
+        <span id="completionLine" class="completion-line"></span>
+      </span>
+    </button>
+
+    <script src="./app.js"></script>
+    <script src="../shared/repair-engine/engine.js"></script>
+  </body>
+</html>

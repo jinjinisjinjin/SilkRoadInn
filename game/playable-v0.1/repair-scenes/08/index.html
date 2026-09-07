@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>北院安居｜玩家修缮预览</title>
+    <link rel="stylesheet" href="../shared/preview-runtime/styles.css">
+  </head>
+  <body>
+    <main id="viewport" aria-label="北院安居修缮场景">
+      <div id="world" aria-hidden="true">
+        <img id="base" alt="">
+        <div id="overlays"></div>
+      </div>
+      <div id="completion" class="completion" hidden>
+        <span>北院安居</span>
+        <strong>修缮完成</strong>
+        <p>灯暖小院，今夜可以安睡。</p>
+      </div>
+    </main>
+    <script>
+      window.SCENE_CONFIG = {
+        width: 1448,
+        height: 1086,
+        initial: { x: 575, y: 455, zoom: 1.1 },
+        base: "base.webp",
+        repairs: [
+          { file: "overlay-01.webp", targets: [[760, 930, 130]] },
+          { file: "overlay-02.webp", targets: [[690, 105, 115], [1160, 220, 90]] },
+          { file: "overlay-03.webp", targets: [[590, 300, 102]] },
+          { file: "overlay-04.webp", targets: [[565, 535, 112]] },
+          { file: "overlay-05.webp", targets: [[185, 690, 132]] },
+          { file: "overlay-06.webp", targets: [[330, 315, 74]] },
+          { file: "overlay-07.webp", targets: [[1035, 420, 105]] },
+          { file: "overlay-08.webp", targets: [[1190, 790, 136], [900, 580, 88]] },
+          { file: "overlay-09.webp", targets: [[775, 395, 68]] }
+        ]
+      };
+    </script>
+    <script src="../shared/preview-runtime/app.js"></script>
+  </body>
+</html>

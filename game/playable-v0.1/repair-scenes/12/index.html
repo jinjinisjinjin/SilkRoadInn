@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>花影庭园｜玩家修缮预览</title>
+    <link rel="stylesheet" href="../shared/preview-runtime/styles.css">
+  </head>
+  <body>
+    <main id="viewport" aria-label="花影庭园修缮场景">
+      <div id="world" aria-hidden="true">
+        <img id="base" alt="">
+        <div id="overlays"></div>
+      </div>
+      <div id="completion" class="completion" hidden>
+        <span>花影庭园</span>
+        <strong>修缮完成</strong>
+        <p>花影落满庭，旧院又逢春。</p>
+      </div>
+    </main>
+    <script>
+      window.SCENE_CONFIG = {
+        width: 1448,
+        height: 1086,
+        initial: { x: 520, y: 430, zoom: 1.1 },
+        base: "base.webp",
+        repairs: [
+          { file: "overlay-01.webp", targets: [[720, 950, 138]] },
+          { file: "overlay-02.webp", targets: [[100, 220, 92], [1290, 250, 92]] },
+          { file: "overlay-03.webp", targets: [[500, 370, 138], [510, 620, 102]] },
+          { file: "overlay-04.webp", targets: [[150, 335, 94]] },
+          { file: "overlay-05.webp", targets: [[1115, 455, 82]] },
+          { file: "overlay-06.webp", targets: [[1035, 630, 102]] },
+          { file: "overlay-07.webp", targets: [[1070, 785, 118]] },
+          { file: "overlay-08.webp", targets: [[120, 760, 102], [1350, 825, 112]] },
+          { file: "overlay-09.webp", targets: [[1220, 355, 82]] }
+        ]
+      };
+    </script>
+    <script src="../shared/preview-runtime/app.js"></script>
+  </body>
+</html>

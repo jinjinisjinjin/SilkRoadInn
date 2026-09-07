@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>东棚盈市｜修缮场景</title>
+    <link rel="stylesheet" href="../shared/player/styles.css">
+  </head>
+  <body>
+    <main id="viewport">
+      <div id="world" aria-hidden="true"><img id="base" alt=""><div id="overlays"></div></div>
+      <div id="completion" class="completion" hidden><span></span><strong>修缮完成</strong><p></p></div>
+    </main>
+    <script>
+      window.PLAYER_SCENE = {
+        title: "东棚盈市",
+        completion: "货满东棚，往来脚步渐渐热闹。",
+        focus: [850, 505],
+        initialZoom: 1,
+        base: "base.webp",
+        fallbackTargets: [
+          [805, 541, 72], [792, 250, 72], [874, 370, 72],
+          [933, 410, 72], [267, 595, 72], [591, 576, 72],
+          [960, 730, 88], [1410, 608, 72], [826, 381, 72]
+        ],
+        overlays: [
+          "overlay-01.webp",
+          "overlay-02.webp",
+          "overlay-03.webp",
+          "overlay-04.webp",
+          "overlay-05.webp",
+          "overlay-06.webp",
+          "overlay-07.webp",
+          "overlay-08.webp",
+          "overlay-09.webp"
+        ]
+      };
+    </script>
+    <script src="../shared/player/app.js"></script>
+  </body>
+</html>

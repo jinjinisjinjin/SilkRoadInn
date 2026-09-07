@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>灯火连城｜修缮场景</title>
+    <link rel="stylesheet" href="../shared/player/styles.css">
+  </head>
+  <body>
+    <main id="viewport">
+      <div id="world" aria-hidden="true"><img id="base" alt=""><div id="overlays"></div></div>
+      <div id="completion" class="completion" hidden><span></span><strong>修缮完成</strong><p></p></div>
+    </main>
+    <script>
+      window.PLAYER_SCENE = {
+        title: "灯火连城",
+        completion: "一盏接一盏，流沙驿重新亮了起来。",
+        focus: [490, 565],
+        initialZoom: 1,
+        base: "base.webp",
+        fallbackTargets: [
+          [1232, 306, 72], [730, 558, 72], [874, 788, 88],
+          [648, 282, 72], [720, 313, 72], [954, 714, 72],
+          [1340, 461, 72], [990, 441, 72], [237, 422, 72]
+        ],
+        overlays: [
+          "overlay-01.webp",
+          "overlay-02.webp",
+          "overlay-03.webp",
+          "overlay-04.webp",
+          "overlay-05.webp",
+          "overlay-06.webp",
+          "overlay-07.webp",
+          "overlay-08.webp",
+          "overlay-09.webp"
+        ]
+      };
+    </script>
+    <script src="../shared/player/app.js"></script>
+  </body>
+</html>

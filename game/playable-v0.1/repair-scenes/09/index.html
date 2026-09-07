@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>西门整饬｜玩家修缮预览</title>
+    <link rel="stylesheet" href="../shared/preview-runtime/styles.css">
+  </head>
+  <body>
+    <main id="viewport" aria-label="西门整饬修缮场景">
+      <div id="world" aria-hidden="true">
+        <img id="base" alt="">
+        <div id="overlays"></div>
+      </div>
+      <div id="completion" class="completion" hidden>
+        <span>西门整饬</span>
+        <strong>修缮完成</strong>
+        <p>西门重开，商旅往来有了归途。</p>
+      </div>
+    </main>
+    <script>
+      window.SCENE_CONFIG = {
+        width: 1448,
+        height: 1086,
+        initial: { x: 650, y: 480, zoom: 1.1 },
+        base: "base.webp",
+        repairs: [
+          { file: "overlay-01.webp", targets: [[720, 930, 135]] },
+          { file: "overlay-02.webp", targets: [[720, 105, 112]] },
+          { file: "overlay-03.webp", targets: [[695, 510, 132]] },
+          { file: "overlay-04.webp", targets: [[570, 270, 88]] },
+          { file: "overlay-05.webp", targets: [[150, 275, 92]] },
+          { file: "overlay-06.webp", targets: [[195, 710, 138]] },
+          { file: "overlay-07.webp", targets: [[1220, 365, 126]] },
+          { file: "overlay-08.webp", targets: [[1240, 735, 136]] },
+          { file: "overlay-09.webp", targets: [[370, 345, 78], [915, 380, 78]] }
+        ]
+      };
+    </script>
+    <script src="../shared/preview-runtime/app.js"></script>
+  </body>
+</html>

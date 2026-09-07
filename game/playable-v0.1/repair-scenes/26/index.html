@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>东院焕新｜修缮场景</title>
+    <link rel="stylesheet" href="../shared/player/styles.css">
+  </head>
+  <body>
+    <main id="viewport">
+      <div id="world" aria-hidden="true"><img id="base" alt=""><div id="overlays"></div></div>
+      <div id="completion" class="completion" hidden><span></span><strong>修缮完成</strong><p></p></div>
+    </main>
+    <script>
+      window.PLAYER_SCENE = {
+        title: "东院焕新",
+        completion: "藤影入院，清风也有了停留之处。",
+        focus: [850, 500],
+        initialZoom: 1,
+        base: "base.webp",
+        fallbackTargets: [
+          [738, 204, 72], [1082, 404, 72], [836, 732, 88],
+          [587, 203, 72], [1396, 280, 72], [861, 441, 72],
+          [258, 457, 72], [1422, 622, 72], [1177, 714, 72]
+        ],
+        overlays: [
+          "overlay-01.webp",
+          "overlay-02.webp",
+          "overlay-03.webp",
+          "overlay-04.webp",
+          "overlay-05.webp",
+          "overlay-06.webp",
+          "overlay-07.webp",
+          "overlay-08.webp",
+          "overlay-09.webp"
+        ]
+      };
+    </script>
+    <script src="../shared/player/app.js"></script>
+  </body>
+</html>

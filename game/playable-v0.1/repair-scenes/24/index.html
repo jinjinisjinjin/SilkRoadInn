@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>巷路相接｜修缮场景</title>
+    <link rel="stylesheet" href="../shared/player/styles.css">
+  </head>
+  <body>
+    <main id="viewport">
+      <div id="world" aria-hidden="true"><img id="base" alt=""><div id="overlays"></div></div>
+      <div id="completion" class="completion" hidden><span></span><strong>修缮完成</strong><p></p></div>
+    </main>
+    <script>
+      window.PLAYER_SCENE = {
+        title: "巷路相接",
+        completion: "新路通达，灯影照亮归来的方向。",
+        focus: [835, 510],
+        initialZoom: 1,
+        base: "base.webp",
+        fallbackTargets: [
+          [629, 108, 72], [234, 186, 72], [771, 335, 72],
+          [1328, 325, 72], [836, 695, 88], [446, 323, 72],
+          [1392, 346, 72], [295, 594, 72], [1548, 694, 72]
+        ],
+        overlays: [
+          "overlay-01.webp",
+          "overlay-02.webp",
+          "overlay-03.webp",
+          "overlay-04.webp",
+          "overlay-05.webp",
+          "overlay-06.webp",
+          "overlay-07.webp",
+          "overlay-08.webp",
+          "overlay-09.webp"
+        ]
+      };
+    </script>
+    <script src="../shared/player/app.js"></script>
+  </body>
+</html>

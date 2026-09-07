@@ -96,7 +96,7 @@
       "repairValue": 60,
       "scenePosition": "front",
       "playerPointId": "02",
-      "playerUrl": "../../design/previews/02_前厅客座/player_v0.1/index.html?embedded=1",
+      "playerUrl": "./repair-scenes/02/index.html",
       "longscrollRegionIds": [
         2
       ],
@@ -123,7 +123,7 @@
       "repairValue": 45,
       "scenePosition": "kitchen",
       "playerPointId": "04",
-      "playerUrl": "../../design/previews/04_后厨灶间/player_v0.1/index.html",
+      "playerUrl": "./repair-scenes/04/index.html",
       "longscrollRegionIds": [
         4
       ],
@@ -160,7 +160,7 @@
       "repairValue": 62,
       "scenePosition": "wall",
       "playerPointId": "11",
-      "playerUrl": "../../design/previews/11_食单壁/player_v0.1/index.html",
+      "playerUrl": "./repair-scenes/11/index.html",
       "longscrollRegionIds": [
         11
       ],
@@ -198,7 +198,7 @@
       "repairValue": 72,
       "scenePosition": "yard",
       "playerPointId": "03",
-      "playerUrl": "../../design/previews/03_前厅开席/player_repair_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/03/index.html",
       "longscrollRegionIds": [
         3
       ],
@@ -231,7 +231,7 @@
       "repairValue": 78,
       "scenePosition": "front",
       "playerPointId": "05",
-      "playerUrl": "../../design/previews/05_西市开张/player_repair_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/05/index.html",
       "longscrollRegionIds": [
         5
       ],
@@ -264,7 +264,7 @@
       "repairValue": 84,
       "scenePosition": "kitchen",
       "playerPointId": "06",
-      "playerUrl": "../../design/previews/06_花架留客/player_repair_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/06/index.html",
       "longscrollRegionIds": [
         6
       ],
@@ -297,7 +297,7 @@
       "repairValue": 90,
       "scenePosition": "wall",
       "playerPointId": "15",
-      "playerUrl": "../../design/previews/15_北铺开张/player_repair_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/15/index.html",
       "longscrollRegionIds": [
         15
       ],
@@ -330,7 +330,7 @@
       "repairValue": 96,
       "scenePosition": "yard",
       "playerPointId": "16",
-      "playerUrl": "../../design/previews/16_南铺开张/player_repair_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/16/index.html",
       "longscrollRegionIds": [
         16
       ],
@@ -363,7 +363,7 @@
       "repairValue": 104,
       "scenePosition": "front",
       "playerPointId": "17-18",
-      "playerUrl": "../../design/previews/17+18_井台初成/player_repair_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/17-18/index.html",
       "longscrollRegionIds": [
         17,
         18
@@ -398,7 +398,7 @@
       "repairValue": 112,
       "scenePosition": "kitchen",
       "playerPointId": "07",
-      "playerUrl": "../../design/previews/07_楼馆迎宾/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/07/index.html",
       "longscrollRegionIds": [
         7
       ],
@@ -431,7 +431,7 @@
       "repairValue": 120,
       "scenePosition": "wall",
       "playerPointId": "08",
-      "playerUrl": "../../design/previews/08_北院安居/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/08/index.html",
       "longscrollRegionIds": [
         8
       ],
@@ -464,7 +464,7 @@
       "repairValue": 128,
       "scenePosition": "yard",
       "playerPointId": "09",
-      "playerUrl": "../../design/previews/09_西门整饬/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/09/index.html",
       "longscrollRegionIds": [
         9
       ],
@@ -497,7 +497,7 @@
       "repairValue": 136,
       "scenePosition": "front",
       "playerPointId": "10",
-      "playerUrl": "../../design/previews/10_东院留客/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/10/index.html",
       "longscrollRegionIds": [
         10
       ],
@@ -530,7 +530,7 @@
       "repairValue": 144,
       "scenePosition": "kitchen",
       "playerPointId": "12",
-      "playerUrl": "../../design/previews/12_花影庭园/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/12/index.html",
       "longscrollRegionIds": [
         12
       ],
@@ -563,7 +563,7 @@
       "repairValue": 152,
       "scenePosition": "wall",
       "playerPointId": "13-14",
-      "playerUrl": "../../design/previews/13+14_望楼通途/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/13-14/index.html",
       "longscrollRegionIds": [
         13,
         14
@@ -597,7 +597,7 @@
       "repairValue": 170,
       "scenePosition": "front",
       "playerPointId": "19",
-      "playerUrl": "../../design/previews/19_南棚聚货/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/19/index.html",
       "longscrollRegionIds": [
         19
       ],
@@ -632,7 +632,7 @@
       "repairValue": 180,
       "scenePosition": "kitchen",
       "playerPointId": "20",
-      "playerUrl": "../../design/previews/20_中市开席/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/20/index.html",
       "longscrollRegionIds": [
         20
       ],
@@ -665,7 +665,7 @@
       "repairValue": 190,
       "scenePosition": "wall",
       "playerPointId": "21-23",
-      "playerUrl": "../../design/previews/21-22-23_南市连街/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/21-23/index.html",
       "longscrollRegionIds": [
         21,
         22,
@@ -700,7 +700,7 @@
       "repairValue": 200,
       "scenePosition": "yard",
       "playerPointId": "24",
-      "playerUrl": "../../design/previews/24_巷路相接/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/24/index.html",
       "longscrollRegionIds": [
         24
       ],
@@ -733,7 +733,7 @@
       "repairValue": 210,
       "scenePosition": "front",
       "playerPointId": "25",
-      "playerUrl": "../../design/previews/25_东棚盈市/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/25/index.html",
       "longscrollRegionIds": [
         25
       ],
@@ -766,7 +766,7 @@
       "repairValue": 220,
       "scenePosition": "kitchen",
       "playerPointId": "26",
-      "playerUrl": "../../design/previews/26_东院焕新/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/26/index.html",
       "longscrollRegionIds": [
         26
       ],
@@ -799,7 +799,7 @@
       "repairValue": 240,
       "scenePosition": "wall",
       "playerPointId": "27",
-      "playerUrl": "../../design/previews/27_灯火连城/player_preview_v0.1/index.html",
+      "playerUrl": "./repair-scenes/27/index.html",
       "longscrollRegionIds": [
         27
       ],
