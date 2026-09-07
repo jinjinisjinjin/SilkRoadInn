@@ -10,6 +10,13 @@ const ACTIVE_BOARD_COLUMNS = 3;
 const ACTIVE_BOARD_ROWS = 3;
 const ACTIVE_BOARD_START_COL = 2;
 const ACTIVE_BOARD_START_ROW = 3;
+const BONUS_BUBBLE_MIN_LEVEL = 4;
+const BONUS_BUBBLE_CHANCE = 0.2;
+const BONUS_BUBBLE_DURATION_MS = 40000;
+const BONUS_BUBBLE_PREFIX = "bonus_bubble_";
+const BONUS_COIN_PREFIX = "bonus_coin_";
+const BONUS_COIN_MAX_LEVEL = 4;
+const BONUS_COIN_VALUES = Object.freeze([0, 1, 3, 8, 25]);
 const REPAIR_GATE_SEQUENCE = [
   "order_001_guard_lubing",
   "order_002_farmer_dough",
@@ -46,6 +53,7 @@ const CHAPTER_NAMES = {
 };
 const BUILD_MODE = new URLSearchParams(location.search).get("mode") === "release" ? "release" : "dev";
 const INN_PACKAGE_ASSETS = [
+  "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
   "./assets/npc_standee/npc_dunhuang_woman.png",
@@ -53,7 +61,7 @@ const INN_PACKAGE_ASSETS = [
   "./assets/npc_standee/npc_temple_donor.png",
   "./assets/npc_standee/npc_caravan_leader.png",
 ];
-const LONGSCROLL_ROOT = "../../art/longscroll";
+const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_REGION_BOUNDS = {
   1: [405, 487, 317, 269], 2: [488, 327, 300, 207], 3: [738, 339, 320, 230], 4: [298, 274, 258, 232],
   5: [233, 472, 243, 190], 6: [665, 539, 281, 320], 7: [550, 26, 361, 334], 8: [386, 42, 281, 239],
@@ -100,55 +108,16 @@ const GIFT_PACKS = {
   },
 };
 const LOCKED_CELL_ITEM_ROWS = [
-  ["hubing_05_congchihubing", "dairy_04_ganlao", "boxmat_livestock_pen_01", "hubing_06_yangrouhubing", "dairy_05_suyou", "hubing_07_suibing", "boxmat_livestock_pen_01"],
-  ["hubing_04_youhubing", "dairy_03_laojiang", "hubing_05_congchihubing", "boxmat_milk_room_01", "dairy_04_ganlao", "hubing_06_yangrouhubing", "boxmat_livestock_pen_01"],
-  ["hubing_02_lubing", "hubing_03_humabing", "boxmat_milk_room_01", "hubing_04_youhubing", "dairy_02_rumi", "hubing_03_humabing", "hubing_04_youhubing"],
-  ["hubing_01_dough", "hubing_02_lubing", null, null, null, "hubing_02_lubing", "boxmat_milk_room_01"],
-  ["hubing_01_dough", "boxmat_milk_room_01", null, null, null, "hubing_03_humabing", "dairy_01_milk"],
-  ["hubing_02_lubing", "hubing_01_dough", null, null, null, "boxmat_milk_room_01", "dairy_02_rumi"],
-  ["hubing_02_lubing", "hubing_03_humabing", "boxmat_milk_room_01", "dairy_01_milk", "hubing_03_humabing", "dairy_02_rumi", "hubing_04_youhubing"],
-  ["boxmat_milk_room_01", "dairy_02_rumi", "hubing_04_youhubing", "boxmat_livestock_pen_01", "dairy_03_laojiang", "hubing_05_congchihubing", "boxmat_livestock_pen_01"],
-  ["hubing_04_youhubing", "dairy_03_laojiang", "boxmat_livestock_pen_01", "hubing_05_congchihubing", "dairy_04_ganlao", "hubing_06_yangrouhubing", "hubing_08_gulouzi"],
+  ["hubing_08_gulouzi", "meat_06_suzhi_yanglei", "fruit_05_guopu_pan", "dairy_04_ganlao", "spice_04_jiaochi_jiang", "drink_05_mijiang", "fruit_06_mijian_guo"],
+  ["boxmat_milk_room_01", "hubing_04_youhubing", "dairy_03_laojiang", "meat_04_jiaochi_yangrou", "spice_03_hujiao_li", "fruit_04_wuhuaguo", "boxmat_livestock_pen_01"],
+  ["meat_02_roumi_xian", "hubing_02_lubing", "hubing_01_dough", "boxmat_milk_room_01", "dairy_01_milk", "dairy_02_rumi", "spice_02_ziran_mo"],
+  ["fruit_03_yezao", "fruit_01_putao", null, null, null, "hubing_02_lubing", "drink_04_shiliujiang"],
+  ["hubing_04_youhubing", "boxmat_livestock_pen_01", null, null, null, "dairy_02_rumi", "drink_03_sanlejiang"],
+  ["meat_03_roupu", "drink_01_putaozhi", null, null, null, "meat_02_roumi_xian", "dairy_04_ganlao"],
+  ["spice_04_jiaochi_jiang", "spice_02_ziran_mo", "fruit_02_gan_putao", "hubing_03_humabing", "dairy_03_laojiang", "drink_02_putaojiang", "hubing_03_humabing"],
+  ["boxmat_milk_room_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
+  ["spice_06_hexiang_jiangzhan", "meat_05_yangrou_geng", "gen_milk_room_02", "dairy_05_suyou", "hubing_05_congchihubing", "hubing_04_youhubing", "dairy_07_tihusu"],
 ];
-
-const LOCKED_CELL_VISUAL_ROWS = [
-  ["material_mill_03", "hubing_05_congchihubing", "material_milk_03", "dairy_03_laojiang", "material_meat_03", "meat_03_roupu", "material_spice_03"],
-  ["material_fruit_03", "material_milk_01", "dairy_01_milk", "material_meat_01", "meat_02_roumi_xian", "material_spice_01", "spice_01_huma"],
-  ["material_fruit_01", "material_mill_01", "hubing_01_dough", "hubing_01_dough", "material_mill_01", "hubing_02_lubing", "material_drink_01"],
-  ["fruit_01_putao", "material_mill_01", null, null, null, "material_mill_02", "drink_01_putaozhi"],
-  ["material_mill_02", "material_mill_01", null, null, null, "dairy_01_milk", "material_milk_02"],
-  ["material_meat_02", "hubing_03_humabing", null, null, null, "material_spice_01", "material_spice_02"],
-  ["material_fruit_02", "material_fruit_01", "fruit_01_putao", "drink_01_putaozhi", "spice_01_huma", "material_drink_01", "material_drink_02"],
-  ["hubing_04_youhubing", "dairy_03_laojiang", "meat_03_roupu", "spice_03_hujiao_li", "fruit_03_yezao", "drink_03_sanlejiang", "material_drink_03"],
-  ["hubing_05_congchihubing", "material_mill_04", "material_milk_04", "material_meat_04", "material_spice_04", "material_fruit_04", "material_drink_04"],
-];
-
-const LOCKED_MATERIAL_VISUALS = {
-  material_mill_01: ["粗磨石坯", "generator_material_mill_01.png"],
-  material_mill_02: ["磨轴石件", "generator_material_mill_02.png"],
-  material_mill_03: ["描纹磨盘", "generator_material_mill_03.png"],
-  material_mill_04: ["小石磨胚", "generator_material_mill_04.png"],
-  material_milk_01: ["乳栏木料", "generator_material_milk_room_01.png"],
-  material_milk_02: ["乳桶木箍", "generator_material_milk_room_02.png"],
-  material_milk_03: ["乳畜栏件", "generator_material_milk_room_03.png"],
-  material_milk_04: ["奶房食盒胚", "generator_material_milk_room_04.png"],
-  material_meat_01: ["肉铺木架", "generator_material_meat_01.png"],
-  material_meat_02: ["烤架铜件", "generator_material_meat_02.png"],
-  material_meat_03: ["肉铺食盒胚", "generator_material_meat_03.png"],
-  material_meat_04: ["描金肉铺箱", "generator_material_meat_04.png"],
-  material_spice_01: ["香料小囊", "generator_material_spice_01.png"],
-  material_spice_02: ["香匙陶罐", "generator_material_spice_02.png"],
-  material_spice_03: ["香料架胚", "generator_material_spice_03.png"],
-  material_spice_04: ["香料食盒胚", "generator_material_spice_04.png"],
-  material_fruit_01: ["果摊竹篾", "generator_material_fruit_01.png"],
-  material_fruit_02: ["果篮绳结", "generator_material_fruit_02.png"],
-  material_fruit_03: ["果摊食盒胚", "generator_material_fruit_03.png"],
-  material_fruit_04: ["果摊描金箱", "generator_material_fruit_04.png"],
-  material_drink_01: ["酒厢陶片", "generator_material_drink_01.png"],
-  material_drink_02: ["酒架木件", "generator_material_drink_02.png"],
-  material_drink_03: ["酒水食盒胚", "generator_material_drink_03.png"],
-  material_drink_04: ["酒水描金箱", "generator_material_drink_04.png"],
-};
 
 const state = {
   items: [],
@@ -161,6 +130,7 @@ const state = {
   bag: [],
   giftPacks: [],
   giftBoxStates: {},
+  bubbleStates: {},
   unlockedCells: [],
   visibleOrders: [],
   unlockedCodex: new Set(),
@@ -184,6 +154,7 @@ const state = {
   tutorialStep: 0,
   selectedIndex: null,
   pulseIndex: null,
+  bubblePulseIndex: null,
   unlockPulseIndex: null,
   currentOrderDetailId: null,
   lastTick: Date.now(),
@@ -211,6 +182,7 @@ const els = {
   bagBtn: document.querySelector("#bagBtn"),
   stationBtn: document.querySelector("#stationBtn"),
   boardReturnBtn: document.querySelector("#boardReturnBtn"),
+  innKitchenBtn: document.querySelector("#innKitchenBtn"),
   boardPage: document.querySelector("#boardPage"),
   innPage: document.querySelector("#innPage"),
   innLevelName: document.querySelector("#innLevelName"),
@@ -316,6 +288,9 @@ let lastInnFocusKey = null;
 let pendingInnFocusPosition = null;
 let repairAnchorRect = null;
 let repairModalAnimating = false;
+let bonusBubbleSequence = 0;
+let lastBonusCoinTapIndex = -1;
+let lastBonusCoinTapAt = 0;
 
 async function loadJson(name) {
   const response = await fetch(`${DATA_PATH}${name}.json`);
@@ -341,6 +316,7 @@ async function boot() {
   state.progressionConfig = progression;
   state.innConfig = inn;
   state.items.forEach((item) => byId.set(item.id, item));
+  registerBonusCoinItems();
   codex.entries.forEach((entry) => codexById.set(entry.id, entry));
 
   loadState();
@@ -358,6 +334,7 @@ function defaultState() {
     bag: Array(STORAGE_FREE_SLOTS).fill(null),
     giftPacks: [],
     giftBoxStates: {},
+    bubbleStates: {},
     unlockedCells: [],
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
     unlockedCodex: ["codex_hubing_01"],
@@ -393,6 +370,7 @@ function loadState() {
     bag: normalizeStorageSlots(data.bag),
     giftPacks: normalizeGiftPacks(data.giftPacks),
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
+    bubbleStates: normalizeBubbleStates(data.bubbleStates),
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
     visibleOrders: data.visibleOrders?.length ? data.visibleOrders : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
@@ -417,25 +395,12 @@ function loadState() {
     tutorialStep: data.tutorialStep ?? 0,
     lastTick: data.lastTick ?? Date.now(),
   });
+  restoreBonusBubbleItems();
+  convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
   applyOfflineRecovery();
   ensureStarterGenerator();
-  if (state.visibleOrders.length && !state.visibleOrders.some((oid) => !state.completedOrderIds.includes(oid))) {
-    const nextGate = REPAIR_GATE_SEQUENCE.find((oid) => !state.completedOrderIds.includes(oid));
-    state.visibleOrders = nextGate ? [nextGate] : [];
-    // Fill extra slots
-    while (state.visibleOrders.length < (state.ordersConfig.maxVisibleOrders ?? 3)) {
-      const next = pickOrder();
-      if (!next) break;
-      state.visibleOrders.push(next.id);
-    }
-  }
-  if (state.currentPage === "inn" && !canEnterRepairPage().ok) {
-    state.currentPage = "board";
-  }
-  if (BUILD_MODE === "dev") {
-    syncGateOrder();
-  }
+  syncGateOrder();
 }
 
 function saveState() {
@@ -446,6 +411,7 @@ function saveState() {
       bag: state.bag,
       giftPacks: state.giftPacks,
       giftBoxStates: state.giftBoxStates,
+      bubbleStates: state.bubbleStates,
       unlockedCells: state.unlockedCells,
       visibleOrders: state.visibleOrders,
       unlockedCodex: [...state.unlockedCodex],
@@ -504,6 +470,7 @@ function ensureStarterGenerator() {
 
 function tickStamina() {
   tickGenerators();
+  tickBonusBubbles();
   if (state.stamina >= state.staminaMax) {
     state.lastTick = Date.now();
     saveState();
@@ -533,6 +500,7 @@ function bindEvents() {
   els.bagBtn.addEventListener("click", openBag);
   els.stationBtn.addEventListener("click", handleStationButton);
   els.boardReturnBtn.addEventListener("click", () => switchPage("board"));
+  els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
   els.innUpgradeBtn.addEventListener("click", upgradeInn);
   els.resetBtn.addEventListener("click", resetGame);
   els.debugStaminaBtn.addEventListener("click", debugAddStamina);
@@ -681,12 +649,6 @@ function renderPage() {
 
 async function switchPage(page) {
   if (page === "inn") {
-    const gate = canEnterRepairPage();
-    if (!gate.ok) {
-      toast(gate.reason);
-      keeper(gate.reason);
-      return;
-    }
     const packageReady = await ensureInnPackageLoaded();
     if (!packageReady) return;
     cancelInnPackageRelease();
@@ -703,12 +665,6 @@ async function switchPage(page) {
 }
 
 function handleStationButton() {
-  const gate = canEnterRepairPage();
-  if (!gate.ok) {
-    toast(gate.reason);
-    keeper(gate.reason);
-    return;
-  }
   switchPage("inn");
 }
 
@@ -766,16 +722,10 @@ function renderInnScene(level, repairValue) {
   );
   const currentRegionIds = next?.longscrollRegionIds ?? [];
   const completedStage = milestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
-  const lockedRegionIds = Array.from({ length: 27 }, (_, index) => index + 1).filter(
-    (regionId) => !completedRegionIds.has(regionId) && !currentRegionIds.includes(regionId),
-  );
   els.innScene.innerHTML = `
     <div class="longscroll-map" aria-label="流沙驿长卷">
       <img class="longscroll-base" src="${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png" alt="未修缮的流沙驿" />
       ${completedStage ? `<img class="longscroll-region" src="${LONGSCROLL_ROOT}/states-webp/${String(completedStage).padStart(2, "0")}_done_state_v0.1.webp?v=feather-20260803" alt="" />` : ""}
-      ${lockedRegionIds
-        .map((regionId) => renderLongscrollMask("longscroll-lock", regionId))
-        .join("")}
       ${currentRegionIds
         .map((regionId) => {
           const isRepairAnchor = regionId === currentRegionIds[0];
@@ -1194,6 +1144,7 @@ function completeRepairFromPlayer(milestoneId) {
   state.activeRepairId = null;
   state.renovationChoices[milestoneId] = "completed";
   applyRepairRewards(milestone);
+  syncGateOrder();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
   pendingInnFocusPosition = nextAfterRepair?.scenePosition ?? null;
@@ -1225,6 +1176,7 @@ function upgradeInn() {
   state.coins -= level.upgradeCost;
   state.innLevel = Math.min(4, state.innLevel + 1);
   applyInnUnlocks();
+  syncGateOrder();
   pendingUpgradeUnlock = buildUpgradeUnlockSummary(level);
   toast(`流沙驿升至 Lv${state.innLevel}`);
   keeper(level.upgradeStory);
@@ -1279,9 +1231,11 @@ function showUpgradeUnlockSummary() {
 
 function canUpgradeInn() {
   const level = currentInnLevel();
-  const requiredMilestones = state.progressionConfig.milestones;
-  const missingMilestone = requiredMilestones.find((milestone) => !state.renovationChoices[milestone.id]);
   if (level.level >= 4) return { ok: false, reason: "当前原型已到最高驿站等级。" };
+  const requiredMilestones = state.progressionConfig.milestones.filter(
+    (milestone) => (milestone.chapter ?? 1) <= level.level,
+  );
+  const missingMilestone = requiredMilestones.find((milestone) => !state.renovationChoices[milestone.id]);
   if (missingMilestone) {
     const view = getMilestoneViews().find((entry) => entry.id === missingMilestone.id);
     return {
@@ -1366,7 +1320,176 @@ function normalizePlacedFurniture(value) {
 
 function normalizeBoard(value) {
   if (!Array.isArray(value)) return defaultState().board;
-  return Array.from({ length: BOARD_SIZE }, (_, index) => value[index] ?? null);
+  return Array.from({ length: BOARD_SIZE }, (_, index) => {
+    const itemId = value[index] ?? null;
+    if (typeof itemId === "string" && itemId.startsWith(BONUS_COIN_PREFIX)) {
+      const level = Number(itemId.slice(BONUS_COIN_PREFIX.length));
+      if (level > BONUS_COIN_MAX_LEVEL) return bonusCoinId(BONUS_COIN_MAX_LEVEL);
+    }
+    return itemId;
+  });
+}
+
+function bonusCoinId(level) {
+  return BONUS_COIN_PREFIX + String(level).padStart(2, "0");
+}
+
+function registerBonusCoinItems() {
+  for (let level = 1; level <= BONUS_COIN_MAX_LEVEL; level += 1) {
+    const coinValue = BONUS_COIN_VALUES[level];
+    byId.set(bonusCoinId(level), {
+      id: bonusCoinId(level),
+      type: "bonus_coin",
+      level,
+      coinValue,
+      name: "铜币 Lv" + level,
+      modernName: level === BONUS_COIN_MAX_LEVEL
+        ? `双击收入${coinValue}枚铜币`
+        : `与同级铜币合成，或双击收入${coinValue}枚铜币`,
+      iconKey: `ui/bonus_coin_lv${String(level).padStart(2, "0")}`,
+      source: "bonus_bubble",
+      mergeFrom: level > 1 ? bonusCoinId(level - 1) : null,
+      mergeTo: level < BONUS_COIN_MAX_LEVEL ? bonusCoinId(level + 1) : null,
+      sellValue: 0,
+      highValueConfirm: false,
+    });
+  }
+}
+
+function normalizeBubbleStates(value) {
+  if (!value || typeof value !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([bubbleId, entry]) => {
+        const expiresAt = Number(entry?.expiresAt);
+        return (
+          bubbleId.startsWith(BONUS_BUBBLE_PREFIX)
+          && typeof entry?.itemId === "string"
+          && byId.has(entry.itemId)
+          && Number.isFinite(expiresAt)
+        );
+      })
+      .map(([bubbleId, entry]) => [bubbleId, { itemId: entry.itemId, expiresAt: Number(entry.expiresAt) }]),
+  );
+}
+
+function registerBonusBubbleItem(bubbleId, bubbleState) {
+  const contained = byId.get(bubbleState.itemId);
+  if (!contained) return false;
+  byId.set(bubbleId, {
+    id: bubbleId,
+    type: "bonus_bubble",
+    level: contained.level ?? 1,
+    name: contained.name + "气泡",
+    modernName: "倒计时结束后变为一级铜币",
+    iconKey: contained.iconKey,
+    bubbleItemId: contained.id,
+    mergeTo: null,
+    sellValue: 0,
+  });
+  return true;
+}
+
+function restoreBonusBubbleItems() {
+  const activeIds = new Set();
+  state.board.forEach((itemId, index) => {
+    if (typeof itemId !== "string" || !itemId.startsWith(BONUS_BUBBLE_PREFIX)) return;
+    const bubbleState = state.bubbleStates[itemId];
+    if (!bubbleState || !registerBonusBubbleItem(itemId, bubbleState)) {
+      state.board[index] = null;
+      return;
+    }
+    activeIds.add(itemId);
+  });
+  Object.keys(state.bubbleStates).forEach((bubbleId) => {
+    if (activeIds.has(bubbleId)) return;
+    delete state.bubbleStates[bubbleId];
+    byId.delete(bubbleId);
+  });
+}
+
+function isBubbleEligibleMerge(sourceItem, outputItem) {
+  if (!sourceItem || !outputItem || (sourceItem.level ?? 0) < BONUS_BUBBLE_MIN_LEVEL) return false;
+  if (["bonus_bubble", "bonus_coin", "gift_box", "box_material"].includes(sourceItem.type)) return false;
+  return Boolean(sourceItem.line) || sourceItem.type?.includes("generator");
+}
+
+function nearestBubbleSpawnIndex(originIndex) {
+  const originRow = Math.floor(originIndex / BOARD_COLUMNS);
+  const originCol = originIndex % BOARD_COLUMNS;
+  const candidates = state.board
+    .map((itemId, index) => {
+      if (itemId || isBoardCellLocked(index)) return null;
+      const row = Math.floor(index / BOARD_COLUMNS);
+      const col = index % BOARD_COLUMNS;
+      return { index, distance: Math.abs(row - originRow) + Math.abs(col - originCol) };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.distance - b.distance || a.index - b.index);
+  if (!candidates.length) return -1;
+  const nearest = candidates.filter((entry) => entry.distance === candidates[0].distance);
+  return nearest[Math.floor(Math.random() * nearest.length)].index;
+}
+
+function maybeCreateMergeBubble(sourceItem, outputItemId, originIndex) {
+  const outputItem = byId.get(outputItemId);
+  if (!isBubbleEligibleMerge(sourceItem, outputItem) || Math.random() >= BONUS_BUBBLE_CHANCE) return -1;
+  const spawnIndex = nearestBubbleSpawnIndex(originIndex);
+  if (spawnIndex === -1) return -1;
+  let bubbleId;
+  do {
+    bonusBubbleSequence += 1;
+    bubbleId = BONUS_BUBBLE_PREFIX + Date.now().toString(36) + "_" + bonusBubbleSequence;
+  } while (state.bubbleStates[bubbleId]);
+  state.bubbleStates[bubbleId] = {
+    itemId: outputItemId,
+    expiresAt: Date.now() + BONUS_BUBBLE_DURATION_MS,
+  };
+  registerBonusBubbleItem(bubbleId, state.bubbleStates[bubbleId]);
+  state.board[spawnIndex] = bubbleId;
+  state.selectedIndex = spawnIndex;
+  state.bubblePulseIndex = spawnIndex;
+  toast("意外获得" + outputItem.name + "气泡，40秒后变为铜币。");
+  return spawnIndex;
+}
+
+function convertExpiredBubbles(now) {
+  let changed = false;
+  Object.entries(state.bubbleStates).forEach(([bubbleId, bubbleState]) => {
+    if (bubbleState.expiresAt > now) return;
+    const boardIndex = state.board.indexOf(bubbleId);
+    if (boardIndex >= 0) {
+      state.board[boardIndex] = bonusCoinId(1);
+      state.pulseIndex = boardIndex;
+    }
+    delete state.bubbleStates[bubbleId];
+    byId.delete(bubbleId);
+    changed = true;
+  });
+  return changed;
+}
+
+function tickBonusBubbles() {
+  const now = Date.now();
+  if (convertExpiredBubbles(now)) {
+    keeper("气泡轻轻散开，留下了一枚可以继续合成的铜币。");
+    render();
+    saveState();
+    return;
+  }
+  updateSelectedBubbleCountdown(now);
+}
+
+function updateSelectedBubbleCountdown(now) {
+  const itemId = state.board[state.selectedIndex];
+  const item = byId.get(itemId);
+  const bubbleState = item?.type === "bonus_bubble" ? state.bubbleStates[itemId] : null;
+  if (!bubbleState) return;
+  const seconds = Math.max(0, Math.ceil((bubbleState.expiresAt - now) / 1000));
+  els.selectedText.textContent = `${seconds}秒后变为一级铜币`;
+  if (els.pieceDetailModal?.open) {
+    els.pieceDetailText.textContent = `气泡中的棋子暂时不能使用，${seconds}秒后会变成一级铜币。`;
+  }
 }
 
 function normalizeGiftPacks(value) {
@@ -1436,19 +1559,7 @@ function lockedCellItemId(index) {
 }
 
 function lockedCellVisual(index) {
-  const row = Math.floor(index / BOARD_COLUMNS);
-  const col = index % BOARD_COLUMNS;
-  const visualId = LOCKED_CELL_VISUAL_ROWS[row]?.[col];
-  if (!visualId) return null;
-  const material = LOCKED_MATERIAL_VISUALS[visualId];
-  if (material) {
-    return {
-      name: material[0],
-      src: `./assets/generator-materials/${material[1]}`,
-      kind: "material",
-    };
-  }
-  const item = byId.get(visualId);
+  const item = byId.get(lockedCellItemId(index));
   if (!item) return null;
   return { name: item.name, src: itemAssetSrc(item), kind: item.type };
 }
@@ -1547,6 +1658,7 @@ function renderBoard() {
     } else if (itemId) {
       const item = byId.get(itemId);
       if (!item) return;
+      if (!renderBonusBoardItem(cell, item, itemId, index)) {
       const img = document.createElement("img");
       img.className = `item ${item.type?.includes("generator") ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""}`;
       img.alt = item.name;
@@ -1571,6 +1683,7 @@ function renderBoard() {
         badge.textContent = pack ? `${Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
         cell.append(badge);
       }
+      }
     }
     if (state.unlockPulseIndex === index) {
       cell.append(Object.assign(document.createElement("span"), { className: "unlock-sand-burst" }));
@@ -1592,6 +1705,43 @@ function renderBoard() {
     }
     els.board.append(cell);
   });
+}
+
+function renderBonusBoardItem(cell, item, itemId, index) {
+  if (item.type === "bonus_bubble") {
+    const bubbleState = state.bubbleStates[itemId];
+    const contained = byId.get(item.bubbleItemId);
+    if (!bubbleState || !contained) return false;
+    cell.classList.add("bubble-cell");
+    if (state.bubblePulseIndex === index) cell.classList.add("bubble-born");
+    const bubble = document.createElement("div");
+    bubble.className = "bonus-bubble";
+    bubble.dataset.bubbleId = itemId;
+    const content = document.createElement("img");
+    content.className = "bubble-content";
+    content.src = itemAssetSrc(contained);
+    content.alt = contained.name;
+    bubble.append(content);
+    cell.append(bubble);
+    const seconds = Math.max(0, Math.ceil((bubbleState.expiresAt - Date.now()) / 1000));
+    cell.setAttribute("aria-label", `${contained.name}气泡，剩余${seconds}秒`);
+    return true;
+  }
+  if (item.type === "bonus_coin") {
+    cell.classList.add("bonus-coin-cell");
+    if (item.level === BONUS_COIN_MAX_LEVEL) cell.classList.add("collect-ready");
+    const coin = document.createElement("div");
+    coin.className = "bonus-coin bonus-coin-level-" + item.level;
+    const icon = document.createElement("img");
+    icon.src = itemAssetSrc(item);
+    icon.alt = "";
+    coin.append(icon);
+    cell.append(coin);
+    const mergeHint = item.level < BONUS_COIN_MAX_LEVEL ? "，可与同级合成" : "";
+    cell.setAttribute("aria-label", `${item.name}${mergeHint}，双击收取${item.coinValue}枚铜币`);
+    return true;
+  }
+  return false;
 }
 
 function preventBrowserSmartZoom() {
@@ -1643,6 +1793,25 @@ function renderSelected() {
     els.sellBtn.disabled = true;
     return;
   }
+  if (item.type === "bonus_bubble") {
+    const bubbleState = state.bubbleStates[itemId];
+    const contained = byId.get(item.bubbleItemId);
+    const seconds = bubbleState ? Math.max(0, Math.ceil((bubbleState.expiresAt - Date.now()) / 1000)) : 0;
+    selectedPanel?.classList.add("no-sell");
+    els.selectedName.textContent = contained ? contained.name + "气泡" : "合成气泡";
+    els.selectedText.textContent = seconds + "秒后变为一级铜币";
+    els.sellBtn.disabled = true;
+    return;
+  }
+  if (item.type === "bonus_coin") {
+    selectedPanel?.classList.add("no-sell");
+    els.selectedName.textContent = item.name;
+    els.selectedText.textContent = item.level === BONUS_COIN_MAX_LEVEL
+      ? `双击收入${item.coinValue}枚铜币`
+      : `两枚同级铜币可以合成下一等级；双击收入${item.coinValue}枚`;
+    els.sellBtn.disabled = true;
+    return;
+  }
   if (item.type === "gift_box") {
     selectedPanel?.classList.add("no-sell");
     const giftState = state.giftBoxStates[state.selectedIndex];
@@ -1688,6 +1857,22 @@ function openSelectedPieceDetail() {
   els.pieceDetailIcon.src = itemAssetSrc(item);
   els.pieceDetailIcon.alt = item.name;
   els.pieceDetailName.textContent = item.name;
+  if (item.type === "bonus_bubble") {
+    const bubbleState = state.bubbleStates[itemId];
+    const seconds = bubbleState ? Math.max(0, Math.ceil((bubbleState.expiresAt - Date.now()) / 1000)) : 0;
+    els.pieceDetailMeta.textContent = "限时合成奖励";
+    els.pieceDetailText.textContent = "气泡中的棋子暂时不能使用，" + seconds + "秒后会变成一级铜币。";
+    els.pieceDetailModal.showModal();
+    return;
+  }
+  if (item.type === "bonus_coin") {
+    els.pieceDetailMeta.textContent = `铜币 Lv${item.level} · 可收入${item.coinValue}枚`;
+    els.pieceDetailText.textContent = item.level === BONUS_COIN_MAX_LEVEL
+      ? "已达最高等级，双击即可收入铜币。"
+      : "与另一枚同级铜币合成可以升级，也可直接双击收入。";
+    els.pieceDetailModal.showModal();
+    return;
+  }
   els.pieceDetailMeta.textContent = item.type?.includes("generator")
     ? `Lv${item.level ?? 1} · ${item.modernName ?? "生成器"}`
     : `Lv${item.level ?? 1} · 售价 ${item.sellValue ?? 0} 铜币`;
@@ -1712,7 +1897,7 @@ function renderInnButton() {
   const gate = canEnterRepairPage();
   const next = nextRepairMilestone();
   [els.stationBtn, els.stationHudBtn, els.repairSideBtn].filter(Boolean).forEach((button) => {
-    button.classList.toggle("locked", !gate.ok);
+    button.classList.remove("locked");
     button.classList.toggle("repair-ready", gate.ok && Boolean(next));
   });
   if (els.stationBtn) {
@@ -1743,17 +1928,19 @@ function isTutorialBoardFocus(itemId) {
 
 function onCellPointerDown(event) {
   const index = Number(event.currentTarget.dataset.index);
-  if (isBoardCellLocked(index)) return;
-
   const prevSelected = state.selectedIndex;
-  state.selectedIndex = index;
   const itemId = state.board[index];
+  const item = itemId ? byId.get(itemId) : null;
+  const cell = event.currentTarget;
 
-  // Empty cell: just select
-  if (!itemId) { render(); return; }
+  if (item?.type === "bonus_bubble") {
+    event.preventDefault();
+    handleCellClick(index, prevSelected);
+    return;
+  }
 
-  const item = byId.get(itemId);
-  if (!item) { render(); return; }
+  const rect = cell.getBoundingClientRect();
+  const pointerId = event.pointerId;
 
   event.preventDefault();
   dragging = {
@@ -1761,22 +1948,27 @@ function onCellPointerDown(event) {
     itemId,
     startX: event.clientX,
     startY: event.clientY,
-    lastX: event.clientX,
-    lastY: event.clientY,
     moved: false,
     ghost: null,
     prevSelected,
-    dragDx: 0,
-    dragDy: 0,
+    pointerId,
+    sourceCell: cell,
+    sourceCenterX: rect.left + rect.width / 2,
+    sourceCenterY: rect.top + rect.height / 2,
+    hoverIndex: null,
   };
 
-  const cell = event.currentTarget;
-  // Listen on window so the drag always receives move/up regardless of which
-  // element holds pointer capture. We intentionally skip setPointerCapture —
-  // on real touch devices capture can distort pointerup coordinates.
   window.addEventListener("pointermove", moveCellPointer);
   window.addEventListener("pointerup", endCellPointer, { once: true });
   window.addEventListener("pointercancel", cancelCellPointer, { once: true });
+
+  // Touch pointers may be captured implicitly by the pressed cell.
+  queueMicrotask(() => {
+    if (!dragging || dragging.pointerId !== pointerId) return;
+    try {
+      if (cell.hasPointerCapture?.(pointerId)) cell.releasePointerCapture(pointerId);
+    } catch { /* ignore */ }
+  });
 }
 
 function createDragGhost(item) {
@@ -1799,27 +1991,23 @@ function removeDragGhost() {
 }
 
 function moveCellPointer(event) {
-  if (!dragging) return;
+  if (!dragging || dragging.pointerId !== event.pointerId) return;
   const dx = event.clientX - dragging.startX;
   const dy = event.clientY - dragging.startY;
+  const sourceItemId = state.board[dragging.fromIndex];
+  const hoveredIndex = getCellIndexFromEventTarget(event);
 
-  // Track hover position AND drag direction vector.
-  // Direction vector is the ultimate fallback when CSS transform makes
-  // all absolute coordinates unreliable (scale/translate offsets).
-  dragging.hoverIndex = getCellIndexFromPoint(event.clientX, event.clientY);
-  dragging.dragDx = dx;
-  dragging.dragDy = dy;
+  if (hoveredIndex !== null && hoveredIndex !== dragging.fromIndex) {
+    dragging.hoverIndex = hoveredIndex;
+  }
 
+  if (!sourceItemId || isBoardCellLocked(dragging.fromIndex)) return;
   if (!dragging.moved && Math.hypot(dx, dy) < 8) return;
 
+  event.preventDefault();
   dragging.moved = true;
-  dragging.lastX = event.clientX;
-  dragging.lastY = event.clientY;
-  // Track which cell the cursor is hovering over during drag — this
-  // becomes the drop target when pointerup fires with garbage coords.
-  dragging.hoverIndex = getCellIndexFromPoint(event.clientX, event.clientY);
   if (!dragging.ghost) {
-    const item = byId.get(dragging.itemId);
+    const item = byId.get(sourceItemId);
     if (item) dragging.ghost = createDragGhost(item);
   }
   positionDragGhost(event.clientX, event.clientY);
@@ -1827,211 +2015,62 @@ function moveCellPointer(event) {
 }
 
 function endCellPointer(event) {
+  if (!dragging || dragging.pointerId !== event.pointerId) return;
+
+  const { fromIndex, itemId, moved, prevSelected } = dragging;
+  const toIndex = resolveDropIndex(event, dragging);
+  const droppedOnStorage = isStorageDropPoint(event.clientX, event.clientY);
+
   cleanupCellPointer(event.currentTarget, event.pointerId);
-  if (!dragging) return;
-
-  const { fromIndex, itemId, moved, prevSelected, hoverIndex, lastX, lastY } = dragging;
-  // ── Early log: show moved flag before any branching ──
-  try { window.__dbg?.("END-Drag from=" + fromIndex + " item=" + itemId + " moved=" + moved + " prevSel=" + prevSelected + " hover=" + hoverIndex); } catch{}
-  // ───────────────────────────────────────────────────
-
-  // ── Drop target resolution (v20: DIRECTION VECTOR IS PRIMARY) ──
-  // The board has CSS transform: scale(1.12) translate(-50%,-50%) which
-  // makes ALL absolute coordinates systematically offset on real devices.
-  // On this user's machine: hover=undefined, clientX exceeds viewport width
-  // (Chrome Responsive Mode), coordinate lookup always lands on wrong cell.
-  //
-  // v20 Strategy:
-  //   1) Compute DIRECTION VECTOR — the ONLY reliable signal of intent.
-  //   2) Use hover/coords ONLY as secondary reference.
-  //   3) If coords say "locked cell" but direction says elsewhere → TRUST DIRECTION.
-  //   4) Direction resolution:
-  //      - Same-type neighbour → MERGE (primary intent)
-  //      - Empty cell → MOVE
-  //      - Locked cell → let locked handler decide (may be genuine unlock attempt)
-  //      - Different-type occupied → let occupied handler decide
-  //      - No clear direction → fall back to coords/hover
-  const { dragDx, dragDy } = dragging;
-  const dirTarget = getTargetFromDirection(fromIndex, dragDx, dragDy);
-  const dirItem = (dirTarget !== null && dirTarget !== fromIndex) ? state.board[dirTarget] : null;
-
-  // Secondary: hover/coords for reference only
-  let coordIndex = null;
-  if (hoverIndex != null && hoverIndex >= 0) {
-    coordIndex = hoverIndex;
-  } else {
-    const rawX = event.isTrusted ? (event.clientX || lastX) : (lastX ?? event.clientX);
-    const rawY = event.isTrusted ? (event.clientY || lastY) : (lastY ?? event.clientY);
-    const { x: sx, y: sy } = sanitiseDropCoords(rawX, rawY, lastX, lastY);
-    coordIndex = getCellIndexFromPoint(sx, sy);
-  }
-
-  // ── Resolve final toIndex: DIRECTION FIRST ──
-  let toIndex = null;
-  let dropMethod = "none";
-  const _dlog = "(" + Math.round(dragDx) + "," + Math.round(dragDy) + ")";
-
-  if (moved && dirTarget !== null && dirTarget !== fromIndex) {
-    if (dirItem === itemId) {
-      toIndex = dirTarget; dropMethod = "DIR-MERGE";
-    } else if (!dirItem && !isBoardCellLocked(dirTarget)) {
-      toIndex = dirTarget; dropMethod = "DIR-MOVE";
-    } else if (isBoardCellLocked(dirTarget)) {
-      toIndex = dirTarget; dropMethod = "DIR-LOCKED";
-    } else {
-      toIndex = dirTarget; dropMethod = "DIR-OCCUPIED";
-    }
-  }
-
-  // Fallback: no valid direction target → use coords
-  if ((toIndex === null || toIndex === fromIndex) && coordIndex !== null && coordIndex >= 0 && coordIndex !== fromIndex) {
-    toIndex = coordIndex;
-    dropMethod = (hoverIndex != null && hoverIndex >= 0) ? "hover" : "coords";
-  }
-
-  try { window.__dbg?.("DROP-TARGET: dir=" + _dlog + " ⇒ dT=" + (dirTarget?? "?") + "(dI=" + (dirItem?byId.get(dirItem)?.name:"∅") + ") cI=" + (coordIndex?? "?") + " → " + toIndex + " [" + dropMethod + "]"); } catch{}
-  // ─────────────────────────────────────────────────────────────────────
-
   removeDragGhost();
   els.storageBtn?.classList.remove("drop-ready");
   dragging = null;
 
-  // Drag to storage
-  if (isStorageDropPoint(event.clientX, event.clientY)) {
-    suppressNextCellClickBriefly();
-    storeBoardItemToStorage(fromIndex);
-    return;
-  }
-
-  // No drag movement: click behavior
   if (!moved) {
     handleCellClick(fromIndex, prevSelected);
     return;
   }
 
-  // Drag ended outside board or same cell
-  if (toIndex === null || toIndex === fromIndex || toIndex < 0) {
+  if (droppedOnStorage) {
+    suppressNextCellClickBriefly();
+    storeBoardItemToStorage(fromIndex);
+    return;
+  }
+
+  if (toIndex === null || toIndex === fromIndex || state.board[fromIndex] !== itemId) {
     render();
     return;
   }
 
   suppressNextCellClickBriefly();
 
-  // ── Anti-disappear safety net: snapshot source before any mutation ──
-  const _srcBefore = state.board[fromIndex];
-  const _log = (msg) => { try { window.__dbg?.("ACTION: " + msg); } catch{} };
-  const _nid = (id) => id ? (byId.get(id)?.name || id) : "(空)";
-  // Anti-disappear: if source was cleared but item isn't anywhere on board,
-  // AND no successful action (merge/unlock/move) consumed it, restore it.
-  // Skip for MERGE/UNLOCK/MOVE paths — those intentionally consume the source.
-  const _safetyNet = (fi, ii, log, nid, actionTaken) => {
-    if (actionTaken) return;  // merge/unlock/move already handled the item
-    if (state.board[fi] === null && !state.board.includes(ii)) {
-      log("⚠️ SAFETY-NET: restoring " + nid(ii) + " to [" + fi + "]");
-      state.board[fi] = ii;
-    }
-  };
-  _log("target[" + toIndex + "]=" + _nid(state.board[toIndex]) + " moved=" + moved);
-  // ────────────────────────────────────────────────────────────────
-
-  // Drag landed on a locked cell. Two intents are possible:
-  //  1) The dragged item IS the key this cell needs -> unlock it, and the
-  //     resulting piece (its merge product) stays ON THIS cell (B). This is the
-  //     primary intent when dropping on a covered/locked tile, matching merge-
-  //     style games (e.g. 梦幻消除战): the cover clears and the result occupies
-  //     the tile. Always honour this first.
-  //  2) The item does not match -> the player likely meant to merge with a
-  //     same-type piece sitting next to the drop point (an off-by-a-pixel drop).
-  //     Snap the merge to that neighbour instead of popping a "needs X" toast.
   if (isBoardCellLocked(toIndex)) {
-    if (lockedCellItemId(toIndex) === itemId) {
-      _log("UNLOCK " + toIndex + " (needs " + _nid(itemId) + ") ✓");
-      unlockLockedCellByMerge(fromIndex, toIndex, itemId);
-      _safetyNet(fromIndex, itemId, _log, _nid, true);
-      render();
-      saveState();
-      maybePromptRepairGuide();
-      return;
-    }
-    const adj = findAdjacentMergeTarget(fromIndex, toIndex, itemId);
-    if (adj !== -1) {
-      _log("LOCKED→ADJ-MERGE from=" + fromIndex + " → adj=" + adj + " (drop was locked " + toIndex + ")");
-      mergeCells(fromIndex, adj, itemId);
-      _safetyNet(fromIndex, itemId, _log, _nid, true);
-      render();
-      saveState();
-      maybePromptRepairGuide();
-      return;
-    }
-    _log("LOCKED→TOAST " + toIndex + " (needs " + _nid(lockedCellItemId(toIndex)) + ", have " + _nid(itemId) + ")");
     unlockLockedCellByMerge(fromIndex, toIndex, itemId);
-    _safetyNet(fromIndex, itemId, _log, _nid, false);
     render();
     saveState();
     maybePromptRepairGuide();
     return;
   }
-  // Drag to empty cell = move
+
   const targetItemId = state.board[toIndex];
   if (!targetItemId) {
-    _log("MOVE " + fromIndex + " → " + toIndex + " (item=" + _nid(itemId) + ")");
     state.board[toIndex] = itemId;
     state.board[fromIndex] = null;
     state.selectedIndex = toIndex;
     keeper("挪一挪案板，路上的吃食就有地方摆了。");
   } else if (targetItemId === itemId) {
-    _log("MERGE " + fromIndex + "+" + toIndex + " (" + _nid(itemId) + ")");
     mergeCells(fromIndex, toIndex, itemId);
   } else {
-    // Forgiving drop: release landed on a non-matching occupied cell
-    // (e.g. the generator between two pieces), but a same-type piece sits
-    // in an adjacent cell — snap the merge there so a slightly-off drag still works.
-    const adj = findAdjacentMergeTarget(fromIndex, toIndex, itemId);
-    if (adj !== -1) {
-      _log("OCCUPIED→ADJ-MERGE from=" + fromIndex + " → adj=" + adj + " (drop=" + toIndex + " had " + _nid(targetItemId) + ")");
-      mergeCells(fromIndex, adj, itemId);
-    } else {
-      _log("NO-MERGE from=" + fromIndex + " drop=" + toIndex + " (have " + _nid(itemId) + ", target has " + _nid(targetItemId) + ")");
-      toast("这两样食物不能合成。");
-    }
+    toast("这两样食物不能合成。");
   }
 
-  // ── Anti-disappear safety net ────────────────────────────────
-  // Only for paths where no valid action consumed the item (e.g. NO-MERGE).
-  // MOVE/MERGE/ADJ-MERGE already placed the item somewhere.
-  const _noAction = !targetItemId /* empty: MOVE */ || targetItemId === itemId /* same: MERGE */ ||
-    (targetItemId !== itemId && findAdjacentMergeTarget(fromIndex, toIndex, itemId) !== -1); /* adj-merge */
-  if (!_noAction && state.board[fromIndex] === null && !state.board.includes(itemId)) {
-    _log("⚠️ SAFETY-NET: restoring " + _nid(itemId) + " to [" + fromIndex + "] — lost!");
-    state.board[fromIndex] = itemId;
-  }
-  // ─────────────────────────────────────────────────────────────
   render();
   saveState();
   maybePromptRepairGuide();
 }
 
-function findAdjacentMergeTarget(fromIndex, toIndex, itemId) {
-  // Prefer the cell next to the DROP POINT (toIndex) — that is the piece the
-  // player was aiming at. Only fall back to the drag source's neighbours when
-  // no same-type piece sits beside the drop point.
-  for (const base of [toIndex, fromIndex]) {
-    const row = Math.floor(base / BOARD_COLUMNS);
-    const col = base % BOARD_COLUMNS;
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      const nr = row + dr;
-      const nc = col + dc;
-      if (nr < 0 || nr >= BOARD_ROWS || nc < 0 || nc >= BOARD_COLUMNS) continue;
-      const candidate = nr * BOARD_COLUMNS + nc;
-      if (candidate !== fromIndex && !isBoardCellLocked(candidate) && state.board[candidate] === itemId) {
-        return candidate;
-      }
-    }
-  }
-  return -1;
-}
-
 function cancelCellPointer(event) {
+  if (!dragging || dragging.pointerId !== event.pointerId) return;
   cleanupCellPointer(event.currentTarget, event.pointerId);
   removeDragGhost();
   els.storageBtn?.classList.remove("drop-ready");
@@ -2039,71 +2078,63 @@ function cancelCellPointer(event) {
   render();
 }
 
-function cleanupCellPointer(cell, pointerId) {
-  try { cell.releasePointerCapture?.(pointerId); } catch { /* ignore */ }
+function cleanupCellPointer(_cell, pointerId) {
+  const sourceCell = dragging?.sourceCell;
+  try {
+    if (sourceCell?.hasPointerCapture?.(pointerId)) sourceCell.releasePointerCapture(pointerId);
+  } catch { /* ignore */ }
   window.removeEventListener("pointermove", moveCellPointer);
   window.removeEventListener("pointerup", endCellPointer);
   window.removeEventListener("pointercancel", cancelCellPointer);
 }
 
-/// ── Direction-vector drop target ─────────────────────────────────
-/// Determines which neighbour cell the user intended to drop on based
-/// on the drag direction vector (dx, dy). This bypasses CSS transform
-/// coordinate offset issues entirely — it only uses relative movement.
-function getTargetFromDirection(fromIndex, dx, dy) {
-  if (!dx && !dy) return null;
-  const row = Math.floor(fromIndex / BOARD_COLUMNS);
-  const col = fromIndex % BOARD_COLUMNS;
+function getCellIndexFromEventTarget(event) {
+  const target = event.target instanceof Element ? event.target.closest(".cell") : null;
+  if (!target || !els.board.contains(target)) return null;
+  const index = Number(target.dataset.index);
+  return Number.isFinite(index) ? index : null;
+}
 
-  // Pick the dominant axis of movement
-  let targetRow = row, targetCol = col;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    targetCol = col + (dx > 0 ? 1 : -1);
-  } else {
-    targetRow = row + (dy > 0 ? 1 : -1);
+function getRelativeDropIndex(dragState, x, y) {
+  const projectedX = dragState.sourceCenterX + (x - dragState.startX);
+  const projectedY = dragState.sourceCenterY + (y - dragState.startY);
+  return getCellIndexFromPoint(projectedX, projectedY);
+}
+
+function resolveDropIndex(event, dragState) {
+  const relativeIndex = getRelativeDropIndex(dragState, event.clientX, event.clientY);
+  const relativeIsMergeTarget = relativeIndex !== null
+    && relativeIndex !== dragState.fromIndex
+    && !isBoardCellLocked(relativeIndex)
+    && state.board[relativeIndex] === dragState.itemId;
+  const eventIndex = getCellIndexFromEventTarget(event);
+  if (eventIndex !== null && eventIndex !== dragState.fromIndex) {
+    if (isBoardCellLocked(eventIndex) && relativeIsMergeTarget) return relativeIndex;
+    return eventIndex;
   }
 
-  // Bounds check
-  if (targetRow < 0 || targetRow >= BOARD_ROWS || targetCol < 0 || targetCol >= BOARD_COLUMNS) return null;
-  return targetRow * BOARD_COLUMNS + targetCol;
+  if (dragState.hoverIndex !== null && dragState.hoverIndex !== dragState.fromIndex) {
+    if (isBoardCellLocked(dragState.hoverIndex) && relativeIsMergeTarget) return relativeIndex;
+    return dragState.hoverIndex;
+  }
+
+  if (relativeIndex !== null && relativeIndex !== dragState.fromIndex) return relativeIndex;
+
+  return getCellIndexFromPoint(event.clientX, event.clientY);
 }
 
 function getCellIndexFromPoint(x, y) {
-  // Robust: iterate every .cell's real rendering rect and pick the one
-  // that contains (or is closest to) the point.  No CSS Grid math, no gap
-  // padding assumptions — works at any zoom / device-pixel-ratio / layout.
   const cells = els.board.querySelectorAll(".cell");
-  let best = -1, bestDist = Infinity;
-  for (let i = 0; i < cells.length; i++) {
-    const r = cells[i].getBoundingClientRect();
-    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)
-      return Number(cells[i].dataset.index);   // exact hit
-    // closest-center fallback (for points in gaps / off by a pixel)
-    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
-    if (d < bestDist) { bestDist = d; best = Number(cells[i].dataset.index); }
+  for (const cell of cells) {
+    const rect = cell.getBoundingClientRect();
+    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+      return Number(cell.dataset.index);
+    }
   }
-  return best;  // may be -1 if board has no cells at all
-}
-
-/// ── Coordinate sanitiser ────────────────────────────────────────
-/// Detects out-of-viewport / garbage coordinates (e.g. Chrome
-/// Responsive Design Mode reporting window coords instead of iframe
-/// coords) and falls back to the last known good position from the
-/// drag trail.  Also logs the board rect & viewport for debugging.
-function sanitiseDropCoords(rawX, rawY, fallbackX, fallbackY) {
-  const vw = window.innerWidth || 0;
-  const vh = window.innerHeight || 0;
-  const ok = (rawX >= -10 && rawX <= vw + 10 && rawY >= -10 && rawY <= vh + 10);
-  if (!ok && fallbackX != null) {
-    try { window.__dbg?.("COORD-SANITISE: (" + Math.round(rawX) + "," + Math.round(rawY) + ") → fallback (" + Math.round(fallbackX) + "," + Math.round(fallbackY) + ")  vw=" + vw + "×" + vh); } catch{}
-    return { x: fallbackX, y: fallbackY };
-  }
-  return { x: rawX, y: rawY };
+  return null;
 }
 
 function handleCellClick(index, prevSelected = state.selectedIndex) {
-  try { window.__dbg?.("CLICK idx=" + index + " prevSel=" + prevSelected + " board[" + index + "]=" + (state.board[index] ? (byId.get(state.board[index])?.name || state.board[index]) : "(空)")); } catch{}
   // Click on locked cell: try to unlock with selected piece
   if (isBoardCellLocked(index)) {
     if (prevSelected !== null && !isBoardCellLocked(prevSelected)) {
@@ -2121,6 +2152,28 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
 
   const itemId = state.board[index];
   const item = itemId ? byId.get(itemId) : null;
+
+  if (item?.type === "bonus_bubble") {
+    const bubbleState = state.bubbleStates[itemId];
+    const contained = byId.get(item.bubbleItemId);
+    const seconds = bubbleState ? Math.max(0, Math.ceil((bubbleState.expiresAt - Date.now()) / 1000)) : 0;
+    state.selectedIndex = index;
+    render();
+    toast((contained?.name ?? "这枚棋子") + "还在气泡中，" + seconds + "秒后变为铜币。");
+    return;
+  }
+
+  if (item?.type === "bonus_coin") {
+    const now = Date.now();
+    if (lastBonusCoinTapIndex === index && now - lastBonusCoinTapAt <= 450) {
+      lastBonusCoinTapIndex = -1;
+      lastBonusCoinTapAt = 0;
+      collectBonusCoin(index);
+      return;
+    }
+    lastBonusCoinTapIndex = index;
+    lastBonusCoinTapAt = now;
+  }
 
   // Generator click
   if (item?.type === "manual_generator") {
@@ -2165,6 +2218,22 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
   render();
 }
 
+function collectBonusCoin(index) {
+  const item = byId.get(state.board[index]);
+  if (item?.type !== "bonus_coin") return;
+  const amount = item.coinValue ?? BONUS_COIN_VALUES[item.level] ?? 0;
+  state.board[index] = null;
+  state.selectedIndex = null;
+  state.coins += amount;
+  state.coinsEarned += amount;
+  keeper(`${item.name}已收入钱囊，顶部铜币增加${amount}枚。`);
+  toast(`收取${item.name} +${amount}`);
+  showCoinBurst(amount);
+  render();
+  saveState();
+  maybePromptRepairGuide();
+}
+
 function isStorageDropPoint(x, y) {
   if (!els.storageBtn) return false;
   const rect = els.storageBtn.getBoundingClientRect();
@@ -2184,6 +2253,7 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   const outputId = item?.mergeTo ?? itemId;
   state.board[toIndex] = outputId;
   state.selectedIndex = toIndex;
+  maybeCreateMergeBubble(item, outputId, toIndex);
   state.pulseIndex = toIndex;
   state.unlockPulseIndex = toIndex;
   const output = byId.get(outputId);
@@ -2213,6 +2283,7 @@ function mergeCells(fromIndex, toIndex, itemId) {
   state.board[fromIndex] = null;
   state.board[toIndex] = item.mergeTo;
   state.selectedIndex = toIndex;
+  maybeCreateMergeBubble(item, item.mergeTo, toIndex);
   state.pulseIndex = toIndex;
   const next = byId.get(item.mergeTo);
   keeper(`做成了${next.name}。`);
@@ -2231,8 +2302,11 @@ function chainMergeAt(index) {
   while (current?.mergeTo) {
     const neighbor = sameNeighborIndex(index, currentId);
     if (neighbor === -1) break;
+    const sourceItem = current;
+    const outputItemId = current.mergeTo;
     state.board[neighbor] = null;
-    state.board[index] = current.mergeTo;
+    state.board[index] = outputItemId;
+    maybeCreateMergeBubble(sourceItem, outputItemId, index);
     currentId = state.board[index];
     current = byId.get(currentId);
     state.pulseIndex = index;
@@ -2288,7 +2362,7 @@ function activateManualGenerator(index) {
   const outputs = Math.min(item.generator.outputCount, emptyCellCount());
   for (let i = 0; i < outputs; i += 1) {
     const newItemId = pickFromWeightedPool(item.generator.pool);
-    const outIndex = firstEmptyIndexFromTop();
+    const outIndex = randomUnlockedEmptyIndex();
     if (outIndex === -1) break;
     state.board[outIndex] = newItemId;
     state.pulseIndex = outIndex;
@@ -2556,23 +2630,57 @@ function lineLabel(line) {
 function replaceOrder(orderId) {
   const index = state.visibleOrders.indexOf(orderId);
   if (index < 0) return;
-  // Don't replace the gate order
-  const currentGate = REPAIR_GATE_SEQUENCE.find((oid) => !state.completedOrderIds.includes(oid));
-  if (orderId === currentGate) { syncGateOrder(); return; }
-  // Replace non-gate order with new one from pool
+  const currentGate = nextRepairGateOrderId();
+  if (orderId === currentGate) {
+    syncGateOrder();
+    return;
+  }
   const next = pickOrder();
   if (next) state.visibleOrders[index] = next.id;
 }
 
-function syncGateOrder() {
-  const nextOrderId = REPAIR_GATE_SEQUENCE.find((orderId) => !state.completedOrderIds.includes(orderId));
-  if (!nextOrderId) { state.visibleOrders = []; return; }
-  // Ensure gate order is always first visible
-  if (!state.visibleOrders.includes(nextOrderId)) {
-    state.visibleOrders = [nextOrderId, ...state.visibleOrders.filter(id => id !== nextOrderId)];
+function nextRepairGateOrderId() {
+  const milestone = nextRepairMilestone();
+  if (!milestone || (milestone.chapter ?? 1) > state.innLevel) return null;
+  const targetOrderIds = milestone.conditions?.completedOrderIds ?? [];
+  const targetIndices = targetOrderIds
+    .map((orderId) => REPAIR_GATE_SEQUENCE.indexOf(orderId))
+    .filter((index) => index >= 0);
+  if (!targetIndices.length) {
+    return targetOrderIds.find((orderId) => !state.completedOrderIds.includes(orderId)) ?? null;
   }
-  // Fill remaining slots from pool (keep max 3)
-  while (state.visibleOrders.length < (state.ordersConfig.maxVisibleOrders ?? 3)) {
+  const targetIndex = Math.max(...targetIndices);
+  const milestoneIndex = state.progressionConfig.milestones.findIndex((entry) => entry.id === milestone.id);
+  const previousMilestone = state.progressionConfig.milestones
+    .slice(0, milestoneIndex)
+    .reverse()
+    .find((entry) => state.renovationChoices[entry.id]);
+  const previousTargetIndex = previousMilestone
+    ? Math.max(
+      -1,
+      ...(previousMilestone.conditions?.completedOrderIds ?? [])
+        .map((orderId) => REPAIR_GATE_SEQUENCE.indexOf(orderId))
+        .filter((index) => index >= 0),
+    )
+    : -1;
+  return REPAIR_GATE_SEQUENCE.slice(previousTargetIndex + 1, targetIndex + 1).find(
+    (orderId) => !state.completedOrderIds.includes(orderId),
+  ) ?? null;
+}
+
+function syncGateOrder() {
+  const nextOrderId = nextRepairGateOrderId();
+  const maxVisible = state.ordersConfig.maxVisibleOrders ?? 3;
+  const sideOrders = state.visibleOrders.filter(
+    (orderId, index, orders) => (
+      (!REPAIR_GATE_SEQUENCE.includes(orderId) || state.completedOrderIds.includes(orderId))
+      && orders.indexOf(orderId) === index
+      && getOrder(orderId)
+    ),
+  );
+  state.visibleOrders = nextOrderId ? [nextOrderId, ...sideOrders] : sideOrders;
+  state.visibleOrders = state.visibleOrders.slice(0, maxVisible);
+  while (state.visibleOrders.length < maxVisible) {
     const next = pickOrder();
     if (!next) break;
     state.visibleOrders.push(next.id);
@@ -2590,12 +2698,19 @@ function getOrder(orderId) {
 function pickOrder() {
   const pool = state.ordersConfig.orders.filter((order) => {
     if (state.visibleOrders.includes(order.id)) return false;
+    if (REPAIR_GATE_SEQUENCE.includes(order.id) && !state.completedOrderIds.includes(order.id)) return false;
     if (order.weight <= 0) return false;
     if (order.unlock.startsWith("codex_") && !state.unlockedCodex.has(order.unlock)) return false;
     if (order.unlock === "completed_orders_8" && state.completedOrders < 8) return false;
     return true;
   });
-  const fallback = state.ordersConfig.orders.filter((order) => order.weight > 0 && !state.visibleOrders.includes(order.id));
+  const fallback = state.ordersConfig.orders.filter(
+    (order) => (
+      order.weight > 0
+      && (!REPAIR_GATE_SEQUENCE.includes(order.id) || state.completedOrderIds.includes(order.id))
+      && !state.visibleOrders.includes(order.id)
+    ),
+  );
   const candidates = pool.length ? pool : fallback;
   const total = candidates.reduce((sum, order) => sum + order.weight, 0);
   let roll = Math.random() * total;
@@ -2751,6 +2866,7 @@ function chooseRenovation(milestoneId, choiceId) {
   state.coins -= repairCost(milestone);
   state.renovationChoices[milestoneId] = choiceId;
   applyRepairRewards(milestone);
+  syncGateOrder();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
   pendingInnFocusPosition = nextAfterRepair?.scenePosition ?? null;
@@ -2969,6 +3085,10 @@ function sellSelected() {
   const itemId = state.board[index];
   if (!itemId) return;
   const item = byId.get(itemId);
+  if (["bonus_bubble", "bonus_coin"].includes(item?.type)) {
+    toast("奖励棋子不能出售，请在棋盘上继续合成。");
+    return;
+  }
   if (item.highValueConfirm && !confirm(`${item.name}很珍贵，确定出售吗？`)) return;
   state.board[index] = null;
   state.coins += item.sellValue;
@@ -3039,7 +3159,8 @@ function renderBag() {
   store.className = "primary bag-store";
   store.textContent = "收起选中食物";
   const selectedItem = byId.get(state.board[state.selectedIndex]);
-  store.disabled = !state.board[state.selectedIndex] || selectedItem?.type === "gift_box" || firstEmptyBagIndex() === -1;
+  const cannotStore = ["gift_box", "bonus_bubble", "bonus_coin"].includes(selectedItem?.type);
+  store.disabled = !state.board[state.selectedIndex] || cannotStore || firstEmptyBagIndex() === -1;
   store.addEventListener("click", storeSelectedToBag);
   els.bagList.append(store);
 }
@@ -3074,6 +3195,11 @@ function storeBoardItemToStorage(boardIndex) {
   const bagIndex = firstEmptyBagIndex();
   if (!itemId) {
     toast("先选中一件食物。");
+    return;
+  }
+  const boardItem = byId.get(itemId);
+  if (["bonus_bubble", "bonus_coin"].includes(boardItem?.type)) {
+    toast("气泡和铜币需要留在棋盘上继续合成。");
     return;
   }
   if (byId.get(itemId)?.type === "gift_box") {
@@ -3357,9 +3483,12 @@ function unlockCodexCount(count) {
 
 function debugClearBoard() {
   if (!confirm("确定清空案板吗？行囊不会清空。")) return;
+  Object.keys(state.bubbleStates).forEach((bubbleId) => byId.delete(bubbleId));
   state.board = Array(BOARD_SIZE).fill(null);
+  state.bubbleStates = {};
   state.selectedIndex = null;
   state.pulseIndex = null;
+  state.bubblePulseIndex = null;
   keeper("案板清出来了，可以重新试一轮。");
   render();
   saveState();
@@ -3431,6 +3560,14 @@ function firstEmptyIndexFromTop() {
   return -1;
 }
 
+function randomUnlockedEmptyIndex() {
+  const candidates = state.board
+    .map((itemId, index) => (!itemId && !isBoardCellLocked(index) ? index : null))
+    .filter((index) => index !== null);
+  if (!candidates.length) return -1;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
 function firstEmptyBagIndex() {
   return state.bag.findIndex((item) => !item);
 }
@@ -3452,6 +3589,7 @@ function totalGiftPackCount() {
 function clearPulseSoon() {
   setTimeout(() => {
     state.pulseIndex = null;
+    state.bubblePulseIndex = null;
     state.unlockPulseIndex = null;
     renderBoard();
   }, 760);
@@ -3493,42 +3631,3 @@ boot().catch((error) => {
   `;
   toast("原型加载失败，请检查本地服务。");
 });
-
-/* ===== 临时调试面板（诊断真机拖拽失败用，定位后删除） ===== */
-(function installDebugHud() {
-  const hud = document.createElement("div");
-  hud.id = "debug-hud";
-  hud.style.cssText = "position:fixed;left:6px;right:6px;bottom:6px;z-index:9999;background:rgba(0,0,0,.82);color:#9fe;font:11px/1.45 monospace;padding:6px 8px;border-radius:8px;max-height:38vh;overflow:auto;pointer-events:none;white-space:pre-wrap;";
-  document.body.appendChild(hud);
-  window.__dbg = function (msg) {
-    const t = new Date().toLocaleTimeString();
-    hud.textContent = (hud.textContent + "\n[" + t + "] " + msg).split("\n").slice(-16).join("\n");
-  };
-  window.addEventListener("error", (e) => window.__dbg("ERROR: " + (e.message || e.error) + " @" + (e.lineno || "")));
-  window.addEventListener("unhandledrejection", (e) => window.__dbg("PROMISE: " + ((e.reason && e.reason.message) || e.reason)));
-  window.addEventListener("pointerup", (e) => {
-    if (!dragging) return;
-    const from = dragging.fromIndex;
-    const item = dragging.itemId;
-    const to = getCellIndexFromPoint(e.clientX, e.clientY);
-    window.__lastDrag = { from, item, to, locked: isBoardCellLocked(to) };
-    window.__dbg("DRAG from=" + from + " item=" + item + " drop=(" + Math.round(e.clientX) + "," + Math.round(e.clientY) + ") => toIndex=" + to + " locked=" + isBoardCellLocked(to));
-  }, true);
-  // 用 setTimeout(0) 延后读取结果，确保 endCellPointer 已修改棋盘后再对比
-  window.addEventListener("pointerup", () => {
-    const d = window.__lastDrag;
-    if (!d) return;
-    window.__lastDrag = null;
-    setTimeout(() => {
-      const aFrom = state.board[d.from];
-      const aTo = state.board[d.to];
-      const name = (id) => id ? (byId.get(id)?.name || id) : "(空)";
-      // Also show neighbours of source for context
-      const nearby = [];
-      for (const n of [d.from-1, d.from+1, d.from-BOARD_COLUMNS, d.from+BOARD_COLUMNS]) {
-        if (n >= 0 && n < state.board.length) nearby.push(n + ":" + name(state.board[n]));
-      }
-      window.__dbg("OUTCOME from[" + d.from + "]=" + name(aFrom) + "  to[" + d.to + "]=" + name(aTo) + (d.locked ? "  (锁定格)" : "") + "  near=[" + nearby.join(",") + "]");
-    }, 0);
-  });
-})();
