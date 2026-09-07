@@ -17,6 +17,9 @@ const BONUS_BUBBLE_PREFIX = "bonus_bubble_";
 const BONUS_COIN_PREFIX = "bonus_coin_";
 const BONUS_COIN_MAX_LEVEL = 4;
 const BONUS_COIN_VALUES = Object.freeze([0, 1, 3, 8, 25]);
+const BONUS_RUBY_PREFIX = "bonus_ruby_";
+const BONUS_RUBY_MAX_LEVEL = 4;
+const BONUS_RUBY_VALUES = Object.freeze([0, 1, 3, 8, 25]);
 const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
   generator: 6,
@@ -146,6 +149,8 @@ const state = {
   generationCount: 0,
   completedOrders: 0,
   completedOrderIds: [],
+  chapterOrderCounts: {},
+  claimedOrderProgressPacks: [],
   coinsEarned: 0,
   storyFlags: {},
   renovationChoices: {},
@@ -197,6 +202,7 @@ const els = {
   innUpgradeText: document.querySelector("#innUpgradeText"),
   innUpgradeBtn: document.querySelector("#innUpgradeBtn"),
   furnitureShop: document.querySelector("#furnitureShop"),
+  orderGiftProgress: document.querySelector("#orderGiftProgress"),
   innStoryLine: document.querySelector("#innStoryLine"),
   resetBtn: document.querySelector("#resetBtn"),
   codexBtn: document.querySelector("#codexBtn"),
@@ -296,6 +302,8 @@ let repairModalAnimating = false;
 let bonusBubbleSequence = 0;
 let lastBonusCoinTapIndex = -1;
 let lastBonusCoinTapAt = 0;
+let lastBonusRubyTapIndex = -1;
+let lastBonusRubyTapAt = 0;
 
 async function loadJson(name) {
   const response = await fetch(`${DATA_PATH}${name}.json`);
@@ -322,6 +330,7 @@ async function boot() {
   state.innConfig = inn;
   state.items.forEach((item) => byId.set(item.id, item));
   registerBonusCoinItems();
+  registerOrderProgressPacks();
   codex.entries.forEach((entry) => codexById.set(entry.id, entry));
 
   loadState();
@@ -351,6 +360,8 @@ function defaultState() {
     generationCount: 0,
     completedOrders: 0,
     completedOrderIds: [],
+    chapterOrderCounts: { 1: 0, 2: 0, 3: 0, 4: 0 },
+    claimedOrderProgressPacks: [],
     coinsEarned: 0,
     storyFlags: {},
     renovationChoices: {},
@@ -387,12 +398,14 @@ function loadState() {
     generationCount: data.generationCount ?? 0,
     completedOrders: data.completedOrders ?? 0,
     completedOrderIds: loadedOrderIds,
+    chapterOrderCounts: normalizeChapterOrderCounts(data.chapterOrderCounts, data.completedOrders, data.innLevel),
+    claimedOrderProgressPacks: normalizeClaimedOrderProgressPacks(data.claimedOrderProgressPacks),
     coinsEarned: data.coinsEarned ?? 0,
     storyFlags: data.storyFlags && typeof data.storyFlags === "object" ? data.storyFlags : {},
     renovationChoices: data.renovationChoices && typeof data.renovationChoices === "object" ? data.renovationChoices : {},
     activeRepairId: typeof data.activeRepairId === "string" ? data.activeRepairId : null,
     repairPromptedFor: Array.isArray(data.repairPromptedFor) ? data.repairPromptedFor : [],
-    generatorStates: data.generatorStates && typeof data.generatorStates === "object" ? data.generatorStates : {},
+    generatorStates: normalizeGeneratorStates(data.generatorStates),
     innLevel: data.innLevel ?? 1,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
@@ -405,6 +418,7 @@ function loadState() {
   migrateOccupiedLockedCells();
   applyOfflineRecovery();
   ensureStarterGenerator();
+  pruneGeneratorStates();
   syncGateOrder();
 }
 
@@ -428,6 +442,8 @@ function saveState() {
       generationCount: state.generationCount,
       completedOrders: state.completedOrders,
       completedOrderIds: state.completedOrderIds,
+      chapterOrderCounts: state.chapterOrderCounts,
+      claimedOrderProgressPacks: state.claimedOrderProgressPacks,
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
       renovationChoices: state.renovationChoices,
@@ -676,6 +692,7 @@ function handleStationButton() {
 function destroyInnTemporaryNodes() {
   els.innScene.innerHTML = "";
   els.furnitureShop.innerHTML = "";
+  if (els.orderGiftProgress) els.orderGiftProgress.innerHTML = "";
   document.querySelector(".inn-task-list")?.remove();
 }
 
@@ -702,6 +719,7 @@ function renderInnPage() {
     : level.story;
   renderInnScene(level, repairValue);
   renderMainlineDock();
+  renderVisibleOrderGiftProgress();
 }
 
 function renderInnTasks(level) {
@@ -873,6 +891,7 @@ function renderMainlineDock() {
       <strong>主线进度</strong>
       <span>${Object.keys(state.renovationChoices).length}/${milestones.length}</span>
     </div>
+    ${renderOrderProgressGiftRail()}
     <div class="mainline-current">
       <b>${next ? next.sceneName ?? next.name : "Lv1 修缮完成"}</b>
       <span>${next ? next.nextText : "可以准备进入下一阶段。"}</span>
@@ -903,6 +922,9 @@ function renderMainlineDock() {
         : `<button class="mainline-action ready" data-upgrade-focus="true">查看扩建条件</button>`
     }
   `;
+  els.furnitureShop.querySelectorAll("[data-order-progress-pack]").forEach((button) => {
+    button.addEventListener("click", () => claimOrderProgressPack(button.dataset.orderProgressPack));
+  });
   els.furnitureShop.querySelectorAll("[data-mainline]").forEach((button) => {
     button.addEventListener("click", () => handleRepairNodeClick(button.dataset.mainline, button));
   });
@@ -913,6 +935,51 @@ function renderMainlineDock() {
       keeper(check.ok ? "可以扩建流沙驿了。" : check.reason);
     });
   });
+}
+
+function renderVisibleOrderGiftProgress() {
+  if (!els.orderGiftProgress) return;
+  els.orderGiftProgress.innerHTML = renderOrderProgressGiftRail();
+  els.orderGiftProgress.querySelectorAll("[data-order-progress-pack]").forEach((button) => {
+    button.addEventListener("click", () => claimOrderProgressPack(button.dataset.orderProgressPack));
+  });
+}
+
+function renderOrderProgressGiftRail() {
+  const chapter = activeStoryChapter();
+  const count = state.chapterOrderCounts[chapter] ?? 0;
+  const entries = (state.progressionConfig?.orderProgressPacks ?? []).filter((entry) => entry.chapter === chapter);
+  if (!entries.length) return "";
+  return `
+    <section class="order-progress-gifts" aria-label="本章订单礼盒">
+      <div class="order-progress-copy"><b>${chapterName(chapter)}</b><span>本章 ${count} 单</span></div>
+      <div class="order-progress-pack-list">
+        ${entries.map((entry) => {
+          const claimed = state.claimedOrderProgressPacks.includes(entry.id);
+          const ready = count >= entry.threshold && !claimed;
+          return `<button class="order-progress-pack ${claimed ? "claimed" : ready ? "ready" : "locked"}" data-order-progress-pack="${entry.id}" ${claimed || !ready ? "disabled" : ""} aria-label="${entry.name}">
+            <img src="./assets/gift_pack_starter.png" alt="" />
+            <span>${claimed ? "已领" : `${entry.threshold}单`}</span>
+          </button>`;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function claimOrderProgressPack(packId) {
+  const entry = (state.progressionConfig?.orderProgressPacks ?? []).find((item) => item.id === packId);
+  if (!entry || state.claimedOrderProgressPacks.includes(packId)) return;
+  const count = state.chapterOrderCounts[entry.chapter] ?? 0;
+  if (count < entry.threshold) {
+    toast(`本章再完成${entry.threshold - count}单即可领取。`);
+    return;
+  }
+  state.claimedOrderProgressPacks.push(packId);
+  grantGiftPack(packId, 1);
+  keeper(`${entry.name}已送进行囊，回棋盘后可以把它放到空格里。`);
+  render();
+  saveState();
 }
 
 function buyFurniture(furnitureId) {
@@ -1331,7 +1398,57 @@ function normalizeBoard(value) {
       const level = Number(itemId.slice(BONUS_COIN_PREFIX.length));
       if (level > BONUS_COIN_MAX_LEVEL) return bonusCoinId(BONUS_COIN_MAX_LEVEL);
     }
+    if (typeof itemId === "string" && itemId.startsWith(BONUS_RUBY_PREFIX)) {
+      const level = Number(itemId.slice(BONUS_RUBY_PREFIX.length));
+      if (level > BONUS_RUBY_MAX_LEVEL) return BONUS_RUBY_PREFIX + String(BONUS_RUBY_MAX_LEVEL).padStart(2, "0");
+    }
     return itemId;
+  });
+}
+
+function normalizeGeneratorStates(value) {
+  if (!value || typeof value !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key, entry]) => /^(board|bag):\d+$/.test(key) && entry && typeof entry.itemId === "string")
+      .map(([key, entry]) => [key, {
+        itemId: entry.itemId,
+        charges: Math.max(0, Number(entry.charges) || 0),
+        cooldownEnd: Math.max(0, Number(entry.cooldownEnd) || 0),
+      }]),
+  );
+}
+
+function boardGeneratorStateKey(index) {
+  return `board:${index}`;
+}
+
+function bagGeneratorStateKey(index) {
+  return `bag:${index}`;
+}
+
+function transferGeneratorState(itemId, fromKey, toKey) {
+  delete state.generatorStates[toKey];
+  const item = byId.get(itemId);
+  const existing = state.generatorStates[fromKey];
+  if (isGeneratorPiece(item) && existing?.itemId === itemId) {
+    state.generatorStates[toKey] = existing;
+  }
+  delete state.generatorStates[fromKey];
+}
+
+function clearGeneratorState(stateKey) {
+  delete state.generatorStates[stateKey];
+}
+
+function pruneGeneratorStates() {
+  Object.keys(state.generatorStates).forEach((key) => {
+    const [location, rawIndex] = key.split(":");
+    const index = Number(rawIndex);
+    const itemId = location === "board" ? state.board[index] : location === "bag" ? state.bag[index] : null;
+    if (!isGeneratorPiece(byId.get(itemId)) || state.generatorStates[key]?.itemId !== itemId) {
+      delete state.generatorStates[key];
+    }
   });
 }
 
@@ -1359,6 +1476,25 @@ function registerBonusCoinItems() {
       highValueConfirm: false,
     });
   }
+}
+
+function registerOrderProgressPacks() {
+  const entries = state.progressionConfig?.orderProgressPacks ?? [];
+  entries.forEach((entry) => {
+    GIFT_PACKS[entry.id] = {
+      name: entry.name,
+      itemId: "gift_pack_starter",
+      description: entry.description,
+      chapter: entry.chapter,
+      threshold: entry.threshold,
+      orderProgress: true,
+      rewards: [
+        { type: "coins", amount: entry.coinAmount },
+        { type: "rubies", amount: entry.rubyQuantity ?? 1 },
+        { type: "mapped_material", quantity: entry.materialQuantity ?? 1 },
+      ],
+    };
+  });
 }
 
 function normalizeBubbleStates(value) {
@@ -1415,7 +1551,7 @@ function restoreBonusBubbleItems() {
 
 function isBubbleEligibleMerge(sourceItem, outputItem) {
   if (!sourceItem || !outputItem || (sourceItem.level ?? 0) < BONUS_BUBBLE_MIN_LEVEL) return false;
-  if (["bonus_bubble", "bonus_coin", "gift_box", "box_material"].includes(sourceItem.type)) return false;
+  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box", "box_material"].includes(sourceItem.type)) return false;
   return Boolean(sourceItem.line) || sourceItem.type?.includes("generator");
 }
 
@@ -1495,6 +1631,25 @@ function updateSelectedBubbleCountdown(now) {
   if (els.pieceDetailModal?.open) {
     els.pieceDetailText.textContent = `气泡中的棋子暂时不能使用，${seconds}秒后会变成一级铜币。`;
   }
+}
+
+function normalizeChapterOrderCounts(value, completedOrders = 0, innLevel = 1) {
+  const result = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  if (value && typeof value === "object") {
+    Object.keys(result).forEach((chapter) => {
+      result[chapter] = Math.max(0, Math.floor(Number(value[chapter]) || 0));
+    });
+    return result;
+  }
+  const chapter = Math.max(1, Math.min(4, Math.floor(Number(innLevel) || 1)));
+  result[chapter] = Math.max(0, Math.floor(Number(completedOrders) || 0));
+  return result;
+}
+
+function normalizeClaimedOrderProgressPacks(value) {
+  if (!Array.isArray(value)) return [];
+  const validIds = new Set((state.progressionConfig?.orderProgressPacks ?? []).map((entry) => entry.id));
+  return [...new Set(value.filter((id) => validIds.has(id)))];
 }
 
 function normalizeGiftPacks(value) {
@@ -1597,7 +1752,7 @@ function renderOrders() {
 
     const reward = document.createElement("div");
     reward.className = "reward-bubble";
-    reward.innerHTML = `<img src="./assets/ui/ui_coin_copper.png" alt="" /><span>${order.reward.coins}</span>`;
+    reward.innerHTML = `<img src="./assets/ui/ui_coin_copper.png" alt="" /><span>${currentOrderCoinReward(order)}</span>`;
 
     const foods = document.createElement("div");
     foods.className = "need-items";
@@ -1670,14 +1825,15 @@ function renderBoard() {
       img.src = itemAssetSrc(item);
       cell.append(img);
       if (item.type?.includes("generator")) {
-        const generatorState = getGeneratorState(item.id);
+        const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
         const badge = document.createElement("span");
         badge.className = "generator-badge";
         if (item.type === "auto_generator") {
           const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
           badge.textContent = seconds > 0 ? `${seconds}s` : "自动";
         } else {
-          badge.textContent = generatorState.cooldownEnd > Date.now() ? "冷却" : `${generatorState.charges}/${item.generator.chargeMax}`;
+          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+          badge.textContent = seconds > 0 ? `${seconds}s` : `${generatorState.charges}/${item.generator.chargeMax}`;
         }
         cell.append(badge);
       } else if (item.type === "gift_box") {
@@ -1685,7 +1841,7 @@ function renderBoard() {
         const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
         const badge = document.createElement("span");
         badge.className = "generator-badge gift-badge";
-        badge.textContent = pack ? `${Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
+        badge.textContent = pack ? `${pack.orderProgress ? giftRewardOutputCount(pack) : Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
         cell.append(badge);
       }
       }
@@ -1744,6 +1900,20 @@ function renderBonusBoardItem(cell, item, itemId, index) {
     cell.append(coin);
     const mergeHint = item.level < BONUS_COIN_MAX_LEVEL ? "，可与同级合成" : "";
     cell.setAttribute("aria-label", `${item.name}${mergeHint}，双击收取${item.coinValue}枚铜币`);
+    return true;
+  }
+  if (item.type === "bonus_ruby") {
+    cell.classList.add("bonus-ruby-cell");
+    if (item.level === BONUS_RUBY_MAX_LEVEL) cell.classList.add("collect-ready");
+    const ruby = document.createElement("div");
+    ruby.className = "bonus-ruby bonus-ruby-level-" + item.level;
+    const icon = document.createElement("img");
+    icon.src = itemAssetSrc(item);
+    icon.alt = "";
+    ruby.append(icon);
+    cell.append(ruby);
+    const mergeHint = item.level < BONUS_RUBY_MAX_LEVEL ? "，可与同级合成" : "";
+    cell.setAttribute("aria-label", `${item.name}${mergeHint}，双击收取${item.rubyValue}颗红宝石`);
     return true;
   }
   return false;
@@ -1817,21 +1987,37 @@ function renderSelected() {
     els.sellBtn.disabled = true;
     return;
   }
+  if (item.type === "bonus_ruby") {
+    selectedPanel?.classList.add("no-sell");
+    els.selectedName.textContent = item.name;
+    els.selectedText.textContent = item.level === BONUS_RUBY_MAX_LEVEL
+      ? `双击收入${item.rubyValue}颗红宝石`
+      : `两颗同级红宝石可以合成下一等级；双击收入${item.rubyValue}颗`;
+    els.sellBtn.disabled = true;
+    return;
+  }
   if (item.type === "gift_box") {
     selectedPanel?.classList.add("no-sell");
     const giftState = state.giftBoxStates[state.selectedIndex];
     const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
     els.selectedName.textContent = pack?.name ?? item.name;
-    els.selectedText.textContent = pack ? `点击礼盒包，每次掉落1份奖励。还剩${pack.rewards.length - giftState.nextRewardIndex}份。` : item.modernName;
+    els.selectedText.textContent = pack
+      ? pack.orderProgress
+        ? `点击一次打开，${giftRewardOutputCount(pack)}份奖励会随机落入空格。`
+        : `点击礼盒包，每次掉落1份奖励。还剩${pack.rewards.length - giftState.nextRewardIndex}份。`
+      : item.modernName;
     els.sellBtn.disabled = true;
     return;
   }
   if (isGeneratorPiece(item)) {
-    const generatorState = getGeneratorState(item.id);
+    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
+    const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     els.selectedName.textContent = item.name;
     els.selectedText.textContent =
       item.type === "manual_generator"
-        ? `点击产出食材，消耗${item.generator.staminaCost}点驼铃。充能 ${generatorState.charges}/${item.generator.chargeMax}。`
+        ? cooldownSeconds > 0
+          ? `正在休息，${cooldownSeconds}秒后恢复${item.generator.chargeMax}次充能。`
+          : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。剩余${generatorState.charges}/${item.generator.chargeMax}次。`
         : "自动向周边8格投放食材，不消耗驼铃。";
     setSellButtonAction(getPieceRemovalAction(item));
     return;
@@ -1854,7 +2040,7 @@ function isGeneratorMaterialPiece(item) {
 }
 
 function getPieceRemovalAction(item) {
-  if (!item || ["bonus_bubble", "bonus_coin", "gift_box"].includes(item.type)) {
+  if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box"].includes(item.type)) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
   const maxLevel = isGeneratorPiece(item)
@@ -1929,13 +2115,24 @@ function openSelectedPieceDetail() {
     els.pieceDetailModal.showModal();
     return;
   }
+  if (item.type === "bonus_ruby") {
+    els.pieceDetailMeta.textContent = `红宝石 Lv${item.level} · 可收入${item.rubyValue}颗`;
+    els.pieceDetailText.textContent = item.level === BONUS_RUBY_MAX_LEVEL
+      ? "已达最高等级，双击即可收入红宝石。"
+      : "与另一颗同级红宝石合成可以升级，也可直接双击收入。";
+    els.pieceDetailModal.showModal();
+    return;
+  }
   const removalAction = getPieceRemovalAction(item);
   els.pieceDetailMeta.textContent = isGeneratorPiece(item)
     ? `Lv${item.level ?? 1} · ${item.modernName ?? "生成器"}`
     : `Lv${item.level ?? 1} · ${removalAction.mode === "delete" ? "删除不返还铜币" : `出售可得 ${removalAction.value} 铜币`}`;
   if (item.type === "manual_generator") {
-    const generatorState = getGeneratorState(item.id);
-    els.pieceDetailText.textContent = `点击产出食材，消耗${item.generator.staminaCost}点驼铃。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
+    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
+    const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+    els.pieceDetailText.textContent = cooldownSeconds > 0
+      ? `正在休息，${cooldownSeconds}秒后恢复${item.generator.chargeMax}次充能。`
+      : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
   } else if (item.type === "auto_generator") {
     els.pieceDetailText.textContent = "自动向周边空格投放食材，不消耗驼铃。";
   } else {
@@ -2113,6 +2310,7 @@ function endCellPointer(event) {
   if (!targetItemId) {
     state.board[toIndex] = itemId;
     state.board[fromIndex] = null;
+    transferGeneratorState(itemId, boardGeneratorStateKey(fromIndex), boardGeneratorStateKey(toIndex));
     state.selectedIndex = toIndex;
     keeper("挪一挪案板，路上的吃食就有地方摆了。");
   } else if (targetItemId === itemId) {
@@ -2232,6 +2430,18 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
     lastBonusCoinTapAt = now;
   }
 
+  if (item?.type === "bonus_ruby") {
+    const now = Date.now();
+    if (lastBonusRubyTapIndex === index && now - lastBonusRubyTapAt <= 450) {
+      lastBonusRubyTapIndex = -1;
+      lastBonusRubyTapAt = 0;
+      collectBonusRuby(index);
+      return;
+    }
+    lastBonusRubyTapIndex = index;
+    lastBonusRubyTapAt = now;
+  }
+
   // Generator click
   if (item?.type === "manual_generator") {
     activateManualGenerator(index);
@@ -2263,6 +2473,7 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
     if (!itemId) {
       state.board[index] = selectedItemId;
       state.board[prevSelected] = null;
+      transferGeneratorState(selectedItemId, boardGeneratorStateKey(prevSelected), boardGeneratorStateKey(index));
       state.selectedIndex = index;
       render();
       saveState();
@@ -2291,6 +2502,19 @@ function collectBonusCoin(index) {
   maybePromptRepairGuide();
 }
 
+function collectBonusRuby(index) {
+  const item = byId.get(state.board[index]);
+  if (item?.type !== "bonus_ruby") return;
+  const amount = item.rubyValue ?? BONUS_RUBY_VALUES[item.level] ?? 0;
+  state.board[index] = null;
+  state.selectedIndex = null;
+  state.gems += amount;
+  keeper(`${item.name}已收入宝石囊，顶部红宝石增加${amount}颗。`);
+  toast(`收取${item.name} +${amount}`);
+  render();
+  saveState();
+}
+
 function isStorageDropPoint(x, y) {
   if (!els.storageBtn) return false;
   const rect = els.storageBtn.getBoundingClientRect();
@@ -2306,6 +2530,8 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
     return;
   }
   state.unlockedCells = [...new Set([...state.unlockedCells, toIndex])];
+  clearGeneratorState(boardGeneratorStateKey(fromIndex));
+  clearGeneratorState(boardGeneratorStateKey(toIndex));
   state.board[fromIndex] = null;
   const outputId = item?.mergeTo ?? itemId;
   state.board[toIndex] = outputId;
@@ -2337,6 +2563,8 @@ function mergeCells(fromIndex, toIndex, itemId) {
     toast("已经是这条食谱的最高级了。");
     return;
   }
+  clearGeneratorState(boardGeneratorStateKey(fromIndex));
+  clearGeneratorState(boardGeneratorStateKey(toIndex));
   state.board[fromIndex] = null;
   state.board[toIndex] = item.mergeTo;
   state.selectedIndex = toIndex;
@@ -2361,6 +2589,8 @@ function chainMergeAt(index) {
     if (neighbor === -1) break;
     const sourceItem = current;
     const outputItemId = current.mergeTo;
+    clearGeneratorState(boardGeneratorStateKey(neighbor));
+    clearGeneratorState(boardGeneratorStateKey(index));
     state.board[neighbor] = null;
     state.board[index] = outputItemId;
     maybeCreateMergeBubble(sourceItem, outputItemId, index);
@@ -2393,18 +2623,22 @@ function activateManualGenerator(index) {
   const itemId = state.board[index];
   const item = byId.get(itemId);
   if (!item || item.type !== "manual_generator") return;
-  const generatorState = getGeneratorState(item.id);
+  const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
   const now = Date.now();
+  state.selectedIndex = index;
+  if (generatorState.cooldownEnd > now) {
+    const seconds = Math.ceil((generatorState.cooldownEnd - now) / 1000);
+    render();
+    toast(`${item.name}正在休息，${seconds}秒后恢复全部充能。`);
+    return;
+  }
   if (!hasEmptyCell()) {
+    render();
     toast("案板已满，暂时放不下新食材。");
     return;
   }
-  if (generatorState.cooldownEnd > now) {
-    const seconds = Math.ceil((generatorState.cooldownEnd - now) / 1000);
-    toast(`${item.name}还在歇火，约${seconds}秒后可用。`);
-    return;
-  }
   if (state.stamina < item.generator.staminaCost) {
+    render();
     toast("驼铃不足，手动生成器无法产出。");
     return;
   }
@@ -2433,15 +2667,17 @@ function activateManualGenerator(index) {
   saveState();
 }
 
-function getGeneratorState(itemId) {
+function getGeneratorState(itemId, stateKey) {
   const item = byId.get(itemId);
-  if (!state.generatorStates[itemId]) {
-    state.generatorStates[itemId] = {
+  if (!state.generatorStates[stateKey] || state.generatorStates[stateKey].itemId !== itemId) {
+    state.generatorStates[stateKey] = {
+      itemId,
       charges: item?.generator?.chargeMax ?? 0,
       cooldownEnd: 0,
     };
   }
-  const generatorState = state.generatorStates[itemId];
+  const generatorState = state.generatorStates[stateKey];
+  generatorState.charges = Math.min(item?.generator?.chargeMax ?? 0, Math.max(0, Number(generatorState.charges) || 0));
   if (item?.type === "manual_generator" && generatorState.cooldownEnd > 0 && generatorState.cooldownEnd <= Date.now()) {
     generatorState.charges = item.generator.chargeMax;
     generatorState.cooldownEnd = 0;
@@ -2451,15 +2687,16 @@ function getGeneratorState(itemId) {
 
 function tickGenerators() {
   let changed = false;
-  Object.keys(state.generatorStates).forEach((itemId) => {
-    const before = state.generatorStates[itemId].cooldownEnd;
-    getGeneratorState(itemId);
-    if (before && !state.generatorStates[itemId].cooldownEnd) changed = true;
+  Object.keys(state.generatorStates).forEach((stateKey) => {
+    const entry = state.generatorStates[stateKey];
+    const before = entry.cooldownEnd;
+    getGeneratorState(entry.itemId, stateKey);
+    if (before > Date.now() || (before && !state.generatorStates[stateKey].cooldownEnd)) changed = true;
   });
   state.board.forEach((itemId, index) => {
     const item = byId.get(itemId);
     if (item?.type !== "auto_generator") return;
-    const generatorState = getGeneratorState(item.id);
+    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
     const now = Date.now();
     if (!generatorState.cooldownEnd) {
       generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
@@ -2561,14 +2798,18 @@ function completeOrder(orderId) {
   for (const demand of order.demand) {
     if (countItem(demand.itemId) < demand.quantity) return;
   }
+  const chapter = activeStoryChapter();
+  const firstClear = !state.completedOrderIds.includes(order.id);
+  const coinReward = currentOrderCoinReward(order);
   for (const demand of order.demand) {
     removeItems(demand.itemId, demand.quantity);
   }
-  state.coins += order.reward.coins;
-  state.coinsEarned += order.reward.coins;
+  state.coins += coinReward;
+  state.coinsEarned += coinReward;
   state.completedOrders += 1;
-  showCoinBurst(order.reward.coins);
-  if (!state.completedOrderIds.includes(order.id)) {
+  state.chapterOrderCounts[chapter] = (state.chapterOrderCounts[chapter] ?? 0) + 1;
+  showCoinBurst(coinReward);
+  if (firstClear) {
     state.completedOrderIds.push(order.id);
   }
   if (state.tutorialStep === 2 && order.id === "order_001_guard_lubing") {
@@ -2628,7 +2869,7 @@ function renderOrderDetail() {
     .join("");
   els.orderDetailRecipe.textContent = demandStates.map(({ item }) => recipeHint(item)).join("；");
   els.orderDetailCompleteBtn.disabled = !canComplete;
-  els.orderDetailCompleteBtn.textContent = canComplete ? `交付得${order.reward.coins}铜币` : `还差${missingTotal}`;
+  els.orderDetailCompleteBtn.textContent = canComplete ? `交付得${currentOrderCoinReward(order)}铜币` : `还差${missingTotal}`;
   els.orderDetailCodexBtn.disabled = !codexUnlocked;
   els.orderDetailCodexBtn.textContent = codexUnlocked ? "查看食单" : "食单未解锁";
 }
@@ -2750,6 +2991,12 @@ function syncDemoOrder() {
 
 function getOrder(orderId) {
   return state.ordersConfig.orders.find((entry) => entry.id === orderId);
+}
+
+function currentOrderCoinReward(order) {
+  if (!order) return 0;
+  const firstClearBonus = state.completedOrderIds.includes(order.id) ? 0 : (order.reward.firstClearBonusCoins ?? 0);
+  return order.reward.coins + firstClearBonus;
 }
 
 function pickOrder() {
@@ -3149,6 +3396,7 @@ function sellSelected() {
   }
   const actionName = action.mode === "delete" ? "删除" : "出售";
   if (action.requiresConfirm && !confirm(`${item.name}很珍贵，确定${actionName}吗？`)) return;
+  clearGeneratorState(boardGeneratorStateKey(index));
   state.board[index] = null;
   state.selectedIndex = null;
   if (action.mode === "sell") {
@@ -3227,7 +3475,7 @@ function renderBag() {
   store.className = "primary bag-store";
   store.textContent = "收起选中食物";
   const selectedItem = byId.get(state.board[state.selectedIndex]);
-  const cannotStore = ["gift_box", "bonus_bubble", "bonus_coin"].includes(selectedItem?.type);
+  const cannotStore = ["gift_box", "bonus_bubble", "bonus_coin", "bonus_ruby"].includes(selectedItem?.type);
   store.disabled = !state.board[state.selectedIndex] || cannotStore || firstEmptyBagIndex() === -1;
   store.addEventListener("click", storeSelectedToBag);
   els.bagList.append(store);
@@ -3266,8 +3514,8 @@ function storeBoardItemToStorage(boardIndex) {
     return;
   }
   const boardItem = byId.get(itemId);
-  if (["bonus_bubble", "bonus_coin"].includes(boardItem?.type)) {
-    toast("气泡和铜币需要留在棋盘上继续合成。");
+  if (["bonus_bubble", "bonus_coin", "bonus_ruby"].includes(boardItem?.type)) {
+    toast("气泡、铜币和红宝石需要留在棋盘上继续合成。");
     return;
   }
   if (byId.get(itemId)?.type === "gift_box") {
@@ -3278,6 +3526,7 @@ function storeBoardItemToStorage(boardIndex) {
     toast("柜中暂存已满。");
     return;
   }
+  transferGeneratorState(itemId, boardGeneratorStateKey(boardIndex), bagGeneratorStateKey(bagIndex));
   state.bag[bagIndex] = itemId;
   state.board[boardIndex] = null;
   state.selectedIndex = null;
@@ -3297,6 +3546,7 @@ function retrieveFromBag(index) {
     toast("案板已满，暂时取不出来。");
     return;
   }
+  transferGeneratorState(itemId, bagGeneratorStateKey(index), boardGeneratorStateKey(boardIndex));
   state.board[boardIndex] = itemId;
   state.bag[index] = null;
   state.selectedIndex = boardIndex;
@@ -3311,7 +3561,7 @@ function placeGiftPackOnBoard(packId) {
   const pack = GIFT_PACKS[packId];
   const giftEntry = state.giftPacks.find((entry) => entry.id === packId);
   if (!pack || !giftEntry || giftEntry.quantity <= 0) return;
-  const boardIndex = firstEmptyIndexFromTop();
+  const boardIndex = randomUnlockedEmptyIndex();
   if (boardIndex === -1) {
     toast("案板已满，礼盒包暂时放不下。");
     return;
@@ -3322,10 +3572,112 @@ function placeGiftPackOnBoard(packId) {
   state.giftBoxStates[boardIndex] = { packId, nextRewardIndex: 0 };
   state.selectedIndex = boardIndex;
   state.pulseIndex = boardIndex;
-  keeper(`${pack.name}已落到案板上。点击礼盒包，每次取一份奖励。`);
+  keeper(`${pack.name}已随机落到案板上。${pack.orderProgress ? "点击一次即可打开。" : "点击礼盒包，每次取一份奖励。"}`);
   clearPulseSoon();
   render();
   renderBag();
+  saveState();
+}
+
+function coinRewardPieceIds(amount) {
+  const result = [];
+  let remaining = Math.max(0, Math.floor(Number(amount) || 0));
+  for (const level of [3, 2, 1]) {
+    const value = BONUS_COIN_VALUES[level];
+    while (remaining >= value) {
+      result.push(bonusCoinId(level));
+      remaining -= value;
+    }
+  }
+  return result;
+}
+
+function giftRewardOutputCount(pack) {
+  return pack.rewards.reduce((sum, reward) => {
+    if (reward.type === "coins") return sum + coinRewardPieceIds(reward.amount).length;
+    if (reward.type === "rubies") return sum + (reward.amount ?? 1);
+    return sum + (reward.quantity ?? 1);
+  }, 0);
+}
+
+function mappedGiftMaterialId() {
+  const demandIds = state.visibleOrders
+    .map((orderId) => getOrder(orderId))
+    .filter(Boolean)
+    .flatMap((order) => order.demand.map((demand) => demand.itemId));
+  const candidates = state.items.filter((item) => item.boxMaterial && byId.has(item.boxMaterial.targetGeneratorId));
+  if (!candidates.length) return null;
+  const weighted = candidates.map((material) => {
+    const generator = byId.get(material.boxMaterial.targetGeneratorId);
+    const outputIds = new Set(generator?.generator?.pool?.map((entry) => entry.itemId) ?? []);
+    const score = 1 + demandIds.filter((itemId) => outputIds.has(itemId)).length * 4;
+    return { material, score };
+  });
+  let roll = Math.random() * weighted.reduce((sum, entry) => sum + entry.score, 0);
+  for (const entry of weighted) {
+    roll -= entry.score;
+    if (roll <= 0) return entry.material.id;
+  }
+  return weighted[0].material.id;
+}
+
+function orderProgressGiftOutputs(pack) {
+  const outputs = [];
+  pack.rewards.forEach((reward) => {
+    if (reward.type === "coins") {
+      outputs.push(...coinRewardPieceIds(reward.amount));
+      return;
+    }
+    if (reward.type === "rubies") {
+      for (let i = 0; i < (reward.amount ?? 1); i += 1) outputs.push("bonus_ruby_01");
+      return;
+    }
+    if (reward.type === "mapped_material") {
+      const materialId = mappedGiftMaterialId();
+      if (!materialId) return;
+      for (let i = 0; i < (reward.quantity ?? 1); i += 1) outputs.push(materialId);
+      return;
+    }
+    if (reward.type === "item") {
+      for (let i = 0; i < (reward.quantity ?? 1); i += 1) outputs.push(reward.itemId);
+    }
+  });
+  return outputs;
+}
+
+function shuffle(values) {
+  const result = [...values];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function openOrderProgressGiftBox(index, pack) {
+  const outputs = orderProgressGiftOutputs(pack);
+  const available = state.board
+    .map((itemId, cellIndex) => (cellIndex === index || (!itemId && !isBoardCellLocked(cellIndex)) ? cellIndex : null))
+    .filter((cellIndex) => cellIndex !== null);
+  if (outputs.length > available.length) {
+    toast(`案板空位不足，还需腾出${outputs.length - available.length}格。`);
+    keeper("礼盒仍留在原位，奖励没有丢失。先清理案板再打开。");
+    return;
+  }
+  clearGiftBox(index);
+  const targetIndices = shuffle(available).slice(0, outputs.length);
+  const materialIds = new Set();
+  outputs.forEach((itemId, outputIndex) => {
+    state.board[targetIndices[outputIndex]] = itemId;
+    if (byId.get(itemId)?.boxMaterial) materialIds.add(itemId);
+  });
+  state.selectedIndex = targetIndices[0] ?? null;
+  state.pulseIndex = targetIndices[0] ?? null;
+  materialIds.forEach((materialId) => tryBuildGeneratorFromMaterials(materialId));
+  keeper(`${pack.name}已打开，${outputs.length}份奖励随机落入案板。`);
+  toast("礼包奖励已散落到空格中。");
+  clearPulseSoon();
+  render();
   saveState();
 }
 
@@ -3334,6 +3686,10 @@ function openGiftBoxOnBoard(index) {
   const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
   if (!pack) {
     toast("这个礼盒包数据还没配置。");
+    return;
+  }
+  if (pack.orderProgress) {
+    openOrderProgressGiftBox(index, pack);
     return;
   }
   const reward = pack.rewards[giftState.nextRewardIndex];
@@ -3393,9 +3749,11 @@ function tryBuildGeneratorFromMaterials(materialId) {
       if (state.board[i] === materialId) materialIndices.push(i);
     }
     materialIndices.forEach((index) => {
+      clearGeneratorState(boardGeneratorStateKey(index));
       state.board[index] = null;
     });
     const outputIndex = materialIndices[0] ?? firstEmptyIndexFromTop();
+    clearGeneratorState(boardGeneratorStateKey(outputIndex));
     state.board[outputIndex] = recipe.targetGeneratorId;
     state.selectedIndex = outputIndex;
     state.pulseIndex = outputIndex;

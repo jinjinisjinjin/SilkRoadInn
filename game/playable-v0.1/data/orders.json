@@ -19,8 +19,10 @@
         }
       ],
       "reward": {
-        "coins": 16,
-        "codexExp": 2
+        "coins": 8,
+        "codexExp": 2,
+        "originalCoins": 16,
+        "firstClearBonusCoins": 2
       },
       "weight": 30,
       "unlock": "tutorial_start",
@@ -45,8 +47,10 @@
         }
       ],
       "reward": {
-        "coins": 28,
-        "codexExp": 4
+        "coins": 14,
+        "codexExp": 4,
+        "originalCoins": 28,
+        "firstClearBonusCoins": 3
       },
       "weight": 28,
       "unlock": "tutorial_start",
@@ -71,8 +75,10 @@
         }
       ],
       "reward": {
-        "coins": 42,
-        "codexExp": 5
+        "coins": 21,
+        "codexExp": 5,
+        "originalCoins": 42,
+        "firstClearBonusCoins": 4
       },
       "weight": 26,
       "unlock": "tutorial_start",
@@ -89,8 +95,10 @@
         }
       ],
       "reward": {
-        "coins": 80,
-        "codexExp": 2
+        "coins": 40,
+        "codexExp": 2,
+        "originalCoins": 80,
+        "firstClearBonusCoins": 8
       },
       "weight": 20,
       "unlock": "tutorial_start",
@@ -107,8 +115,10 @@
         }
       ],
       "reward": {
-        "coins": 45,
-        "codexExp": 1
+        "coins": 23,
+        "codexExp": 1,
+        "originalCoins": 45,
+        "firstClearBonusCoins": 5
       },
       "weight": 16,
       "unlock": "after_order_1",
@@ -125,8 +135,10 @@
         }
       ],
       "reward": {
-        "coins": 8,
-        "codexExp": 2
+        "coins": 4,
+        "codexExp": 2,
+        "originalCoins": 8,
+        "firstClearBonusCoins": 1
       },
       "weight": 18,
       "unlock": "tutorial_start",
@@ -143,8 +155,10 @@
         }
       ],
       "reward": {
-        "coins": 5,
-        "codexExp": 1
+        "coins": 3,
+        "codexExp": 1,
+        "originalCoins": 5,
+        "firstClearBonusCoins": 1
       },
       "weight": 16,
       "unlock": "tutorial_start",
@@ -165,8 +179,10 @@
         }
       ],
       "reward": {
-        "coins": 18,
-        "codexExp": 4
+        "coins": 9,
+        "codexExp": 4,
+        "originalCoins": 18,
+        "firstClearBonusCoins": 2
       },
       "weight": 14,
       "unlock": "tutorial_start",
@@ -183,8 +199,10 @@
         }
       ],
       "reward": {
-        "coins": 70,
-        "codexExp": 4
+        "coins": 35,
+        "codexExp": 4,
+        "originalCoins": 70,
+        "firstClearBonusCoins": 7
       },
       "weight": 15,
       "unlock": "codex_hubing_03",
@@ -201,8 +219,10 @@
         }
       ],
       "reward": {
-        "coins": 55,
-        "codexExp": 2
+        "coins": 28,
+        "codexExp": 2,
+        "originalCoins": 55,
+        "firstClearBonusCoins": 6
       },
       "weight": 18,
       "unlock": "tutorial_start",
@@ -219,8 +239,9 @@
         }
       ],
       "reward": {
-        "coins": 14,
-        "codexExp": 3
+        "coins": 7,
+        "codexExp": 3,
+        "originalCoins": 14
       },
       "weight": 12,
       "unlock": "after_order_1",
@@ -237,8 +258,10 @@
         }
       ],
       "reward": {
-        "coins": 75,
-        "codexExp": 3
+        "coins": 38,
+        "codexExp": 3,
+        "originalCoins": 75,
+        "firstClearBonusCoins": 8
       },
       "weight": 0,
       "unlock": "after_order_1",
@@ -255,8 +278,10 @@
         }
       ],
       "reward": {
-        "coins": 60,
-        "codexExp": 4
+        "coins": 30,
+        "codexExp": 4,
+        "originalCoins": 60,
+        "firstClearBonusCoins": 6
       },
       "weight": 9,
       "unlock": "codex_hubing_03",
@@ -273,8 +298,10 @@
         }
       ],
       "reward": {
-        "coins": 32,
-        "codexExp": 8
+        "coins": 16,
+        "codexExp": 8,
+        "originalCoins": 32,
+        "firstClearBonusCoins": 3
       },
       "weight": 8,
       "unlock": "codex_hubing_04",
@@ -291,8 +318,10 @@
         }
       ],
       "reward": {
-        "coins": 13,
-        "codexExp": 3
+        "coins": 7,
+        "codexExp": 3,
+        "originalCoins": 13,
+        "firstClearBonusCoins": 1
       },
       "weight": 13,
       "unlock": "after_order_3",
@@ -309,8 +338,10 @@
         }
       ],
       "reward": {
-        "coins": 50,
-        "codexExp": 4
+        "coins": 25,
+        "codexExp": 4,
+        "originalCoins": 50,
+        "firstClearBonusCoins": 5
       },
       "weight": 10,
       "unlock": "codex_hubing_03",
@@ -327,8 +358,10 @@
         }
       ],
       "reward": {
-        "coins": 30,
-        "codexExp": 8
+        "coins": 15,
+        "codexExp": 8,
+        "originalCoins": 30,
+        "firstClearBonusCoins": 3
       },
       "weight": 9,
       "unlock": "codex_hubing_04",
@@ -345,8 +378,10 @@
         }
       ],
       "reward": {
-        "coins": 68,
-        "codexExp": 14
+        "coins": 34,
+        "codexExp": 14,
+        "originalCoins": 68,
+        "firstClearBonusCoins": 7
       },
       "weight": 7,
       "unlock": "codex_hubing_05",
@@ -363,8 +398,10 @@
         }
       ],
       "reward": {
-        "coins": 150,
-        "codexExp": 24
+        "coins": 75,
+        "codexExp": 24,
+        "originalCoins": 150,
+        "firstClearBonusCoins": 15
       },
       "weight": 5,
       "unlock": "codex_hubing_06",
@@ -381,9 +418,11 @@
         }
       ],
       "reward": {
-        "coins": 340,
+        "coins": 170,
         "codexExp": 45,
-        "codexShard": 1
+        "codexShard": 1,
+        "originalCoins": 340,
+        "firstClearBonusCoins": 34
       },
       "weight": 3,
       "unlock": "codex_hubing_07",
@@ -400,9 +439,11 @@
         }
       ],
       "reward": {
-        "coins": 760,
+        "coins": 380,
         "codexExp": 90,
-        "completeLv1": true
+        "completeLv1": true,
+        "originalCoins": 760,
+        "firstClearBonusCoins": 76
       },
       "weight": 0,
       "unlock": "final_lv1_order",
@@ -419,8 +460,10 @@
         }
       ],
       "reward": {
-        "coins": 15,
-        "codexExp": 4
+        "coins": 8,
+        "codexExp": 4,
+        "originalCoins": 15,
+        "firstClearBonusCoins": 2
       },
       "weight": 10,
       "unlock": "codex_dairy_03",
@@ -441,8 +484,10 @@
         }
       ],
       "reward": {
-        "coins": 32,
-        "codexExp": 7
+        "coins": 16,
+        "codexExp": 7,
+        "originalCoins": 32,
+        "firstClearBonusCoins": 3
       },
       "weight": 8,
       "unlock": "codex_dairy_03",
@@ -463,8 +508,10 @@
         }
       ],
       "reward": {
-        "coins": 80,
-        "codexExp": 4
+        "coins": 40,
+        "codexExp": 4,
+        "originalCoins": 80,
+        "firstClearBonusCoins": 8
       },
       "weight": 10,
       "unlock": "tutorial_start",
@@ -485,8 +532,10 @@
         }
       ],
       "reward": {
-        "coins": 105,
-        "codexExp": 5
+        "coins": 53,
+        "codexExp": 5,
+        "originalCoins": 105,
+        "firstClearBonusCoins": 11
       },
       "weight": 10,
       "unlock": "tutorial_start",
@@ -507,8 +556,10 @@
         }
       ],
       "reward": {
-        "coins": 120,
-        "codexExp": 5
+        "coins": 60,
+        "codexExp": 5,
+        "originalCoins": 120,
+        "firstClearBonusCoins": 12
       },
       "weight": 10,
       "unlock": "tutorial_start",
@@ -529,8 +580,10 @@
         }
       ],
       "reward": {
-        "coins": 160,
-        "codexExp": 6
+        "coins": 80,
+        "codexExp": 6,
+        "originalCoins": 160,
+        "firstClearBonusCoins": 16
       },
       "weight": 0,
       "unlock": "tutorial_start",

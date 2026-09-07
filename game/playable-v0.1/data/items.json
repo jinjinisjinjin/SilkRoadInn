@@ -723,7 +723,7 @@
       "highValueConfirm": true,
       "generator": {
         "staminaCost": 1,
-        "chargeMax": 8,
+        "chargeMax": 14,
         "cooldownSeconds": 60,
         "outputCount": 1,
         "pool": [
@@ -751,8 +751,8 @@
       "highValueConfirm": true,
       "generator": {
         "staminaCost": 1,
-        "chargeMax": 10,
-        "cooldownSeconds": 45,
+        "chargeMax": 18,
+        "cooldownSeconds": 50,
         "outputCount": 1,
         "pool": [
           {
@@ -783,8 +783,8 @@
       "highValueConfirm": true,
       "generator": {
         "staminaCost": 1,
-        "chargeMax": 6,
-        "cooldownSeconds": 75,
+        "chargeMax": 14,
+        "cooldownSeconds": 60,
         "outputCount": 1,
         "pool": [
           {
@@ -811,8 +811,8 @@
       "highValueConfirm": true,
       "generator": {
         "staminaCost": 1,
-        "chargeMax": 8,
-        "cooldownSeconds": 60,
+        "chargeMax": 18,
+        "cooldownSeconds": 50,
         "outputCount": 1,
         "pool": [
           {
@@ -843,7 +843,7 @@
       "highValueConfirm": true,
       "generator": {
         "chargeMax": 1,
-        "cooldownSeconds": 90,
+        "cooldownSeconds": 75,
         "outputCount": 1,
         "pool": [
           {
@@ -870,7 +870,7 @@
       "highValueConfirm": true,
       "generator": {
         "chargeMax": 1,
-        "cooldownSeconds": 70,
+        "cooldownSeconds": 60,
         "outputCount": 1,
         "pool": [
           {
@@ -936,6 +936,70 @@
         "targetGeneratorId": "gen_livestock_pen_01",
         "required": 8
       }
+    },
+    {
+      "id": "bonus_ruby_01",
+      "type": "bonus_ruby",
+      "level": 1,
+      "rubyValue": 1,
+      "name": "红宝石 Lv1",
+      "modernName": "与同级红宝石合成，或双击收入1颗红宝石",
+      "line": "bonus_ruby",
+      "iconKey": "ui/bonus_ruby_lv01",
+      "source": "order_progress_gift",
+      "mergeFrom": null,
+      "mergeTo": "bonus_ruby_02",
+      "sellValue": 0,
+      "codexId": null,
+      "highValueConfirm": false
+    },
+    {
+      "id": "bonus_ruby_02",
+      "type": "bonus_ruby",
+      "level": 2,
+      "rubyValue": 3,
+      "name": "红宝石 Lv2",
+      "modernName": "与同级红宝石合成，或双击收入3颗红宝石",
+      "line": "bonus_ruby",
+      "iconKey": "ui/bonus_ruby_lv02",
+      "source": "order_progress_gift",
+      "mergeFrom": "bonus_ruby_01",
+      "mergeTo": "bonus_ruby_03",
+      "sellValue": 0,
+      "codexId": null,
+      "highValueConfirm": false
+    },
+    {
+      "id": "bonus_ruby_03",
+      "type": "bonus_ruby",
+      "level": 3,
+      "rubyValue": 8,
+      "name": "红宝石 Lv3",
+      "modernName": "与同级红宝石合成，或双击收入8颗红宝石",
+      "line": "bonus_ruby",
+      "iconKey": "ui/bonus_ruby_lv03",
+      "source": "order_progress_gift",
+      "mergeFrom": "bonus_ruby_02",
+      "mergeTo": "bonus_ruby_04",
+      "sellValue": 0,
+      "codexId": null,
+      "highValueConfirm": false
+    },
+    {
+      "id": "bonus_ruby_04",
+      "type": "bonus_ruby",
+      "level": 4,
+      "rubyValue": 25,
+      "name": "红宝石 Lv4",
+      "modernName": "双击收入25颗红宝石",
+      "line": "bonus_ruby",
+      "iconKey": "ui/bonus_ruby_lv04",
+      "source": "order_progress_gift",
+      "mergeFrom": "bonus_ruby_03",
+      "mergeTo": null,
+      "sellValue": 0,
+      "codexId": null,
+      "highValueConfirm": false
     }
   ]
 }
