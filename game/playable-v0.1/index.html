@@ -43,9 +43,8 @@
               <strong id="selectedName">未选中</strong>
               <span id="selectedText">点击磨坊生成食材，或拖拽案板上的食物。</span>
             </button>
-            <button id="sellBtn" class="selected-sell danger">
-              <b>出售</b>
-              <span><img src="./assets/ui/ui_coin_copper.png" alt="" />+0</span>
+            <button id="sellBtn" class="selected-sell unavailable" aria-label="当前棋子不可处理" disabled>
+              <span class="selected-action-placeholder" aria-hidden="true"></span>
             </button>
           </div>
           <button id="stationHudBtn" class="hud-icon-btn station-entry" aria-label="前往流沙驿">

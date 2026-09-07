@@ -17,6 +17,11 @@ const BONUS_BUBBLE_PREFIX = "bonus_bubble_";
 const BONUS_COIN_PREFIX = "bonus_coin_";
 const BONUS_COIN_MAX_LEVEL = 4;
 const BONUS_COIN_VALUES = Object.freeze([0, 1, 3, 8, 25]);
+const SELL_CHAIN_LEVELS = Object.freeze({
+  food: 8,
+  generator: 6,
+  generatorMaterial: 4,
+});
 const REPAIR_GATE_SEQUENCE = [
   "order_001_guard_lubing",
   "order_002_farmer_dough",
@@ -1779,7 +1784,7 @@ function renderSelected() {
   if (selectedPanel) selectedPanel.hidden = false;
   selectedPanel?.classList.toggle("empty", !itemId);
   selectedPanel?.classList.remove("no-sell");
-  setSellButtonValue(0);
+  setSellButtonAction({ mode: "unavailable", value: 0 });
   if (!itemId) {
     els.selectedName.textContent = "轻点棋子查看";
     els.selectedText.textContent = "";
@@ -1821,29 +1826,80 @@ function renderSelected() {
     els.sellBtn.disabled = true;
     return;
   }
-  if (item.type?.includes("generator")) {
-    selectedPanel?.classList.add("no-sell");
+  if (isGeneratorPiece(item)) {
     const generatorState = getGeneratorState(item.id);
     els.selectedName.textContent = item.name;
     els.selectedText.textContent =
       item.type === "manual_generator"
         ? `点击产出食材，消耗${item.generator.staminaCost}点驼铃。充能 ${generatorState.charges}/${item.generator.chargeMax}。`
         : "自动向周边8格投放食材，不消耗驼铃。";
-    els.sellBtn.disabled = true;
+    setSellButtonAction(getPieceRemovalAction(item));
     return;
   }
   const codex = codexById.get(item.codexId);
   els.selectedName.textContent = item.name;
   els.selectedText.textContent = `Lv${item.level ?? 1} · ${codex?.shortText ?? item.modernName}`;
-  setSellButtonValue(item.sellValue ?? 0);
-  els.sellBtn.disabled = false;
+  setSellButtonAction(getPieceRemovalAction(item));
 }
 
-function setSellButtonValue(value) {
-  els.sellBtn.innerHTML = `
-    <b>出售</b>
-    <span><img src="./assets/ui/ui_coin_copper.png" alt="" />+${value}</span>
-  `;
+function isGeneratorPiece(item) {
+  return ["manual_generator", "auto_generator"].includes(item?.type);
+}
+
+function isGeneratorMaterialPiece(item) {
+  return item?.type === "box_material"
+    || item?.type === "generator_material"
+    || item?.line?.startsWith("box_material")
+    || item?.line?.startsWith("generator_material");
+}
+
+function getPieceRemovalAction(item) {
+  if (!item || ["bonus_bubble", "bonus_coin", "gift_box"].includes(item.type)) {
+    return { mode: "unavailable", value: 0, requiresConfirm: false };
+  }
+  const maxLevel = isGeneratorPiece(item)
+    ? SELL_CHAIN_LEVELS.generator
+    : isGeneratorMaterialPiece(item)
+      ? SELL_CHAIN_LEVELS.generatorMaterial
+      : SELL_CHAIN_LEVELS.food;
+  const level = Math.max(1, Math.min(maxLevel, Number(item.level) || 1));
+  const quarter = Math.min(4, Math.ceil((level * 4) / maxLevel));
+  const fallbackValue = Math.max(0, quarter - 1);
+  const configuredValue = Number(item.sellValue);
+  const value = Number.isFinite(configuredValue)
+    ? Math.max(0, Math.min(3, configuredValue))
+    : fallbackValue;
+  return {
+    mode: value === 0 ? "delete" : "sell",
+    value,
+    requiresConfirm: isGeneratorPiece(item) || (maxLevel === SELL_CHAIN_LEVELS.food && level >= 5),
+  };
+}
+
+function setSellButtonAction(action) {
+  const { mode, value = 0 } = action;
+  els.sellBtn.classList.remove("delete", "sell", "unavailable");
+  els.sellBtn.classList.add(mode);
+  els.sellBtn.dataset.action = mode;
+  els.sellBtn.disabled = mode === "unavailable";
+  if (mode === "delete") {
+    els.sellBtn.setAttribute("aria-label", "删除选中的棋子");
+    els.sellBtn.innerHTML = `
+      <span class="selected-action-trash" aria-hidden="true"></span>
+      <b>删除</b>
+    `;
+    return;
+  }
+  if (mode === "sell") {
+    els.sellBtn.setAttribute("aria-label", `出售选中的棋子，获得${value}枚铜币`);
+    els.sellBtn.innerHTML = `
+      <span class="selected-action-value"><img src="./assets/ui/ui_coin_copper.png" alt="" /><strong>+${value}</strong></span>
+      <b>出售</b>
+    `;
+    return;
+  }
+  els.sellBtn.setAttribute("aria-label", "当前棋子不可处理");
+  els.sellBtn.innerHTML = `<span class="selected-action-placeholder" aria-hidden="true"></span>`;
 }
 
 function openSelectedPieceDetail() {
@@ -1873,9 +1929,10 @@ function openSelectedPieceDetail() {
     els.pieceDetailModal.showModal();
     return;
   }
-  els.pieceDetailMeta.textContent = item.type?.includes("generator")
+  const removalAction = getPieceRemovalAction(item);
+  els.pieceDetailMeta.textContent = isGeneratorPiece(item)
     ? `Lv${item.level ?? 1} · ${item.modernName ?? "生成器"}`
-    : `Lv${item.level ?? 1} · 售价 ${item.sellValue ?? 0} 铜币`;
+    : `Lv${item.level ?? 1} · ${removalAction.mode === "delete" ? "删除不返还铜币" : `出售可得 ${removalAction.value} 铜币`}`;
   if (item.type === "manual_generator") {
     const generatorState = getGeneratorState(item.id);
     els.pieceDetailText.textContent = `点击产出食材，消耗${item.generator.staminaCost}点驼铃。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
@@ -3085,14 +3142,25 @@ function sellSelected() {
   const itemId = state.board[index];
   if (!itemId) return;
   const item = byId.get(itemId);
-  if (["bonus_bubble", "bonus_coin"].includes(item?.type)) {
-    toast("奖励棋子不能出售，请在棋盘上继续合成。");
+  const action = getPieceRemovalAction(item);
+  if (action.mode === "unavailable") {
+    toast("这枚棋子不能删除或出售。");
     return;
   }
-  if (item.highValueConfirm && !confirm(`${item.name}很珍贵，确定出售吗？`)) return;
+  const actionName = action.mode === "delete" ? "删除" : "出售";
+  if (action.requiresConfirm && !confirm(`${item.name}很珍贵，确定${actionName}吗？`)) return;
   state.board[index] = null;
-  state.coins += item.sellValue;
-  keeper(`收起了${item.name}，换得${item.sellValue}枚铜币。`);
+  state.selectedIndex = null;
+  if (action.mode === "sell") {
+    state.coins += action.value;
+    state.coinsEarned += action.value;
+    keeper(`收起了${item.name}，换得${action.value}枚铜币。`);
+    toast(`出售${item.name} +${action.value}`);
+    showCoinBurst(action.value);
+  } else {
+    keeper(`清理了${item.name}，腾出一格案板。`);
+    toast(`已删除${item.name}`);
+  }
   render();
   saveState();
 }
