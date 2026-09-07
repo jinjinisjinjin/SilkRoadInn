@@ -34,8 +34,30 @@ archive/worktrees/
 # WorkBuddy local workspace data (not source)
 .workbuddy/
 
-# 大体积二进制资源（设计预览/美术概念/旧版本备份），另行管理不入库
-# 需要时可从本地或云盘取
-art/
-archive/
-design/
+# 大体积二进制资源、临时审阅输出和旧版本备份，留在本地，不纳入 Git
+/art/
+/archive/
+/outputs/
+
+# design 默认不纳入，只放行已经核验为当前标准的轻量文档。
+# 新文档必须先由主项目总控核验，再补入本白名单。
+/design/**
+!/design/project-control/
+!/design/project-control/00_项目总控.md
+!/design/project-control/10_修缮点位资产状态_v0.1.md
+!/design/game-rules/
+!/design/game-rules/丝路食肆_玩法逻辑定稿_v0.1.md
+!/design/game-rules/丝路食肆_铜币奖励与经济循环_v0.1.md
+!/design/visual-spec/
+!/design/visual-spec/丝路食肆_视觉方向板_v0.1.md
+!/design/data-spec/
+!/design/data-spec/README.md
+!/design/data-spec/丝路食肆_资产管线说明_v0.1.md
+!/design/repair-briefs/
+!/design/repair-briefs/briefs_丝路食肆_流沙驿边城修缮地点规划_v0.5.md
+!/design/repair-briefs/briefs_丝路食肆_流沙驿边城修缮大地图说明_v0.6_地点识别强化版.md
+!/design/repair-briefs/Lv1-Lv4_暖沙烟火_逐点8至9项切割清单_v0.2.md
+!/design/repair-briefs/Lv1-Lv4_暖沙烟火内景视觉核验切割规划_v0.2.md
+!/design/repair-briefs/Lv3_全部未修缮内景生图提示词_v1.0.md
+!/design/repair-briefs/Lv4_7点位未修缮内景生图指令终稿_v1.0.md
+!/design/repair-briefs/暖沙烟火_完成底图与旧态遮罩执行标准_v0.1.md
