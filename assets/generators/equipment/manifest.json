@@ -1,0 +1,592 @@
+{
+  "version": "1.0",
+  "assetSet": "generator-equipment-six-level",
+  "categories": [
+    "mill",
+    "dairy",
+    "meat",
+    "spice",
+    "fruit",
+    "drink"
+  ],
+  "levelsPerCategory": 6,
+  "itemCount": 36,
+  "items": [
+    {
+      "category": "mill",
+      "level": 1,
+      "relativePath": "assets/generators/equipment/mill/generator_mill_01.png",
+      "sourceConcept": "art/food-concepts/丝路食肆_磨坊食盒6级概念图_v2.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        64,
+        466,
+        466
+      ],
+      "sha256": "a0878434b6133278b6c1620ef05fd5eba25f9a6972ddf7072fa5c0bad4357292",
+      "status": "approved"
+    },
+    {
+      "category": "mill",
+      "level": 2,
+      "relativePath": "assets/generators/equipment/mill/generator_mill_02.png",
+      "sourceConcept": "art/food-concepts/丝路食肆_磨坊食盒6级概念图_v2.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        56,
+        46,
+        455,
+        466
+      ],
+      "sha256": "13b52a6febd5620ecf41460bd439145eae116334ec3c1a9618bb0d5e53b4c32d",
+      "status": "approved"
+    },
+    {
+      "category": "mill",
+      "level": 3,
+      "relativePath": "assets/generators/equipment/mill/generator_mill_03.png",
+      "sourceConcept": "art/food-concepts/丝路食肆_磨坊食盒6级概念图_v2.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        64,
+        46,
+        447,
+        466
+      ],
+      "sha256": "49cbf44ffe647b907bba546af7501851b58619e8ae5763dd3fc304cac4a07878",
+      "status": "approved"
+    },
+    {
+      "category": "mill",
+      "level": 4,
+      "relativePath": "assets/generators/equipment/mill/generator_mill_04.png",
+      "sourceConcept": "art/food-concepts/丝路食肆_磨坊食盒6级概念图_v2.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        67,
+        46,
+        445,
+        466
+      ],
+      "sha256": "b267cd4c03cade074a74ed77c4fe07a9fbb56acb6f48e7cb4b4ea9c3c9839ebf",
+      "status": "approved"
+    },
+    {
+      "category": "mill",
+      "level": 5,
+      "relativePath": "assets/generators/equipment/mill/generator_mill_05.png",
+      "sourceConcept": "art/food-concepts/丝路食肆_磨坊食盒6级概念图_v2.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        115,
+        46,
+        396,
+        466
+      ],
+      "sha256": "122012e9155ae821bce7c34ffdfe8099d6c41496f4e3b2bb4e106aaf22d49f4f",
+      "status": "approved"
+    },
+    {
+      "category": "mill",
+      "level": 6,
+      "relativePath": "assets/generators/equipment/mill/generator_mill_06.png",
+      "sourceConcept": "art/food-concepts/丝路食肆_磨坊食盒6级概念图_v2.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        90,
+        46,
+        422,
+        466
+      ],
+      "sha256": "ea6c02a3e5e422e28c3f0c025295f059fb08984684bd412895cabc5ae07c6b98",
+      "status": "approved"
+    },
+    {
+      "category": "dairy",
+      "level": 1,
+      "relativePath": "assets/generators/equipment/dairy/generator_dairy_01.png",
+      "sourceConcept": "art/food-concepts/dairy/丝路食肆_奶房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        101,
+        466,
+        466
+      ],
+      "sha256": "11b0962954dd1832b147c4095958fa0538d877830e4e4519bfc35efcab88d5db",
+      "status": "approved"
+    },
+    {
+      "category": "dairy",
+      "level": 2,
+      "relativePath": "assets/generators/equipment/dairy/generator_dairy_02.png",
+      "sourceConcept": "art/food-concepts/dairy/丝路食肆_奶房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        67,
+        466,
+        466
+      ],
+      "sha256": "2c489b2d52ce999a00afe5f604446b143843b77ecbd13ce9dffe74360b332067",
+      "status": "approved"
+    },
+    {
+      "category": "dairy",
+      "level": 3,
+      "relativePath": "assets/generators/equipment/dairy/generator_dairy_03.png",
+      "sourceConcept": "art/food-concepts/dairy/丝路食肆_奶房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        81,
+        466,
+        466
+      ],
+      "sha256": "62b730f8b627ddfc95d3093a9974f31c812a5e0801d47e2d5123370d255bdcce",
+      "status": "approved"
+    },
+    {
+      "category": "dairy",
+      "level": 4,
+      "relativePath": "assets/generators/equipment/dairy/generator_dairy_04.png",
+      "sourceConcept": "art/food-concepts/dairy/丝路食肆_奶房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        85,
+        46,
+        427,
+        466
+      ],
+      "sha256": "8ac7f30807e3a6452eeb919badb1edb1332a53102d0e70f8b7ae3f027d3b3952",
+      "status": "approved"
+    },
+    {
+      "category": "dairy",
+      "level": 5,
+      "relativePath": "assets/generators/equipment/dairy/generator_dairy_05.png",
+      "sourceConcept": "art/food-concepts/dairy/丝路食肆_奶房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        88,
+        46,
+        423,
+        466
+      ],
+      "sha256": "c6de74e7aa789a38b42a7f65a68dd1f911c0d5dc02facd74158148f8618db872",
+      "status": "approved"
+    },
+    {
+      "category": "dairy",
+      "level": 6,
+      "relativePath": "assets/generators/equipment/dairy/generator_dairy_06.png",
+      "sourceConcept": "art/food-concepts/dairy/丝路食肆_奶房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        92,
+        46,
+        420,
+        466
+      ],
+      "sha256": "624b8efc172ae23fc258eee6f63db35b9fe1eeadd6c22fc3d19ced51b8878267",
+      "status": "approved"
+    },
+    {
+      "category": "meat",
+      "level": 1,
+      "relativePath": "assets/generators/equipment/meat/generator_meat_01.png",
+      "sourceConcept": "art/food-concepts/meat/丝路食肆_肉铺食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        139,
+        466,
+        466
+      ],
+      "sha256": "986825574a1a54c2d6758619404e320a47ad3ad944e5a090aee8a1f832994949",
+      "status": "approved"
+    },
+    {
+      "category": "meat",
+      "level": 2,
+      "relativePath": "assets/generators/equipment/meat/generator_meat_02.png",
+      "sourceConcept": "art/food-concepts/meat/丝路食肆_肉铺食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        65,
+        46,
+        446,
+        466
+      ],
+      "sha256": "675e4c44cd4841843324b149b16e3394e2a230369ecd8be11a0e08efb520ce5f",
+      "status": "approved"
+    },
+    {
+      "category": "meat",
+      "level": 3,
+      "relativePath": "assets/generators/equipment/meat/generator_meat_03.png",
+      "sourceConcept": "art/food-concepts/meat/丝路食肆_肉铺食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        98,
+        466,
+        466
+      ],
+      "sha256": "a7d57c4da6e2d497f5de0b8a05a61b8dcb11e54a6d62fccea28c6f1f39d65323",
+      "status": "approved"
+    },
+    {
+      "category": "meat",
+      "level": 4,
+      "relativePath": "assets/generators/equipment/meat/generator_meat_04.png",
+      "sourceConcept": "art/food-concepts/meat/丝路食肆_肉铺食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        101,
+        46,
+        410,
+        466
+      ],
+      "sha256": "33449d4bda05c84b4f5e59f2d3a5970e1da6d6e7f255cb4cf1f2b7ff40e3f216",
+      "status": "approved"
+    },
+    {
+      "category": "meat",
+      "level": 5,
+      "relativePath": "assets/generators/equipment/meat/generator_meat_05.png",
+      "sourceConcept": "art/food-concepts/meat/丝路食肆_肉铺食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        108,
+        46,
+        404,
+        466
+      ],
+      "sha256": "974be31f68a5cc0f7575bd111e48e91f9f53ace2fe8bc6b8cf57d6420ef0779c",
+      "status": "approved"
+    },
+    {
+      "category": "meat",
+      "level": 6,
+      "relativePath": "assets/generators/equipment/meat/generator_meat_06.png",
+      "sourceConcept": "art/food-concepts/meat/丝路食肆_肉铺食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        90,
+        46,
+        421,
+        466
+      ],
+      "sha256": "95aa15acad9b6cf460c2863a10fc48c2c31762f65451128448b1b249ccae89d7",
+      "status": "approved"
+    },
+    {
+      "category": "spice",
+      "level": 1,
+      "relativePath": "assets/generators/equipment/spice/generator_spice_01.png",
+      "sourceConcept": "art/food-concepts/spice/丝路食肆_香料架食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        80,
+        466,
+        466
+      ],
+      "sha256": "30f39d5a700fc650aafc53cb659741d344c1c8c9f9252f6a1981e6bff7ee6059",
+      "status": "approved"
+    },
+    {
+      "category": "spice",
+      "level": 2,
+      "relativePath": "assets/generators/equipment/spice/generator_spice_02.png",
+      "sourceConcept": "art/food-concepts/spice/丝路食肆_香料架食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        81,
+        466,
+        466
+      ],
+      "sha256": "3589d46f9bed8a753a906f04106fef2f18cae3a5db4d8e9ce4521dc271652250",
+      "status": "approved"
+    },
+    {
+      "category": "spice",
+      "level": 3,
+      "relativePath": "assets/generators/equipment/spice/generator_spice_03.png",
+      "sourceConcept": "art/food-concepts/spice/丝路食肆_香料架食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        90,
+        46,
+        422,
+        466
+      ],
+      "sha256": "7e50b7c29628e477079b14af23900671ef0a3a96b68923744fd1161251fdde7f",
+      "status": "approved"
+    },
+    {
+      "category": "spice",
+      "level": 4,
+      "relativePath": "assets/generators/equipment/spice/generator_spice_04.png",
+      "sourceConcept": "art/food-concepts/spice/丝路食肆_香料架食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        122,
+        46,
+        389,
+        466
+      ],
+      "sha256": "16680c6753ed6fa629c0a1ff3b57539fc66a765c2b925be1a4fc997cdc71a993",
+      "status": "approved"
+    },
+    {
+      "category": "spice",
+      "level": 5,
+      "relativePath": "assets/generators/equipment/spice/generator_spice_05.png",
+      "sourceConcept": "art/food-concepts/spice/丝路食肆_香料架食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        134,
+        46,
+        377,
+        466
+      ],
+      "sha256": "8d9f65cdec55a7c07ddc6aa948d222a6630062554439a6cff6abfa46f5fd4492",
+      "status": "approved"
+    },
+    {
+      "category": "spice",
+      "level": 6,
+      "relativePath": "assets/generators/equipment/spice/generator_spice_06.png",
+      "sourceConcept": "art/food-concepts/spice/丝路食肆_香料架食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        126,
+        46,
+        385,
+        466
+      ],
+      "sha256": "a094fb110cd950973486fc0a46eced6693ddf1584a897a59d42d8acdd15657db",
+      "status": "approved"
+    },
+    {
+      "category": "fruit",
+      "level": 1,
+      "relativePath": "assets/generators/equipment/fruit/generator_fruit_01.png",
+      "sourceConcept": "art/food-concepts/fruit/丝路食肆_果摊食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        49,
+        46,
+        463,
+        466
+      ],
+      "sha256": "b787dbb4d8d859cb008ea53b90ed464328030af9924e8c43109ec2bf51a3df5f",
+      "status": "approved"
+    },
+    {
+      "category": "fruit",
+      "level": 2,
+      "relativePath": "assets/generators/equipment/fruit/generator_fruit_02.png",
+      "sourceConcept": "art/food-concepts/fruit/丝路食肆_果摊食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        76,
+        466,
+        466
+      ],
+      "sha256": "ce1e3b431085732669a16af0d13c7444fc28fabc17515f71d695047498396cb1",
+      "status": "approved"
+    },
+    {
+      "category": "fruit",
+      "level": 3,
+      "relativePath": "assets/generators/equipment/fruit/generator_fruit_03.png",
+      "sourceConcept": "art/food-concepts/fruit/丝路食肆_果摊食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        66,
+        466,
+        466
+      ],
+      "sha256": "802b49103c7f187008a748b8b51097200d571c78eb182af9c0911258144d428e",
+      "status": "approved"
+    },
+    {
+      "category": "fruit",
+      "level": 4,
+      "relativePath": "assets/generators/equipment/fruit/generator_fruit_04.png",
+      "sourceConcept": "art/food-concepts/fruit/丝路食肆_果摊食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        112,
+        46,
+        399,
+        466
+      ],
+      "sha256": "8af3949d9a7fde69003c210d167ecd91c7e36d70c03f6810100361127839fabc",
+      "status": "approved"
+    },
+    {
+      "category": "fruit",
+      "level": 5,
+      "relativePath": "assets/generators/equipment/fruit/generator_fruit_05.png",
+      "sourceConcept": "art/food-concepts/fruit/丝路食肆_果摊食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        100,
+        46,
+        411,
+        466
+      ],
+      "sha256": "c6a71fab05e28356370cd18743f0ebcd180e14b5b8f9b38e4b58989ea4a20a28",
+      "status": "approved"
+    },
+    {
+      "category": "fruit",
+      "level": 6,
+      "relativePath": "assets/generators/equipment/fruit/generator_fruit_06.png",
+      "sourceConcept": "art/food-concepts/fruit/丝路食肆_果摊食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        98,
+        46,
+        413,
+        466
+      ],
+      "sha256": "d596de3e5c8db5492b284e2de319597b911219a9acc628abb96a968e5ba42d92",
+      "status": "approved"
+    },
+    {
+      "category": "drink",
+      "level": 1,
+      "relativePath": "assets/generators/equipment/drink/generator_drink_01.png",
+      "sourceConcept": "art/food-concepts/drink/丝路食肆_酒水厢房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        65,
+        466,
+        466
+      ],
+      "sha256": "a8a114b31f7153ddad113e6cbc107de39fb4bf521a386ab9641277840b577f6b",
+      "status": "approved"
+    },
+    {
+      "category": "drink",
+      "level": 2,
+      "relativePath": "assets/generators/equipment/drink/generator_drink_02.png",
+      "sourceConcept": "art/food-concepts/drink/丝路食肆_酒水厢房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        88,
+        466,
+        466
+      ],
+      "sha256": "ed2424862a11d344204ed8c403730e0c5356f312f6cc42be90ad22110b48721b",
+      "status": "approved"
+    },
+    {
+      "category": "drink",
+      "level": 3,
+      "relativePath": "assets/generators/equipment/drink/generator_drink_03.png",
+      "sourceConcept": "art/food-concepts/drink/丝路食肆_酒水厢房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        46,
+        46,
+        465,
+        466
+      ],
+      "sha256": "e795db33c83bd84dd3fbc658207ef18bf08b7925565f8fb5f47fd57824eb5eb9",
+      "status": "approved"
+    },
+    {
+      "category": "drink",
+      "level": 4,
+      "relativePath": "assets/generators/equipment/drink/generator_drink_04.png",
+      "sourceConcept": "art/food-concepts/drink/丝路食肆_酒水厢房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        107,
+        46,
+        405,
+        466
+      ],
+      "sha256": "62b66304b0c5c5bd12fc98236fa7e748ff33809f96bca17b0d7c774f0c39c104",
+      "status": "approved"
+    },
+    {
+      "category": "drink",
+      "level": 5,
+      "relativePath": "assets/generators/equipment/drink/generator_drink_05.png",
+      "sourceConcept": "art/food-concepts/drink/丝路食肆_酒水厢房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        111,
+        46,
+        400,
+        466
+      ],
+      "sha256": "d51315f5334895fd39c505129d585084e4a5fabdc839cbfa2d5e91d3f7968c53",
+      "status": "approved"
+    },
+    {
+      "category": "drink",
+      "level": 6,
+      "relativePath": "assets/generators/equipment/drink/generator_drink_06.png",
+      "sourceConcept": "art/food-concepts/drink/丝路食肆_酒水厢房食盒6级概念图_v1.png",
+      "width": 512,
+      "height": 512,
+      "alphaBBox": [
+        111,
+        46,
+        400,
+        466
+      ],
+      "sha256": "6503f08f76869be828d485ea92a581588c6a36953e2d2354f183c515013ecede",
+      "status": "approved"
+    }
+  ]
+}
