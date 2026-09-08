@@ -1,8 +1,13 @@
 const DATA_PATH = "./data/";
-const GENERATOR_QA_MODE = new URLSearchParams(location.search).get("qa") === "generator-system-v1";
+const QA_MODE = new URLSearchParams(location.search).get("qa");
+const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
+const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
-  : "silkroad_tavern_proto_v02";
+  : GENERATOR_MATERIAL_QA_MODE
+    ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
+    : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -27,6 +32,26 @@ const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
   generator: 6,
   generatorMaterial: 4,
+});
+const GENERATOR_MATERIAL_SCALE_PERCENT = Object.freeze({
+  material_mill_01: 229,
+  material_mill_02: 221,
+  material_mill_03: 212,
+  material_dairy_01: 224,
+  material_dairy_02: 206,
+  material_dairy_03: 216,
+  material_meat_01: 246,
+  material_meat_02: 225,
+  material_meat_03: 220,
+  material_spice_01: 267,
+  material_spice_02: 290,
+  material_spice_03: 203,
+  material_fruit_01: 219,
+  material_fruit_02: 213,
+  material_fruit_03: 245,
+  material_drink_01: 276,
+  material_drink_02: 228,
+  material_drink_03: 193,
 });
 const REPAIR_GATE_SEQUENCE = [
   "order_001_guard_lubing",
@@ -138,6 +163,7 @@ const state = {
   progressionConfig: null,
   innConfig: null,
   generatorConfig: null,
+  generatorMaterialConfig: null,
   board: [],
   bag: [],
   giftPacks: [],
@@ -319,6 +345,40 @@ function generatorItemId(categoryId, level) {
   return `gen_${categoryId}_${String(level).padStart(2, "0")}`;
 }
 
+function generatorMaterialItemId(categoryId, stage) {
+  return `material_${categoryId}_${String(stage).padStart(2, "0")}`;
+}
+
+function buildConfiguredGeneratorMaterialItems(config) {
+  const stages = Number(config.stagesPerCategory) || 3;
+  return config.categories.flatMap((category) =>
+    Array.from({ length: stages }, (_, offset) => {
+      const stage = offset + 1;
+      const nextId = stage < stages
+        ? generatorMaterialItemId(category.id, stage + 1)
+        : category.targetGeneratorId;
+      return {
+        id: generatorMaterialItemId(category.id, stage),
+        type: config.materialType,
+        generatorMaterialCategory: category.id,
+        foodLineId: category.foodLineId,
+        level: stage,
+        name: `${category.displayName}·${["初阶", "进阶", "成型"][offset]}`,
+        modernName: stage < stages
+          ? "两个同阶材料可合成下一阶材料"
+          : "两个同阶材料可合成一级生成器",
+        line: `generator_material_${category.id}`,
+        iconKey: `${config.assetRoot}/generator_material_${category.assetCategory}_${String(stage).padStart(2, "0")}`,
+        source: "generator_material_chain_v03",
+        mergeFrom: stage > 1 ? generatorMaterialItemId(category.id, stage - 1) : null,
+        mergeTo: nextId,
+        codexId: null,
+        highValueConfirm: false,
+      };
+    }),
+  );
+}
+
 function buildConfiguredGeneratorItems(config) {
   const levels = Number(config.levelsPerCategory) || 6;
   const economy = config.economy;
@@ -353,7 +413,9 @@ function buildConfiguredGeneratorItems(config) {
 }
 
 function migrateLegacyGeneratorId(itemId) {
-  return state.generatorConfig?.legacyIdMap?.[itemId] ?? itemId;
+  return state.generatorMaterialConfig?.legacyIdMap?.[itemId]
+    ?? state.generatorConfig?.legacyIdMap?.[itemId]
+    ?? itemId;
 }
 
 function initializeGeneratorQaScenario() {
@@ -377,9 +439,28 @@ function initializeGeneratorQaScenario() {
   state.selectedIndex = null;
 }
 
+function initializeGeneratorMaterialQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  state.generatorMaterialConfig.categories.forEach((category, categoryIndex) => {
+    const column = categoryIndex < 3 ? 0 : 4;
+    const rowOffset = categoryIndex % 3;
+    for (let stage = 1; stage <= state.generatorMaterialConfig.stagesPerCategory; stage += 1) {
+      const row = (stage - 1) * 3 + rowOffset;
+      const itemId = generatorMaterialItemId(category.id, stage);
+      state.board[boardIndex(row, column)] = itemId;
+      state.board[boardIndex(row, column + 1)] = itemId;
+    }
+  });
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.generatorStates = {};
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.selectedIndex = null;
+}
+
 async function boot() {
   console.log('🐫 丝路食肆 v0.3-drag 启动中…');
-  const [items, orders, codex, stamina, progression, inn, generators] = await Promise.all([
+  const [items, orders, codex, stamina, progression, inn, generators, generatorMaterials] = await Promise.all([
     loadJson("items"),
     loadJson("orders"),
     loadJson("codex"),
@@ -387,14 +468,19 @@ async function boot() {
     loadJson("progression"),
     loadJson("inn"),
     loadJson("generators"),
+    loadJson("generator-materials"),
   ]);
 
   state.generatorConfig = generators;
+  state.generatorMaterialConfig = generatorMaterials;
   const configuredGenerators = buildConfiguredGeneratorItems(generators);
+  const configuredGeneratorMaterials = buildConfiguredGeneratorMaterialItems(generatorMaterials);
   const configuredGeneratorIds = new Set(configuredGenerators.map((item) => item.id));
+  const configuredGeneratorMaterialIds = new Set(configuredGeneratorMaterials.map((item) => item.id));
   state.items = [
-    ...items.items.filter((item) => !configuredGeneratorIds.has(item.id)),
+    ...items.items.filter((item) => !configuredGeneratorIds.has(item.id) && !configuredGeneratorMaterialIds.has(item.id)),
     ...configuredGenerators,
+    ...configuredGeneratorMaterials,
   ];
   state.ordersConfig = orders;
   state.codexConfig = codex;
@@ -487,6 +573,7 @@ function loadState() {
     lastTick: data.lastTick ?? Date.now(),
   });
   if (GENERATOR_QA_MODE && !saved) initializeGeneratorQaScenario();
+  if (GENERATOR_MATERIAL_QA_MODE && !saved) initializeGeneratorMaterialQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -545,7 +632,8 @@ function applyOfflineRecovery() {
 }
 
 function ensureStarterGenerator() {
-  if (!GENERATOR_QA_MODE && state.completedOrders === 0 && state.coinsEarned === 0) {
+  if (ISOLATED_QA_MODE) return;
+  if (state.completedOrders === 0 && state.coinsEarned === 0) {
     state.board = state.board.map((itemId, index) => {
       if (isBoardCellLocked(index)) return null;
       if (["gen_dairy_01", "gen_dairy_02", "gen_milk_room_01", "gen_milk_room_02", "gen_livestock_pen_01", "gen_livestock_pen_02"].includes(itemId)) return null;
@@ -1629,7 +1717,7 @@ function restoreBonusBubbleItems() {
 
 function isBubbleEligibleMerge(sourceItem, outputItem) {
   if (!sourceItem || !outputItem || (sourceItem.level ?? 0) < BONUS_BUBBLE_MIN_LEVEL) return false;
-  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box", "box_material"].includes(sourceItem.type)) return false;
+  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box", "box_material", "generator_material"].includes(sourceItem.type)) return false;
   return Boolean(sourceItem.line) || sourceItem.type?.includes("generator");
 }
 
@@ -1793,7 +1881,8 @@ function lockedCellItemId(index) {
   if (!isBoardCellLocked(index)) return null;
   const row = Math.floor(index / BOARD_COLUMNS);
   const col = index % BOARD_COLUMNS;
-  return LOCKED_CELL_ITEM_ROWS[row]?.[col] ?? "hubing_01_dough";
+  const itemId = LOCKED_CELL_ITEM_ROWS[row]?.[col] ?? "hubing_01_dough";
+  return migrateLegacyGeneratorId(itemId);
 }
 
 function lockedCellVisual(index) {
@@ -1898,11 +1987,15 @@ function renderBoard() {
       if (!item) return;
       if (!renderBonusBoardItem(cell, item, itemId, index)) {
       const img = document.createElement("img");
-      img.className = `item ${item.type?.includes("generator") ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""}`;
+      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""}`;
       img.alt = item.name;
       img.src = itemAssetSrc(item);
+      if (item.type === "generator_material") {
+        const scale = GENERATOR_MATERIAL_SCALE_PERCENT[item.id] ?? 220;
+        img.style.setProperty("--generator-material-scale", `${scale}%`);
+      }
       cell.append(img);
-      if (item.type?.includes("generator")) {
+      if (isGeneratorPiece(item)) {
         const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
         const badge = document.createElement("span");
         badge.className = "generator-badge";
@@ -2119,6 +2212,9 @@ function isGeneratorMaterialPiece(item) {
 
 function getPieceRemovalAction(item) {
   if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box"].includes(item.type)) {
+    return { mode: "unavailable", value: 0, requiresConfirm: false };
+  }
+  if (item.type === "generator_material") {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
   const maxLevel = isGeneratorPiece(item)
@@ -3683,22 +3779,11 @@ function mappedGiftMaterialId() {
     .map((orderId) => getOrder(orderId))
     .filter(Boolean)
     .flatMap((order) => order.demand.map((demand) => demand.itemId));
-  const candidates = state.items.filter((item) =>
-    item.boxMaterial && byId.has(migrateLegacyGeneratorId(item.boxMaterial.targetGeneratorId)),
-  );
-  if (!candidates.length) return null;
-  const weighted = candidates.map((material) => {
-    const generator = byId.get(migrateLegacyGeneratorId(material.boxMaterial.targetGeneratorId));
-    const outputIds = new Set(generator?.generator?.pool?.map((entry) => entry.itemId) ?? []);
-    const score = 1 + demandIds.filter((itemId) => outputIds.has(itemId)).length * 4;
-    return { material, score };
-  });
-  let roll = Math.random() * weighted.reduce((sum, entry) => sum + entry.score, 0);
-  for (const entry of weighted) {
-    roll -= entry.score;
-    if (roll <= 0) return entry.material.id;
-  }
-  return weighted[0].material.id;
+  const demandedLines = demandIds.map((itemId) => byId.get(itemId)?.line).filter(Boolean);
+  const category = state.generatorMaterialConfig.categories.find((entry) =>
+    demandedLines.includes(entry.foodLineId),
+  ) ?? state.generatorMaterialConfig.categories[0];
+  return category ? generatorMaterialItemId(category.id, 1) : null;
 }
 
 function orderProgressGiftOutputs(pack) {

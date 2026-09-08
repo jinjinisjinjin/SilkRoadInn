@@ -5618,6 +5618,21 @@ button:disabled {
   transform: none;
 }
 
+#app[data-page="board"] .item.generator-material {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--generator-material-scale, 220%);
+  height: var(--generator-material-scale, 220%);
+  margin: 0;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+}
+
+#app[data-page="board"] .cell:active .item.generator-material {
+  transform: translate(-50%, -50%) scale(1.03);
+}
+
 #app[data-page="board"] .locked-preview,
 #app[data-page="board"] .locked-material-preview {
   opacity: 0.82;

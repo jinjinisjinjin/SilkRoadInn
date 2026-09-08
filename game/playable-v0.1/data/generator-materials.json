@@ -1,0 +1,56 @@
+{
+  "version": "0.3",
+  "materialType": "generator_material",
+  "assetRoot": "generator-materials-v03",
+  "stagesPerCategory": 3,
+  "legacyIdMap": {
+    "boxmat_milk_room_01": "material_dairy_01",
+    "material_milk_01": "material_dairy_01",
+    "material_milk_02": "material_dairy_02",
+    "material_milk_03": "material_dairy_03"
+  },
+  "categories": [
+    {
+      "id": "mill",
+      "assetCategory": "mill",
+      "foodLineId": "hubing",
+      "displayName": "磨坊材料",
+      "targetGeneratorId": "gen_mill_01"
+    },
+    {
+      "id": "dairy",
+      "assetCategory": "milk_room",
+      "foodLineId": "dairy",
+      "displayName": "奶房材料",
+      "targetGeneratorId": "gen_dairy_01"
+    },
+    {
+      "id": "meat",
+      "assetCategory": "meat",
+      "foodLineId": "meat",
+      "displayName": "肉铺材料",
+      "targetGeneratorId": "gen_meat_01"
+    },
+    {
+      "id": "spice",
+      "assetCategory": "spice",
+      "foodLineId": "spice",
+      "displayName": "香料架材料",
+      "targetGeneratorId": "gen_spice_01"
+    },
+    {
+      "id": "fruit",
+      "assetCategory": "fruit",
+      "foodLineId": "fruit",
+      "displayName": "果摊材料",
+      "targetGeneratorId": "gen_fruit_01"
+    },
+    {
+      "id": "drink",
+      "assetCategory": "drink",
+      "foodLineId": "drink",
+      "displayName": "酒水厢房材料",
+      "targetGeneratorId": "gen_drink_01"
+    }
+  ]
+}
