@@ -39,7 +39,7 @@ SilkRoadInn/
 ├── art/                        # 美术生产文件（概念稿、内景研发）
 │   ├── concepts/               # 视觉探索、Mockup、Logo
 │   ├── food-concepts/          # 各食线美术方案、概念图
-│   ├── generator-concepts/     # 生成器原材料图标 v0.1-v0.3
+│   ├── generator-concepts/     # 生成器本体与基础材料的生产稿
 │   ├── repair-points/          # 修缮点美术（含分层素材）
 │   ├── interiors/              # lv2/lv3/lv4 内景（未修缮+修缮完成）
 │   └── order-ui-previews/      # 订单 UI 预览稿
@@ -56,7 +56,8 @@ SilkRoadInn/
 │   └── qa/                     # QA 校验
 ├── archive/                    # 历史版本
 │   ├── old-map-variants/       # 旧大地图变体
-│   └── old-outputs/            # 旧输出备份
+│   ├── old-outputs/            # 旧输出备份
+│   └── obsolete-generator-material-chain/ # 禁止接入的四阶段材料链废案
 └── .gitignore
 ```
 
@@ -68,6 +69,9 @@ SilkRoadInn/
 - **运行方式**: 通过本地 HTTP 服务器打开（不能直接双击 HTML）
 - **订单系统**: 26 步 REPAIR_GATE_SEQUENCE 逐单推进，每单交付后开放唯一修缮里程碑
 - **已完成修复**: 节奏门系统（P0）、4 个 Lv4 市集续单、硬编码阈值清理
+- **生成器系统**: 六类主食物线各 6 级，共 36 个生成器等级，已接入可玩原型
+- **生成器获取规则**: 每类只使用 1 种基础专属材料，集齐 8 份获得对应 Lv1 生成器；材料自身不分阶段
+- **废案边界**: `archive/obsolete-generator-material-chain/` 中的 24 张四阶段材料图只供追溯，禁止重新接入
 
 ## 给 AI 的规则
 
