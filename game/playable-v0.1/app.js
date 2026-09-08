@@ -1,5 +1,8 @@
 const DATA_PATH = "./data/";
-const SAVE_KEY = "silkroad_tavern_proto_v02";
+const GENERATOR_QA_MODE = new URLSearchParams(location.search).get("qa") === "generator-system-v1";
+const SAVE_KEY = GENERATOR_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
+  : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -124,7 +127,7 @@ const LOCKED_CELL_ITEM_ROWS = [
   ["meat_03_roupu", "drink_01_putaozhi", null, null, null, "meat_02_roumi_xian", "dairy_04_ganlao"],
   ["spice_04_jiaochi_jiang", "spice_02_ziran_mo", "fruit_02_gan_putao", "hubing_03_humabing", "dairy_03_laojiang", "drink_02_putaojiang", "hubing_03_humabing"],
   ["boxmat_milk_room_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
-  ["spice_06_hexiang_jiangzhan", "meat_05_yangrou_geng", "gen_milk_room_02", "dairy_05_suyou", "hubing_05_congchihubing", "hubing_04_youhubing", "dairy_07_tihusu"],
+  ["spice_06_hexiang_jiangzhan", "meat_05_yangrou_geng", "gen_dairy_02", "dairy_05_suyou", "hubing_05_congchihubing", "hubing_04_youhubing", "dairy_07_tihusu"],
 ];
 
 const state = {
@@ -134,6 +137,7 @@ const state = {
   staminaConfig: null,
   progressionConfig: null,
   innConfig: null,
+  generatorConfig: null,
   board: [],
   bag: [],
   giftPacks: [],
@@ -311,18 +315,87 @@ async function loadJson(name) {
   return response.json();
 }
 
+function generatorItemId(categoryId, level) {
+  return `gen_${categoryId}_${String(level).padStart(2, "0")}`;
+}
+
+function buildConfiguredGeneratorItems(config) {
+  const levels = Number(config.levelsPerCategory) || 6;
+  const economy = config.economy;
+  return config.categories.flatMap((category) =>
+    Array.from({ length: levels }, (_, offset) => {
+      const level = offset + 1;
+      return {
+        id: generatorItemId(category.id, level),
+        type: config.generatorType,
+        generatorType: category.id,
+        foodLineId: category.foodLineId,
+        level,
+        name: category.levelNames?.[offset] ?? `${category.displayName} Lv${level}`,
+        modernName: category.modernName,
+        line: "generator",
+        iconKey: `${config.assetRoot}/${category.id}/generator_${category.id}_${String(level).padStart(2, "0")}`,
+        source: "generator_system_v1",
+        mergeFrom: level > 1 ? generatorItemId(category.id, level - 1) : null,
+        mergeTo: level < levels ? generatorItemId(category.id, level + 1) : null,
+        codexId: null,
+        highValueConfirm: true,
+        generator: {
+          staminaCost: economy.staminaCost,
+          chargeMax: economy.chargeMax,
+          cooldownSeconds: economy.cooldownSeconds,
+          outputCount: economy.outputCount,
+          pool: [{ itemId: category.baseOutputItemId, weight: 100 }],
+        },
+      };
+    }),
+  );
+}
+
+function migrateLegacyGeneratorId(itemId) {
+  return state.generatorConfig?.legacyIdMap?.[itemId] ?? itemId;
+}
+
+function initializeGeneratorQaScenario() {
+  const generatorIds = state.generatorConfig.categories.flatMap((category) =>
+    Array.from({ length: state.generatorConfig.levelsPerCategory }, (_, offset) =>
+      generatorItemId(category.id, offset + 1),
+    ),
+  );
+  state.board = Array(BOARD_SIZE).fill(null);
+  generatorIds.forEach((itemId, index) => {
+    state.board[index] = itemId;
+  });
+  state.board[42] = "gen_mill_01";
+  state.board[43] = "gen_mill_01";
+  state.board[49] = "gen_mill_06";
+  state.board[50] = "gen_mill_06";
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.generatorStates = {};
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.selectedIndex = null;
+}
+
 async function boot() {
   console.log('🐫 丝路食肆 v0.3-drag 启动中…');
-  const [items, orders, codex, stamina, progression, inn] = await Promise.all([
+  const [items, orders, codex, stamina, progression, inn, generators] = await Promise.all([
     loadJson("items"),
     loadJson("orders"),
     loadJson("codex"),
     loadJson("stamina"),
     loadJson("progression"),
     loadJson("inn"),
+    loadJson("generators"),
   ]);
 
-  state.items = items.items;
+  state.generatorConfig = generators;
+  const configuredGenerators = buildConfiguredGeneratorItems(generators);
+  const configuredGeneratorIds = new Set(configuredGenerators.map((item) => item.id));
+  state.items = [
+    ...items.items.filter((item) => !configuredGeneratorIds.has(item.id)),
+    ...configuredGenerators,
+  ];
   state.ordersConfig = orders;
   state.codexConfig = codex;
   state.staminaConfig = stamina;
@@ -413,6 +486,7 @@ function loadState() {
     tutorialStep: data.tutorialStep ?? 0,
     lastTick: data.lastTick ?? Date.now(),
   });
+  if (GENERATOR_QA_MODE && !saved) initializeGeneratorQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -471,10 +545,10 @@ function applyOfflineRecovery() {
 }
 
 function ensureStarterGenerator() {
-  if (state.completedOrders === 0 && state.coinsEarned === 0) {
+  if (!GENERATOR_QA_MODE && state.completedOrders === 0 && state.coinsEarned === 0) {
     state.board = state.board.map((itemId, index) => {
       if (isBoardCellLocked(index)) return null;
-      if (["gen_milk_room_01", "gen_milk_room_02", "gen_livestock_pen_01", "gen_livestock_pen_02"].includes(itemId)) return null;
+      if (["gen_dairy_01", "gen_dairy_02", "gen_milk_room_01", "gen_milk_room_02", "gen_livestock_pen_01", "gen_livestock_pen_02"].includes(itemId)) return null;
       return itemId;
     });
     if (state.visibleOrders.includes("order_015_monk_rumi") || state.visibleOrders.includes("order_018_traveler_lubing_rumi")) {
@@ -1263,9 +1337,9 @@ function upgradeInn() {
 }
 
 function applyInnUnlocks() {
-  if (state.innLevel >= 2 && !state.board.includes("gen_milk_room_01")) {
+  if (state.innLevel >= 2 && !state.board.includes("gen_dairy_01")) {
     const index = firstEmptyIndex();
-    if (index >= 0) state.board[index] = "gen_milk_room_01";
+    if (index >= 0) state.board[index] = "gen_dairy_01";
   }
 }
 
@@ -1402,7 +1476,7 @@ function normalizeBoard(value) {
       const level = Number(itemId.slice(BONUS_RUBY_PREFIX.length));
       if (level > BONUS_RUBY_MAX_LEVEL) return BONUS_RUBY_PREFIX + String(BONUS_RUBY_MAX_LEVEL).padStart(2, "0");
     }
-    return itemId;
+    return migrateLegacyGeneratorId(itemId);
   });
 }
 
@@ -1412,7 +1486,7 @@ function normalizeGeneratorStates(value) {
     Object.entries(value)
       .filter(([key, entry]) => /^(board|bag):\d+$/.test(key) && entry && typeof entry.itemId === "string")
       .map(([key, entry]) => [key, {
-        itemId: entry.itemId,
+        itemId: migrateLegacyGeneratorId(entry.itemId),
         charges: Math.max(0, Number(entry.charges) || 0),
         cooldownEnd: Math.max(0, Number(entry.cooldownEnd) || 0),
       }]),
@@ -1501,6 +1575,10 @@ function normalizeBubbleStates(value) {
   if (!value || typeof value !== "object") return {};
   return Object.fromEntries(
     Object.entries(value)
+      .map(([bubbleId, entry]) => [bubbleId, {
+        ...entry,
+        itemId: migrateLegacyGeneratorId(entry?.itemId),
+      }])
       .filter(([bubbleId, entry]) => {
         const expiresAt = Number(entry?.expiresAt);
         return (
@@ -3605,10 +3683,12 @@ function mappedGiftMaterialId() {
     .map((orderId) => getOrder(orderId))
     .filter(Boolean)
     .flatMap((order) => order.demand.map((demand) => demand.itemId));
-  const candidates = state.items.filter((item) => item.boxMaterial && byId.has(item.boxMaterial.targetGeneratorId));
+  const candidates = state.items.filter((item) =>
+    item.boxMaterial && byId.has(migrateLegacyGeneratorId(item.boxMaterial.targetGeneratorId)),
+  );
   if (!candidates.length) return null;
   const weighted = candidates.map((material) => {
-    const generator = byId.get(material.boxMaterial.targetGeneratorId);
+    const generator = byId.get(migrateLegacyGeneratorId(material.boxMaterial.targetGeneratorId));
     const outputIds = new Set(generator?.generator?.pool?.map((entry) => entry.itemId) ?? []);
     const score = 1 + demandIds.filter((itemId) => outputIds.has(itemId)).length * 4;
     return { material, score };
@@ -3754,10 +3834,11 @@ function tryBuildGeneratorFromMaterials(materialId) {
     });
     const outputIndex = materialIndices[0] ?? firstEmptyIndexFromTop();
     clearGeneratorState(boardGeneratorStateKey(outputIndex));
-    state.board[outputIndex] = recipe.targetGeneratorId;
+    const targetGeneratorId = migrateLegacyGeneratorId(recipe.targetGeneratorId);
+    state.board[outputIndex] = targetGeneratorId;
     state.selectedIndex = outputIndex;
     state.pulseIndex = outputIndex;
-    const generator = byId.get(recipe.targetGeneratorId);
+    const generator = byId.get(targetGeneratorId);
     keeper(`8份${material.name}合成了${generator?.name ?? "新食盒"}。`);
     toast(`解锁生成器：${generator?.name ?? "新食盒"}`);
   }
@@ -4002,7 +4083,7 @@ function normalizeStorageSlots(value) {
   const slots = Array(STORAGE_FREE_SLOTS).fill(null);
   if (Array.isArray(value)) {
     value.slice(0, STORAGE_FREE_SLOTS).forEach((item, index) => {
-      slots[index] = item ?? null;
+      slots[index] = migrateLegacyGeneratorId(item ?? null);
     });
   }
   return slots;

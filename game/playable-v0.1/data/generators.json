@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "generatorType": "manual_generator",
+  "assetRoot": "generators/equipment",
+  "levelsPerCategory": 6,
+  "temporaryOutputRule": "All equipment levels produce the matching food line level-1 item until an approved level-based output table exists.",
+  "economy": {
+    "staminaCost": 1,
+    "chargeMax": 14,
+    "cooldownSeconds": 60,
+    "outputCount": 1
+  },
+  "legacyIdMap": {
+    "gen_milk_room_01": "gen_dairy_01",
+    "gen_milk_room_02": "gen_dairy_02"
+  },
+  "categories": [
+    {
+      "id": "mill",
+      "foodLineId": "hubing",
+      "baseOutputItemId": "hubing_01_dough",
+      "displayName": "磨坊食盒",
+      "modernName": "胡饼生成器",
+      "levelNames": [
+        "小石磨",
+        "翻新石磨",
+        "磨坊食盒 Lv3",
+        "磨坊食盒 Lv4",
+        "磨坊食盒 Lv5",
+        "磨坊食盒 Lv6"
+      ]
+    },
+    {
+      "id": "dairy",
+      "foodLineId": "dairy",
+      "baseOutputItemId": "dairy_01_milk",
+      "displayName": "奶房食盒",
+      "modernName": "奶食生成器"
+    },
+    {
+      "id": "meat",
+      "foodLineId": "meat",
+      "baseOutputItemId": "meat_01_yangrou_luan",
+      "displayName": "肉铺食盒",
+      "modernName": "肉食生成器"
+    },
+    {
+      "id": "spice",
+      "foodLineId": "spice",
+      "baseOutputItemId": "spice_01_huma",
+      "displayName": "香料架食盒",
+      "modernName": "香料生成器"
+    },
+    {
+      "id": "fruit",
+      "foodLineId": "fruit",
+      "baseOutputItemId": "fruit_01_putao",
+      "displayName": "果摊食盒",
+      "modernName": "果品生成器"
+    },
+    {
+      "id": "drink",
+      "foodLineId": "drink",
+      "baseOutputItemId": "drink_01_putaozhi",
+      "displayName": "酒水厢房食盒",
+      "modernName": "饮品生成器"
+    }
+  ]
+}
