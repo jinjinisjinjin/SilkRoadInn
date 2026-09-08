@@ -5,8 +5,10 @@ const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
 const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
+const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
+const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE;
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GLOBAL_LOADING_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
   : GENERATOR_MATERIAL_QA_MODE
@@ -17,7 +19,9 @@ const SAVE_KEY = GENERATOR_QA_MODE
         ? "silkroad_tavern_proto_v02_qa_ruby_display_v1"
         : LV4_MARKET_ORDERS_QA_MODE
           ? "silkroad_tavern_proto_v02_qa_lv4_market_orders_v1"
-          : "silkroad_tavern_proto_v02";
+          : GLOBAL_LOADING_QA_MODE
+            ? "silkroad_tavern_proto_v02_qa_global_loading_v1"
+            : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -117,6 +121,27 @@ const INN_PACKAGE_ASSETS = [
   "./assets/npc_standee/npc_temple_donor.png",
   "./assets/npc_standee/npc_caravan_leader.png",
 ];
+const STARTUP_DATA_NAMES = Object.freeze([
+  "items",
+  "orders",
+  "codex",
+  "stamina",
+  "progression",
+  "inn",
+  "generators",
+  "generator-materials",
+]);
+const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
+  "./assets/ui/loading_poster_character_v1.webp",
+  ...INN_PACKAGE_ASSETS,
+  "./assets/kitchen-bg.png",
+  "./assets/order_tray_approved_front.png",
+  "./assets/ui/ui_coin_copper.png",
+  "./assets/ui/ui_camel_bell_stamina.png",
+  "./assets/ui/ui_bag_inventory.png",
+  "./assets/ui/ui_kitchen_entry.png",
+  "./assets/ui/order_gift_coffer_v1.png",
+])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_REGION_BOUNDS = {
   1: [405, 487, 317, 269], 2: [488, 327, 300, 207], 3: [738, 339, 320, 230], 4: [298, 274, 258, 232],
@@ -329,6 +354,12 @@ const els = {
   loadingTitle: document.querySelector("#loadingTitle"),
   loadingText: document.querySelector("#loadingText"),
   loadingRetryBtn: document.querySelector("#loadingRetryBtn"),
+  startupLoading: document.querySelector("#startupLoading"),
+  startupLoadingStatus: document.querySelector("#startupLoadingStatus"),
+  startupLoadingPercent: document.querySelector("#startupLoadingPercent"),
+  startupLoadingTrack: document.querySelector("#startupLoadingTrack"),
+  startupLoadingFill: document.querySelector("#startupLoadingFill"),
+  startupLoadingRetry: document.querySelector("#startupLoadingRetry"),
 };
 
 const byId = new Map();
@@ -562,18 +593,103 @@ function initializeLv4MarketOrdersQaScenario() {
   state.selectedIndex = null;
 }
 
+let startupProgressValue = 0;
+
+function updateStartupLoading(percent, status) {
+  if (!els.startupLoading) return;
+  const value = Math.max(startupProgressValue, Math.min(100, Math.round(percent)));
+  startupProgressValue = value;
+  els.startupLoading.style.setProperty("--startup-progress", `${value}%`);
+  els.startupLoadingPercent.textContent = `${value}%`;
+  els.startupLoadingStatus.textContent = status;
+  els.startupLoadingTrack.setAttribute("aria-valuenow", String(value));
+}
+
+async function loadStartupGroup(tasks, startPercent, endPercent, status) {
+  if (!tasks.length) {
+    updateStartupLoading(endPercent, status);
+    return [];
+  }
+  let completed = 0;
+  updateStartupLoading(startPercent, status);
+  return Promise.all(tasks.map((task) => Promise.resolve()
+    .then(task)
+    .then((value) => {
+      completed += 1;
+      updateStartupLoading(startPercent + ((endPercent - startPercent) * completed) / tasks.length, status);
+      return value;
+    })));
+}
+
+function currentInnStartupAssets() {
+  const milestones = getMilestoneViews();
+  const completedStage = milestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
+  const next = nextRepairMilestone();
+  const assets = [];
+  if (completedStage) {
+    assets.push(`${LONGSCROLL_ROOT}/states-webp/${String(completedStage).padStart(2, "0")}_done_state_v0.1.webp?v=feather-20260803`);
+  }
+  (next?.longscrollRegionIds ?? []).forEach((regionId) => {
+    assets.push(`${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`);
+  });
+  state.visibleOrders.forEach((orderId) => {
+    const order = getOrder(orderId);
+    if (order?.npcId) assets.push(`./assets/npc_standee/${order.npcId}.png?v=${NPC_STANDEE_VERSION}`);
+  });
+  return [...new Set(assets)];
+}
+
+function waitForStartupPaint() {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function startupDelay(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function finishStartupLoading() {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const detailDelay = reducedMotion ? 16 : 110;
+  const posterDelay = reducedMotion ? 16 : 220;
+  const fadeDelay = reducedMotion ? 16 : 680;
+  updateStartupLoading(100, "驿站已备妥");
+  await startupDelay(detailDelay);
+  els.startupLoading.classList.add("details-leaving");
+  await startupDelay(posterDelay);
+  const app = document.querySelector("#app");
+  app.inert = false;
+  app.removeAttribute("inert");
+  app.setAttribute("aria-hidden", "false");
+  app.classList.add("startup-revealing");
+  app.classList.remove("startup-pending");
+  els.startupLoading.classList.add("is-leaving");
+  await startupDelay(fadeDelay);
+  els.startupLoading.hidden = true;
+}
+
+function showStartupFailure(error) {
+  console.error(error);
+  els.startupLoading.dataset.state = "error";
+  els.startupLoading.classList.remove("details-leaving", "is-leaving");
+  els.startupLoadingStatus.textContent = "加载失败，请检查网络后重试";
+  els.startupLoadingRetry.hidden = false;
+  els.startupLoadingRetry.onclick = () => location.reload();
+}
+
 async function boot() {
   console.log('🐫 丝路食肆 v0.3-drag 启动中…');
-  const [items, orders, codex, stamina, progression, inn, generators, generatorMaterials] = await Promise.all([
-    loadJson("items"),
-    loadJson("orders"),
-    loadJson("codex"),
-    loadJson("stamina"),
-    loadJson("progression"),
-    loadJson("inn"),
-    loadJson("generators"),
-    loadJson("generator-materials"),
-  ]);
+  if (GLOBAL_LOADING_QA_HOLD) {
+    updateStartupLoading(56, "正在展开流沙驿长卷");
+    return;
+  }
+
+  const dataResults = await loadStartupGroup(
+    STARTUP_DATA_NAMES.map((name) => () => loadJson(name)),
+    4,
+    60,
+    "正在载入食单与旅人订单",
+  );
+  const [items, orders, codex, stamina, progression, inn, generators, generatorMaterials] = dataResults;
 
   state.generatorConfig = generators;
   state.generatorMaterialConfig = generatorMaterials;
@@ -597,9 +713,21 @@ async function boot() {
   codex.entries.forEach((entry) => codexById.set(entry.id, entry));
 
   loadState();
+  if (!ISOLATED_QA_MODE || GLOBAL_LOADING_QA_MODE) state.currentPage = "inn";
+  const startupAssets = [...new Set([...STARTUP_REQUIRED_ASSETS, ...currentInnStartupAssets()])];
+  await loadStartupGroup(
+    startupAssets.map((url) => () => preloadImage(url)),
+    60,
+    96,
+    "正在展开流沙驿长卷",
+  );
+  innPackageLoaded = true;
+  updateStartupLoading(98, "正在点亮驿站灯火");
   render();
   bindEvents();
   applyBuildMode();
+  await waitForStartupPaint();
+  await finishStartupLoading();
   setInterval(tickStamina, 1000);
 }
 
@@ -4345,13 +4473,4 @@ function showCoinBurst(amount) {
   setTimeout(() => burst.remove(), 900);
 }
 
-boot().catch((error) => {
-  console.error(error);
-  document.querySelector("#board").innerHTML = `
-    <div class="boot-error">
-      <strong>数据没有加载到</strong>
-      <span>请确认本地服务从可玩原型目录启动。</span>
-    </div>
-  `;
-  toast("原型加载失败，请检查本地服务。");
-});
+boot().catch(showStartupFailure);

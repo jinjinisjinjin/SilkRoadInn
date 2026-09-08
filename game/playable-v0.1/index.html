@@ -4,11 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>丝路食肆｜长卷试玩原型</title>
+    <meta name="theme-color" content="#2b1b13" />
+    <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=lv4-market-orders-v2" />
+    <link rel="stylesheet" href="./styles.css?v=global-loading-v1" />
   </head>
   <body>
-    <main class="phone" id="app">
+    <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
+      <img class="startup-loading-poster" src="./assets/ui/loading_poster_character_v1.webp" alt="丝路肆食" fetchpriority="high" />
+      <div class="startup-loading-footer">
+        <div class="startup-loading-line">
+          <span id="startupLoadingStatus">正在翻开丝路食单</span>
+          <b id="startupLoadingPercent">0%</b>
+        </div>
+        <div class="startup-loading-track" id="startupLoadingTrack" role="progressbar" aria-label="游戏加载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <i id="startupLoadingFill"></i>
+        </div>
+        <button id="startupLoadingRetry" type="button" hidden>重新加载</button>
+      </div>
+    </section>
+
+    <main class="phone startup-pending" id="app" inert aria-hidden="true">
       <section class="game-page board-page active" id="boardPage">
         <section class="top">
           <div class="logo">丝路食肆</div>
@@ -203,6 +219,6 @@
       </div>
     </dialog>
 
-    <script src="./app.js?v=lv4-market-orders-v2"></script>
+    <script src="./app.js?v=global-loading-v1"></script>
   </body>
 </html>
