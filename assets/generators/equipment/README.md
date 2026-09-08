@@ -15,6 +15,6 @@ Each category contains levels `01` through `06`, named `generator_<category>_<le
 
 ## Scope Notes
 
-- The 24 `generator_material Nz` images are separate generator synthesis materials and are not included in this equipment set.
+- The approved synthesis chain uses 18 separate `v0.3` material images: stages `01` through `03` for each of the six categories. Stage `04` is not part of runtime and does not replace the approved Lv1 equipment art.
 - Existing root-level assets such as `assets/generators/generator_mill_01.png` and `assets/generators/generator_mill_02.png` are legacy runtime assets and remain untouched.
 - This import adds source assets only. It does not change runtime item configuration or playable-page behavior.
