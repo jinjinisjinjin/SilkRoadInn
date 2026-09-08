@@ -832,7 +832,8 @@
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 10,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "mill"
     },
     {
       "id": "gift_order_ch1_8",
@@ -842,7 +843,8 @@
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 15,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "mill"
     },
     {
       "id": "gift_order_ch1_12",
@@ -852,7 +854,8 @@
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 20,
       "rubyQuantity": 1,
-      "materialQuantity": 2
+      "materialQuantity": 4,
+      "materialCategory": "mill"
     },
     {
       "id": "gift_order_ch2_4",
@@ -862,7 +865,8 @@
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 15,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "dairy"
     },
     {
       "id": "gift_order_ch2_8",
@@ -872,7 +876,8 @@
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 20,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "dairy"
     },
     {
       "id": "gift_order_ch2_12",
@@ -882,7 +887,8 @@
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 25,
       "rubyQuantity": 1,
-      "materialQuantity": 2
+      "materialQuantity": 4,
+      "materialCategory": "dairy"
     },
     {
       "id": "gift_order_ch3_4",
@@ -892,7 +898,8 @@
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 20,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "drink"
     },
     {
       "id": "gift_order_ch3_8",
@@ -902,7 +909,8 @@
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 25,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "drink"
     },
     {
       "id": "gift_order_ch3_12",
@@ -912,7 +920,8 @@
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 30,
       "rubyQuantity": 1,
-      "materialQuantity": 2
+      "materialQuantity": 4,
+      "materialCategory": "drink"
     },
     {
       "id": "gift_order_ch4_4",
@@ -922,7 +931,8 @@
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 25,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "fruit"
     },
     {
       "id": "gift_order_ch4_8",
@@ -932,7 +942,8 @@
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 30,
       "rubyQuantity": 1,
-      "materialQuantity": 1
+      "materialQuantity": 2,
+      "materialCategory": "fruit"
     },
     {
       "id": "gift_order_ch4_12",
@@ -942,7 +953,8 @@
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 35,
       "rubyQuantity": 1,
-      "materialQuantity": 2
+      "materialQuantity": 4,
+      "materialCategory": "fruit"
     }
   ]
 }

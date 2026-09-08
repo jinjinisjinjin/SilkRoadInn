@@ -6141,59 +6141,97 @@ button:disabled {
 .order-progress-pack {
   position: relative;
   width: 42px;
-  height: 38px;
-  padding: 1px 2px 9px;
-  border: 1px solid rgba(112, 64, 31, 0.28);
-  border-radius: 8px;
-  background: rgba(236, 204, 145, 0.62);
-  box-shadow: inset 0 1px rgba(255, 248, 225, 0.7);
+  height: 43px;
+  padding: 2px 2px 11px;
+  overflow: visible;
+  border: 1px solid rgba(139, 96, 39, 0.54);
+  border-radius: 6px;
+  background: rgba(103, 66, 28, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(242, 208, 132, 0.12);
 }
 
 .order-progress-pack img {
-  width: 25px;
-  height: 25px;
+  display: block;
+  width: 36px;
+  height: 29px;
+  margin: 0 auto;
   object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(55, 31, 14, 0.28));
 }
 
 .order-progress-pack span {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  color: #70543f;
-  font-size: 9px;
+  left: 5px;
+  right: 5px;
+  bottom: 1px;
+  min-height: 10px;
+  padding: 1px 2px;
+  border-radius: 3px;
+  color: #f6dfaa;
+  background: rgba(74, 44, 21, 0.84);
+  font-size: 8px;
   font-weight: 900;
   line-height: 1;
 }
 
 .order-progress-pack.ready {
-  border-color: #9b4637;
-  background: rgba(249, 220, 147, 0.94);
-  box-shadow: 0 0 0 2px rgba(155, 70, 55, 0.14), 0 2px 5px rgba(72, 45, 31, 0.18);
-  animation: collectReadyPulse 1.45s ease-in-out infinite;
+  border-color: rgba(190, 137, 54, 0.94);
+  background: rgba(126, 81, 31, 0.18);
+  box-shadow: 0 0 0 1px rgba(251, 218, 135, 0.2), 0 0 8px rgba(218, 164, 64, 0.44);
+  animation: orderGiftReadyPulse 1.55s ease-in-out infinite;
 }
 
-.order-progress-pack.locked,
+.order-progress-pack.locked {
+  filter: grayscale(0.28) saturate(0.44);
+  opacity: 0.42;
+}
+
 .order-progress-pack.claimed {
-  filter: saturate(0.55);
-  opacity: 0.52;
+  filter: saturate(0.36) brightness(0.72);
+  opacity: 0.58;
+}
+
+.order-progress-pack.claimed::after {
+  content: "✓";
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  color: #f1dda2;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(50, 28, 13, 0.86);
+}
+
+@keyframes orderGiftReadyPulse {
+  0%,
+  100% { box-shadow: 0 0 0 1px rgba(251, 218, 135, 0.16), 0 0 5px rgba(218, 164, 64, 0.3); }
+  50% { box-shadow: 0 0 0 1px rgba(251, 218, 135, 0.34), 0 0 11px rgba(232, 184, 77, 0.7); }
 }
 
 .bonus-ruby {
   position: absolute;
-  inset: 7%;
+  left: 50%;
+  top: calc(50% - 3px);
+  width: var(--bonus-ruby-scale, 70%);
+  height: var(--bonus-ruby-scale, 70%);
   z-index: 3;
   display: grid;
   place-items: center;
+  transform: translate(-50%, -50%);
   filter: drop-shadow(0 3px 3px rgba(78, 28, 35, 0.3));
+}
+
+
+.bonus-ruby-level-3,
+.bonus-ruby-level-4 {
+  top: calc(50% - 5px);
 }
 
 .bonus-ruby img {
   display: block;
   width: 100%;
   height: 100%;
-  max-width: 100%;
-  max-height: 100%;
   object-fit: contain;
   object-position: center;
 }
@@ -6205,6 +6243,22 @@ button:disabled {
 
 #app[data-page="board"] .cell.bonus-ruby-cell.collect-ready .bonus-ruby {
   animation: collectReadyPulse 1.45s ease-in-out infinite;
+}
+
+#app[data-page="board"] .item.order-progress-gift {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 80%;
+  height: 80%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  filter: drop-shadow(0 3px 3px rgba(74, 42, 19, 0.28));
+}
+
+#app[data-page="board"] .cell:active .item.order-progress-gift {
+  transform: translate(-50%, -50%) scale(1.03);
 }
 
 @media (max-width: 430px) {

@@ -2,12 +2,19 @@ const DATA_PATH = "./data/";
 const QA_MODE = new URLSearchParams(location.search).get("qa");
 const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE;
+const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
+const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
+const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
   : GENERATOR_MATERIAL_QA_MODE
     ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
-    : "silkroad_tavern_proto_v02";
+    : ORDER_GIFT_QA_MODE
+      ? `silkroad_tavern_proto_v02_qa_order_gift_generator_v1_ch${ORDER_GIFT_QA_CHAPTER}`
+      : RUBY_DISPLAY_QA_MODE
+        ? "silkroad_tavern_proto_v02_qa_ruby_display_v1"
+        : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -28,6 +35,8 @@ const BONUS_COIN_VALUES = Object.freeze([0, 1, 3, 8, 25]);
 const BONUS_RUBY_PREFIX = "bonus_ruby_";
 const BONUS_RUBY_MAX_LEVEL = 4;
 const BONUS_RUBY_VALUES = Object.freeze([0, 1, 3, 8, 25]);
+const BONUS_RUBY_SCALE_PERCENT = Object.freeze([0, 50, 70, 70, 70]);
+const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
 const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
   generator: 6,
@@ -458,6 +467,40 @@ function initializeGeneratorMaterialQaScenario() {
   state.selectedIndex = null;
 }
 
+function initializeOrderGiftQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.bubbleStates = {};
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.chapterOrderCounts = { 1: 0, 2: 0, 3: 0, 4: 0, [ORDER_GIFT_QA_CHAPTER]: 12 };
+  state.claimedOrderProgressPacks = [];
+  state.generatorStates = {};
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.currentPage = "inn";
+  state.selectedIndex = null;
+}
+
+function initializeRubyDisplayQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  ["bonus_ruby_01", "bonus_ruby_02", "bonus_ruby_03", "bonus_ruby_04"].forEach((itemId, index) => {
+    state.board[index] = itemId;
+  });
+  state.board[starterGeneratorIndex()] = "gen_mill_01";
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.bubbleStates = {};
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.generatorStates = {};
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
 async function boot() {
   console.log('🐫 丝路食肆 v0.3-drag 启动中…');
   const [items, orders, codex, stamina, progression, inn, generators, generatorMaterials] = await Promise.all([
@@ -574,6 +617,8 @@ function loadState() {
   });
   if (GENERATOR_QA_MODE && !saved) initializeGeneratorQaScenario();
   if (GENERATOR_MATERIAL_QA_MODE && !saved) initializeGeneratorMaterialQaScenario();
+  if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
+  if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -1120,7 +1165,7 @@ function renderOrderProgressGiftRail() {
           const claimed = state.claimedOrderProgressPacks.includes(entry.id);
           const ready = count >= entry.threshold && !claimed;
           return `<button class="order-progress-pack ${claimed ? "claimed" : ready ? "ready" : "locked"}" data-order-progress-pack="${entry.id}" ${claimed || !ready ? "disabled" : ""} aria-label="${entry.name}">
-            <img src="./assets/gift_pack_starter.png" alt="" />
+            <img src="./assets/ui/order_gift_coffer_v1.png" alt="" />
             <span>${claimed ? "已领" : `${entry.threshold}单`}</span>
           </button>`;
         }).join("")}
@@ -1531,6 +1576,7 @@ function currentInnLevel() {
 }
 
 function activeStoryChapter() {
+  if (ORDER_GIFT_QA_MODE) return ORDER_GIFT_QA_CHAPTER;
   const next = nextRepairMilestone();
   if (next?.chapter) return next.chapter;
   return getMilestoneViews().reduce((chapter, milestone) => (state.renovationChoices[milestone.id] ? Math.max(chapter, milestone.chapter ?? 1) : chapter), 1);
@@ -1641,14 +1687,27 @@ function registerBonusCoinItems() {
 }
 
 function registerOrderProgressPacks() {
+  const starterGift = byId.get("gift_pack_starter");
+  if (starterGift) {
+    byId.set(ORDER_PROGRESS_GIFT_ITEM_ID, {
+      ...starterGift,
+      id: ORDER_PROGRESS_GIFT_ITEM_ID,
+      name: "订单进度礼匣",
+      modernName: "完成章节订单后获得的奖励礼匣",
+      iconKey: "ui/order_gift_coffer_v1",
+      source: "order_progress_gift",
+    });
+  }
   const entries = state.progressionConfig?.orderProgressPacks ?? [];
   entries.forEach((entry) => {
     GIFT_PACKS[entry.id] = {
+      id: entry.id,
       name: entry.name,
-      itemId: "gift_pack_starter",
+      itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
       description: entry.description,
       chapter: entry.chapter,
       threshold: entry.threshold,
+      materialCategory: entry.materialCategory,
       orderProgress: true,
       rewards: [
         { type: "coins", amount: entry.coinAmount },
@@ -1987,7 +2046,7 @@ function renderBoard() {
       if (!item) return;
       if (!renderBonusBoardItem(cell, item, itemId, index)) {
       const img = document.createElement("img");
-      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""}`;
+      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""}`;
       img.alt = item.name;
       img.src = itemAssetSrc(item);
       if (item.type === "generator_material") {
@@ -2010,10 +2069,14 @@ function renderBoard() {
       } else if (item.type === "gift_box") {
         const giftState = state.giftBoxStates[index];
         const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
-        const badge = document.createElement("span");
-        badge.className = "generator-badge gift-badge";
-        badge.textContent = pack ? `${pack.orderProgress ? giftRewardOutputCount(pack) : Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
-        cell.append(badge);
+        if (pack?.orderProgress) {
+          cell.classList.add("order-progress-gift-cell");
+        } else {
+          const badge = document.createElement("span");
+          badge.className = "generator-badge gift-badge";
+          badge.textContent = pack ? `${Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
+          cell.append(badge);
+        }
       }
       }
     }
@@ -2078,6 +2141,7 @@ function renderBonusBoardItem(cell, item, itemId, index) {
     if (item.level === BONUS_RUBY_MAX_LEVEL) cell.classList.add("collect-ready");
     const ruby = document.createElement("div");
     ruby.className = "bonus-ruby bonus-ruby-level-" + item.level;
+    ruby.style.setProperty("--bonus-ruby-scale", `${BONUS_RUBY_SCALE_PERCENT[item.level] ?? 70}%`);
     const icon = document.createElement("img");
     icon.src = itemAssetSrc(item);
     icon.alt = "";
@@ -3774,15 +3838,10 @@ function giftRewardOutputCount(pack) {
   }, 0);
 }
 
-function mappedGiftMaterialId() {
-  const demandIds = state.visibleOrders
-    .map((orderId) => getOrder(orderId))
-    .filter(Boolean)
-    .flatMap((order) => order.demand.map((demand) => demand.itemId));
-  const demandedLines = demandIds.map((itemId) => byId.get(itemId)?.line).filter(Boolean);
-  const category = state.generatorMaterialConfig.categories.find((entry) =>
-    demandedLines.includes(entry.foodLineId),
-  ) ?? state.generatorMaterialConfig.categories[0];
+function mappedGiftMaterialId(pack) {
+  const progressionPack = (state.progressionConfig?.orderProgressPacks ?? []).find((entry) => entry.id === pack?.id);
+  const categoryId = pack?.materialCategory ?? progressionPack?.materialCategory;
+  const category = state.generatorMaterialConfig.categories.find((entry) => entry.id === categoryId);
   return category ? generatorMaterialItemId(category.id, 1) : null;
 }
 
@@ -3798,7 +3857,7 @@ function orderProgressGiftOutputs(pack) {
       return;
     }
     if (reward.type === "mapped_material") {
-      const materialId = mappedGiftMaterialId();
+      const materialId = mappedGiftMaterialId(pack);
       if (!materialId) return;
       for (let i = 0; i < (reward.quantity ?? 1); i += 1) outputs.push(materialId);
       return;
