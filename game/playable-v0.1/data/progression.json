@@ -608,7 +608,7 @@
           "lv3_watchtower"
         ],
         "completedOrderIds": [
-          "order_demo_board_combo_01"
+          "order_lv4_south_shed_stocking"
         ]
       },
       "rewards": {
@@ -643,7 +643,7 @@
           "lv4_south_shed"
         ],
         "completedOrderIds": [
-          "order_demo_board_combo_02"
+          "order_lv4_central_market_feast"
         ]
       },
       "rewards": {
@@ -678,7 +678,7 @@
           "lv4_central_market"
         ],
         "completedOrderIds": [
-          "order_demo_board_combo_03"
+          "order_lv4_south_street_trade"
         ]
       },
       "rewards": {

@@ -4,8 +4,9 @@ const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
 const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
+const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE;
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
   : GENERATOR_MATERIAL_QA_MODE
@@ -14,7 +15,9 @@ const SAVE_KEY = GENERATOR_QA_MODE
       ? `silkroad_tavern_proto_v02_qa_order_gift_generator_v1_ch${ORDER_GIFT_QA_CHAPTER}`
       : RUBY_DISPLAY_QA_MODE
         ? "silkroad_tavern_proto_v02_qa_ruby_display_v1"
-        : "silkroad_tavern_proto_v02";
+        : LV4_MARKET_ORDERS_QA_MODE
+          ? "silkroad_tavern_proto_v02_qa_lv4_market_orders_v1"
+          : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -62,6 +65,16 @@ const GENERATOR_MATERIAL_SCALE_PERCENT = Object.freeze({
   material_drink_02: 228,
   material_drink_03: 193,
 });
+const LV4_MARKET_ORDER_IDS = Object.freeze([
+  "order_lv4_south_shed_stocking",
+  "order_lv4_central_market_feast",
+  "order_lv4_south_street_trade",
+]);
+const LEGACY_ORDER_ID_MAP = Object.freeze({
+  order_demo_board_combo_01: LV4_MARKET_ORDER_IDS[0],
+  order_demo_board_combo_02: LV4_MARKET_ORDER_IDS[1],
+  order_demo_board_combo_03: LV4_MARKET_ORDER_IDS[2],
+});
 const REPAIR_GATE_SEQUENCE = [
   "order_001_guard_lubing",
   "order_002_farmer_dough",
@@ -82,9 +95,7 @@ const REPAIR_GATE_SEQUENCE = [
   "order_017_temple_laojiang",
   "order_018_traveler_lubing_rumi",
   "order_019_sogdian_huma_laojiang",
-  "order_demo_board_combo_01",
-  "order_demo_board_combo_02",
-  "order_demo_board_combo_03",
+  ...LV4_MARKET_ORDER_IDS,
   "order_021_lanes_continuation",
   "order_022_shed_continuation",
   "order_023_court_continuation",
@@ -427,6 +438,13 @@ function migrateLegacyGeneratorId(itemId) {
     ?? itemId;
 }
 
+function migrateLegacyOrderIds(orderIds) {
+  if (!Array.isArray(orderIds)) return [];
+  return [...new Set(orderIds
+    .filter((orderId) => typeof orderId === "string")
+    .map((orderId) => LEGACY_ORDER_ID_MAP[orderId] ?? orderId))];
+}
+
 function initializeGeneratorQaScenario() {
   const generatorIds = state.generatorConfig.categories.flatMap((category) =>
     Array.from({ length: state.generatorConfig.levelsPerCategory }, (_, offset) =>
@@ -497,6 +515,49 @@ function initializeRubyDisplayQaScenario() {
   state.generatorStates = {};
   state.staminaMax = 99;
   state.stamina = 99;
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
+function initializeLv4MarketOrdersQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  const targetItems = [
+    ["hubing_04_youhubing", 2],
+    ["hubing_05_congchihubing", 1],
+    ["dairy_03_laojiang", 1],
+    ["dairy_04_ganlao", 2],
+    ["drink_03_sanlejiang", 1],
+    ["drink_04_shiliujiang", 2],
+  ];
+  let boardCursor = 0;
+  targetItems.forEach(([itemId, quantity]) => {
+    for (let count = 0; count < quantity; count += 1) {
+      state.board[boardCursor] = itemId;
+      boardCursor += 1;
+    }
+  });
+  const firstMarketOrderIndex = REPAIR_GATE_SEQUENCE.indexOf(LV4_MARKET_ORDER_IDS[0]);
+  const firstMarketMilestoneIndex = state.progressionConfig.milestones.findIndex((milestone) => milestone.id === "lv4_south_shed");
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.bubbleStates = {};
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.visibleOrders = [...LV4_MARKET_ORDER_IDS];
+  state.completedOrderIds = REPAIR_GATE_SEQUENCE.slice(0, firstMarketOrderIndex);
+  state.completedOrders = state.completedOrderIds.length;
+  state.chapterOrderCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  state.claimedOrderProgressPacks = [];
+  state.renovationChoices = Object.fromEntries(
+    state.progressionConfig.milestones.slice(0, firstMarketMilestoneIndex).map((milestone) => [milestone.id, "completed"]),
+  );
+  state.activeRepairId = null;
+  state.repairPromptedFor = [];
+  state.generatorStates = {};
+  state.coins = 1000;
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.innLevel = 4;
   state.currentPage = "board";
   state.selectedIndex = null;
 }
@@ -582,7 +643,12 @@ function defaultState() {
 function loadState() {
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
-  const loadedOrderIds = Array.isArray(data.completedOrderIds) ? data.completedOrderIds : [];
+  const persistedCompletedOrderIds = Array.isArray(data.completedOrderIds) ? data.completedOrderIds : [];
+  const persistedVisibleOrderIds = Array.isArray(data.visibleOrders) ? data.visibleOrders : [];
+  const loadedOrderIds = migrateLegacyOrderIds(persistedCompletedOrderIds);
+  const loadedVisibleOrderIds = migrateLegacyOrderIds(persistedVisibleOrderIds);
+  const hasLegacyOrderIds = [...persistedCompletedOrderIds, ...persistedVisibleOrderIds]
+    .some((orderId) => Boolean(LEGACY_ORDER_ID_MAP[orderId]));
   Object.assign(state, {
     board: normalizeBoard(data.board),
     bag: normalizeStorageSlots(data.bag),
@@ -590,7 +656,7 @@ function loadState() {
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
     bubbleStates: normalizeBubbleStates(data.bubbleStates),
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
-    visibleOrders: data.visibleOrders?.length ? data.visibleOrders : defaultState().visibleOrders,
+    visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
     coins: data.coins ?? 40,
     gems: data.gems ?? 36,
@@ -619,6 +685,7 @@ function loadState() {
   if (GENERATOR_MATERIAL_QA_MODE && !saved) initializeGeneratorMaterialQaScenario();
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
+  if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -626,6 +693,7 @@ function loadState() {
   ensureStarterGenerator();
   pruneGeneratorStates();
   syncGateOrder();
+  if (hasLegacyOrderIds) saveState();
 }
 
 function saveState() {
@@ -1577,6 +1645,7 @@ function currentInnLevel() {
 
 function activeStoryChapter() {
   if (ORDER_GIFT_QA_MODE) return ORDER_GIFT_QA_CHAPTER;
+  if (LV4_MARKET_ORDERS_QA_MODE) return 4;
   const next = nextRepairMilestone();
   if (next?.chapter) return next.chapter;
   return getMilestoneViews().reduce((chapter, milestone) => (state.renovationChoices[milestone.id] ? Math.max(chapter, milestone.chapter ?? 1) : chapter), 1);
@@ -3205,6 +3274,10 @@ function nextRepairGateOrderId() {
 }
 
 function syncGateOrder() {
+  if (LV4_MARKET_ORDERS_QA_MODE) {
+    state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
+    return;
+  }
   const nextOrderId = nextRepairGateOrderId();
   const maxVisible = state.ordersConfig.maxVisibleOrders ?? 3;
   const sideOrders = state.visibleOrders.filter(

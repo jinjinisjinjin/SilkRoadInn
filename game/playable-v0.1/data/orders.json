@@ -5,84 +5,88 @@
   "freeRefreshPerDay": 3,
   "orders": [
     {
-      "id": "order_demo_board_combo_01",
-      "npcId": "npc_shazhou_guard",
-      "npcName": "沙州驿卒 周甲",
+      "id": "order_lv4_south_shed_stocking",
+      "npcId": "npc_caravan_leader",
+      "npcName": "康十一",
       "demand": [
         {
-          "itemId": "hubing_02_lubing",
+          "itemId": "hubing_04_youhubing",
           "quantity": 1
         },
         {
-          "itemId": "dairy_01_milk",
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
           "quantity": 1
         }
       ],
       "reward": {
-        "coins": 8,
-        "codexExp": 2,
-        "originalCoins": 16,
-        "firstClearBonusCoins": 2
+        "coins": 80,
+        "codexExp": 6,
+        "originalCoins": 160,
+        "firstClearBonusCoins": 16
       },
-      "weight": 30,
+      "weight": 10,
       "unlock": "tutorial_start",
-      "dialogue": "饼食配乳，赶路的人吃着稳。"
+      "dialogue": "南棚要聚起第一车货，先备油胡饼、酪浆和三勒浆，商队才好在这里歇脚交货。"
     },
     {
-      "id": "order_demo_board_combo_02",
+      "id": "order_lv4_central_market_feast",
+      "npcId": "npc_caravan_leader",
+      "npcName": "康十一",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 120,
+        "codexExp": 7,
+        "originalCoins": 240,
+        "firstClearBonusCoins": 24
+      },
+      "weight": 10,
+      "unlock": "tutorial_start",
+      "dialogue": "中市要开长席，油胡饼、干酪与石榴浆各备一份，南来北往的客人才坐得住。"
+    },
+    {
+      "id": "order_lv4_south_street_trade",
       "npcId": "npc_sogdian_merchant",
       "npcName": "粟特胡商",
       "demand": [
         {
-          "itemId": "hubing_03_humabing",
+          "itemId": "hubing_05_congchihubing",
           "quantity": 1
         },
         {
-          "itemId": "drink_01_putaozhi",
+          "itemId": "dairy_04_ganlao",
           "quantity": 1
         },
         {
-          "itemId": "fruit_01_putao",
+          "itemId": "drink_04_shiliujiang",
           "quantity": 1
         }
       ],
       "reward": {
-        "coins": 14,
-        "codexExp": 4,
-        "originalCoins": 28,
-        "firstClearBonusCoins": 3
+        "coins": 160,
+        "codexExp": 8,
+        "originalCoins": 320,
+        "firstClearBonusCoins": 32
       },
-      "weight": 28,
+      "weight": 10,
       "unlock": "tutorial_start",
-      "dialogue": "胡麻香、葡萄甜，正像商路上的一餐。"
-    },
-    {
-      "id": "order_demo_board_combo_03",
-      "npcId": "npc_dunhuang_woman",
-      "npcName": "敦煌女店客",
-      "demand": [
-        {
-          "itemId": "meat_07_zhiyangrou",
-          "quantity": 1
-        },
-        {
-          "itemId": "spice_02_ziran_mo",
-          "quantity": 1
-        },
-        {
-          "itemId": "fruit_03_yezao",
-          "quantity": 1
-        }
-      ],
-      "reward": {
-        "coins": 21,
-        "codexExp": 5,
-        "originalCoins": 42,
-        "firstClearBonusCoins": 4
-      },
-      "weight": 26,
-      "unlock": "tutorial_start",
-      "dialogue": "炙肉添些香料，再配几枚甜枣。"
+      "dialogue": "三铺连街要有压轴招牌。葱豉胡饼配干酪、石榴浆，香气要一路传到巷口。"
     },
     {
       "id": "order_001_guard_lubing",
