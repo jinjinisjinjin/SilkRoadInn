@@ -1,5 +1,5 @@
 {
-  "version": "0.1",
+  "version": "0.4",
   "board": {
     "tutorial": {
       "columns": 5,
@@ -102,11 +102,7 @@
       ],
       "storyText": "周甲的炉饼刚出炉，孟氏便停在门前。先让人坐得下来，流沙驿才算真的开了门。",
       "completionText": "孟氏轻轻拍去长凳上的浮尘。前厅终于能让赶路的人坐下，流沙驿也有了第一处人声。",
-      "conditions": {
-        "completedOrderIds": [
-          "order_001_guard_lubing"
-        ]
-      },
+      "conditions": {},
       "rewards": {
         "unlockOrderRefresh": true
       },
@@ -132,9 +128,6 @@
       "conditions": {
         "completedRepairs": [
           "tutorial_complete"
-        ],
-        "completedOrderIds": [
-          "order_011_dunhuang_woman_lubing"
         ]
       },
       "rewards": {
@@ -169,9 +162,6 @@
       "conditions": {
         "completedRepairs": [
           "kitchen_repair"
-        ],
-        "completedOrderIds": [
-          "order_005_monk_humabing"
         ]
       },
       "rewards": {
@@ -207,13 +197,9 @@
       "conditions": {
         "completedRepairs": [
           "codex_first_phase"
-        ],
-        "completedOrderIds": [
-          "order_014_musician_youhubing"
         ]
       },
       "rewards": {
-        "coins": 80,
         "storyFlags": [
           "frontFeastReady"
         ]
@@ -240,13 +226,9 @@
       "conditions": {
         "completedRepairs": [
           "lv2_front_feast"
-        ],
-        "completedOrderIds": [
-          "order_004_changan_lubing"
         ]
       },
       "rewards": {
-        "coins": 95,
         "storyFlags": [
           "westMarketOpen"
         ]
@@ -273,13 +255,9 @@
       "conditions": {
         "completedRepairs": [
           "lv2_west_market"
-        ],
-        "completedOrderIds": [
-          "order_006_camel_worker_youhubing"
         ]
       },
       "rewards": {
-        "coins": 110,
         "storyFlags": [
           "flowerRackKept"
         ]
@@ -306,13 +284,9 @@
       "conditions": {
         "completedRepairs": [
           "lv2_flower_rack"
-        ],
-        "completedOrderIds": [
-          "order_007_persian_attendant_congchi"
         ]
       },
       "rewards": {
-        "coins": 130,
         "storyFlags": [
           "northShopOpen"
         ]
@@ -339,13 +313,9 @@
       "conditions": {
         "completedRepairs": [
           "lv2_north_shop"
-        ],
-        "completedOrderIds": [
-          "order_008_uighur_yangrou"
         ]
       },
       "rewards": {
-        "coins": 150,
         "storyFlags": [
           "southShopOpen"
         ]
@@ -373,13 +343,9 @@
       "conditions": {
         "completedRepairs": [
           "lv2_south_shop"
-        ],
-        "completedOrderIds": [
-          "order_009_mystery_suibing"
         ]
       },
       "rewards": {
-        "coins": 170,
         "storyFlags": [
           "lv2Complete",
           "wellReady"
@@ -407,13 +373,9 @@
       "conditions": {
         "completedRepairs": [
           "lv2_well"
-        ],
-        "completedOrderIds": [
-          "order_010_caravan_gulouzi"
         ]
       },
       "rewards": {
-        "coins": 190,
         "storyFlags": [
           "upperHallReady"
         ]
@@ -440,13 +402,9 @@
       "conditions": {
         "completedRepairs": [
           "lv3_upper_hall"
-        ],
-        "completedOrderIds": [
-          "order_015_monk_rumi"
         ]
       },
       "rewards": {
-        "coins": 215,
         "storyFlags": [
           "northCourtSettled"
         ]
@@ -473,13 +431,9 @@
       "conditions": {
         "completedRepairs": [
           "lv3_north_court"
-        ],
-        "completedOrderIds": [
-          "order_016_uighur_milk"
         ]
       },
       "rewards": {
-        "coins": 245,
         "storyFlags": [
           "westGateCleared"
         ]
@@ -506,13 +460,9 @@
       "conditions": {
         "completedRepairs": [
           "lv3_west_gate"
-        ],
-        "completedOrderIds": [
-          "order_017_temple_laojiang"
         ]
       },
       "rewards": {
-        "coins": 275,
         "storyFlags": [
           "eastCourtReady"
         ]
@@ -539,13 +489,9 @@
       "conditions": {
         "completedRepairs": [
           "lv3_east_court"
-        ],
-        "completedOrderIds": [
-          "order_018_traveler_lubing_rumi"
         ]
       },
       "rewards": {
-        "coins": 310,
         "storyFlags": [
           "gardenAwake"
         ]
@@ -573,13 +519,9 @@
       "conditions": {
         "completedRepairs": [
           "lv3_garden"
-        ],
-        "completedOrderIds": [
-          "order_019_sogdian_huma_laojiang"
         ]
       },
       "rewards": {
-        "coins": 350,
         "storyFlags": [
           "roadReopened"
         ]
@@ -606,13 +548,9 @@
       "conditions": {
         "completedRepairs": [
           "lv3_watchtower"
-        ],
-        "completedOrderIds": [
-          "order_lv4_south_shed_stocking"
         ]
       },
       "rewards": {
-        "coins": 460,
         "storyFlags": [
           "lv3Complete",
           "menuOnWall",
@@ -641,13 +579,9 @@
       "conditions": {
         "completedRepairs": [
           "lv4_south_shed"
-        ],
-        "completedOrderIds": [
-          "order_lv4_central_market_feast"
         ]
       },
       "rewards": {
-        "coins": 520,
         "storyFlags": [
           "centralMarketReady"
         ]
@@ -676,13 +610,9 @@
       "conditions": {
         "completedRepairs": [
           "lv4_central_market"
-        ],
-        "completedOrderIds": [
-          "order_lv4_south_street_trade"
         ]
       },
       "rewards": {
-        "coins": 590,
         "storyFlags": [
           "southStreetLinked"
         ]
@@ -709,13 +639,9 @@
       "conditions": {
         "completedRepairs": [
           "lv4_south_street"
-        ],
-        "completedOrderIds": [
-          "order_021_lanes_continuation"
         ]
       },
       "rewards": {
-        "coins": 670,
         "storyFlags": [
           "lanesOpen"
         ]
@@ -742,13 +668,9 @@
       "conditions": {
         "completedRepairs": [
           "lv4_lanes"
-        ],
-        "completedOrderIds": [
-          "order_022_shed_continuation"
         ]
       },
       "rewards": {
-        "coins": 760,
         "storyFlags": [
           "eastShedFull"
         ]
@@ -775,13 +697,9 @@
       "conditions": {
         "completedRepairs": [
           "lv4_east_shed"
-        ],
-        "completedOrderIds": [
-          "order_023_court_continuation"
         ]
       },
       "rewards": {
-        "coins": 860,
         "storyFlags": [
           "eastCourtBright"
         ]
@@ -808,13 +726,9 @@
       "conditions": {
         "completedRepairs": [
           "lv4_east_court"
-        ],
-        "completedOrderIds": [
-          "order_024_lantern_continuation"
         ]
       },
       "rewards": {
-        "coins": 980,
         "storyFlags": [
           "lv4Complete",
           "lanternsLinked"
@@ -830,7 +744,7 @@
       "threshold": 4,
       "name": "第1章·4单礼盒",
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 10,
+      "coinAmount": 3,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "mill"
@@ -841,7 +755,7 @@
       "threshold": 8,
       "name": "第1章·8单礼盒",
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 15,
+      "coinAmount": 4,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "mill"
@@ -852,7 +766,7 @@
       "threshold": 12,
       "name": "第1章·12单礼盒",
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 20,
+      "coinAmount": 6,
       "rubyQuantity": 1,
       "materialQuantity": 4,
       "materialCategory": "mill"
@@ -863,7 +777,7 @@
       "threshold": 4,
       "name": "第2章·4单礼盒",
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 15,
+      "coinAmount": 6,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "dairy"
@@ -874,7 +788,7 @@
       "threshold": 8,
       "name": "第2章·8单礼盒",
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 20,
+      "coinAmount": 8,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "dairy"
@@ -885,7 +799,7 @@
       "threshold": 12,
       "name": "第2章·12单礼盒",
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 25,
+      "coinAmount": 10,
       "rubyQuantity": 1,
       "materialQuantity": 4,
       "materialCategory": "dairy"
@@ -896,7 +810,7 @@
       "threshold": 4,
       "name": "第3章·4单礼盒",
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 20,
+      "coinAmount": 10,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "drink"
@@ -907,7 +821,7 @@
       "threshold": 8,
       "name": "第3章·8单礼盒",
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 25,
+      "coinAmount": 12,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "drink"
@@ -918,7 +832,7 @@
       "threshold": 12,
       "name": "第3章·12单礼盒",
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 30,
+      "coinAmount": 16,
       "rubyQuantity": 1,
       "materialQuantity": 4,
       "materialCategory": "drink"
@@ -929,7 +843,7 @@
       "threshold": 4,
       "name": "第4章·4单礼盒",
       "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 25,
+      "coinAmount": 15,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "fruit"
@@ -940,7 +854,7 @@
       "threshold": 8,
       "name": "第4章·8单礼盒",
       "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 30,
+      "coinAmount": 20,
       "rubyQuantity": 1,
       "materialQuantity": 2,
       "materialCategory": "fruit"
@@ -951,7 +865,7 @@
       "threshold": 12,
       "name": "第4章·12单礼盒",
       "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
-      "coinAmount": 35,
+      "coinAmount": 25,
       "rubyQuantity": 1,
       "materialQuantity": 4,
       "materialCategory": "fruit"

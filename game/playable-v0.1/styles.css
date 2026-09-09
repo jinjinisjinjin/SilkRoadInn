@@ -2379,8 +2379,8 @@ button:disabled {
 }
 
 #app[data-page="board"] .board-detail-strip {
-  max-height: 56px;
-  min-height: 44px;
+  max-height: 64px;
+  min-height: 50px;
   margin: 0;
   padding: 5px 7px 5px 12px;
   grid-template-columns: minmax(0, 1fr) 64px;
@@ -2404,11 +2404,15 @@ button:disabled {
 }
 
 #app[data-page="board"] .board-detail-strip span {
+  display: -webkit-box;
+  max-height: 2.4em;
+  overflow: hidden;
   font-size: 11px;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;
   text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 #app[data-page="board"] .selected-sell {

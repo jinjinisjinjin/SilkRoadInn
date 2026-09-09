@@ -19,7 +19,7 @@ const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "milk-drop";
 const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
-  ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
+  ? "silkroad_tavern_proto_v02_qa_generator_system_v2"
   : GENERATOR_MATERIAL_QA_MODE
     ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
     : ORDER_GIFT_QA_MODE
@@ -157,6 +157,7 @@ const STARTUP_DATA_NAMES = Object.freeze([
   "inn",
   "generators",
   "generator-materials",
+  "economy",
 ]);
 const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/loading_poster_character_v1.webp",
@@ -236,6 +237,7 @@ const state = {
   innConfig: null,
   generatorConfig: null,
   generatorMaterialConfig: null,
+  economyConfig: null,
   board: [],
   bag: [],
   giftPacks: [],
@@ -252,6 +254,7 @@ const state = {
   completedOrders: 0,
   completedOrderIds: [],
   chapterOrderCounts: {},
+  generatorLineOrderCounts: {},
   claimedOrderProgressPacks: [],
   coinsEarned: 0,
   storyFlags: {},
@@ -468,7 +471,7 @@ function buildConfiguredGeneratorItems(config) {
       const generatorType = category.generatorType ?? config.generatorType;
       const levelEconomy = config.levelEconomy?.[offset] ?? {};
       const economy = { ...config.economy, ...levelEconomy, ...category.economy };
-      const secondaryOutputWeight = generatorType === "manual_generator" && category.secondaryOutputItemId
+      const secondaryOutputWeight = category.secondaryOutputItemId
         ? Math.max(0, Math.min(100, Number(levelEconomy.secondaryOutputWeight) || 0))
         : 0;
       const pool = [{ itemId: category.baseOutputItemId, weight: 100 - secondaryOutputWeight }];
@@ -480,6 +483,7 @@ function buildConfiguredGeneratorItems(config) {
         type: generatorType,
         generatorType: category.id,
         foodLineId: category.foodLineId,
+        masteryOrderId: category.masteryOrderId ?? null,
         level,
         name: category.levelNames?.[offset] ?? `${category.displayName} Lv${level}`,
         modernName: category.modernName,
@@ -531,6 +535,10 @@ function initializeGeneratorQaScenario() {
   state.board[50] = "gen_mill_06";
   state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
   state.generatorStates = {};
+  state.unlockedGeneratorCategories = state.generatorConfig.categories.map((category) => category.id);
+  state.generatorLineOrderCounts = Object.fromEntries(state.generatorConfig.categories.map((category) => [category.id, 48]));
+  state.completedOrderIds = state.generatorConfig.categories.map((category) => category.masteryOrderId);
+  state.innLevel = 4;
   state.staminaMax = 99;
   state.stamina = 99;
   state.selectedIndex = null;
@@ -769,10 +777,11 @@ async function boot() {
     60,
     "正在载入食单与旅人订单",
   );
-  const [items, orders, codex, stamina, progression, inn, generators, generatorMaterials] = dataResults;
+  const [items, orders, codex, stamina, progression, inn, generators, generatorMaterials, economy] = dataResults;
 
   state.generatorConfig = generators;
   state.generatorMaterialConfig = generatorMaterials;
+  state.economyConfig = economy;
   const configuredGenerators = buildConfiguredGeneratorItems(generators);
   const configuredGeneratorMaterials = buildConfiguredGeneratorMaterialItems(generatorMaterials);
   const configuredGeneratorIds = new Set(configuredGenerators.map((item) => item.id));
@@ -812,6 +821,10 @@ async function boot() {
   setInterval(tickStamina, 1000);
 }
 
+function startingCoinBalance() {
+  return Math.max(0, Number(state.economyConfig?.currency?.startingBalance) || 40);
+}
+
 function defaultState() {
   const board = Array(BOARD_SIZE).fill(null);
   board[starterGeneratorIndex()] = "gen_mill_01";
@@ -824,7 +837,7 @@ function defaultState() {
     unlockedCells: [],
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
     unlockedCodex: ["codex_hubing_01"],
-    coins: 40,
+    coins: startingCoinBalance(),
     gems: 36,
     stamina: state.staminaConfig.initial.startValue,
     staminaMax: state.staminaConfig.initial.max,
@@ -833,6 +846,7 @@ function defaultState() {
     completedOrders: 0,
     completedOrderIds: [],
     chapterOrderCounts: { 1: 0, 2: 0, 3: 0, 4: 0 },
+    generatorLineOrderCounts: emptyGeneratorLineOrderCounts(),
     claimedOrderProgressPacks: [],
     coinsEarned: 0,
     storyFlags: {},
@@ -869,7 +883,7 @@ function loadState() {
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
-    coins: data.coins ?? 40,
+    coins: data.coins ?? startingCoinBalance(),
     gems: data.gems ?? 36,
     stamina: data.stamina ?? state.staminaConfig.initial.startValue,
     staminaMax: Math.max(data.staminaMax ?? state.staminaConfig.initial.max, state.staminaConfig.initial.max),
@@ -878,6 +892,7 @@ function loadState() {
     completedOrders: data.completedOrders ?? 0,
     completedOrderIds: loadedOrderIds,
     chapterOrderCounts: normalizeChapterOrderCounts(data.chapterOrderCounts, data.completedOrders, data.innLevel),
+    generatorLineOrderCounts: normalizeGeneratorLineOrderCounts(data.generatorLineOrderCounts, loadedOrderIds),
     claimedOrderProgressPacks: normalizeClaimedOrderProgressPacks(data.claimedOrderProgressPacks),
     coinsEarned: data.coinsEarned ?? 0,
     storyFlags: data.storyFlags && typeof data.storyFlags === "object" ? data.storyFlags : {},
@@ -906,7 +921,7 @@ function loadState() {
   applyOfflineRecovery();
   const generatorUnlocksChanged = ensureStarterGenerator();
   pruneGeneratorStates();
-  syncGateOrder();
+  syncVisibleOrders();
   if (hasLegacyOrderIds || generatorUnlocksChanged) saveState();
 }
 
@@ -931,6 +946,7 @@ function saveState() {
       completedOrders: state.completedOrders,
       completedOrderIds: state.completedOrderIds,
       chapterOrderCounts: state.chapterOrderCounts,
+      generatorLineOrderCounts: state.generatorLineOrderCounts,
       claimedOrderProgressPacks: state.claimedOrderProgressPacks,
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
@@ -1807,7 +1823,7 @@ function completeRepairFromPlayer(milestoneId) {
   state.renovationChoices[milestoneId] = "completed";
   applyRepairRewards(milestone);
   syncGeneratorCategoryUnlocks({ announce: true });
-  syncGateOrder();
+  syncVisibleOrders();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
   pendingInnFocusPosition = nextAfterRepair?.scenePosition ?? null;
@@ -1839,7 +1855,7 @@ function upgradeInn() {
   state.coins -= level.upgradeCost;
   state.innLevel = Math.min(4, state.innLevel + 1);
   applyInnUnlocks();
-  syncGateOrder();
+  syncVisibleOrders();
   pendingUpgradeUnlock = buildUpgradeUnlockSummary(level);
   toast(`流沙驿升至 Lv${state.innLevel}`);
   keeper(level.upgradeStory);
@@ -2256,6 +2272,38 @@ function normalizeChapterOrderCounts(value, completedOrders = 0, innLevel = 1) {
   return result;
 }
 
+function emptyGeneratorLineOrderCounts() {
+  return Object.fromEntries(state.generatorConfig.categories.map((category) => [category.id, 0]));
+}
+
+function generatorCategoriesForOrder(order) {
+  const demandLines = new Set((order?.demand ?? []).map((demand) => byId.get(demand.itemId)?.line).filter(Boolean));
+  return state.generatorConfig.categories
+    .filter((category) => demandLines.has(category.foodLineId))
+    .map((category) => category.id);
+}
+
+function normalizeGeneratorLineOrderCounts(value, completedOrderIds = []) {
+  const result = emptyGeneratorLineOrderCounts();
+  if (value && typeof value === "object") {
+    Object.keys(result).forEach((categoryId) => {
+      result[categoryId] = Math.max(0, Math.floor(Number(value[categoryId]) || 0));
+    });
+    return result;
+  }
+  completedOrderIds.forEach((orderId) => {
+    generatorCategoriesForOrder(getOrder(orderId)).forEach((categoryId) => {
+      result[categoryId] += 1;
+    });
+  });
+  return result;
+}
+
+function recordGeneratorOrderProgress(order) {
+  generatorCategoriesForOrder(order).forEach((categoryId) => {
+    state.generatorLineOrderCounts[categoryId] = (state.generatorLineOrderCounts[categoryId] ?? 0) + 1;
+  });
+}
 function normalizeClaimedOrderProgressPacks(value) {
   if (!Array.isArray(value)) return [];
   const validIds = new Set((state.progressionConfig?.orderProgressPacks ?? []).map((entry) => entry.id));
@@ -2635,17 +2683,17 @@ function renderSelected() {
   if (isGeneratorPiece(item)) {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-    els.selectedName.textContent = item.name;
-    els.selectedText.textContent =
-      item.type === "manual_generator"
-        ? cooldownSeconds > 0
-          ? `正在休息，${formatGeneratorCountdown(cooldownSeconds)}后恢复${item.generator.chargeMax}次充能。`
-          : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。剩余${generatorState.charges}/${item.generator.chargeMax}次。`
-        : cooldownSeconds > 0
-          ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后自动向周边空格投放鲜乳。`
-          : neighborEmptyIndices(state.selectedIndex).length > 0
-            ? "奶房已备好鲜乳，即将自动投放到周边空格。"
-            : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
+    const productionStatus = item.type === "manual_generator"
+      ? cooldownSeconds > 0
+        ? "休息中，还剩" + formatGeneratorCountdown(cooldownSeconds)
+        : "充能 " + generatorState.charges + "/" + item.generator.chargeMax
+      : cooldownSeconds > 0
+        ? formatGeneratorCountdown(cooldownSeconds) + "后投放鲜乳"
+        : neighborEmptyIndices(state.selectedIndex).length > 0
+          ? "鲜乳即将投放"
+          : "周边无空格，等待投放";
+    els.selectedName.textContent = /Lv\d+$/.test(item.name) ? item.name : item.name + " · Lv" + (item.level ?? 1);
+    els.selectedText.textContent = productionStatus + " · " + generatorUpgradeSummary(item);
     setSellButtonAction(getPieceRemovalAction(item));
     return;
   }
@@ -2670,6 +2718,10 @@ function getPieceRemovalAction(item) {
   if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box"].includes(item.type)) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
+  const cleanup = state.economyConfig?.boardCleanup ?? {};
+  if (isGeneratorPiece(item) && cleanup.protectGenerators) {
+    return { mode: "unavailable", value: 0, requiresConfirm: false };
+  }
   if (item.type === "generator_material") {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
@@ -2680,15 +2732,17 @@ function getPieceRemovalAction(item) {
       : SELL_CHAIN_LEVELS.food;
   const level = Math.max(1, Math.min(maxLevel, Number(item.level) || 1));
   const quarter = Math.min(4, Math.ceil((level * 4) / maxLevel));
-  const fallbackValue = Math.max(0, quarter - 1);
-  const configuredValue = Number(item.sellValue);
-  const value = Number.isFinite(configuredValue)
-    ? Math.max(0, Math.min(3, configuredValue))
-    : fallbackValue;
+  const values = isGeneratorPiece(item)
+    ? cleanup.generatorSellValuesByQuarter
+    : isGeneratorMaterialPiece(item)
+      ? cleanup.generatorMaterialSellValuesByQuarter
+      : cleanup.foodSellValuesByQuarter;
+  const value = Math.max(0, Math.min(3, Number(values?.[quarter - 1]) || 0));
   return {
     mode: value === 0 ? "delete" : "sell",
     value,
-    requiresConfirm: isGeneratorPiece(item) || (maxLevel === SELL_CHAIN_LEVELS.food && level >= 5),
+    requiresConfirm: maxLevel === SELL_CHAIN_LEVELS.food
+      && level >= (Number(cleanup.protectHighLevelFoodFromLevel) || 5),
   };
 }
 
@@ -2760,17 +2814,19 @@ function openSelectedPieceDetail() {
   if (item.type === "manual_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-    els.pieceDetailText.textContent = cooldownSeconds > 0
-      ? `正在休息，${formatGeneratorCountdown(cooldownSeconds)}后恢复${item.generator.chargeMax}次充能。`
-      : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
+    const productionText = cooldownSeconds > 0
+      ? "正在休息，" + formatGeneratorCountdown(cooldownSeconds) + "后恢复" + item.generator.chargeMax + "次充能。"
+      : "点击产出食材，消耗" + item.generator.staminaCost + "点驼铃。当前充能 " + generatorState.charges + "/" + item.generator.chargeMax + "。";
+    els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-    els.pieceDetailText.textContent = cooldownSeconds > 0
-      ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后自动向周边空格投放鲜乳。`
+    const productionText = cooldownSeconds > 0
+      ? "奶房正在备料，" + formatGeneratorCountdown(cooldownSeconds) + "后自动向周边空格投放鲜乳。"
       : neighborEmptyIndices(state.selectedIndex).length > 0
         ? "奶房已备好鲜乳，即将自动投放到周边空格。"
         : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
+    els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else {
     els.pieceDetailText.textContent = codex?.shortText ?? item.modernName ?? "这枚棋子还没有配置详情。";
   }
@@ -3157,6 +3213,72 @@ function isStorageDropPoint(x, y) {
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }
 
+function generatorUpgradeStatus(item) {
+  if (!isGeneratorPiece(item) || !item.mergeTo) {
+    return { ok: false, maxLevel: Boolean(isGeneratorPiece(item)), targetLevel: item?.level ?? 1 };
+  }
+  const targetLevel = (Number(item.level) || 1) + 1;
+  const requirement = state.generatorConfig.upgradeRequirements?.find((entry) => entry.targetLevel === targetLevel) ?? {};
+  const category = state.generatorConfig.categories.find((entry) => entry.id === item.generatorType);
+  const lineOrders = state.generatorLineOrderCounts[item.generatorType] ?? 0;
+  const requiredLineOrders = Math.max(0, Number(requirement.lineOrders) || 0);
+  const requiredInnLevel = Math.max(1, Number(requirement.innLevel) || 1);
+  const masteryComplete = !requirement.requiresMasteryOrder
+    || Boolean(item.masteryOrderId && state.completedOrderIds.includes(item.masteryOrderId));
+  const missing = [];
+  if (lineOrders < requiredLineOrders) {
+    missing.push("再完成" + (requiredLineOrders - lineOrders) + "单" + (category?.displayName ?? "同系") + "订单");
+  }
+  if (state.innLevel < requiredInnLevel) missing.push("驿站达到Lv" + requiredInnLevel);
+  if (!masteryComplete) missing.push("完成" + (category?.displayName ?? "该生产线") + "大师订单");
+  return {
+    ok: missing.length === 0,
+    maxLevel: false,
+    targetLevel,
+    lineOrders,
+    requiredLineOrders,
+    requiredInnLevel,
+    masteryComplete,
+    requiresMasteryOrder: Boolean(requirement.requiresMasteryOrder),
+    missing,
+  };
+}
+
+function generatorUpgradeSummary(item) {
+  const status = generatorUpgradeStatus(item);
+  if (status.maxLevel) return "已达最高等级";
+  const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
+  const parts = [
+    "升Lv" + status.targetLevel,
+    "订单" + Math.min(status.lineOrders, status.requiredLineOrders) + "/" + status.requiredLineOrders,
+    "同级" + Math.min(sameLevelCount, 2) + "/2",
+  ];
+  if (state.innLevel < status.requiredInnLevel) parts.push("驿站Lv" + status.requiredInnLevel);
+  if (status.requiresMasteryOrder) parts.push(status.masteryComplete ? "大师已完成" : "大师未完成");
+  return parts.join(" · ");
+}
+
+function generatorUpgradeDetail(item) {
+  const status = generatorUpgradeStatus(item);
+  if (status.maxLevel) return "已经达到Lv6最高等级。";
+  const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
+  const conditions = [
+    "同系订单 " + status.lineOrders + "/" + status.requiredLineOrders,
+    "案板同级生成器 " + Math.min(sameLevelCount, 2) + "/2",
+    "驿站 Lv" + state.innLevel + "/" + status.requiredInnLevel,
+  ];
+  if (status.requiresMasteryOrder) conditions.push(status.masteryComplete ? "大师订单已完成" : "大师订单未完成");
+  return "升到Lv" + status.targetLevel + "需要两个同类Lv" + item.level + "生成器。" + conditions.join("；") + "。";
+}
+function blockGeneratorUpgrade(item, selectedIndex) {
+  const status = generatorUpgradeStatus(item);
+  if (status.ok || status.maxLevel) return false;
+  state.selectedIndex = selectedIndex;
+  const reason = status.missing.join("，");
+  keeper("暂时不能升到Lv" + status.targetLevel + "：" + reason + "。");
+  toast(reason);
+  return true;
+}
 function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   const lockedItemId = lockedCellItemId(toIndex);
   const item = byId.get(itemId);
@@ -3165,6 +3287,7 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
     toast(lockedItem ? `需要用${lockedItem.name}来解开这格。` : "这格还被风沙遮住。");
     return;
   }
+  if (isGeneratorPiece(item) && blockGeneratorUpgrade(item, toIndex)) return;
   state.unlockedCells = [...new Set([...state.unlockedCells, toIndex])];
   clearGeneratorState(boardGeneratorStateKey(fromIndex));
   clearGeneratorState(boardGeneratorStateKey(toIndex));
@@ -3199,6 +3322,7 @@ function mergeCells(fromIndex, toIndex, itemId) {
     toast("已经是这条食谱的最高级了。");
     return;
   }
+  if (isGeneratorPiece(item) && blockGeneratorUpgrade(item, toIndex)) return;
   clearGeneratorState(boardGeneratorStateKey(fromIndex));
   clearGeneratorState(boardGeneratorStateKey(toIndex));
   state.board[fromIndex] = null;
@@ -3224,6 +3348,10 @@ function chainMergeAt(index) {
     if (neighbor === -1) break;
     const sourceItem = current;
     const outputItemId = current.mergeTo;
+    if (isGeneratorPiece(sourceItem) && !generatorUpgradeStatus(sourceItem).ok) {
+      state.selectedIndex = index;
+      break;
+    }
     clearGeneratorState(boardGeneratorStateKey(neighbor));
     clearGeneratorState(boardGeneratorStateKey(index));
     state.board[neighbor] = null;
@@ -3520,6 +3648,7 @@ function completeOrder(orderId) {
   state.coinsEarned += coinReward;
   state.completedOrders += 1;
   state.chapterOrderCounts[chapter] = (state.chapterOrderCounts[chapter] ?? 0) + 1;
+  recordGeneratorOrderProgress(order);
   showCoinBurst(coinReward);
   if (firstClear) {
     state.completedOrderIds.push(order.id);
@@ -3528,8 +3657,8 @@ function completeOrder(orderId) {
     state.tutorialStep = 3;
   }
   keeper(order.dialogue);
-  syncGateOrder();
-  replaceOrder(orderId);
+  state.visibleOrders = state.visibleOrders.filter((visibleOrderId) => visibleOrderId !== orderId);
+  syncVisibleOrders();
   if (state.currentOrderDetailId === orderId && els.orderDetailModal.open) {
     els.orderDetailModal.close();
     state.currentOrderDetailId = null;
@@ -3606,6 +3735,7 @@ function maybePromptRepairGuide() {
   const gate = canEnterRepairPage();
   const milestone = gate.milestone;
   if (!gate.ok || !milestone) return;
+  if (state.activeRepairId !== milestone.id && state.coins < repairCost(milestone)) return;
   if (state.repairPromptedFor.includes(milestone.id)) return;
   state.repairPromptedFor.push(milestone.id);
   saveState();
@@ -3637,25 +3767,17 @@ function lineLabel(line) {
   return "食物线";
 }
 
-function replaceOrder(orderId) {
-  const index = state.visibleOrders.indexOf(orderId);
-  if (index < 0) return;
-  const currentGate = nextRepairGateOrderId();
-  if (orderId === currentGate) {
-    syncGateOrder();
-    return;
-  }
-  const next = pickOrder();
-  if (next) state.visibleOrders[index] = next.id;
-}
-
 function orderUnlockConditionMet(unlock) {
-  if (!unlock || unlock === "tutorial_start") return true;
-  const afterOrderMatch = unlock.match(/^after_order_(\d+)$/);
-  if (afterOrderMatch) return state.completedOrders >= Number(afterOrderMatch[1]);
-  const completedOrdersMatch = unlock.match(/^completed_orders_(\d+)$/);
-  if (completedOrdersMatch) return state.completedOrders >= Number(completedOrdersMatch[1]);
-  if (unlock.startsWith("codex_")) return state.unlockedCodex.has(unlock);
+  if (!unlock || unlock === "tutorial_start" || unlock === "available_when_producible") return true;
+  if (/^(after_order_|completed_orders_|codex_)/.test(unlock)) return true;
+  const masteryMatch = unlock.match(/^generator_mastery_(.+)$/);
+  if (masteryMatch) {
+    const categoryId = masteryMatch[1];
+    const requirement = state.generatorConfig.upgradeRequirements?.find((entry) => entry.requiresMasteryOrder);
+    return state.unlockedGeneratorCategories.includes(categoryId)
+      && state.innLevel >= (Number(requirement?.innLevel) || 4)
+      && (state.generatorLineOrderCounts[categoryId] ?? 0) >= (Number(requirement?.lineOrders) || 48);
+  }
   if (unlock.startsWith("generator_")) return state.unlockedGeneratorCategories.includes(unlock.slice("generator_".length));
   if (unlock === "final_lv1_order") {
     return state.innLevel >= 2 && state.unlockedCodex.has("codex_hubing_08");
@@ -3663,84 +3785,76 @@ function orderUnlockConditionMet(unlock) {
   return false;
 }
 
+function highestOwnedGeneratorLevel(categoryId) {
+  return [...state.board, ...state.bag, ...state.pendingGeneratorRewards]
+    .map((itemId) => byId.get(migrateLegacyGeneratorId(itemId)))
+    .filter((item) => isGeneratorPiece(item) && item.generatorType === categoryId)
+    .reduce((highest, item) => Math.max(highest, Number(item.level) || 1), 0);
+}
+
 function orderDemandLinesUnlocked(order) {
-  const foodLines = new Set(
-    state.generatorConfig.categories
-      .filter((category) => state.unlockedGeneratorCategories.includes(category.id))
-      .map((category) => category.foodLineId),
-  );
+  const availability = state.economyConfig?.orderPricing?.availability ?? {};
+  const maxDemandByGeneratorLevel = availability.maxDemandLevelByGeneratorLevel ?? {};
   return order.demand.every((demand) => {
     const item = byId.get(demand.itemId);
-    return Boolean(item && foodLines.has(item.line));
+    const category = state.generatorConfig.categories.find((entry) => entry.foodLineId === item?.line);
+    if (!item || !category || !state.unlockedGeneratorCategories.includes(category.id)) return false;
+    const generatorLevel = highestOwnedGeneratorLevel(category.id);
+    if (availability.requireOwnedGeneratorLine && generatorLevel < 1) return false;
+    const maxDemandLevel = Number(maxDemandByGeneratorLevel[generatorLevel]) || 8;
+    return (Number(item.level) || 1) <= maxDemandLevel;
   });
 }
 
 function orderProgressConditionsMet(order) {
   if (!orderUnlockConditionMet(order.unlock)) return false;
-  if (Number(order.minCompletedOrders ?? 0) > state.completedOrders) return false;
-  if (Number(order.minUnlockedGeneratorCategories ?? 0) > state.unlockedGeneratorCategories.length) return false;
   if (Array.isArray(order.requiredGeneratorCategories)
     && !order.requiredGeneratorCategories.every((categoryId) => state.unlockedGeneratorCategories.includes(categoryId))) {
-    return false;
-  }
-  if (Array.isArray(order.requiredCodexIds)
-    && !order.requiredCodexIds.every((codexId) => state.unlockedCodex.has(codexId))) {
     return false;
   }
   return true;
 }
 
 function isOrderEligible(order, {
-  allowIncompleteGate = false,
   ignoreVisible = false,
   ignoreWeight = false,
 } = {}) {
   if (!order) return false;
+  if (order.oneTime && state.completedOrderIds.includes(order.id)) return false;
   if (!ignoreVisible && state.visibleOrders.includes(order.id)) return false;
-  if (!allowIncompleteGate
-    && REPAIR_GATE_SEQUENCE.includes(order.id)
-    && !state.completedOrderIds.includes(order.id)
-    && order.orderTier !== "guide") return false;
   if (!ignoreWeight && order.weight <= 0) return false;
   return orderDemandLinesUnlocked(order) && orderProgressConditionsMet(order);
 }
 
-function nextRepairGateOrderId() {
-  const milestone = nextRepairMilestone();
-  if (!milestone || (milestone.chapter ?? 1) > state.innLevel) return null;
-  const targetOrderIds = milestone.conditions?.completedOrderIds ?? [];
-  const targetIndices = targetOrderIds
-    .map((orderId) => REPAIR_GATE_SEQUENCE.indexOf(orderId))
-    .filter((index) => index >= 0);
-  if (!targetIndices.length) {
-    const orderId = targetOrderIds.find((entry) => !state.completedOrderIds.includes(entry));
-    return isOrderEligible(getOrder(orderId), { allowIncompleteGate: true, ignoreVisible: true, ignoreWeight: true })
-      ? orderId
-      : null;
-  }
-  const targetIndex = Math.max(...targetIndices);
-  const milestoneIndex = state.progressionConfig.milestones.findIndex((entry) => entry.id === milestone.id);
-  const previousMilestone = state.progressionConfig.milestones
-    .slice(0, milestoneIndex)
-    .reverse()
-    .find((entry) => state.renovationChoices[entry.id]);
-  const previousTargetIndex = previousMilestone
-    ? Math.max(
-      -1,
-      ...(previousMilestone.conditions?.completedOrderIds ?? [])
-        .map((orderId) => REPAIR_GATE_SEQUENCE.indexOf(orderId))
-        .filter((index) => index >= 0),
-    )
-    : -1;
-  const orderId = REPAIR_GATE_SEQUENCE.slice(previousTargetIndex + 1, targetIndex + 1).find(
-    (orderId) => !state.completedOrderIds.includes(orderId),
-  );
-  return isOrderEligible(getOrder(orderId), { allowIncompleteGate: true, ignoreVisible: true, ignoreWeight: true })
-    ? orderId
-    : null;
+function orderItemCoinValue(itemId) {
+  const item = byId.get(itemId);
+  const values = state.economyConfig?.orderPricing?.levelValuesByLine?.[item?.line];
+  const level = Number(item?.level) || 0;
+  return Array.isArray(values) && level > 0 ? Math.max(0, Number(values[level - 1]) || 0) : 0;
 }
 
-function syncGateOrder() {
+function calculatedOrderCoinReward(order) {
+  return (order?.demand ?? []).reduce(
+    (sum, demand) => sum + orderItemCoinValue(demand.itemId) * Math.max(0, Number(demand.quantity) || 0),
+    0,
+  );
+}
+
+function orderPricingBand(order) {
+  const reward = calculatedOrderCoinReward(order);
+  const bands = state.economyConfig?.orderPricing?.bands ?? [];
+  return bands.find((band) => reward >= band.minCoins && reward <= band.maxCoins)
+    ?? bands.reduce((closest, band) => {
+      const distance = reward < band.minCoins ? band.minCoins - reward : reward - band.maxCoins;
+      return !closest || distance < closest.distance ? { ...band, distance } : closest;
+    }, null);
+}
+
+function orderMatchesBand(order, bandId) {
+  return !bandId || orderPricingBand(order)?.id === bandId;
+}
+
+function syncVisibleOrders() {
   if (LV4_MARKET_ORDERS_QA_MODE) {
     state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
     return;
@@ -3748,32 +3862,32 @@ function syncGateOrder() {
   if (GENERATOR_ORDER_QA_MODE) {
     state.visibleOrders = GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]
       .filter((orderId) => isOrderEligible(getOrder(orderId), {
-        allowIncompleteGate: true,
         ignoreVisible: true,
         ignoreWeight: true,
       }));
     return;
   }
-  const nextOrderId = nextRepairGateOrderId();
   const maxVisible = state.ordersConfig.maxVisibleOrders ?? 3;
-  const sideOrders = state.visibleOrders.filter(
-    (orderId, index, orders) => (
-      (!REPAIR_GATE_SEQUENCE.includes(orderId) || state.completedOrderIds.includes(orderId))
-      && orders.indexOf(orderId) === index
-      && isOrderEligible(getOrder(orderId), { ignoreVisible: true })
-    ),
-  );
-  state.visibleOrders = nextOrderId ? [nextOrderId, ...sideOrders] : sideOrders;
-  state.visibleOrders = state.visibleOrders.slice(0, maxVisible);
-  while (state.visibleOrders.length < maxVisible) {
-    const next = pickOrder();
-    if (!next) break;
-    state.visibleOrders.push(next.id);
+  const bands = state.economyConfig?.orderPricing?.bands ?? [];
+  const previous = [...state.visibleOrders];
+  state.visibleOrders = [];
+  for (let index = 0; index < maxVisible; index += 1) {
+    const bandId = bands[index]?.id;
+    const existing = getOrder(previous[index]);
+    if (existing
+      && !state.visibleOrders.includes(existing.id)
+      && isOrderEligible(existing, { ignoreVisible: true })
+      && orderMatchesBand(existing, bandId)) {
+      state.visibleOrders.push(existing.id);
+      continue;
+    }
+    const next = pickOrder(bandId) ?? pickOrder();
+    if (next) state.visibleOrders.push(next.id);
   }
 }
 
 function syncDemoOrder() {
-  syncGateOrder();
+  syncVisibleOrders();
 }
 
 function getOrder(orderId) {
@@ -3781,18 +3895,29 @@ function getOrder(orderId) {
 }
 
 function currentOrderCoinReward(order) {
-  if (!order) return 0;
-  const firstClearBonus = state.completedOrderIds.includes(order.id) ? 0 : (order.reward.firstClearBonusCoins ?? 0);
-  return order.reward.coins + firstClearBonus;
+  return calculatedOrderCoinReward(order);
 }
 
-function pickOrder() {
-  const candidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order));
+function pickOrder(bandId = null) {
+  const allCandidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order));
+  const bandCandidates = allCandidates.filter((order) => orderMatchesBand(order, bandId));
+  const candidates = bandCandidates.length ? bandCandidates : bandId ? [] : allCandidates;
   if (!candidates.length) return null;
+  const band = (state.economyConfig?.orderPricing?.bands ?? []).find((entry) => entry.id === bandId);
+  const unservedMastery = candidates.filter(
+    (order) => order.generatorMasteryCategory && !state.completedOrderIds.includes(order.id),
+  );
   const unservedGuides = candidates.filter(
     (order) => order.orderTier === "guide" && !state.completedOrderIds.includes(order.id),
   );
-  const weightedCandidates = unservedGuides.length ? unservedGuides : candidates;
+  const preferred = candidates.filter((order) => band?.preferredOrderTypes?.includes(order.orderType));
+  const weightedCandidates = bandId === "goal" && unservedMastery.length
+    ? unservedMastery
+    : bandId === "quick" && unservedGuides.length
+      ? unservedGuides
+      : preferred.length
+        ? preferred
+        : candidates;
   const total = weightedCandidates.reduce((sum, order) => sum + order.weight, 0);
   let roll = Math.random() * total;
   for (const order of weightedCandidates) {
@@ -3947,7 +4072,7 @@ function chooseRenovation(milestoneId, choiceId) {
   state.coins -= repairCost(milestone);
   state.renovationChoices[milestoneId] = choiceId;
   applyRepairRewards(milestone);
-  syncGateOrder();
+  syncVisibleOrders();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
   pendingInnFocusPosition = nextAfterRepair?.scenePosition ?? null;

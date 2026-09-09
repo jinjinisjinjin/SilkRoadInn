@@ -1,8 +1,165 @@
 {
-  "version": "0.2",
+  "version": "0.4",
   "maxVisibleOrders": 3,
   "autoRefreshMinutes": 20,
   "freeRefreshPerDay": 3,
+  "contentPlan": {
+    "status": "economy_integrated",
+    "currentOrderCount": 65,
+    "targetOrderCount": 172,
+    "countsByType": {
+      "mixed": 12,
+      "rareCaravan": 11,
+      "repairMain": 5,
+      "regular": 11,
+      "quick": 20,
+      "generatorGuide": 6
+    },
+    "flowRule": "orders_are_not_chapter_gates",
+    "availabilityRule": "owned_generator_line_and_reachable_item_level",
+    "progressionBands": [
+      {
+        "generatorLevel": 1,
+        "maxDemandItemLevel": 3,
+        "focus": "基础单与单线快单"
+      },
+      {
+        "generatorLevel": 2,
+        "maxDemandItemLevel": 4,
+        "focus": "常规单与双线组合"
+      },
+      {
+        "generatorLevel": 3,
+        "maxDemandItemLevel": 5,
+        "focus": "稳定混合单"
+      },
+      {
+        "generatorLevel": 4,
+        "maxDemandItemLevel": 6,
+        "focus": "中高级商旅单"
+      },
+      {
+        "generatorLevel": 5,
+        "maxDemandItemLevel": 7,
+        "focus": "稀有长线目标"
+      },
+      {
+        "generatorLevel": 6,
+        "maxDemandItemLevel": 8,
+        "focus": "顶级订单与终局轮换"
+      }
+    ]
+  },
+  "slotPolicy": {
+    "slots": [
+      {
+        "id": "quick",
+        "count": 1,
+        "minCoins": 1,
+        "maxCoins": 8,
+        "preferredOrderTypes": [
+          "generatorGuide",
+          "quick"
+        ]
+      },
+      {
+        "id": "regular",
+        "count": 1,
+        "minCoins": 9,
+        "maxCoins": 25,
+        "preferredOrderTypes": [
+          "regular",
+          "mixed"
+        ]
+      },
+      {
+        "id": "goal",
+        "count": 1,
+        "minCoins": 26,
+        "maxCoins": 100,
+        "preferredOrderTypes": [
+          "repairMain",
+          "generatorMastery",
+          "rareCaravan"
+        ],
+        "pinnedUntilCompleted": true
+      }
+    ]
+  },
+  "generationPolicy": {
+    "baseItemCostByLevel": {
+      "1": 1,
+      "2": 2,
+      "3": 4,
+      "4": 8,
+      "5": 16,
+      "6": 32,
+      "7": 64,
+      "8": 128
+    },
+    "lineCountWeights": {
+      "single": 45,
+      "double": 38,
+      "triple": 14,
+      "rareHighTier": 3
+    },
+    "unlockSafety": {
+      "requireUnlockedGeneratorLine": true,
+      "requireDiscoveredDemandItem": false,
+      "guideOrdersBeforeRandomLineOrders": 2,
+      "maxSimultaneousOrdersAtOrAboveItemLevel": 1,
+      "highItemLevelThreshold": 5,
+      "mainOrdersRefreshable": false,
+      "requireOwnedGenerator": true
+    },
+    "rotation": {
+      "exactOrderRecentHistory": 8,
+      "primaryLineWindow": 5,
+      "maxSamePrimaryLineInWindow": 2,
+      "legacyEasyOrderShare": 0.25,
+      "avoidAllVisibleOrdersSharingOneLine": true
+    },
+    "progression": {
+      "progressGiftEveryCompletedOrders": 4,
+      "guaranteedMerchantOrderEveryCompletedOrders": 8,
+      "guideOrdersOneTime": true,
+      "repairMainOrdersOneTime": true,
+      "level7And8RequiredForRepair": false
+    },
+    "endlessMode": {
+      "enabledAfterFinalRepair": true,
+      "scaleByUnlockedLines": true,
+      "scaleByHighestGeneratorLevel": true,
+      "allowItemLevel7": true,
+      "allowItemLevel8Rarely": true
+    },
+    "generatorLevelDifficulty": [
+      {
+        "generatorLevel": 1,
+        "maxDemandItemLevel": 3
+      },
+      {
+        "generatorLevel": 2,
+        "maxDemandItemLevel": 4
+      },
+      {
+        "generatorLevel": 3,
+        "maxDemandItemLevel": 5
+      },
+      {
+        "generatorLevel": 4,
+        "maxDemandItemLevel": 6
+      },
+      {
+        "generatorLevel": 5,
+        "maxDemandItemLevel": 7
+      },
+      {
+        "generatorLevel": 6,
+        "maxDemandItemLevel": 8
+      }
+    ]
+  },
   "orders": [
     {
       "id": "order_lv4_south_shed_stocking",
@@ -23,14 +180,20 @@
         }
       ],
       "reward": {
-        "coins": 80,
-        "codexExp": 6,
-        "originalCoins": 160,
-        "firstClearBonusCoins": 16
+        "coins": 22,
+        "codexExp": 6
       },
       "weight": 10,
-      "unlock": "tutorial_start",
-      "dialogue": "南棚要聚起第一车货，先备油胡饼、酪浆和三勒浆，商队才好在这里歇脚交货。"
+      "unlock": "available_when_producible",
+      "dialogue": "南棚要聚起第一车货，先备油胡饼、酪浆和三勒浆，商队才好在这里歇脚交货。",
+      "priceBand": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "drink"
+      ],
+      "orderType": "mixed",
+      "orderTier": "regular"
     },
     {
       "id": "order_lv4_central_market_feast",
@@ -51,14 +214,20 @@
         }
       ],
       "reward": {
-        "coins": 120,
-        "codexExp": 7,
-        "originalCoins": 240,
-        "firstClearBonusCoins": 24
+        "coins": 30,
+        "codexExp": 7
       },
       "weight": 10,
-      "unlock": "tutorial_start",
-      "dialogue": "中市要开长席，油胡饼、干酪与石榴浆各备一份，南来北往的客人才坐得住。"
+      "unlock": "available_when_producible",
+      "dialogue": "中市要开长席，油胡饼、干酪与石榴浆各备一份，南来北往的客人才坐得住。",
+      "priceBand": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "drink"
+      ],
+      "orderType": "rareCaravan",
+      "orderTier": "advanced"
     },
     {
       "id": "order_lv4_south_street_trade",
@@ -79,14 +248,20 @@
         }
       ],
       "reward": {
-        "coins": 160,
-        "codexExp": 8,
-        "originalCoins": 320,
-        "firstClearBonusCoins": 32
+        "coins": 37,
+        "codexExp": 8
       },
       "weight": 10,
-      "unlock": "tutorial_start",
-      "dialogue": "三铺连街要有压轴招牌。葱豉胡饼配干酪、石榴浆，香气要一路传到巷口。"
+      "unlock": "available_when_producible",
+      "dialogue": "三铺连街要有压轴招牌。葱豉胡饼配干酪、石榴浆，香气要一路传到巷口。",
+      "priceBand": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "drink"
+      ],
+      "orderType": "rareCaravan",
+      "orderTier": "advanced"
     },
     {
       "id": "order_001_guard_lubing",
@@ -99,14 +274,21 @@
         }
       ],
       "reward": {
-        "coins": 40,
-        "codexExp": 2,
-        "originalCoins": 80,
-        "firstClearBonusCoins": 8
+        "coins": 3,
+        "codexExp": 2
       },
       "weight": 20,
-      "unlock": "tutorial_start",
-      "dialogue": "你阿爷从前也这样烤饼。流沙驿开着，我就来。"
+      "unlock": "available_when_producible",
+      "dialogue": "你阿爷从前也这样烤饼。流沙驿开着，我就来。",
+      "chapter": 1,
+      "orderType": "repairMain",
+      "contentSource": "handcrafted",
+      "orderTier": "repairMain",
+      "oneTime": true,
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ]
     },
     {
       "id": "order_002_farmer_dough",
@@ -119,14 +301,21 @@
         }
       ],
       "reward": {
-        "coins": 23,
-        "codexExp": 1,
-        "originalCoins": 45,
-        "firstClearBonusCoins": 5
+        "coins": 2,
+        "codexExp": 1
       },
       "weight": 16,
-      "unlock": "after_order_1",
-      "dialogue": "今年麦磨得细，先替我备两团面。等炉灶补稳，我再替你去街口招呼人。"
+      "unlock": "available_when_producible",
+      "dialogue": "今年麦磨得细，先替我备两团面。等炉灶补稳，我再替你去街口招呼人。",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderTier": "quick"
     },
     {
       "id": "order_015_monk_rumi",
@@ -139,19 +328,22 @@
         }
       ],
       "reward": {
-        "coins": 4,
-        "codexExp": 2,
-        "originalCoins": 8,
-        "firstClearBonusCoins": 1
+        "coins": 3,
+        "codexExp": 2
       },
       "weight": 18,
-      "unlock": "tutorial_start",
+      "unlock": "available_when_producible",
       "dialogue": "行脚至此，若有一碗乳糜，便能缓一缓风沙。",
-      "orderTier": "guide",
+      "orderTier": "repairMain",
       "guideGeneratorCategory": "dairy",
       "requiredGeneratorCategories": [
         "dairy"
-      ]
+      ],
+      "chapter": 3,
+      "orderType": "repairMain",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick"
     },
     {
       "id": "order_016_uighur_milk",
@@ -164,19 +356,22 @@
         }
       ],
       "reward": {
-        "coins": 3,
-        "codexExp": 1,
-        "originalCoins": 5,
-        "firstClearBonusCoins": 1
+        "coins": 2,
+        "codexExp": 1
       },
       "weight": 16,
-      "unlock": "tutorial_start",
+      "unlock": "available_when_producible",
       "dialogue": "新乳趁早用，路上人喝了才有力气。",
-      "orderTier": "guide",
+      "orderTier": "repairMain",
       "guideGeneratorCategory": "dairy",
       "requiredGeneratorCategories": [
         "dairy"
-      ]
+      ],
+      "chapter": 3,
+      "orderType": "repairMain",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick"
     },
     {
       "id": "order_018_traveler_lubing_rumi",
@@ -193,14 +388,21 @@
         }
       ],
       "reward": {
-        "coins": 9,
-        "codexExp": 4,
-        "originalCoins": 18,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 14,
-      "unlock": "tutorial_start",
-      "dialogue": "一张炉饼配一碗乳糜，路上吃着稳妥。"
+      "unlock": "available_when_producible",
+      "dialogue": "一张炉饼配一碗乳糜，路上吃着稳妥。",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "handcrafted",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "priceBand": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_003_sogdian_humabing",
@@ -213,14 +415,21 @@
         }
       ],
       "reward": {
-        "coins": 35,
-        "codexExp": 4,
-        "originalCoins": 70,
-        "firstClearBonusCoins": 7
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 15,
-      "unlock": "codex_hubing_03",
-      "dialogue": "饼面有胡麻香，像撒马尔罕路上的炉火。你后厨的炉火稳了，我便把这一香带去商路上。"
+      "unlock": "available_when_producible",
+      "dialogue": "饼面有胡麻香，像撒马尔罕路上的炉火。你后厨的炉火稳了，我便把这一香带去商路上。",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderTier": "quick"
     },
     {
       "id": "order_011_dunhuang_woman_lubing",
@@ -230,17 +439,29 @@
         {
           "itemId": "hubing_02_lubing",
           "quantity": 1
+        },
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
         }
       ],
       "reward": {
-        "coins": 28,
-        "codexExp": 2,
-        "originalCoins": 55,
-        "firstClearBonusCoins": 6
+        "coins": 4,
+        "codexExp": 3
       },
       "weight": 18,
-      "unlock": "tutorial_start",
-      "dialogue": "趁炉火还热，给我留一张路上能揣着走的饼。前厅修好了，我便替你守着门前的第一桌客。"
+      "unlock": "available_when_producible",
+      "dialogue": "前厅坐稳了，再添一张炉饼和一盏鲜乳。客人吃得安稳，后厨才值得好好收拾。",
+      "chapter": 1,
+      "orderType": "repairMain",
+      "contentSource": "handcrafted",
+      "orderTier": "repairMain",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "priceBand": "quick"
     },
     {
       "id": "order_012_changan_maid_lubing",
@@ -253,13 +474,20 @@
         }
       ],
       "reward": {
-        "coins": 7,
-        "codexExp": 3,
-        "originalCoins": 14
+        "coins": 6,
+        "codexExp": 3
       },
       "weight": 12,
-      "unlock": "after_order_1",
-      "dialogue": "主人要赶路，吩咐我备些干净便携的饼食。"
+      "unlock": "available_when_producible",
+      "dialogue": "主人要赶路，吩咐我备些干净便携的饼食。",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "handcrafted",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderTier": "quick"
     },
     {
       "id": "order_020_guard_lubing_bundle",
@@ -272,14 +500,21 @@
         }
       ],
       "reward": {
-        "coins": 38,
-        "codexExp": 3,
-        "originalCoins": 75,
-        "firstClearBonusCoins": 8
+        "coins": 6,
+        "codexExp": 3
       },
       "weight": 0,
-      "unlock": "after_order_1",
-      "dialogue": "驿外换岗的人多，我带两张刚出炉的饼去。后厨那边的灶砖，也该给你凑齐了。"
+      "unlock": "available_when_producible",
+      "dialogue": "驿外换岗的人多，我带两张刚出炉的饼去。后厨那边的灶砖，也该给你凑齐了。",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderTier": "quick"
     },
     {
       "id": "order_013_temple_donor_humabing",
@@ -292,14 +527,18 @@
         }
       ],
       "reward": {
-        "coins": 30,
-        "codexExp": 4,
-        "originalCoins": 60,
-        "firstClearBonusCoins": 6
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 9,
-      "unlock": "codex_hubing_03",
-      "dialogue": "供食贵在洁净，胡麻香也要稳妥。等你把食单贴上墙，后来的人便知道这炉火从何而来。"
+      "unlock": "available_when_producible",
+      "dialogue": "供食贵在洁净，胡麻香也要稳妥。等你把食单贴上墙，后来的人便知道这炉火从何而来。",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_014_musician_youhubing",
@@ -312,14 +551,18 @@
         }
       ],
       "reward": {
-        "coins": 16,
-        "codexExp": 8,
-        "originalCoins": 32,
-        "firstClearBonusCoins": 3
+        "coins": 10,
+        "codexExp": 8
       },
       "weight": 8,
-      "unlock": "codex_hubing_04",
-      "dialogue": "一曲唱罢，油润些的饼正好压住风沙。"
+      "unlock": "available_when_producible",
+      "dialogue": "一曲唱罢，油润些的饼正好压住风沙。",
+      "priceBand": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "regular",
+      "orderTier": "regular"
     },
     {
       "id": "order_004_changan_lubing",
@@ -332,14 +575,18 @@
         }
       ],
       "reward": {
-        "coins": 7,
-        "codexExp": 3,
-        "originalCoins": 13,
-        "firstClearBonusCoins": 1
+        "coins": 6,
+        "codexExp": 3
       },
       "weight": 13,
-      "unlock": "after_order_3",
-      "dialogue": "长安也时兴胡饼，沙州这一炉倒不输西市。"
+      "unlock": "available_when_producible",
+      "dialogue": "长安也时兴胡饼，沙州这一炉倒不输西市。",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_005_monk_humabing",
@@ -349,17 +596,34 @@
         {
           "itemId": "hubing_03_humabing",
           "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 1
         }
       ],
       "reward": {
-        "coins": 25,
-        "codexExp": 4,
-        "originalCoins": 50,
-        "firstClearBonusCoins": 5
+        "coins": 10,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "codex_hubing_03",
-      "dialogue": "路远食简，芝麻香足以安顿一餐。留一张给我，也留一笔给这间驿站的食单。"
+      "unlock": "available_when_producible",
+      "dialogue": "胡麻饼、乳糜和新磨的胡麻各备一份。三味能在一席相合，才算把流沙驿的第一卷食单写全。",
+      "chapter": 1,
+      "orderType": "repairMain",
+      "contentSource": "handcrafted",
+      "orderTier": "repairMain",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "spice"
+      ],
+      "priceBand": "regular"
     },
     {
       "id": "order_006_camel_worker_youhubing",
@@ -372,14 +636,18 @@
         }
       ],
       "reward": {
-        "coins": 15,
-        "codexExp": 8,
-        "originalCoins": 30,
-        "firstClearBonusCoins": 3
+        "coins": 10,
+        "codexExp": 8
       },
       "weight": 9,
-      "unlock": "codex_hubing_04",
-      "dialogue": "油润些的饼，过沙碛才顶饿。"
+      "unlock": "available_when_producible",
+      "dialogue": "油润些的饼，过沙碛才顶饿。",
+      "priceBand": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "regular",
+      "orderTier": "regular"
     },
     {
       "id": "order_007_persian_attendant_congchi",
@@ -392,14 +660,18 @@
         }
       ],
       "reward": {
-        "coins": 34,
-        "codexExp": 14,
-        "originalCoins": 68,
-        "firstClearBonusCoins": 7
+        "coins": 17,
+        "codexExp": 14
       },
       "weight": 7,
-      "unlock": "codex_hubing_05",
-      "dialogue": "葱豉咸香，正好压住一路风尘。"
+      "unlock": "available_when_producible",
+      "dialogue": "葱豉咸香，正好压住一路风尘。",
+      "priceBand": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "regular",
+      "orderTier": "regular"
     },
     {
       "id": "order_008_uighur_yangrou",
@@ -412,14 +684,18 @@
         }
       ],
       "reward": {
-        "coins": 75,
-        "codexExp": 24,
-        "originalCoins": 150,
-        "firstClearBonusCoins": 15
+        "coins": 28,
+        "codexExp": 24
       },
       "weight": 5,
-      "unlock": "codex_hubing_06",
-      "dialogue": "羊肉入饼，这才像能走远路的吃食。"
+      "unlock": "available_when_producible",
+      "dialogue": "羊肉入饼，这才像能走远路的吃食。",
+      "priceBand": "goal",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "rareCaravan",
+      "orderTier": "advanced"
     },
     {
       "id": "order_009_mystery_suibing",
@@ -432,15 +708,19 @@
         }
       ],
       "reward": {
-        "coins": 170,
+        "coins": 46,
         "codexExp": 45,
-        "codexShard": 1,
-        "originalCoins": 340,
-        "firstClearBonusCoins": 34
+        "codexShard": 1
       },
       "weight": 3,
-      "unlock": "codex_hubing_07",
-      "dialogue": "髓脂香厚，此法不是寻常小店都记得。"
+      "unlock": "available_when_producible",
+      "dialogue": "髓脂香厚，此法不是寻常小店都记得。",
+      "priceBand": "goal",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "rareCaravan",
+      "orderTier": "advanced"
     },
     {
       "id": "order_010_caravan_gulouzi",
@@ -453,15 +733,19 @@
         }
       ],
       "reward": {
-        "coins": 380,
+        "coins": 75,
         "codexExp": 90,
-        "completeLv1": true,
-        "originalCoins": 760,
-        "firstClearBonusCoins": 76
+        "completeLv1": true
       },
       "weight": 0,
-      "unlock": "final_lv1_order",
-      "dialogue": "层层羊肉与椒豉，足够让整支商队记住流沙驿。"
+      "unlock": "available_when_producible",
+      "dialogue": "层层羊肉与椒豉，足够让整支商队记住流沙驿。",
+      "priceBand": "goal",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "orderType": "rareCaravan",
+      "orderTier": "advanced"
     },
     {
       "id": "order_017_temple_laojiang",
@@ -474,14 +758,18 @@
         }
       ],
       "reward": {
-        "coins": 8,
-        "codexExp": 4,
-        "originalCoins": 15,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "codex_dairy_03",
-      "dialogue": "酪浆清润，供食前也要备得洁净。"
+      "unlock": "available_when_producible",
+      "dialogue": "酪浆清润，供食前也要备得洁净。",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "dairy"
+      ],
+      "orderType": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_019_sogdian_huma_laojiang",
@@ -498,14 +786,19 @@
         }
       ],
       "reward": {
-        "coins": 16,
-        "codexExp": 7,
-        "originalCoins": 32,
-        "firstClearBonusCoins": 3
+        "coins": 12,
+        "codexExp": 7
       },
       "weight": 8,
-      "unlock": "codex_dairy_03",
-      "dialogue": "胡麻香配酪浆，像商路两端的味道碰在一处。"
+      "unlock": "available_when_producible",
+      "dialogue": "胡麻香配酪浆，像商路两端的味道碰在一处。",
+      "priceBand": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "orderType": "mixed",
+      "orderTier": "regular"
     },
     {
       "id": "order_021_lanes_continuation",
@@ -522,14 +815,19 @@
         }
       ],
       "reward": {
-        "coins": 40,
-        "codexExp": 4,
-        "originalCoins": 80,
-        "firstClearBonusCoins": 8
+        "coins": 8,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "tutorial_start",
-      "dialogue": "南街连成一片，再备些饼和鲜乳，远路客人才愿一路逛下来。"
+      "unlock": "available_when_producible",
+      "dialogue": "南街连成一片，再备些饼和鲜乳，远路客人才愿一路逛下来。",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "orderType": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_022_shed_continuation",
@@ -546,14 +844,19 @@
         }
       ],
       "reward": {
-        "coins": 53,
-        "codexExp": 5,
-        "originalCoins": 105,
-        "firstClearBonusCoins": 11
+        "coins": 7,
+        "codexExp": 5
       },
       "weight": 10,
-      "unlock": "tutorial_start",
-      "dialogue": "东棚该热闹起来了。巷口刚通，让路过的人都能闻见饼香。"
+      "unlock": "available_when_producible",
+      "dialogue": "东棚该热闹起来了。巷口刚通，让路过的人都能闻见饼香。",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "orderType": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_023_court_continuation",
@@ -570,14 +873,19 @@
         }
       ],
       "reward": {
-        "coins": 60,
-        "codexExp": 5,
-        "originalCoins": 120,
-        "firstClearBonusCoins": 12
+        "coins": 8,
+        "codexExp": 5
       },
       "weight": 10,
-      "unlock": "tutorial_start",
-      "dialogue": "东院焕新了，主人想在这里歇一歇。备些酪浆和甜果，算是给驿站的贺礼。"
+      "unlock": "available_when_producible",
+      "dialogue": "东院焕新了，主人想在这里歇一歇。备些酪浆和甜果，算是给驿站的贺礼。",
+      "priceBand": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "fruit"
+      ],
+      "orderType": "quick",
+      "orderTier": "quick"
     },
     {
       "id": "order_024_lantern_continuation",
@@ -594,14 +902,19 @@
         }
       ],
       "reward": {
-        "coins": 80,
-        "codexExp": 6,
-        "originalCoins": 160,
-        "firstClearBonusCoins": 16
+        "coins": 16,
+        "codexExp": 6
       },
       "weight": 0,
-      "unlock": "tutorial_start",
-      "dialogue": "最后再留一盏灯的吃食。油饼配乳糜，走过这条街的人都会记住流沙驿。"
+      "unlock": "available_when_producible",
+      "dialogue": "最后再留一盏灯的吃食。油饼配乳糜，走过这条街的人都会记住流沙驿。",
+      "priceBand": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "orderType": "mixed",
+      "orderTier": "regular"
     },
     {
       "id": "order_025_spice_huma_pouch",
@@ -614,19 +927,22 @@
         }
       ],
       "reward": {
-        "coins": 3,
-        "codexExp": 1,
-        "originalCoins": 6,
-        "firstClearBonusCoins": 1
+        "coins": 2,
+        "codexExp": 1
       },
       "weight": 18,
-      "unlock": "generator_spice",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "spice",
       "requiredGeneratorCategories": [
         "spice"
       ],
-      "dialogue": "新香料架先从胡麻试起，两撮便够我辨一辨香气。"
+      "dialogue": "新香料架先从胡麻试起，两撮便够我辨一辨香气。",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick"
     },
     {
       "id": "order_026_spice_ziran_bowl",
@@ -639,20 +955,22 @@
         }
       ],
       "reward": {
-        "coins": 4,
-        "codexExp": 2,
-        "originalCoins": 8,
-        "firstClearBonusCoins": 1
+        "coins": 3,
+        "codexExp": 1
       },
       "weight": 15,
-      "unlock": "generator_spice",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "spice",
       "requiredGeneratorCategories": [
         "spice"
       ],
-      "minCompletedOrders": 4,
-      "dialogue": "磨一盏孜然末，今晚烤肉正缺这一口暖香。"
+      "dialogue": "磨一盏孜然末，今晚烤肉正缺这一口暖香。",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "oneTime": true,
+      "priceBand": "quick"
     },
     {
       "id": "order_027_drink_putaozhi_pair",
@@ -665,19 +983,19 @@
         }
       ],
       "reward": {
-        "coins": 4,
-        "codexExp": 1,
-        "originalCoins": 8,
-        "firstClearBonusCoins": 1
+        "coins": 2,
+        "codexExp": 1
       },
       "weight": 18,
-      "unlock": "generator_drink",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "drink",
       "requiredGeneratorCategories": [
         "drink"
       ],
-      "dialogue": "酒水厢房刚开，先榨两盏葡萄汁给门前歇脚的人。"
+      "dialogue": "酒水厢房刚开，先榨两盏葡萄汁给门前歇脚的人。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_028_drink_putaojiang",
@@ -690,20 +1008,19 @@
         }
       ],
       "reward": {
-        "coins": 5,
-        "codexExp": 2,
-        "originalCoins": 10,
-        "firstClearBonusCoins": 1
+        "coins": 3,
+        "codexExp": 2
       },
       "weight": 15,
-      "unlock": "generator_drink",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "drink",
       "requiredGeneratorCategories": [
         "drink"
       ],
-      "minCompletedOrders": 7,
-      "dialogue": "葡萄浆收得浓一些，主人赶路时好慢慢饮。"
+      "dialogue": "葡萄浆收得浓一些，主人赶路时好慢慢饮。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_029_fruit_putao_pair",
@@ -716,19 +1033,19 @@
         }
       ],
       "reward": {
-        "coins": 4,
-        "codexExp": 1,
-        "originalCoins": 8,
-        "firstClearBonusCoins": 1
+        "coins": 2,
+        "codexExp": 1
       },
       "weight": 18,
-      "unlock": "generator_fruit",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "fruit",
       "requiredGeneratorCategories": [
         "fruit"
       ],
-      "dialogue": "果摊新到的葡萄水气足，替孩子们称两串。"
+      "dialogue": "果摊新到的葡萄水气足，替孩子们称两串。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_030_fruit_dried_grapes",
@@ -741,20 +1058,19 @@
         }
       ],
       "reward": {
-        "coins": 5,
-        "codexExp": 2,
-        "originalCoins": 10,
-        "firstClearBonusCoins": 1
+        "coins": 3,
+        "codexExp": 2
       },
       "weight": 15,
-      "unlock": "generator_fruit",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "fruit",
       "requiredGeneratorCategories": [
         "fruit"
       ],
-      "minCompletedOrders": 10,
-      "dialogue": "干葡萄轻便耐放，正合带去下一段路。"
+      "dialogue": "干葡萄轻便耐放，正合带去下一段路。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_031_meat_yangrou_pair",
@@ -767,19 +1083,19 @@
         }
       ],
       "reward": {
-        "coins": 4,
-        "codexExp": 1,
-        "originalCoins": 8,
-        "firstClearBonusCoins": 1
+        "coins": 2,
+        "codexExp": 1
       },
       "weight": 18,
-      "unlock": "generator_meat",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "meat",
       "requiredGeneratorCategories": [
         "meat"
       ],
-      "dialogue": "肉铺开张先别贪多，两份羊肉脔收拾干净便好。"
+      "dialogue": "肉铺开张先别贪多，两份羊肉脔收拾干净便好。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_032_meat_minced_filling",
@@ -792,20 +1108,19 @@
         }
       ],
       "reward": {
-        "coins": 5,
-        "codexExp": 2,
-        "originalCoins": 10,
-        "firstClearBonusCoins": 1
+        "coins": 3,
+        "codexExp": 2
       },
       "weight": 15,
-      "unlock": "generator_meat",
+      "unlock": "available_when_producible",
       "orderTier": "guide",
       "guideGeneratorCategory": "meat",
       "requiredGeneratorCategories": [
         "meat"
       ],
-      "minCompletedOrders": 13,
-      "dialogue": "肉糜剁细些，明早和面时正好包进饼里。"
+      "dialogue": "肉糜剁细些，明早和面时正好包进饼里。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_033_hubing_spice",
@@ -822,20 +1137,21 @@
         }
       ],
       "reward": {
-        "coins": 9,
-        "codexExp": 4,
-        "originalCoins": 18,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 11,
-      "unlock": "completed_orders_6",
+      "unlock": "available_when_producible",
       "orderTier": "mixed",
       "requiredGeneratorCategories": [
         "mill",
         "spice"
       ],
-      "minUnlockedGeneratorCategories": 3,
-      "dialogue": "炉饼配孜然末，简单，却最能叫远客记住沙州的炉火。"
+      "dialogue": "炉饼配孜然末，简单，却最能叫远客记住沙州的炉火。",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "handcrafted",
+      "priceBand": "quick"
     },
     {
       "id": "order_034_dairy_drink",
@@ -852,20 +1168,19 @@
         }
       ],
       "reward": {
-        "coins": 9,
-        "codexExp": 4,
-        "originalCoins": 18,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "completed_orders_8",
+      "unlock": "available_when_producible",
       "orderTier": "mixed",
       "requiredGeneratorCategories": [
         "dairy",
         "drink"
       ],
-      "minUnlockedGeneratorCategories": 4,
-      "dialogue": "乳糜温润，再添一盏葡萄浆，供食便周全了。"
+      "dialogue": "乳糜温润，再添一盏葡萄浆，供食便周全了。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_035_fruit_drink",
@@ -882,20 +1197,19 @@
         }
       ],
       "reward": {
-        "coins": 10,
-        "codexExp": 4,
-        "originalCoins": 20,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "completed_orders_10",
+      "unlock": "available_when_producible",
       "orderTier": "mixed",
       "requiredGeneratorCategories": [
         "fruit",
         "drink"
       ],
-      "minUnlockedGeneratorCategories": 5,
-      "dialogue": "干葡萄佐葡萄浆，同源两味，路上吃喝都方便。"
+      "dialogue": "干葡萄佐葡萄浆，同源两味，路上吃喝都方便。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_036_meat_hubing",
@@ -912,20 +1226,19 @@
         }
       ],
       "reward": {
-        "coins": 10,
-        "codexExp": 4,
-        "originalCoins": 20,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "completed_orders_12",
+      "unlock": "available_when_producible",
       "orderTier": "mixed",
       "requiredGeneratorCategories": [
         "meat",
         "mill"
       ],
-      "minUnlockedGeneratorCategories": 6,
-      "dialogue": "肉糜馅和炉饼一并备好，换岗回来正能顶一顿。"
+      "dialogue": "肉糜馅和炉饼一并备好，换岗回来正能顶一顿。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_037_meat_spice",
@@ -942,20 +1255,19 @@
         }
       ],
       "reward": {
-        "coins": 10,
-        "codexExp": 4,
-        "originalCoins": 20,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 9,
-      "unlock": "completed_orders_12",
+      "unlock": "available_when_producible",
       "orderTier": "mixed",
       "requiredGeneratorCategories": [
         "meat",
         "spice"
       ],
-      "minUnlockedGeneratorCategories": 6,
-      "dialogue": "肉糜里拌入孜然末，香气一起，商队自然寻得到门。"
+      "dialogue": "肉糜里拌入孜然末，香气一起，商队自然寻得到门。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_038_dairy_fruit",
@@ -972,20 +1284,19 @@
         }
       ],
       "reward": {
-        "coins": 10,
-        "codexExp": 4,
-        "originalCoins": 20,
-        "firstClearBonusCoins": 2
+        "coins": 6,
+        "codexExp": 4
       },
       "weight": 10,
-      "unlock": "completed_orders_10",
+      "unlock": "available_when_producible",
       "orderTier": "mixed",
       "requiredGeneratorCategories": [
         "dairy",
         "fruit"
       ],
-      "minUnlockedGeneratorCategories": 5,
-      "dialogue": "乳糜里添些干葡萄，给住店的孩子做一碗甜食。"
+      "dialogue": "乳糜里添些干葡萄，给住店的孩子做一碗甜食。",
+      "priceBand": "quick",
+      "orderType": "quick"
     },
     {
       "id": "order_039_hubing_dairy_spice",
@@ -1006,21 +1317,20 @@
         }
       ],
       "reward": {
-        "coins": 15,
-        "codexExp": 6,
-        "originalCoins": 30,
-        "firstClearBonusCoins": 3
+        "coins": 9,
+        "codexExp": 6
       },
       "weight": 5,
-      "unlock": "completed_orders_12",
+      "unlock": "available_when_producible",
       "orderTier": "advanced",
       "requiredGeneratorCategories": [
         "mill",
         "dairy",
         "spice"
       ],
-      "minUnlockedGeneratorCategories": 4,
-      "dialogue": "炉饼、乳糜与孜然香都备一份，今晚的曲席才算齐整。"
+      "dialogue": "炉饼、乳糜与孜然香都备一份，今晚的曲席才算齐整。",
+      "priceBand": "regular",
+      "orderType": "mixed"
     },
     {
       "id": "order_040_meat_fruit_drink",
@@ -1041,21 +1351,639 @@
         }
       ],
       "reward": {
-        "coins": 16,
-        "codexExp": 6,
-        "originalCoins": 32,
-        "firstClearBonusCoins": 3
+        "coins": 9,
+        "codexExp": 6
       },
       "weight": 4,
-      "unlock": "completed_orders_15",
+      "unlock": "available_when_producible",
       "orderTier": "advanced",
       "requiredGeneratorCategories": [
         "meat",
         "fruit",
         "drink"
       ],
-      "minUnlockedGeneratorCategories": 6,
-      "dialogue": "肉食、干果和浆饮各备一份，整支商队才好继续西行。"
+      "dialogue": "肉食、干果和浆饮各备一份，整支商队才好继续西行。",
+      "priceBand": "regular",
+      "orderType": "mixed"
+    },
+    {
+      "id": "order_mastery_mill",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "hubing_06_yangrouhubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 28,
+        "codexExp": 8
+      },
+      "weight": 36,
+      "unlock": "generator_mastery_mill",
+      "orderTier": "guide",
+      "oneTime": true,
+      "generatorMasteryCategory": "mill",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "羊肉胡饼火候已成，请替远行商队备一份压轴干粮。",
+      "priceBand": "goal",
+      "orderType": "rareCaravan"
+    },
+    {
+      "id": "order_mastery_dairy",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "dairy_06_milao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 28,
+        "codexExp": 8
+      },
+      "weight": 36,
+      "unlock": "generator_mastery_dairy",
+      "orderTier": "guide",
+      "oneTime": true,
+      "generatorMasteryCategory": "dairy",
+      "requiredGeneratorCategories": [
+        "dairy"
+      ],
+      "dialogue": "乳香凝成蜜酪，这一盏便算奶食手艺的试炼。",
+      "priceBand": "goal",
+      "orderType": "rareCaravan"
+    },
+    {
+      "id": "order_mastery_spice",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 30,
+        "codexExp": 8
+      },
+      "weight": 36,
+      "unlock": "generator_mastery_spice",
+      "orderTier": "guide",
+      "oneTime": true,
+      "generatorMasteryCategory": "spice",
+      "requiredGeneratorCategories": [
+        "spice"
+      ],
+      "dialogue": "百味合于一盏，能调成这份合香酱才算识得香料。",
+      "priceBand": "goal",
+      "orderType": "rareCaravan"
+    },
+    {
+      "id": "order_mastery_drink",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "drink_06_putaojiu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 30,
+        "codexExp": 8
+      },
+      "weight": 36,
+      "unlock": "generator_mastery_drink",
+      "orderTier": "guide",
+      "oneTime": true,
+      "generatorMasteryCategory": "drink",
+      "requiredGeneratorCategories": [
+        "drink"
+      ],
+      "dialogue": "蒲桃酒要清亮醇和，请以这一壶为酒坊定下名声。",
+      "priceBand": "goal",
+      "orderType": "rareCaravan"
+    },
+    {
+      "id": "order_mastery_fruit",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "fruit_06_mijian_guo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 28,
+        "codexExp": 8
+      },
+      "weight": 36,
+      "unlock": "generator_mastery_fruit",
+      "orderTier": "guide",
+      "oneTime": true,
+      "generatorMasteryCategory": "fruit",
+      "requiredGeneratorCategories": [
+        "fruit"
+      ],
+      "dialogue": "蜜煎果耐存又有光泽，正适合作为果摊的压轴货。",
+      "priceBand": "goal",
+      "orderType": "rareCaravan"
+    },
+    {
+      "id": "order_mastery_meat",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "meat_06_suzhi_yanglei",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 32,
+        "codexExp": 8
+      },
+      "weight": 36,
+      "unlock": "generator_mastery_meat",
+      "orderTier": "guide",
+      "oneTime": true,
+      "generatorMasteryCategory": "meat",
+      "requiredGeneratorCategories": [
+        "meat"
+      ],
+      "dialogue": "酥炙羊肋要外香里嫩，做成这一盘便算肉案出师。",
+      "priceBand": "goal",
+      "orderType": "rareCaravan"
+    },
+    {
+      "id": "order_ch1_guide_mill_dough_pair",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "npcId": "npc_farmer",
+      "npcName": "刘大（城外农户）",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 2,
+        "codexExp": 1
+      },
+      "weight": 80,
+      "unlock": "available_when_producible",
+      "orderTier": "guide",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "先磨出两团麦面剂。会让石磨稳定出料，驿站的炉火才算真正续上。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_guide_mill_lubing",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "周甲",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 3,
+        "codexExp": 1
+      },
+      "weight": 80,
+      "unlock": "available_when_producible",
+      "orderTier": "guide",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "把两团麦面合成一张炉饼给我看看。火候稳住了，往后才接得住更多客人。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_guide_dairy_milk_pair",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 2,
+        "codexExp": 1
+      },
+      "weight": 80,
+      "unlock": "available_when_producible",
+      "orderTier": "guide",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "dairy"
+      ],
+      "dialogue": "奶房刚收拾好，先接住两盏鲜乳。它会自行向四周落奶，记得给旁边留出空位。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_guide_dairy_rumi",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 3,
+        "codexExp": 1
+      },
+      "weight": 80,
+      "unlock": "available_when_producible",
+      "orderTier": "guide",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "dairy"
+      ],
+      "dialogue": "两盏鲜乳合成乳糜，入口应当细润。做好这一盏，奶房的用法便掌握了。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_regular_farmer_breakfast",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "handcrafted",
+      "npcId": "npc_farmer",
+      "npcName": "刘大（城外农户）",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 3,
+        "codexExp": 2
+      },
+      "weight": 22,
+      "unlock": "available_when_producible",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "dialogue": "天没亮就从城外赶来，带两团麦面剂和一盏鲜乳，我在灶边垫一口便回田里。",
+      "priceBand": "quick",
+      "orderTier": "quick"
+    },
+    {
+      "id": "order_ch1_regular_temple_light_meal",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "handcrafted",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 2
+      },
+      "weight": 22,
+      "unlock": "available_when_producible",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "dialogue": "乳糜一盏，再添一撮胡麻。味道不必厚重，干净温和就很好。",
+      "priceBand": "quick",
+      "orderTier": "quick"
+    },
+    {
+      "id": "order_ch1_variant_01_mill_dough_bundle",
+      "chapter": 1,
+      "orderType": "quick",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 3
+        }
+      ],
+      "reward": {
+        "coins": 3,
+        "codexExp": 1
+      },
+      "weight": 24,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "带三团麦面剂来，趁炉膛正热，下一炉一并和好。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_02_mill_mixed_dough",
+      "chapter": 1,
+      "orderType": "quick",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "孟氏",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 1
+      },
+      "weight": 22,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "一张现成炉饼，再留一团麦面剂，我带回去给家里人尝尝。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_03_mill_lubing_pair",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 20,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "同行还有一人，请把炉饼备成两张，路上分食方便。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_04_mill_humabing",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 2
+      },
+      "weight": 18,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "来一张胡麻饼，边缘烤脆些，商队带着走不易碎。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_05_mill_huma_stock",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 8,
+        "codexExp": 2
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "dialogue": "先给我一张胡麻饼，余下两团麦面剂留给换岗的人自己烤。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_06_dairy_morning",
+      "chapter": 1,
+      "orderType": "quick",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 2,
+        "codexExp": 1
+      },
+      "weight": 24,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "mill"
+      ],
+      "dialogue": "鲜乳一盏、麦面剂一团，都是赶早路最实在的吃食。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_07_dairy_supply",
+      "chapter": 1,
+      "orderType": "regular",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 2
+      },
+      "weight": 20,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "mill"
+      ],
+      "dialogue": "两盏鲜乳配两团麦面剂，家里孩子正等着做一顿热食。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_08_dairy_lubing",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 2
+      },
+      "weight": 18,
+      "unlock": "available_when_producible",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "mill"
+      ],
+      "dialogue": "乳糜润喉，炉饼耐饥，正好作今日行脚的午食。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_09_spice_huma_lubing",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 5,
+        "codexExp": 2
+      },
+      "weight": 18,
+      "unlock": "available_when_producible",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "spice",
+        "mill"
+      ],
+      "dialogue": "炉饼一张，再包两份胡麻。沿途风大，香料得多备一些。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_variant_10_spice_humabing",
+      "chapter": 1,
+      "orderType": "mixed",
+      "contentSource": "ruleVariant",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 9,
+        "codexExp": 2
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "spice",
+        "mill"
+      ],
+      "dialogue": "胡麻饼配一碟孜然末，香味要分明，别让风沙盖住了。",
+      "priceBand": "regular"
     }
   ]
 }

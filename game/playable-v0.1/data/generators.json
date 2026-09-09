@@ -11,12 +11,36 @@
     "outputCount": 1
   },
   "levelEconomy": [
-    { "chargeMax": 30, "cooldownSeconds": 60, "secondaryOutputWeight": 0 },
-    { "chargeMax": 32, "cooldownSeconds": 58, "secondaryOutputWeight": 8 },
-    { "chargeMax": 34, "cooldownSeconds": 56, "secondaryOutputWeight": 14 },
-    { "chargeMax": 36, "cooldownSeconds": 54, "secondaryOutputWeight": 20 },
-    { "chargeMax": 38, "cooldownSeconds": 52, "secondaryOutputWeight": 26 },
-    { "chargeMax": 40, "cooldownSeconds": 50, "secondaryOutputWeight": 32 }
+    {
+      "chargeMax": 30,
+      "cooldownSeconds": 60,
+      "secondaryOutputWeight": 0
+    },
+    {
+      "chargeMax": 32,
+      "cooldownSeconds": 58,
+      "secondaryOutputWeight": 8
+    },
+    {
+      "chargeMax": 34,
+      "cooldownSeconds": 56,
+      "secondaryOutputWeight": 14
+    },
+    {
+      "chargeMax": 36,
+      "cooldownSeconds": 54,
+      "secondaryOutputWeight": 20
+    },
+    {
+      "chargeMax": 38,
+      "cooldownSeconds": 52,
+      "secondaryOutputWeight": 26
+    },
+    {
+      "chargeMax": 40,
+      "cooldownSeconds": 50,
+      "secondaryOutputWeight": 32
+    }
   ],
   "legacyIdMap": {
     "gen_milk_room_01": "gen_dairy_01",
@@ -39,7 +63,8 @@
         "磨坊食盒 Lv4",
         "磨坊食盒 Lv5",
         "磨坊食盒 Lv6"
-      ]
+      ],
+      "masteryOrderId": "order_mastery_mill"
     },
     {
       "id": "dairy",
@@ -53,7 +78,9 @@
         "chargeMax": 1,
         "cooldownSeconds": 3600,
         "outputCount": 8
-      }
+      },
+      "masteryOrderId": "order_mastery_dairy",
+      "secondaryOutputItemId": "dairy_02_rumi"
     },
     {
       "id": "meat",
@@ -61,7 +88,8 @@
       "baseOutputItemId": "meat_01_yangrou_luan",
       "secondaryOutputItemId": "meat_02_roumi_xian",
       "displayName": "肉铺食盒",
-      "modernName": "肉食生成器"
+      "modernName": "肉食生成器",
+      "masteryOrderId": "order_mastery_meat"
     },
     {
       "id": "spice",
@@ -69,7 +97,8 @@
       "baseOutputItemId": "spice_01_huma",
       "secondaryOutputItemId": "spice_02_ziran_mo",
       "displayName": "香料架食盒",
-      "modernName": "香料生成器"
+      "modernName": "香料生成器",
+      "masteryOrderId": "order_mastery_spice"
     },
     {
       "id": "fruit",
@@ -77,7 +106,8 @@
       "baseOutputItemId": "fruit_01_putao",
       "secondaryOutputItemId": "fruit_02_gan_putao",
       "displayName": "果摊食盒",
-      "modernName": "果品生成器"
+      "modernName": "果品生成器",
+      "masteryOrderId": "order_mastery_fruit"
     },
     {
       "id": "drink",
@@ -85,7 +115,36 @@
       "baseOutputItemId": "drink_01_putaozhi",
       "secondaryOutputItemId": "drink_02_putaojiang",
       "displayName": "酒水厢房食盒",
-      "modernName": "饮品生成器"
+      "modernName": "饮品生成器",
+      "masteryOrderId": "order_mastery_drink"
+    }
+  ],
+  "upgradeRequirements": [
+    {
+      "targetLevel": 2,
+      "lineOrders": 4,
+      "innLevel": 1
+    },
+    {
+      "targetLevel": 3,
+      "lineOrders": 10,
+      "innLevel": 2
+    },
+    {
+      "targetLevel": 4,
+      "lineOrders": 18,
+      "innLevel": 3
+    },
+    {
+      "targetLevel": 5,
+      "lineOrders": 30,
+      "innLevel": 4
+    },
+    {
+      "targetLevel": 6,
+      "lineOrders": 48,
+      "innLevel": 4,
+      "requiresMasteryOrder": true
     }
   ]
 }
