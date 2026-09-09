@@ -466,7 +466,15 @@ function buildConfiguredGeneratorItems(config) {
     Array.from({ length: levels }, (_, offset) => {
       const level = offset + 1;
       const generatorType = category.generatorType ?? config.generatorType;
-      const economy = { ...config.economy, ...category.economy };
+      const levelEconomy = config.levelEconomy?.[offset] ?? {};
+      const economy = { ...config.economy, ...levelEconomy, ...category.economy };
+      const secondaryOutputWeight = generatorType === "manual_generator" && category.secondaryOutputItemId
+        ? Math.max(0, Math.min(100, Number(levelEconomy.secondaryOutputWeight) || 0))
+        : 0;
+      const pool = [{ itemId: category.baseOutputItemId, weight: 100 - secondaryOutputWeight }];
+      if (secondaryOutputWeight > 0) {
+        pool.push({ itemId: category.secondaryOutputItemId, weight: secondaryOutputWeight });
+      }
       return {
         id: generatorItemId(category.id, level),
         type: generatorType,
@@ -487,7 +495,7 @@ function buildConfiguredGeneratorItems(config) {
           chargeMax: economy.chargeMax,
           cooldownSeconds: economy.cooldownSeconds,
           outputCount: economy.outputCount,
-          pool: [{ itemId: category.baseOutputItemId, weight: 100 }],
+          pool,
         },
       };
     }),
