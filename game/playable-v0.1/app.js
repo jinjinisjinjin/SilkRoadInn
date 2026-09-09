@@ -5,10 +5,16 @@ const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
 const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
+const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GLOBAL_LOADING_QA_MODE;
+const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
+const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
+const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
+  ? GENERATOR_ORDER_QA_STAGE_PARAM
+  : "start";
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
   : GENERATOR_MATERIAL_QA_MODE
@@ -19,9 +25,11 @@ const SAVE_KEY = GENERATOR_QA_MODE
         ? "silkroad_tavern_proto_v02_qa_ruby_display_v1"
         : LV4_MARKET_ORDERS_QA_MODE
           ? "silkroad_tavern_proto_v02_qa_lv4_market_orders_v1"
-          : GLOBAL_LOADING_QA_MODE
-            ? "silkroad_tavern_proto_v02_qa_global_loading_v1"
-            : "silkroad_tavern_proto_v02";
+          : GENERATOR_ORDER_QA_MODE
+            ? `silkroad_tavern_proto_v02_qa_generator_order_progression_v1_${GENERATOR_ORDER_QA_STAGE}`
+            : GLOBAL_LOADING_QA_MODE
+              ? "silkroad_tavern_proto_v02_qa_global_loading_v1"
+              : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -105,6 +113,22 @@ const REPAIR_GATE_SEQUENCE = [
   "order_023_court_continuation",
   "order_024_lantern_continuation",
 ];
+const GENERATOR_CATEGORY_UNLOCKS = Object.freeze([
+  { categoryId: "mill", completedRepairId: null },
+  { categoryId: "dairy", completedRepairId: "tutorial_complete" },
+  { categoryId: "spice", completedRepairId: "kitchen_repair" },
+  { categoryId: "drink", completedRepairId: "codex_first_phase" },
+  { categoryId: "fruit", completedRepairId: "lv2_west_market" },
+  { categoryId: "meat", completedRepairId: "lv2_south_shop" },
+]);
+const GENERATOR_ORDER_QA_VISIBLE_BY_STAGE = Object.freeze({
+  start: ["order_001_guard_lubing", "order_002_farmer_dough", "order_011_dunhuang_woman_lubing"],
+  dairy: ["order_015_monk_rumi", "order_016_uighur_milk", "order_018_traveler_lubing_rumi"],
+  spice: ["order_025_spice_huma_pouch", "order_026_spice_ziran_bowl", "order_033_hubing_spice"],
+  drink: ["order_027_drink_putaozhi_pair", "order_028_drink_putaojiang", "order_034_dairy_drink"],
+  fruit: ["order_029_fruit_putao_pair", "order_035_fruit_drink", "order_038_dairy_fruit"],
+  meat: ["order_031_meat_yangrou_pair", "order_036_meat_hubing", "order_040_meat_fruit_drink"],
+});
 const CHAPTER_NAMES = {
   1: "流沙驿初明",
   2: "西市烟火",
@@ -232,6 +256,8 @@ const state = {
   activeRepairId: null,
   repairPromptedFor: [],
   generatorStates: {},
+  unlockedGeneratorCategories: [],
+  pendingGeneratorRewards: [],
   innLevel: 1,
   ownedFurniture: [],
   placedFurniture: [],
@@ -593,6 +619,47 @@ function initializeLv4MarketOrdersQaScenario() {
   state.selectedIndex = null;
 }
 
+function initializeGeneratorOrderQaScenario() {
+  const stageIndex = GENERATOR_ORDER_QA_STAGES.indexOf(GENERATOR_ORDER_QA_STAGE);
+  const categories = GENERATOR_CATEGORY_UNLOCKS
+    .slice(0, stageIndex + 1)
+    .map((entry) => entry.categoryId);
+  const completedRepairIds = GENERATOR_CATEGORY_UNLOCKS
+    .slice(1, stageIndex + 1)
+    .map((entry) => entry.completedRepairId);
+  const generatorIndexes = [23, 24, 25, 30, 31, 32];
+  const unlockedFoodLines = new Set(
+    state.generatorConfig.categories
+      .filter((category) => categories.includes(category.id))
+      .map((category) => category.foodLineId),
+  );
+
+  state.board = Array(BOARD_SIZE).fill(null);
+  categories.forEach((categoryId, index) => {
+    state.board[generatorIndexes[index]] = generatorItemId(categoryId, 1);
+  });
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.pendingGeneratorRewards = [];
+  state.unlockedGeneratorCategories = categories;
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.visibleOrders = [...GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]];
+  state.completedOrders = stageIndex * 3;
+  state.completedOrderIds = [];
+  state.renovationChoices = Object.fromEntries(completedRepairIds.map((repairId) => [repairId, "completed"]));
+  state.unlockedCodex = new Set(
+    state.items
+      .filter((item) => unlockedFoodLines.has(item.line) && item.level <= 3 && item.codexId)
+      .map((item) => item.codexId),
+  );
+  state.generatorStates = {};
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.coins = 999;
+  state.innLevel = stageIndex >= 4 ? 2 : 1;
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
 let startupProgressValue = 0;
 
 function updateStartupLoading(percent, status) {
@@ -759,6 +826,8 @@ function defaultState() {
     activeRepairId: null,
     repairPromptedFor: [],
     generatorStates: {},
+    unlockedGeneratorCategories: ["mill"],
+    pendingGeneratorRewards: [],
     innLevel: 1,
     ownedFurniture: [],
     placedFurniture: Array(6).fill(null),
@@ -802,6 +871,8 @@ function loadState() {
     activeRepairId: typeof data.activeRepairId === "string" ? data.activeRepairId : null,
     repairPromptedFor: Array.isArray(data.repairPromptedFor) ? data.repairPromptedFor : [],
     generatorStates: normalizeGeneratorStates(data.generatorStates),
+    unlockedGeneratorCategories: normalizeUnlockedGeneratorCategories(data.unlockedGeneratorCategories, data),
+    pendingGeneratorRewards: normalizePendingGeneratorRewards(data.pendingGeneratorRewards),
     innLevel: data.innLevel ?? 1,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
@@ -814,14 +885,15 @@ function loadState() {
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
+  if (GENERATOR_ORDER_QA_MODE && !saved) initializeGeneratorOrderQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
   applyOfflineRecovery();
-  ensureStarterGenerator();
+  const generatorUnlocksChanged = ensureStarterGenerator();
   pruneGeneratorStates();
   syncGateOrder();
-  if (hasLegacyOrderIds) saveState();
+  if (hasLegacyOrderIds || generatorUnlocksChanged) saveState();
 }
 
 function saveState() {
@@ -852,6 +924,8 @@ function saveState() {
       activeRepairId: state.activeRepairId,
       repairPromptedFor: state.repairPromptedFor,
       generatorStates: state.generatorStates,
+      unlockedGeneratorCategories: state.unlockedGeneratorCategories,
+      pendingGeneratorRewards: state.pendingGeneratorRewards,
       innLevel: state.innLevel,
       ownedFurniture: state.ownedFurniture,
       placedFurniture: state.placedFurniture,
@@ -872,24 +946,120 @@ function applyOfflineRecovery() {
   }
 }
 
-function ensureStarterGenerator() {
-  if (ISOLATED_QA_MODE) return;
-  if (state.completedOrders === 0 && state.coinsEarned === 0) {
-    state.board = state.board.map((itemId, index) => {
-      if (isBoardCellLocked(index)) return null;
-      if (["gen_dairy_01", "gen_dairy_02", "gen_milk_room_01", "gen_milk_room_02", "gen_livestock_pen_01", "gen_livestock_pen_02"].includes(itemId)) return null;
-      return itemId;
+function validGeneratorCategoryIds() {
+  return state.generatorConfig.categories.map((category) => category.id);
+}
+
+function generatorCategoryForItem(itemId) {
+  const item = byId.get(migrateLegacyGeneratorId(itemId));
+  return isGeneratorPiece(item) ? item.generatorType : null;
+}
+
+function normalizeUnlockedGeneratorCategories(value, savedData = {}) {
+  const validIds = new Set(validGeneratorCategoryIds());
+  const categories = new Set(["mill"]);
+  if (Array.isArray(value)) {
+    value.filter((categoryId) => validIds.has(categoryId)).forEach((categoryId) => categories.add(categoryId));
+  }
+  [...(savedData.board ?? []), ...(savedData.bag ?? []), ...(savedData.pendingGeneratorRewards ?? [])]
+    .map(generatorCategoryForItem)
+    .filter((categoryId) => validIds.has(categoryId))
+    .forEach((categoryId) => categories.add(categoryId));
+  return validGeneratorCategoryIds().filter((categoryId) => categories.has(categoryId));
+}
+
+function normalizePendingGeneratorRewards(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(migrateLegacyGeneratorId)
+    .filter((itemId, index, items) => isGeneratorPiece(byId.get(itemId)) && items.indexOf(itemId) === index);
+}
+
+function isRepairCompleted(repairId) {
+  return Boolean(repairId && state.renovationChoices[repairId]);
+}
+
+function shouldUnlockGeneratorCategory(unlock) {
+  return !unlock.completedRepairId || isRepairCompleted(unlock.completedRepairId);
+}
+
+function ownsGeneratorCategory(categoryId) {
+  return [...state.board, ...state.bag, ...state.pendingGeneratorRewards]
+    .some((itemId) => generatorCategoryForItem(itemId) === categoryId);
+}
+
+function deliverGeneratorReward(categoryId) {
+  if (ownsGeneratorCategory(categoryId)) return "owned";
+  const itemId = generatorItemId(categoryId, 1);
+  const boardIndex = firstEmptyIndex();
+  if (boardIndex >= 0) {
+    state.board[boardIndex] = itemId;
+    return "board";
+  }
+  const bagIndex = firstEmptyBagIndex();
+  if (bagIndex >= 0) {
+    state.bag[bagIndex] = itemId;
+    return "bag";
+  }
+  state.pendingGeneratorRewards.push(itemId);
+  return "pending";
+}
+
+function syncGeneratorCategoryUnlocks({ announce = false } = {}) {
+  const unlocked = new Set(state.unlockedGeneratorCategories);
+  const newlyUnlocked = [];
+  GENERATOR_CATEGORY_UNLOCKS.forEach((entry) => {
+    if (!shouldUnlockGeneratorCategory(entry) || unlocked.has(entry.categoryId)) return;
+    unlocked.add(entry.categoryId);
+    const delivery = deliverGeneratorReward(entry.categoryId);
+    newlyUnlocked.push({ ...entry, delivery });
+  });
+  state.unlockedGeneratorCategories = validGeneratorCategoryIds().filter((categoryId) => unlocked.has(categoryId));
+  if (announce) {
+    newlyUnlocked.forEach(({ categoryId, delivery }) => {
+      const category = state.generatorConfig.categories.find((entry) => entry.id === categoryId);
+      if (!category) return;
+      const suffix = delivery === "board"
+        ? "已放入棋盘。"
+        : delivery === "bag"
+          ? "棋盘已满，已放入柜中暂存。"
+          : delivery === "pending"
+            ? "棋盘与柜子已满，已加入待领取队列。"
+            : "已开放。";
+      toast(`${category.displayName}${suffix}`);
     });
-    if (state.visibleOrders.includes("order_015_monk_rumi") || state.visibleOrders.includes("order_018_traveler_lubing_rumi")) {
-      state.visibleOrders = defaultState().visibleOrders;
+  }
+  return newlyUnlocked.length > 0;
+}
+
+function flushPendingGeneratorRewards() {
+  let changed = false;
+  while (state.pendingGeneratorRewards.length) {
+    const itemId = state.pendingGeneratorRewards[0];
+    const boardIndex = firstEmptyIndex();
+    if (boardIndex >= 0) {
+      state.board[boardIndex] = itemId;
+      state.pendingGeneratorRewards.shift();
+      changed = true;
+      continue;
     }
-    state.unlockedCodex.delete("codex_dairy_01");
+    const bagIndex = firstEmptyBagIndex();
+    if (bagIndex < 0) break;
+    state.bag[bagIndex] = itemId;
+    state.pendingGeneratorRewards.shift();
+    changed = true;
   }
-  const hasMill = state.board.some((itemId) => byId.get(itemId)?.generatorType === "mill");
-  if (!hasMill) {
-    const index = firstEmptyIndex();
-    if (index >= 0) state.board[index] = "gen_mill_01";
+  return changed;
+}
+
+function ensureStarterGenerator() {
+  if (ISOLATED_QA_MODE) return false;
+  let changed = syncGeneratorCategoryUnlocks();
+  if (!ownsGeneratorCategory("mill") && state.completedOrders === 0 && state.coinsEarned === 0) {
+    deliverGeneratorReward("mill");
+    changed = true;
   }
+  return flushPendingGeneratorRewards() || changed;
 }
 
 function tickStamina() {
@@ -1039,6 +1209,7 @@ function cancelInnPackageRelease() {
 }
 
 function render() {
+  if (flushPendingGeneratorRewards()) saveState();
   renderPage();
   els.coins.textContent = state.coins;
   els.stamina.textContent = state.stamina;
@@ -1619,6 +1790,7 @@ function completeRepairFromPlayer(milestoneId) {
   state.activeRepairId = null;
   state.renovationChoices[milestoneId] = "completed";
   applyRepairRewards(milestone);
+  syncGeneratorCategoryUnlocks({ announce: true });
   syncGateOrder();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
@@ -3372,6 +3544,62 @@ function replaceOrder(orderId) {
   if (next) state.visibleOrders[index] = next.id;
 }
 
+function orderUnlockConditionMet(unlock) {
+  if (!unlock || unlock === "tutorial_start") return true;
+  const afterOrderMatch = unlock.match(/^after_order_(\d+)$/);
+  if (afterOrderMatch) return state.completedOrders >= Number(afterOrderMatch[1]);
+  const completedOrdersMatch = unlock.match(/^completed_orders_(\d+)$/);
+  if (completedOrdersMatch) return state.completedOrders >= Number(completedOrdersMatch[1]);
+  if (unlock.startsWith("codex_")) return state.unlockedCodex.has(unlock);
+  if (unlock.startsWith("generator_")) return state.unlockedGeneratorCategories.includes(unlock.slice("generator_".length));
+  if (unlock === "final_lv1_order") {
+    return state.innLevel >= 2 && state.unlockedCodex.has("codex_hubing_08");
+  }
+  return false;
+}
+
+function orderDemandLinesUnlocked(order) {
+  const foodLines = new Set(
+    state.generatorConfig.categories
+      .filter((category) => state.unlockedGeneratorCategories.includes(category.id))
+      .map((category) => category.foodLineId),
+  );
+  return order.demand.every((demand) => {
+    const item = byId.get(demand.itemId);
+    return Boolean(item && foodLines.has(item.line));
+  });
+}
+
+function orderProgressConditionsMet(order) {
+  if (!orderUnlockConditionMet(order.unlock)) return false;
+  if (Number(order.minCompletedOrders ?? 0) > state.completedOrders) return false;
+  if (Number(order.minUnlockedGeneratorCategories ?? 0) > state.unlockedGeneratorCategories.length) return false;
+  if (Array.isArray(order.requiredGeneratorCategories)
+    && !order.requiredGeneratorCategories.every((categoryId) => state.unlockedGeneratorCategories.includes(categoryId))) {
+    return false;
+  }
+  if (Array.isArray(order.requiredCodexIds)
+    && !order.requiredCodexIds.every((codexId) => state.unlockedCodex.has(codexId))) {
+    return false;
+  }
+  return true;
+}
+
+function isOrderEligible(order, {
+  allowIncompleteGate = false,
+  ignoreVisible = false,
+  ignoreWeight = false,
+} = {}) {
+  if (!order) return false;
+  if (!ignoreVisible && state.visibleOrders.includes(order.id)) return false;
+  if (!allowIncompleteGate
+    && REPAIR_GATE_SEQUENCE.includes(order.id)
+    && !state.completedOrderIds.includes(order.id)
+    && order.orderTier !== "guide") return false;
+  if (!ignoreWeight && order.weight <= 0) return false;
+  return orderDemandLinesUnlocked(order) && orderProgressConditionsMet(order);
+}
+
 function nextRepairGateOrderId() {
   const milestone = nextRepairMilestone();
   if (!milestone || (milestone.chapter ?? 1) > state.innLevel) return null;
@@ -3380,7 +3608,10 @@ function nextRepairGateOrderId() {
     .map((orderId) => REPAIR_GATE_SEQUENCE.indexOf(orderId))
     .filter((index) => index >= 0);
   if (!targetIndices.length) {
-    return targetOrderIds.find((orderId) => !state.completedOrderIds.includes(orderId)) ?? null;
+    const orderId = targetOrderIds.find((entry) => !state.completedOrderIds.includes(entry));
+    return isOrderEligible(getOrder(orderId), { allowIncompleteGate: true, ignoreVisible: true, ignoreWeight: true })
+      ? orderId
+      : null;
   }
   const targetIndex = Math.max(...targetIndices);
   const milestoneIndex = state.progressionConfig.milestones.findIndex((entry) => entry.id === milestone.id);
@@ -3396,14 +3627,26 @@ function nextRepairGateOrderId() {
         .filter((index) => index >= 0),
     )
     : -1;
-  return REPAIR_GATE_SEQUENCE.slice(previousTargetIndex + 1, targetIndex + 1).find(
+  const orderId = REPAIR_GATE_SEQUENCE.slice(previousTargetIndex + 1, targetIndex + 1).find(
     (orderId) => !state.completedOrderIds.includes(orderId),
-  ) ?? null;
+  );
+  return isOrderEligible(getOrder(orderId), { allowIncompleteGate: true, ignoreVisible: true, ignoreWeight: true })
+    ? orderId
+    : null;
 }
 
 function syncGateOrder() {
   if (LV4_MARKET_ORDERS_QA_MODE) {
     state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
+    return;
+  }
+  if (GENERATOR_ORDER_QA_MODE) {
+    state.visibleOrders = GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]
+      .filter((orderId) => isOrderEligible(getOrder(orderId), {
+        allowIncompleteGate: true,
+        ignoreVisible: true,
+        ignoreWeight: true,
+      }));
     return;
   }
   const nextOrderId = nextRepairGateOrderId();
@@ -3412,7 +3655,7 @@ function syncGateOrder() {
     (orderId, index, orders) => (
       (!REPAIR_GATE_SEQUENCE.includes(orderId) || state.completedOrderIds.includes(orderId))
       && orders.indexOf(orderId) === index
-      && getOrder(orderId)
+      && isOrderEligible(getOrder(orderId), { ignoreVisible: true })
     ),
   );
   state.visibleOrders = nextOrderId ? [nextOrderId, ...sideOrders] : sideOrders;
@@ -3439,29 +3682,19 @@ function currentOrderCoinReward(order) {
 }
 
 function pickOrder() {
-  const pool = state.ordersConfig.orders.filter((order) => {
-    if (state.visibleOrders.includes(order.id)) return false;
-    if (REPAIR_GATE_SEQUENCE.includes(order.id) && !state.completedOrderIds.includes(order.id)) return false;
-    if (order.weight <= 0) return false;
-    if (order.unlock.startsWith("codex_") && !state.unlockedCodex.has(order.unlock)) return false;
-    if (order.unlock === "completed_orders_8" && state.completedOrders < 8) return false;
-    return true;
-  });
-  const fallback = state.ordersConfig.orders.filter(
-    (order) => (
-      order.weight > 0
-      && (!REPAIR_GATE_SEQUENCE.includes(order.id) || state.completedOrderIds.includes(order.id))
-      && !state.visibleOrders.includes(order.id)
-    ),
+  const candidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order));
+  if (!candidates.length) return null;
+  const unservedGuides = candidates.filter(
+    (order) => order.orderTier === "guide" && !state.completedOrderIds.includes(order.id),
   );
-  const candidates = pool.length ? pool : fallback;
-  const total = candidates.reduce((sum, order) => sum + order.weight, 0);
+  const weightedCandidates = unservedGuides.length ? unservedGuides : candidates;
+  const total = weightedCandidates.reduce((sum, order) => sum + order.weight, 0);
   let roll = Math.random() * total;
-  for (const order of candidates) {
+  for (const order of weightedCandidates) {
     roll -= order.weight;
     if (roll <= 0) return order;
   }
-  return candidates[0];
+  return weightedCandidates[0];
 }
 
 function applyMilestones() {
