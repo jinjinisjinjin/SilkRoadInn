@@ -5,10 +5,19 @@ const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
 const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
+const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GLOBAL_LOADING_QA_MODE;
+const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
+const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
+const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
+  ? GENERATOR_ORDER_QA_STAGE_PARAM
+  : "start";
+const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
+  && GENERATOR_ORDER_QA_STAGE === "dairy"
+  && new URLSearchParams(location.search).get("demo") === "milk-drop";
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
   : GENERATOR_MATERIAL_QA_MODE
@@ -19,9 +28,11 @@ const SAVE_KEY = GENERATOR_QA_MODE
         ? "silkroad_tavern_proto_v02_qa_ruby_display_v1"
         : LV4_MARKET_ORDERS_QA_MODE
           ? "silkroad_tavern_proto_v02_qa_lv4_market_orders_v1"
-          : GLOBAL_LOADING_QA_MODE
-            ? "silkroad_tavern_proto_v02_qa_global_loading_v1"
-            : "silkroad_tavern_proto_v02";
+          : GENERATOR_ORDER_QA_MODE
+            ? `silkroad_tavern_proto_v02_qa_generator_order_progression_v1_${GENERATOR_ORDER_QA_STAGE}`
+            : GLOBAL_LOADING_QA_MODE
+              ? "silkroad_tavern_proto_v02_qa_global_loading_v1"
+              : "silkroad_tavern_proto_v02";
 const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -105,6 +116,22 @@ const REPAIR_GATE_SEQUENCE = [
   "order_023_court_continuation",
   "order_024_lantern_continuation",
 ];
+const GENERATOR_CATEGORY_UNLOCKS = Object.freeze([
+  { categoryId: "mill", completedRepairId: null },
+  { categoryId: "dairy", completedRepairId: "tutorial_complete" },
+  { categoryId: "spice", completedRepairId: "kitchen_repair" },
+  { categoryId: "drink", completedRepairId: "codex_first_phase" },
+  { categoryId: "fruit", completedRepairId: "lv2_west_market" },
+  { categoryId: "meat", completedRepairId: "lv2_south_shop" },
+]);
+const GENERATOR_ORDER_QA_VISIBLE_BY_STAGE = Object.freeze({
+  start: ["order_001_guard_lubing", "order_002_farmer_dough", "order_011_dunhuang_woman_lubing"],
+  dairy: ["order_015_monk_rumi", "order_016_uighur_milk", "order_018_traveler_lubing_rumi"],
+  spice: ["order_025_spice_huma_pouch", "order_026_spice_ziran_bowl", "order_033_hubing_spice"],
+  drink: ["order_027_drink_putaozhi_pair", "order_028_drink_putaojiang", "order_034_dairy_drink"],
+  fruit: ["order_029_fruit_putao_pair", "order_035_fruit_drink", "order_038_dairy_fruit"],
+  meat: ["order_031_meat_yangrou_pair", "order_036_meat_hubing", "order_040_meat_fruit_drink"],
+});
 const CHAPTER_NAMES = {
   1: "流沙驿初明",
   2: "西市烟火",
@@ -232,6 +259,8 @@ const state = {
   activeRepairId: null,
   repairPromptedFor: [],
   generatorStates: {},
+  unlockedGeneratorCategories: [],
+  pendingGeneratorRewards: [],
   innLevel: 1,
   ownedFurniture: [],
   placedFurniture: [],
@@ -385,6 +414,7 @@ let lastBonusCoinTapIndex = -1;
 let lastBonusCoinTapAt = 0;
 let lastBonusRubyTapIndex = -1;
 let lastBonusRubyTapAt = 0;
+const activeGeneratorOutputIndices = new Set();
 
 async function loadJson(name) {
   const response = await fetch(`${DATA_PATH}${name}.json`);
@@ -432,13 +462,22 @@ function buildConfiguredGeneratorMaterialItems(config) {
 
 function buildConfiguredGeneratorItems(config) {
   const levels = Number(config.levelsPerCategory) || 6;
-  const economy = config.economy;
   return config.categories.flatMap((category) =>
     Array.from({ length: levels }, (_, offset) => {
       const level = offset + 1;
+      const generatorType = category.generatorType ?? config.generatorType;
+      const levelEconomy = config.levelEconomy?.[offset] ?? {};
+      const economy = { ...config.economy, ...levelEconomy, ...category.economy };
+      const secondaryOutputWeight = generatorType === "manual_generator" && category.secondaryOutputItemId
+        ? Math.max(0, Math.min(100, Number(levelEconomy.secondaryOutputWeight) || 0))
+        : 0;
+      const pool = [{ itemId: category.baseOutputItemId, weight: 100 - secondaryOutputWeight }];
+      if (secondaryOutputWeight > 0) {
+        pool.push({ itemId: category.secondaryOutputItemId, weight: secondaryOutputWeight });
+      }
       return {
         id: generatorItemId(category.id, level),
-        type: config.generatorType,
+        type: generatorType,
         generatorType: category.id,
         foodLineId: category.foodLineId,
         level,
@@ -456,7 +495,7 @@ function buildConfiguredGeneratorItems(config) {
           chargeMax: economy.chargeMax,
           cooldownSeconds: economy.cooldownSeconds,
           outputCount: economy.outputCount,
-          pool: [{ itemId: category.baseOutputItemId, weight: 100 }],
+          pool,
         },
       };
     }),
@@ -589,6 +628,47 @@ function initializeLv4MarketOrdersQaScenario() {
   state.staminaMax = 99;
   state.stamina = 99;
   state.innLevel = 4;
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
+function initializeGeneratorOrderQaScenario() {
+  const stageIndex = GENERATOR_ORDER_QA_STAGES.indexOf(GENERATOR_ORDER_QA_STAGE);
+  const categories = GENERATOR_CATEGORY_UNLOCKS
+    .slice(0, stageIndex + 1)
+    .map((entry) => entry.categoryId);
+  const completedRepairIds = GENERATOR_CATEGORY_UNLOCKS
+    .slice(1, stageIndex + 1)
+    .map((entry) => entry.completedRepairId);
+  const generatorIndexes = [23, 24, 25, 30, 31, 32];
+  const unlockedFoodLines = new Set(
+    state.generatorConfig.categories
+      .filter((category) => categories.includes(category.id))
+      .map((category) => category.foodLineId),
+  );
+
+  state.board = Array(BOARD_SIZE).fill(null);
+  categories.forEach((categoryId, index) => {
+    state.board[generatorIndexes[index]] = generatorItemId(categoryId, 1);
+  });
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.pendingGeneratorRewards = [];
+  state.unlockedGeneratorCategories = categories;
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.visibleOrders = [...GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]];
+  state.completedOrders = stageIndex * 3;
+  state.completedOrderIds = [];
+  state.renovationChoices = Object.fromEntries(completedRepairIds.map((repairId) => [repairId, "completed"]));
+  state.unlockedCodex = new Set(
+    state.items
+      .filter((item) => unlockedFoodLines.has(item.line) && item.level <= 3 && item.codexId)
+      .map((item) => item.codexId),
+  );
+  state.generatorStates = {};
+  state.staminaMax = 99;
+  state.stamina = 99;
+  state.coins = 999;
+  state.innLevel = stageIndex >= 4 ? 2 : 1;
   state.currentPage = "board";
   state.selectedIndex = null;
 }
@@ -728,6 +808,7 @@ async function boot() {
   applyBuildMode();
   await waitForStartupPaint();
   await finishStartupLoading();
+  if (state.currentPage === "board") tickGenerators();
   setInterval(tickStamina, 1000);
 }
 
@@ -759,6 +840,8 @@ function defaultState() {
     activeRepairId: null,
     repairPromptedFor: [],
     generatorStates: {},
+    unlockedGeneratorCategories: ["mill"],
+    pendingGeneratorRewards: [],
     innLevel: 1,
     ownedFurniture: [],
     placedFurniture: Array(6).fill(null),
@@ -802,6 +885,8 @@ function loadState() {
     activeRepairId: typeof data.activeRepairId === "string" ? data.activeRepairId : null,
     repairPromptedFor: Array.isArray(data.repairPromptedFor) ? data.repairPromptedFor : [],
     generatorStates: normalizeGeneratorStates(data.generatorStates),
+    unlockedGeneratorCategories: normalizeUnlockedGeneratorCategories(data.unlockedGeneratorCategories, data),
+    pendingGeneratorRewards: normalizePendingGeneratorRewards(data.pendingGeneratorRewards),
     innLevel: data.innLevel ?? 1,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
@@ -814,14 +899,15 @@ function loadState() {
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
+  if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
   applyOfflineRecovery();
-  ensureStarterGenerator();
+  const generatorUnlocksChanged = ensureStarterGenerator();
   pruneGeneratorStates();
   syncGateOrder();
-  if (hasLegacyOrderIds) saveState();
+  if (hasLegacyOrderIds || generatorUnlocksChanged) saveState();
 }
 
 function saveState() {
@@ -852,6 +938,8 @@ function saveState() {
       activeRepairId: state.activeRepairId,
       repairPromptedFor: state.repairPromptedFor,
       generatorStates: state.generatorStates,
+      unlockedGeneratorCategories: state.unlockedGeneratorCategories,
+      pendingGeneratorRewards: state.pendingGeneratorRewards,
       innLevel: state.innLevel,
       ownedFurniture: state.ownedFurniture,
       placedFurniture: state.placedFurniture,
@@ -872,24 +960,121 @@ function applyOfflineRecovery() {
   }
 }
 
-function ensureStarterGenerator() {
-  if (ISOLATED_QA_MODE) return;
-  if (state.completedOrders === 0 && state.coinsEarned === 0) {
-    state.board = state.board.map((itemId, index) => {
-      if (isBoardCellLocked(index)) return null;
-      if (["gen_dairy_01", "gen_dairy_02", "gen_milk_room_01", "gen_milk_room_02", "gen_livestock_pen_01", "gen_livestock_pen_02"].includes(itemId)) return null;
-      return itemId;
+function validGeneratorCategoryIds() {
+  return state.generatorConfig.categories.map((category) => category.id);
+}
+
+function generatorCategoryForItem(itemId) {
+  const item = byId.get(migrateLegacyGeneratorId(itemId));
+  return isGeneratorPiece(item) ? item.generatorType : null;
+}
+
+function normalizeUnlockedGeneratorCategories(value, savedData = {}) {
+  const validIds = new Set(validGeneratorCategoryIds());
+  const categories = new Set(["mill"]);
+  if (Array.isArray(value)) {
+    value.filter((categoryId) => validIds.has(categoryId)).forEach((categoryId) => categories.add(categoryId));
+  }
+  [...(savedData.board ?? []), ...(savedData.bag ?? []), ...(savedData.pendingGeneratorRewards ?? [])]
+    .map(generatorCategoryForItem)
+    .filter((categoryId) => validIds.has(categoryId))
+    .forEach((categoryId) => categories.add(categoryId));
+  return validGeneratorCategoryIds().filter((categoryId) => categories.has(categoryId));
+}
+
+function normalizePendingGeneratorRewards(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(migrateLegacyGeneratorId)
+    .filter((itemId, index, items) => isGeneratorPiece(byId.get(itemId)) && items.indexOf(itemId) === index);
+}
+
+function isRepairCompleted(repairId) {
+  return Boolean(repairId && state.renovationChoices[repairId]);
+}
+
+function shouldUnlockGeneratorCategory(unlock) {
+  return !unlock.completedRepairId || isRepairCompleted(unlock.completedRepairId);
+}
+
+function ownsGeneratorCategory(categoryId) {
+  return [...state.board, ...state.bag, ...state.pendingGeneratorRewards]
+    .some((itemId) => generatorCategoryForItem(itemId) === categoryId);
+}
+
+function deliverGeneratorReward(categoryId) {
+  if (ownsGeneratorCategory(categoryId)) return "owned";
+  const itemId = generatorItemId(categoryId, 1);
+  const boardIndex = firstEmptyIndex();
+  if (boardIndex >= 0) {
+    state.board[boardIndex] = itemId;
+    return "board";
+  }
+  const bagIndex = firstEmptyBagIndex();
+  if (bagIndex >= 0) {
+    state.bag[bagIndex] = itemId;
+    return "bag";
+  }
+  state.pendingGeneratorRewards.push(itemId);
+  return "pending";
+}
+
+function syncGeneratorCategoryUnlocks({ announce = false } = {}) {
+  const unlocked = new Set(state.unlockedGeneratorCategories);
+  const newlyUnlocked = [];
+  GENERATOR_CATEGORY_UNLOCKS.forEach((entry) => {
+    if (!shouldUnlockGeneratorCategory(entry)) return;
+    const wasUnlocked = unlocked.has(entry.categoryId);
+    if (!wasUnlocked) unlocked.add(entry.categoryId);
+    const delivery = deliverGeneratorReward(entry.categoryId);
+    if (!wasUnlocked || delivery !== "owned") newlyUnlocked.push({ ...entry, delivery });
+  });
+  state.unlockedGeneratorCategories = validGeneratorCategoryIds().filter((categoryId) => unlocked.has(categoryId));
+  if (announce) {
+    newlyUnlocked.forEach(({ categoryId, delivery }) => {
+      const category = state.generatorConfig.categories.find((entry) => entry.id === categoryId);
+      if (!category) return;
+      const suffix = delivery === "board"
+        ? "已放入棋盘。"
+        : delivery === "bag"
+          ? "棋盘已满，已放入柜中暂存。"
+          : delivery === "pending"
+            ? "棋盘与柜子已满，已加入待领取队列。"
+            : "已开放。";
+      toast(`${category.displayName}${suffix}`);
     });
-    if (state.visibleOrders.includes("order_015_monk_rumi") || state.visibleOrders.includes("order_018_traveler_lubing_rumi")) {
-      state.visibleOrders = defaultState().visibleOrders;
+  }
+  return newlyUnlocked.length > 0;
+}
+
+function flushPendingGeneratorRewards() {
+  let changed = false;
+  while (state.pendingGeneratorRewards.length) {
+    const itemId = state.pendingGeneratorRewards[0];
+    const boardIndex = firstEmptyIndex();
+    if (boardIndex >= 0) {
+      state.board[boardIndex] = itemId;
+      state.pendingGeneratorRewards.shift();
+      changed = true;
+      continue;
     }
-    state.unlockedCodex.delete("codex_dairy_01");
+    const bagIndex = firstEmptyBagIndex();
+    if (bagIndex < 0) break;
+    state.bag[bagIndex] = itemId;
+    state.pendingGeneratorRewards.shift();
+    changed = true;
   }
-  const hasMill = state.board.some((itemId) => byId.get(itemId)?.generatorType === "mill");
-  if (!hasMill) {
-    const index = firstEmptyIndex();
-    if (index >= 0) state.board[index] = "gen_mill_01";
+  return changed;
+}
+
+function ensureStarterGenerator() {
+  if (ISOLATED_QA_MODE) return false;
+  let changed = syncGeneratorCategoryUnlocks();
+  if (!ownsGeneratorCategory("mill") && state.completedOrders === 0 && state.coinsEarned === 0) {
+    deliverGeneratorReward("mill");
+    changed = true;
   }
+  return flushPendingGeneratorRewards() || changed;
 }
 
 function tickStamina() {
@@ -1039,6 +1224,7 @@ function cancelInnPackageRelease() {
 }
 
 function render() {
+  if (flushPendingGeneratorRewards()) saveState();
   renderPage();
   els.coins.textContent = state.coins;
   els.stamina.textContent = state.stamina;
@@ -1085,6 +1271,7 @@ async function switchPage(page) {
   document.querySelector("#app").classList.add("page-transitioning");
   setTimeout(() => document.querySelector("#app").classList.remove("page-transitioning"), 320);
   render();
+  if (page === "board") tickGenerators();
   saveState();
 }
 
@@ -1619,6 +1806,7 @@ function completeRepairFromPlayer(milestoneId) {
   state.activeRepairId = null;
   state.renovationChoices[milestoneId] = "completed";
   applyRepairRewards(milestone);
+  syncGeneratorCategoryUnlocks({ announce: true });
   syncGateOrder();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
@@ -2216,7 +2404,7 @@ function renderBoard() {
   state.board.forEach((itemId, index) => {
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
-    cell.className = `cell ${locked ? "locked" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
+    cell.className = `cell ${locked ? "locked" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
     cell.dataset.index = index;
     cell.setAttribute("role", "button");
     cell.tabIndex = locked ? -1 : 0;
@@ -2255,12 +2443,15 @@ function renderBoard() {
         const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
         const badge = document.createElement("span");
         badge.className = "generator-badge";
-        if (item.type === "auto_generator") {
-          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-          badge.textContent = seconds > 0 ? `${seconds}s` : "自动";
-        } else {
-          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-          badge.textContent = seconds > 0 ? `${seconds}s` : `${generatorState.charges}/${item.generator.chargeMax}`;
+        const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+        if (seconds > 0) {
+          badge.classList.add("cooldown-clock");
+          if (item.type === "auto_generator") badge.classList.add("automatic");
+          badge.setAttribute("aria-label", `${formatGeneratorCountdown(seconds)}后完成备料`);
+          badge.title = `${formatGeneratorCountdown(seconds)}后完成备料`;
+          badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
+        } else if (item.type === "manual_generator") {
+          badge.textContent = `${generatorState.charges}/${item.generator.chargeMax}`;
         }
         cell.append(badge);
       } else if (item.type === "gift_box") {
@@ -2448,9 +2639,13 @@ function renderSelected() {
     els.selectedText.textContent =
       item.type === "manual_generator"
         ? cooldownSeconds > 0
-          ? `正在休息，${cooldownSeconds}秒后恢复${item.generator.chargeMax}次充能。`
+          ? `正在休息，${formatGeneratorCountdown(cooldownSeconds)}后恢复${item.generator.chargeMax}次充能。`
           : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。剩余${generatorState.charges}/${item.generator.chargeMax}次。`
-        : "自动向周边8格投放食材，不消耗驼铃。";
+        : cooldownSeconds > 0
+          ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后自动向周边空格投放鲜乳。`
+          : neighborEmptyIndices(state.selectedIndex).length > 0
+            ? "奶房已备好鲜乳，即将自动投放到周边空格。"
+            : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
     setSellButtonAction(getPieceRemovalAction(item));
     return;
   }
@@ -2566,10 +2761,16 @@ function openSelectedPieceDetail() {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     els.pieceDetailText.textContent = cooldownSeconds > 0
-      ? `正在休息，${cooldownSeconds}秒后恢复${item.generator.chargeMax}次充能。`
+      ? `正在休息，${formatGeneratorCountdown(cooldownSeconds)}后恢复${item.generator.chargeMax}次充能。`
       : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
   } else if (item.type === "auto_generator") {
-    els.pieceDetailText.textContent = "自动向周边空格投放食材，不消耗驼铃。";
+    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
+    const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+    els.pieceDetailText.textContent = cooldownSeconds > 0
+      ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后自动向周边空格投放鲜乳。`
+      : neighborEmptyIndices(state.selectedIndex).length > 0
+        ? "奶房已备好鲜乳，即将自动投放到周边空格。"
+        : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
   } else {
     els.pieceDetailText.textContent = codex?.shortText ?? item.modernName ?? "这枚棋子还没有配置详情。";
   }
@@ -3007,7 +3208,6 @@ function mergeCells(fromIndex, toIndex, itemId) {
   state.pulseIndex = toIndex;
   const next = byId.get(item.mergeTo);
   keeper(`做成了${next.name}。`);
-  toast(`合成：${next.name}`);
   chainMergeAt(toIndex);
   clearPulseSoon();
   if (state.tutorialStep <= 1 && next.id === "hubing_02_lubing") {
@@ -3062,9 +3262,7 @@ function activateManualGenerator(index) {
   const now = Date.now();
   state.selectedIndex = index;
   if (generatorState.cooldownEnd > now) {
-    const seconds = Math.ceil((generatorState.cooldownEnd - now) / 1000);
     render();
-    toast(`${item.name}正在休息，${seconds}秒后恢复全部充能。`);
     return;
   }
   if (!hasEmptyCell()) {
@@ -3086,11 +3284,14 @@ function activateManualGenerator(index) {
   }
 
   const outputs = Math.min(item.generator.outputCount, emptyCellCount());
+  const generatedOutputs = [];
   for (let i = 0; i < outputs; i += 1) {
     const newItemId = pickFromWeightedPool(item.generator.pool);
     const outIndex = randomUnlockedEmptyIndex();
     if (outIndex === -1) break;
     state.board[outIndex] = newItemId;
+    activeGeneratorOutputIndices.add(outIndex);
+    generatedOutputs.push({ targetIndex: outIndex, itemId: newItemId });
     state.pulseIndex = outIndex;
   }
   state.generationCount += 1;
@@ -3099,7 +3300,69 @@ function activateManualGenerator(index) {
   keeper(`${item.name}备好了一份路上能用的食材。`);
   clearPulseSoon();
   render();
+  generatedOutputs.forEach(({ targetIndex, itemId: outputItemId }) => {
+    animateGeneratorOutput(index, targetIndex, outputItemId);
+  });
   saveState();
+}
+
+function animateGeneratorOutput(sourceIndex, targetIndex, itemId) {
+  const revealOutput = () => {
+    activeGeneratorOutputIndices.delete(targetIndex);
+    const currentCell = els.board.querySelector(`.cell[data-index="${targetIndex}"]`);
+    currentCell?.classList.remove("receiving-item");
+    currentCell?.classList.add("generator-land");
+    setTimeout(() => currentCell?.classList.remove("generator-land"), 460);
+  };
+  const sourceCell = els.board.querySelector(`.cell[data-index="${sourceIndex}"]`);
+  const targetCell = els.board.querySelector(`.cell[data-index="${targetIndex}"]`);
+  const sourceItem = sourceCell?.querySelector(".item.generator");
+  const outputItem = targetCell?.querySelector(".item");
+  if (!sourceItem || !targetCell || !outputItem || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    revealOutput();
+    return;
+  }
+
+  sourceItem.classList.remove("generator-producing");
+  void sourceItem.offsetWidth;
+  sourceItem.classList.add("generator-producing");
+  const sourceRect = sourceItem.getBoundingClientRect();
+  const targetRect = targetCell.getBoundingClientRect();
+  const startX = sourceRect.left + sourceRect.width / 2;
+  const startY = sourceRect.top + sourceRect.height / 2;
+  const endX = targetRect.left + targetRect.width / 2;
+  const endY = targetRect.top + targetRect.height / 2;
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const flight = document.createElement("img");
+  flight.className = "generator-output-flight";
+  flight.src = itemAssetSrc(byId.get(itemId));
+  flight.alt = "";
+  flight.style.left = `${startX}px`;
+  flight.style.top = `${startY}px`;
+  flight.style.width = `${targetRect.width * 0.9}px`;
+  flight.style.height = `${targetRect.height * 0.9}px`;
+  document.body.append(flight);
+
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    flight.remove();
+    sourceItem.classList.remove("generator-producing");
+    revealOutput();
+  };
+  const animation = flight.animate(
+    [
+      { opacity: 0.15, transform: "translate(-50%, -50%) scale(0.38)" },
+      { opacity: 1, offset: 0.22, transform: `translate(${dx * 0.16}px, ${dy * 0.16 - 13}px) translate(-50%, -50%) scale(0.68)` },
+      { opacity: 1, offset: 0.68, transform: `translate(${dx * 0.7}px, ${dy * 0.7 - 18}px) translate(-50%, -50%) scale(0.92)` },
+      { opacity: 1, transform: `translate(${dx}px, ${dy}px) translate(-50%, -50%) scale(1)` },
+    ],
+    { duration: 520, easing: "cubic-bezier(.22,.74,.2,1)", fill: "forwards" },
+  );
+  animation.addEventListener("finish", finish, { once: true });
+  animation.addEventListener("cancel", finish, { once: true });
 }
 
 function getGeneratorState(itemId, stateKey) {
@@ -3120,8 +3383,19 @@ function getGeneratorState(itemId, stateKey) {
   return generatorState;
 }
 
+function formatGeneratorCountdown(totalSeconds) {
+  const seconds = Math.max(0, Math.ceil(totalSeconds));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainder = seconds % 60;
+  if (hours > 0) return `${hours}小时${minutes > 0 ? `${minutes}分钟` : ""}`;
+  if (minutes > 0) return `${minutes}分钟${remainder > 0 ? `${remainder}秒` : ""}`;
+  return `${remainder}秒`;
+}
+
 function tickGenerators() {
   let changed = false;
+  const generatedOutputs = [];
   Object.keys(state.generatorStates).forEach((stateKey) => {
     const entry = state.generatorStates[stateKey];
     const before = entry.cooldownEnd;
@@ -3133,24 +3407,27 @@ function tickGenerators() {
     if (item?.type !== "auto_generator") return;
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
     const now = Date.now();
-    if (!generatorState.cooldownEnd) {
-      generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
-      changed = true;
-      return;
-    }
-    if (generatorState.cooldownEnd > now) return;
+    if (generatorState.cooldownEnd && generatorState.cooldownEnd > now) return;
     const targets = neighborEmptyIndices(index);
     if (!targets.length) return;
     const outputs = Math.min(item.generator.outputCount, targets.length);
     for (let i = 0; i < outputs; i += 1) {
       const target = targets.splice(Math.floor(Math.random() * targets.length), 1)[0];
-      state.board[target] = pickFromWeightedPool(item.generator.pool);
+      const outputItemId = pickFromWeightedPool(item.generator.pool);
+      state.board[target] = outputItemId;
+      activeGeneratorOutputIndices.add(target);
+      generatedOutputs.push({ sourceIndex: index, targetIndex: target, itemId: outputItemId });
       state.pulseIndex = target;
     }
     generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
     changed = true;
   });
-  if (changed) render();
+  if (changed) {
+    render();
+    generatedOutputs.forEach(({ sourceIndex, targetIndex, itemId }) => {
+      animateGeneratorOutput(sourceIndex, targetIndex, itemId);
+    });
+  }
 }
 
 function pickFromWeightedPool(pool) {
@@ -3372,6 +3649,62 @@ function replaceOrder(orderId) {
   if (next) state.visibleOrders[index] = next.id;
 }
 
+function orderUnlockConditionMet(unlock) {
+  if (!unlock || unlock === "tutorial_start") return true;
+  const afterOrderMatch = unlock.match(/^after_order_(\d+)$/);
+  if (afterOrderMatch) return state.completedOrders >= Number(afterOrderMatch[1]);
+  const completedOrdersMatch = unlock.match(/^completed_orders_(\d+)$/);
+  if (completedOrdersMatch) return state.completedOrders >= Number(completedOrdersMatch[1]);
+  if (unlock.startsWith("codex_")) return state.unlockedCodex.has(unlock);
+  if (unlock.startsWith("generator_")) return state.unlockedGeneratorCategories.includes(unlock.slice("generator_".length));
+  if (unlock === "final_lv1_order") {
+    return state.innLevel >= 2 && state.unlockedCodex.has("codex_hubing_08");
+  }
+  return false;
+}
+
+function orderDemandLinesUnlocked(order) {
+  const foodLines = new Set(
+    state.generatorConfig.categories
+      .filter((category) => state.unlockedGeneratorCategories.includes(category.id))
+      .map((category) => category.foodLineId),
+  );
+  return order.demand.every((demand) => {
+    const item = byId.get(demand.itemId);
+    return Boolean(item && foodLines.has(item.line));
+  });
+}
+
+function orderProgressConditionsMet(order) {
+  if (!orderUnlockConditionMet(order.unlock)) return false;
+  if (Number(order.minCompletedOrders ?? 0) > state.completedOrders) return false;
+  if (Number(order.minUnlockedGeneratorCategories ?? 0) > state.unlockedGeneratorCategories.length) return false;
+  if (Array.isArray(order.requiredGeneratorCategories)
+    && !order.requiredGeneratorCategories.every((categoryId) => state.unlockedGeneratorCategories.includes(categoryId))) {
+    return false;
+  }
+  if (Array.isArray(order.requiredCodexIds)
+    && !order.requiredCodexIds.every((codexId) => state.unlockedCodex.has(codexId))) {
+    return false;
+  }
+  return true;
+}
+
+function isOrderEligible(order, {
+  allowIncompleteGate = false,
+  ignoreVisible = false,
+  ignoreWeight = false,
+} = {}) {
+  if (!order) return false;
+  if (!ignoreVisible && state.visibleOrders.includes(order.id)) return false;
+  if (!allowIncompleteGate
+    && REPAIR_GATE_SEQUENCE.includes(order.id)
+    && !state.completedOrderIds.includes(order.id)
+    && order.orderTier !== "guide") return false;
+  if (!ignoreWeight && order.weight <= 0) return false;
+  return orderDemandLinesUnlocked(order) && orderProgressConditionsMet(order);
+}
+
 function nextRepairGateOrderId() {
   const milestone = nextRepairMilestone();
   if (!milestone || (milestone.chapter ?? 1) > state.innLevel) return null;
@@ -3380,7 +3713,10 @@ function nextRepairGateOrderId() {
     .map((orderId) => REPAIR_GATE_SEQUENCE.indexOf(orderId))
     .filter((index) => index >= 0);
   if (!targetIndices.length) {
-    return targetOrderIds.find((orderId) => !state.completedOrderIds.includes(orderId)) ?? null;
+    const orderId = targetOrderIds.find((entry) => !state.completedOrderIds.includes(entry));
+    return isOrderEligible(getOrder(orderId), { allowIncompleteGate: true, ignoreVisible: true, ignoreWeight: true })
+      ? orderId
+      : null;
   }
   const targetIndex = Math.max(...targetIndices);
   const milestoneIndex = state.progressionConfig.milestones.findIndex((entry) => entry.id === milestone.id);
@@ -3396,14 +3732,26 @@ function nextRepairGateOrderId() {
         .filter((index) => index >= 0),
     )
     : -1;
-  return REPAIR_GATE_SEQUENCE.slice(previousTargetIndex + 1, targetIndex + 1).find(
+  const orderId = REPAIR_GATE_SEQUENCE.slice(previousTargetIndex + 1, targetIndex + 1).find(
     (orderId) => !state.completedOrderIds.includes(orderId),
-  ) ?? null;
+  );
+  return isOrderEligible(getOrder(orderId), { allowIncompleteGate: true, ignoreVisible: true, ignoreWeight: true })
+    ? orderId
+    : null;
 }
 
 function syncGateOrder() {
   if (LV4_MARKET_ORDERS_QA_MODE) {
     state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
+    return;
+  }
+  if (GENERATOR_ORDER_QA_MODE) {
+    state.visibleOrders = GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]
+      .filter((orderId) => isOrderEligible(getOrder(orderId), {
+        allowIncompleteGate: true,
+        ignoreVisible: true,
+        ignoreWeight: true,
+      }));
     return;
   }
   const nextOrderId = nextRepairGateOrderId();
@@ -3412,7 +3760,7 @@ function syncGateOrder() {
     (orderId, index, orders) => (
       (!REPAIR_GATE_SEQUENCE.includes(orderId) || state.completedOrderIds.includes(orderId))
       && orders.indexOf(orderId) === index
-      && getOrder(orderId)
+      && isOrderEligible(getOrder(orderId), { ignoreVisible: true })
     ),
   );
   state.visibleOrders = nextOrderId ? [nextOrderId, ...sideOrders] : sideOrders;
@@ -3439,29 +3787,19 @@ function currentOrderCoinReward(order) {
 }
 
 function pickOrder() {
-  const pool = state.ordersConfig.orders.filter((order) => {
-    if (state.visibleOrders.includes(order.id)) return false;
-    if (REPAIR_GATE_SEQUENCE.includes(order.id) && !state.completedOrderIds.includes(order.id)) return false;
-    if (order.weight <= 0) return false;
-    if (order.unlock.startsWith("codex_") && !state.unlockedCodex.has(order.unlock)) return false;
-    if (order.unlock === "completed_orders_8" && state.completedOrders < 8) return false;
-    return true;
-  });
-  const fallback = state.ordersConfig.orders.filter(
-    (order) => (
-      order.weight > 0
-      && (!REPAIR_GATE_SEQUENCE.includes(order.id) || state.completedOrderIds.includes(order.id))
-      && !state.visibleOrders.includes(order.id)
-    ),
+  const candidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order));
+  if (!candidates.length) return null;
+  const unservedGuides = candidates.filter(
+    (order) => order.orderTier === "guide" && !state.completedOrderIds.includes(order.id),
   );
-  const candidates = pool.length ? pool : fallback;
-  const total = candidates.reduce((sum, order) => sum + order.weight, 0);
+  const weightedCandidates = unservedGuides.length ? unservedGuides : candidates;
+  const total = weightedCandidates.reduce((sum, order) => sum + order.weight, 0);
   let roll = Math.random() * total;
-  for (const order of candidates) {
+  for (const order of weightedCandidates) {
     roll -= order.weight;
     if (roll <= 0) return order;
   }
-  return candidates[0];
+  return weightedCandidates[0];
 }
 
 function applyMilestones() {

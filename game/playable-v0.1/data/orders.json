@@ -1,5 +1,5 @@
 {
-  "version": "0.1",
+  "version": "0.2",
   "maxVisibleOrders": 3,
   "autoRefreshMinutes": 20,
   "freeRefreshPerDay": 3,
@@ -146,7 +146,12 @@
       },
       "weight": 18,
       "unlock": "tutorial_start",
-      "dialogue": "行脚至此，若有一碗乳糜，便能缓一缓风沙。"
+      "dialogue": "行脚至此，若有一碗乳糜，便能缓一缓风沙。",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "dairy",
+      "requiredGeneratorCategories": [
+        "dairy"
+      ]
     },
     {
       "id": "order_016_uighur_milk",
@@ -166,7 +171,12 @@
       },
       "weight": 16,
       "unlock": "tutorial_start",
-      "dialogue": "新乳趁早用，路上人喝了才有力气。"
+      "dialogue": "新乳趁早用，路上人喝了才有力气。",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "dairy",
+      "requiredGeneratorCategories": [
+        "dairy"
+      ]
     },
     {
       "id": "order_018_traveler_lubing_rumi",
@@ -592,6 +602,460 @@
       "weight": 0,
       "unlock": "tutorial_start",
       "dialogue": "最后再留一盏灯的吃食。油饼配乳糜，走过这条街的人都会记住流沙驿。"
+    },
+    {
+      "id": "order_025_spice_huma_pouch",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 3,
+        "codexExp": 1,
+        "originalCoins": 6,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 18,
+      "unlock": "generator_spice",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "spice",
+      "requiredGeneratorCategories": [
+        "spice"
+      ],
+      "dialogue": "新香料架先从胡麻试起，两撮便够我辨一辨香气。"
+    },
+    {
+      "id": "order_026_spice_ziran_bowl",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 2,
+        "originalCoins": 8,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 15,
+      "unlock": "generator_spice",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "spice",
+      "requiredGeneratorCategories": [
+        "spice"
+      ],
+      "minCompletedOrders": 4,
+      "dialogue": "磨一盏孜然末，今晚烤肉正缺这一口暖香。"
+    },
+    {
+      "id": "order_027_drink_putaozhi_pair",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "孟氏",
+      "demand": [
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 1,
+        "originalCoins": 8,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 18,
+      "unlock": "generator_drink",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "drink",
+      "requiredGeneratorCategories": [
+        "drink"
+      ],
+      "dialogue": "酒水厢房刚开，先榨两盏葡萄汁给门前歇脚的人。"
+    },
+    {
+      "id": "order_028_drink_putaojiang",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 5,
+        "codexExp": 2,
+        "originalCoins": 10,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 15,
+      "unlock": "generator_drink",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "drink",
+      "requiredGeneratorCategories": [
+        "drink"
+      ],
+      "minCompletedOrders": 7,
+      "dialogue": "葡萄浆收得浓一些，主人赶路时好慢慢饮。"
+    },
+    {
+      "id": "order_029_fruit_putao_pair",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 1,
+        "originalCoins": 8,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 18,
+      "unlock": "generator_fruit",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "fruit",
+      "requiredGeneratorCategories": [
+        "fruit"
+      ],
+      "dialogue": "果摊新到的葡萄水气足，替孩子们称两串。"
+    },
+    {
+      "id": "order_030_fruit_dried_grapes",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 5,
+        "codexExp": 2,
+        "originalCoins": 10,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 15,
+      "unlock": "generator_fruit",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "fruit",
+      "requiredGeneratorCategories": [
+        "fruit"
+      ],
+      "minCompletedOrders": 10,
+      "dialogue": "干葡萄轻便耐放，正合带去下一段路。"
+    },
+    {
+      "id": "order_031_meat_yangrou_pair",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "meat_01_yangrou_luan",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 4,
+        "codexExp": 1,
+        "originalCoins": 8,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 18,
+      "unlock": "generator_meat",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "meat",
+      "requiredGeneratorCategories": [
+        "meat"
+      ],
+      "dialogue": "肉铺开张先别贪多，两份羊肉脔收拾干净便好。"
+    },
+    {
+      "id": "order_032_meat_minced_filling",
+      "npcId": "npc_farmer",
+      "npcName": "刘大（城外农户）",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 5,
+        "codexExp": 2,
+        "originalCoins": 10,
+        "firstClearBonusCoins": 1
+      },
+      "weight": 15,
+      "unlock": "generator_meat",
+      "orderTier": "guide",
+      "guideGeneratorCategory": "meat",
+      "requiredGeneratorCategories": [
+        "meat"
+      ],
+      "minCompletedOrders": 13,
+      "dialogue": "肉糜剁细些，明早和面时正好包进饼里。"
+    },
+    {
+      "id": "order_033_hubing_spice",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 9,
+        "codexExp": 4,
+        "originalCoins": 18,
+        "firstClearBonusCoins": 2
+      },
+      "weight": 11,
+      "unlock": "completed_orders_6",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice"
+      ],
+      "minUnlockedGeneratorCategories": 3,
+      "dialogue": "炉饼配孜然末，简单，却最能叫远客记住沙州的炉火。"
+    },
+    {
+      "id": "order_034_dairy_drink",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 9,
+        "codexExp": 4,
+        "originalCoins": 18,
+        "firstClearBonusCoins": 2
+      },
+      "weight": 10,
+      "unlock": "completed_orders_8",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "minUnlockedGeneratorCategories": 4,
+      "dialogue": "乳糜温润，再添一盏葡萄浆，供食便周全了。"
+    },
+    {
+      "id": "order_035_fruit_drink",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 10,
+        "codexExp": 4,
+        "originalCoins": 20,
+        "firstClearBonusCoins": 2
+      },
+      "weight": 10,
+      "unlock": "completed_orders_10",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "minUnlockedGeneratorCategories": 5,
+      "dialogue": "干葡萄佐葡萄浆，同源两味，路上吃喝都方便。"
+    },
+    {
+      "id": "order_036_meat_hubing",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 10,
+        "codexExp": 4,
+        "originalCoins": 20,
+        "firstClearBonusCoins": 2
+      },
+      "weight": 10,
+      "unlock": "completed_orders_12",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "meat",
+        "mill"
+      ],
+      "minUnlockedGeneratorCategories": 6,
+      "dialogue": "肉糜馅和炉饼一并备好，换岗回来正能顶一顿。"
+    },
+    {
+      "id": "order_037_meat_spice",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 10,
+        "codexExp": 4,
+        "originalCoins": 20,
+        "firstClearBonusCoins": 2
+      },
+      "weight": 9,
+      "unlock": "completed_orders_12",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "minUnlockedGeneratorCategories": 6,
+      "dialogue": "肉糜里拌入孜然末，香气一起，商队自然寻得到门。"
+    },
+    {
+      "id": "order_038_dairy_fruit",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "孟氏",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 10,
+        "codexExp": 4,
+        "originalCoins": 20,
+        "firstClearBonusCoins": 2
+      },
+      "weight": 10,
+      "unlock": "completed_orders_10",
+      "orderTier": "mixed",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "fruit"
+      ],
+      "minUnlockedGeneratorCategories": 5,
+      "dialogue": "乳糜里添些干葡萄，给住店的孩子做一碗甜食。"
+    },
+    {
+      "id": "order_039_hubing_dairy_spice",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 15,
+        "codexExp": 6,
+        "originalCoins": 30,
+        "firstClearBonusCoins": 3
+      },
+      "weight": 5,
+      "unlock": "completed_orders_12",
+      "orderTier": "advanced",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "spice"
+      ],
+      "minUnlockedGeneratorCategories": 4,
+      "dialogue": "炉饼、乳糜与孜然香都备一份，今晚的曲席才算齐整。"
+    },
+    {
+      "id": "order_040_meat_fruit_drink",
+      "npcId": "npc_caravan_leader",
+      "npcName": "康十一",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 16,
+        "codexExp": 6,
+        "originalCoins": 32,
+        "firstClearBonusCoins": 3
+      },
+      "weight": 4,
+      "unlock": "completed_orders_15",
+      "orderTier": "advanced",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit",
+        "drink"
+      ],
+      "minUnlockedGeneratorCategories": 6,
+      "dialogue": "肉食、干果和浆饮各备一份，整支商队才好继续西行。"
     }
   ]
 }

@@ -3,22 +3,33 @@
   "generatorType": "manual_generator",
   "assetRoot": "generators/equipment",
   "levelsPerCategory": 6,
-  "temporaryOutputRule": "All equipment levels produce the matching food line level-1 item until an approved level-based output table exists.",
+  "temporaryOutputRule": "Manual generator upgrades increase charge capacity, shorten rest time, and add a conservative chance to output the matching level-2 food. Dairy remains an hourly automatic fresh-milk generator.",
   "economy": {
     "staminaCost": 1,
-    "chargeMax": 14,
+    "chargeMax": 30,
     "cooldownSeconds": 60,
     "outputCount": 1
   },
+  "levelEconomy": [
+    { "chargeMax": 30, "cooldownSeconds": 60, "secondaryOutputWeight": 0 },
+    { "chargeMax": 32, "cooldownSeconds": 58, "secondaryOutputWeight": 8 },
+    { "chargeMax": 34, "cooldownSeconds": 56, "secondaryOutputWeight": 14 },
+    { "chargeMax": 36, "cooldownSeconds": 54, "secondaryOutputWeight": 20 },
+    { "chargeMax": 38, "cooldownSeconds": 52, "secondaryOutputWeight": 26 },
+    { "chargeMax": 40, "cooldownSeconds": 50, "secondaryOutputWeight": 32 }
+  ],
   "legacyIdMap": {
     "gen_milk_room_01": "gen_dairy_01",
-    "gen_milk_room_02": "gen_dairy_02"
+    "gen_milk_room_02": "gen_dairy_02",
+    "gen_livestock_pen_01": "gen_dairy_01",
+    "gen_livestock_pen_02": "gen_dairy_02"
   },
   "categories": [
     {
       "id": "mill",
       "foodLineId": "hubing",
       "baseOutputItemId": "hubing_01_dough",
+      "secondaryOutputItemId": "hubing_02_lubing",
       "displayName": "磨坊食盒",
       "modernName": "胡饼生成器",
       "levelNames": [
@@ -35,12 +46,20 @@
       "foodLineId": "dairy",
       "baseOutputItemId": "dairy_01_milk",
       "displayName": "奶房食盒",
-      "modernName": "奶食生成器"
+      "modernName": "奶房自动生成器",
+      "generatorType": "auto_generator",
+      "economy": {
+        "staminaCost": 0,
+        "chargeMax": 1,
+        "cooldownSeconds": 3600,
+        "outputCount": 8
+      }
     },
     {
       "id": "meat",
       "foodLineId": "meat",
       "baseOutputItemId": "meat_01_yangrou_luan",
+      "secondaryOutputItemId": "meat_02_roumi_xian",
       "displayName": "肉铺食盒",
       "modernName": "肉食生成器"
     },
@@ -48,6 +67,7 @@
       "id": "spice",
       "foodLineId": "spice",
       "baseOutputItemId": "spice_01_huma",
+      "secondaryOutputItemId": "spice_02_ziran_mo",
       "displayName": "香料架食盒",
       "modernName": "香料生成器"
     },
@@ -55,6 +75,7 @@
       "id": "fruit",
       "foodLineId": "fruit",
       "baseOutputItemId": "fruit_01_putao",
+      "secondaryOutputItemId": "fruit_02_gan_putao",
       "displayName": "果摊食盒",
       "modernName": "果品生成器"
     },
@@ -62,6 +83,7 @@
       "id": "drink",
       "foodLineId": "drink",
       "baseOutputItemId": "drink_01_putaozhi",
+      "secondaryOutputItemId": "drink_02_putaojiang",
       "displayName": "酒水厢房食盒",
       "modernName": "饮品生成器"
     }
