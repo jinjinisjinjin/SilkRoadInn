@@ -14,6 +14,9 @@ const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get(
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
   ? GENERATOR_ORDER_QA_STAGE_PARAM
   : "start";
+const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
+  && GENERATOR_ORDER_QA_STAGE === "dairy"
+  && new URLSearchParams(location.search).get("demo") === "milk-drop";
 const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE;
 const SAVE_KEY = GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
@@ -411,6 +414,7 @@ let lastBonusCoinTapIndex = -1;
 let lastBonusCoinTapAt = 0;
 let lastBonusRubyTapIndex = -1;
 let lastBonusRubyTapAt = 0;
+const activeGeneratorOutputIndices = new Set();
 
 async function loadJson(name) {
   const response = await fetch(`${DATA_PATH}${name}.json`);
@@ -458,13 +462,14 @@ function buildConfiguredGeneratorMaterialItems(config) {
 
 function buildConfiguredGeneratorItems(config) {
   const levels = Number(config.levelsPerCategory) || 6;
-  const economy = config.economy;
   return config.categories.flatMap((category) =>
     Array.from({ length: levels }, (_, offset) => {
       const level = offset + 1;
+      const generatorType = category.generatorType ?? config.generatorType;
+      const economy = { ...config.economy, ...category.economy };
       return {
         id: generatorItemId(category.id, level),
-        type: config.generatorType,
+        type: generatorType,
         generatorType: category.id,
         foodLineId: category.foodLineId,
         level,
@@ -795,6 +800,7 @@ async function boot() {
   applyBuildMode();
   await waitForStartupPaint();
   await finishStartupLoading();
+  if (state.currentPage === "board") tickGenerators();
   setInterval(tickStamina, 1000);
 }
 
@@ -885,7 +891,7 @@ function loadState() {
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
-  if (GENERATOR_ORDER_QA_MODE && !saved) initializeGeneratorOrderQaScenario();
+  if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -1009,10 +1015,11 @@ function syncGeneratorCategoryUnlocks({ announce = false } = {}) {
   const unlocked = new Set(state.unlockedGeneratorCategories);
   const newlyUnlocked = [];
   GENERATOR_CATEGORY_UNLOCKS.forEach((entry) => {
-    if (!shouldUnlockGeneratorCategory(entry) || unlocked.has(entry.categoryId)) return;
-    unlocked.add(entry.categoryId);
+    if (!shouldUnlockGeneratorCategory(entry)) return;
+    const wasUnlocked = unlocked.has(entry.categoryId);
+    if (!wasUnlocked) unlocked.add(entry.categoryId);
     const delivery = deliverGeneratorReward(entry.categoryId);
-    newlyUnlocked.push({ ...entry, delivery });
+    if (!wasUnlocked || delivery !== "owned") newlyUnlocked.push({ ...entry, delivery });
   });
   state.unlockedGeneratorCategories = validGeneratorCategoryIds().filter((categoryId) => unlocked.has(categoryId));
   if (announce) {
@@ -1256,6 +1263,7 @@ async function switchPage(page) {
   document.querySelector("#app").classList.add("page-transitioning");
   setTimeout(() => document.querySelector("#app").classList.remove("page-transitioning"), 320);
   render();
+  if (page === "board") tickGenerators();
   saveState();
 }
 
@@ -2388,7 +2396,7 @@ function renderBoard() {
   state.board.forEach((itemId, index) => {
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
-    cell.className = `cell ${locked ? "locked" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
+    cell.className = `cell ${locked ? "locked" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
     cell.dataset.index = index;
     cell.setAttribute("role", "button");
     cell.tabIndex = locked ? -1 : 0;
@@ -2427,12 +2435,15 @@ function renderBoard() {
         const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
         const badge = document.createElement("span");
         badge.className = "generator-badge";
-        if (item.type === "auto_generator") {
-          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-          badge.textContent = seconds > 0 ? `${seconds}s` : "自动";
-        } else {
-          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-          badge.textContent = seconds > 0 ? `${seconds}s` : `${generatorState.charges}/${item.generator.chargeMax}`;
+        const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+        if (seconds > 0) {
+          badge.classList.add("cooldown-clock");
+          if (item.type === "auto_generator") badge.classList.add("automatic");
+          badge.setAttribute("aria-label", `${formatGeneratorCountdown(seconds)}后完成备料`);
+          badge.title = `${formatGeneratorCountdown(seconds)}后完成备料`;
+          badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
+        } else if (item.type === "manual_generator") {
+          badge.textContent = `${generatorState.charges}/${item.generator.chargeMax}`;
         }
         cell.append(badge);
       } else if (item.type === "gift_box") {
@@ -2620,9 +2631,13 @@ function renderSelected() {
     els.selectedText.textContent =
       item.type === "manual_generator"
         ? cooldownSeconds > 0
-          ? `正在休息，${cooldownSeconds}秒后恢复${item.generator.chargeMax}次充能。`
+          ? `正在休息，${formatGeneratorCountdown(cooldownSeconds)}后恢复${item.generator.chargeMax}次充能。`
           : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。剩余${generatorState.charges}/${item.generator.chargeMax}次。`
-        : "自动向周边8格投放食材，不消耗驼铃。";
+        : cooldownSeconds > 0
+          ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后自动向周边空格投放鲜乳。`
+          : neighborEmptyIndices(state.selectedIndex).length > 0
+            ? "奶房已备好鲜乳，即将自动投放到周边空格。"
+            : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
     setSellButtonAction(getPieceRemovalAction(item));
     return;
   }
@@ -2738,10 +2753,16 @@ function openSelectedPieceDetail() {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     els.pieceDetailText.textContent = cooldownSeconds > 0
-      ? `正在休息，${cooldownSeconds}秒后恢复${item.generator.chargeMax}次充能。`
+      ? `正在休息，${formatGeneratorCountdown(cooldownSeconds)}后恢复${item.generator.chargeMax}次充能。`
       : `点击产出食材，消耗${item.generator.staminaCost}点驼铃。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
   } else if (item.type === "auto_generator") {
-    els.pieceDetailText.textContent = "自动向周边空格投放食材，不消耗驼铃。";
+    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
+    const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+    els.pieceDetailText.textContent = cooldownSeconds > 0
+      ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后自动向周边空格投放鲜乳。`
+      : neighborEmptyIndices(state.selectedIndex).length > 0
+        ? "奶房已备好鲜乳，即将自动投放到周边空格。"
+        : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
   } else {
     els.pieceDetailText.textContent = codex?.shortText ?? item.modernName ?? "这枚棋子还没有配置详情。";
   }
@@ -3179,7 +3200,6 @@ function mergeCells(fromIndex, toIndex, itemId) {
   state.pulseIndex = toIndex;
   const next = byId.get(item.mergeTo);
   keeper(`做成了${next.name}。`);
-  toast(`合成：${next.name}`);
   chainMergeAt(toIndex);
   clearPulseSoon();
   if (state.tutorialStep <= 1 && next.id === "hubing_02_lubing") {
@@ -3234,9 +3254,7 @@ function activateManualGenerator(index) {
   const now = Date.now();
   state.selectedIndex = index;
   if (generatorState.cooldownEnd > now) {
-    const seconds = Math.ceil((generatorState.cooldownEnd - now) / 1000);
     render();
-    toast(`${item.name}正在休息，${seconds}秒后恢复全部充能。`);
     return;
   }
   if (!hasEmptyCell()) {
@@ -3258,11 +3276,14 @@ function activateManualGenerator(index) {
   }
 
   const outputs = Math.min(item.generator.outputCount, emptyCellCount());
+  const generatedOutputs = [];
   for (let i = 0; i < outputs; i += 1) {
     const newItemId = pickFromWeightedPool(item.generator.pool);
     const outIndex = randomUnlockedEmptyIndex();
     if (outIndex === -1) break;
     state.board[outIndex] = newItemId;
+    activeGeneratorOutputIndices.add(outIndex);
+    generatedOutputs.push({ targetIndex: outIndex, itemId: newItemId });
     state.pulseIndex = outIndex;
   }
   state.generationCount += 1;
@@ -3271,7 +3292,69 @@ function activateManualGenerator(index) {
   keeper(`${item.name}备好了一份路上能用的食材。`);
   clearPulseSoon();
   render();
+  generatedOutputs.forEach(({ targetIndex, itemId: outputItemId }) => {
+    animateGeneratorOutput(index, targetIndex, outputItemId);
+  });
   saveState();
+}
+
+function animateGeneratorOutput(sourceIndex, targetIndex, itemId) {
+  const revealOutput = () => {
+    activeGeneratorOutputIndices.delete(targetIndex);
+    const currentCell = els.board.querySelector(`.cell[data-index="${targetIndex}"]`);
+    currentCell?.classList.remove("receiving-item");
+    currentCell?.classList.add("generator-land");
+    setTimeout(() => currentCell?.classList.remove("generator-land"), 460);
+  };
+  const sourceCell = els.board.querySelector(`.cell[data-index="${sourceIndex}"]`);
+  const targetCell = els.board.querySelector(`.cell[data-index="${targetIndex}"]`);
+  const sourceItem = sourceCell?.querySelector(".item.generator");
+  const outputItem = targetCell?.querySelector(".item");
+  if (!sourceItem || !targetCell || !outputItem || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    revealOutput();
+    return;
+  }
+
+  sourceItem.classList.remove("generator-producing");
+  void sourceItem.offsetWidth;
+  sourceItem.classList.add("generator-producing");
+  const sourceRect = sourceItem.getBoundingClientRect();
+  const targetRect = targetCell.getBoundingClientRect();
+  const startX = sourceRect.left + sourceRect.width / 2;
+  const startY = sourceRect.top + sourceRect.height / 2;
+  const endX = targetRect.left + targetRect.width / 2;
+  const endY = targetRect.top + targetRect.height / 2;
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const flight = document.createElement("img");
+  flight.className = "generator-output-flight";
+  flight.src = itemAssetSrc(byId.get(itemId));
+  flight.alt = "";
+  flight.style.left = `${startX}px`;
+  flight.style.top = `${startY}px`;
+  flight.style.width = `${targetRect.width * 0.9}px`;
+  flight.style.height = `${targetRect.height * 0.9}px`;
+  document.body.append(flight);
+
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    flight.remove();
+    sourceItem.classList.remove("generator-producing");
+    revealOutput();
+  };
+  const animation = flight.animate(
+    [
+      { opacity: 0.15, transform: "translate(-50%, -50%) scale(0.38)" },
+      { opacity: 1, offset: 0.22, transform: `translate(${dx * 0.16}px, ${dy * 0.16 - 13}px) translate(-50%, -50%) scale(0.68)` },
+      { opacity: 1, offset: 0.68, transform: `translate(${dx * 0.7}px, ${dy * 0.7 - 18}px) translate(-50%, -50%) scale(0.92)` },
+      { opacity: 1, transform: `translate(${dx}px, ${dy}px) translate(-50%, -50%) scale(1)` },
+    ],
+    { duration: 520, easing: "cubic-bezier(.22,.74,.2,1)", fill: "forwards" },
+  );
+  animation.addEventListener("finish", finish, { once: true });
+  animation.addEventListener("cancel", finish, { once: true });
 }
 
 function getGeneratorState(itemId, stateKey) {
@@ -3292,8 +3375,19 @@ function getGeneratorState(itemId, stateKey) {
   return generatorState;
 }
 
+function formatGeneratorCountdown(totalSeconds) {
+  const seconds = Math.max(0, Math.ceil(totalSeconds));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainder = seconds % 60;
+  if (hours > 0) return `${hours}小时${minutes > 0 ? `${minutes}分钟` : ""}`;
+  if (minutes > 0) return `${minutes}分钟${remainder > 0 ? `${remainder}秒` : ""}`;
+  return `${remainder}秒`;
+}
+
 function tickGenerators() {
   let changed = false;
+  const generatedOutputs = [];
   Object.keys(state.generatorStates).forEach((stateKey) => {
     const entry = state.generatorStates[stateKey];
     const before = entry.cooldownEnd;
@@ -3305,24 +3399,27 @@ function tickGenerators() {
     if (item?.type !== "auto_generator") return;
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
     const now = Date.now();
-    if (!generatorState.cooldownEnd) {
-      generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
-      changed = true;
-      return;
-    }
-    if (generatorState.cooldownEnd > now) return;
+    if (generatorState.cooldownEnd && generatorState.cooldownEnd > now) return;
     const targets = neighborEmptyIndices(index);
     if (!targets.length) return;
     const outputs = Math.min(item.generator.outputCount, targets.length);
     for (let i = 0; i < outputs; i += 1) {
       const target = targets.splice(Math.floor(Math.random() * targets.length), 1)[0];
-      state.board[target] = pickFromWeightedPool(item.generator.pool);
+      const outputItemId = pickFromWeightedPool(item.generator.pool);
+      state.board[target] = outputItemId;
+      activeGeneratorOutputIndices.add(target);
+      generatedOutputs.push({ sourceIndex: index, targetIndex: target, itemId: outputItemId });
       state.pulseIndex = target;
     }
     generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
     changed = true;
   });
-  if (changed) render();
+  if (changed) {
+    render();
+    generatedOutputs.forEach(({ sourceIndex, targetIndex, itemId }) => {
+      animateGeneratorOutput(sourceIndex, targetIndex, itemId);
+    });
+  }
 }
 
 function pickFromWeightedPool(pool) {

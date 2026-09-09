@@ -6,13 +6,15 @@
   "temporaryOutputRule": "All equipment levels produce the matching food line level-1 item until an approved level-based output table exists.",
   "economy": {
     "staminaCost": 1,
-    "chargeMax": 14,
+    "chargeMax": 30,
     "cooldownSeconds": 60,
     "outputCount": 1
   },
   "legacyIdMap": {
     "gen_milk_room_01": "gen_dairy_01",
-    "gen_milk_room_02": "gen_dairy_02"
+    "gen_milk_room_02": "gen_dairy_02",
+    "gen_livestock_pen_01": "gen_dairy_01",
+    "gen_livestock_pen_02": "gen_dairy_02"
   },
   "categories": [
     {
@@ -35,7 +37,14 @@
       "foodLineId": "dairy",
       "baseOutputItemId": "dairy_01_milk",
       "displayName": "奶房食盒",
-      "modernName": "奶食生成器"
+      "modernName": "奶房自动生成器",
+      "generatorType": "auto_generator",
+      "economy": {
+        "staminaCost": 0,
+        "chargeMax": 1,
+        "cooldownSeconds": 3600,
+        "outputCount": 8
+      }
     },
     {
       "id": "meat",
