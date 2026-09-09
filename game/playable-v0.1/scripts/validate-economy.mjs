@@ -126,6 +126,25 @@ const countByBand = Object.fromEntries(
     orders.orders.filter((order) => order.priceBand === band.id).length,
   ]),
 );
+assert(orders.orders.length === orders.contentPlan.targetOrderCount, "Order pool is not fully populated");
+for (const [bandId, targetCount] of Object.entries(orders.contentPlan.targetCountsByPriceBand ?? {})) {
+  assert(countByBand[bandId] === targetCount, `${bandId} needs ${targetCount} orders, received ${countByBand[bandId]}`);
+}
+const expansionOrders = orders.orders.filter((order) => order.contentSource === "balancedExpansion");
+const expansionSignatures = new Set();
+for (const order of expansionOrders) {
+  assert(order.demand.length <= 3, `${order.id} exceeds the three-item tray limit`);
+  assert(
+    order.demand.reduce((sum, demand) => sum + demand.quantity, 0) <= 4,
+    `${order.id} exceeds the four-piece tray limit`,
+  );
+  const signature = order.demand
+    .map((demand) => `${demand.itemId}:${demand.quantity}`)
+    .sort()
+    .join("|");
+  assert(!expansionSignatures.has(signature), `${order.id} duplicates another expansion demand`);
+  expansionSignatures.add(signature);
+}
 
 console.log(JSON.stringify({
   status: "ok",

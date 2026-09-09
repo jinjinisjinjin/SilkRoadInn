@@ -4,15 +4,15 @@
   "autoRefreshMinutes": 20,
   "freeRefreshPerDay": 3,
   "contentPlan": {
-    "status": "economy_integrated",
-    "currentOrderCount": 65,
+    "status": "order_pool_integrated",
+    "currentOrderCount": 172,
     "targetOrderCount": 172,
     "countsByType": {
-      "mixed": 12,
-      "rareCaravan": 11,
+      "mixed": 76,
+      "rareCaravan": 37,
       "repairMain": 5,
-      "regular": 11,
-      "quick": 20,
+      "regular": 12,
+      "quick": 36,
       "generatorGuide": 6
     },
     "flowRule": "orders_are_not_chapter_gates",
@@ -48,7 +48,12 @@
         "maxDemandItemLevel": 8,
         "focus": "顶级订单与终局轮换"
       }
-    ]
+    ],
+    "targetCountsByPriceBand": {
+      "quick": 60,
+      "regular": 75,
+      "goal": 37
+    }
   },
   "slotPolicy": {
     "slots": [
@@ -1984,6 +1989,3739 @@
       ],
       "dialogue": "胡麻饼配一碟孜然末，香味要分明，别让风沙盖住了。",
       "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_quick_001",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "商队首领要一份鲜乳、一份乳糜和2份葡萄汁，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_002",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "粟特胡商要2份麦面剂、一份葡萄和一份干葡萄，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_003",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "meat_01_yangrou_luan",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "沙州驿卒要一份羊肉脔、一份肉糜馅和2份胡麻，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_004",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "城外农户要一份鲜乳、一份乳糜和2份葡萄，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_005",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "求法僧人要2份麦面剂、一份葡萄汁和一份葡萄浆，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_006",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "meat_01_yangrou_luan",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "回鹘牧民要一份羊肉脔、2份胡麻和一份孜然末，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_007",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "敦煌女店客要2份麦面剂、一份鲜乳和一份乳糜，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_008",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "长安侍女要2份葡萄、一份葡萄汁和一份葡萄浆，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_009",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "meat_01_yangrou_luan",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "佛寺女施主要2份羊肉脔、一份肉糜馅和一份胡麻，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_010",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_01_yangrou_luan",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "胡姬乐伎要一份鲜乳、一份乳糜和2份羊肉脔，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_011",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "长安使者要2份胡麻、一份葡萄汁和一份葡萄浆，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_012",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "驼队脚夫要2份麦面剂、一份炉饼和一份葡萄，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_013",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_01_huma",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "波斯艺人随从要一份鲜乳、一份乳糜和2份胡麻，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_014",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "meat_01_yangrou_luan",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "meat",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "神秘胡商要2份羊肉脔、一份葡萄汁和一份葡萄浆，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_015",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "hubing_01_dough",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_01_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "商队首领要一份麦面剂、2份葡萄和一份干葡萄，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_quick_016",
+      "orderType": "quick",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_01_putaozhi",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 6,
+        "codexExp": 1
+      },
+      "weight": 16,
+      "unlock": "available_when_producible",
+      "orderTier": "quick",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "粟特胡商要一份鲜乳、2份葡萄汁和一份葡萄浆，备齐后便可交付。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_exp_regular_001",
+      "orderType": "regular",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 15,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "recommendedGeneratorLevel": 1,
+      "dialogue": "粟特胡商要一份炉饼和2份胡麻饼，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_002",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "城外农户要一份椒豉羊肉、2份干葡萄和一份椰枣，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_003",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "求法僧人要2份乳糜、一份酪浆和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_004",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "回鹘牧民要一份无花果、2份葡萄浆和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_005",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "敦煌女店客要2份炉饼、一份胡麻饼和一份椒豉羊肉，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_006",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安侍女要2份乳糜、一份干酪和一份胡椒粒，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_007",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "佛寺女施主要一份油胡饼、2份葡萄浆和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_008",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "胡姬乐伎要一份椒豉酱、2份干葡萄和一份椰枣，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_009",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安使者要2份乳糜、一份酪浆和一份椒豉羊肉，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_010",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "驼队脚夫要一份椒豉羊肉、2份葡萄浆和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_011",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "波斯艺人随从要一份油胡饼、2份干葡萄和一份椰枣，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_012",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "神秘胡商要2份乳糜、一份胡椒粒和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_013",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "商队首领要一份椒豉酱、2份葡萄浆和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_014",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "粟特胡商要一份胡麻饼、2份干葡萄和一份无花果，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_015",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "沙州驿卒要2份乳糜、一份干酪和一份驼队肉脯，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_016",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "城外农户要一份椰枣、2份葡萄浆和一份石榴浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_017",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "求法僧人要2份炉饼、一份胡麻饼和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_018",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "回鹘牧民要2份乳糜、一份驼队肉脯和一份椒豉羊肉，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_019",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "敦煌女店客要一份胡麻饼、2份葡萄浆和一份石榴浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_020",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安侍女要一份驼队肉脯、2份干葡萄和一份无花果，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_021",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "佛寺女施主要一份酪浆、一份干酪和2份孜然末，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_022",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "胡姬乐伎要一份驼队肉脯、2份葡萄浆和一份石榴浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_023",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安使者要一份胡椒粒、2份干葡萄和一份无花果，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_024",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "驼队脚夫要一份油胡饼、2份乳糜和一份酪浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_025",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "波斯艺人随从要一份胡椒粒、2份葡萄浆和一份石榴浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_026",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "神秘胡商要一份胡麻饼、一份油胡饼和2份干葡萄，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_027",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "商队首领要一份酪浆、一份干酪和2份肉糜馅，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_028",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "粟特胡商要一份椰枣、一份无花果和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_029",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "沙州驿卒要2份炉饼、一份油胡饼和一份驼队肉脯，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_030",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "城外农户要一份酪浆、一份干酪和一份胡椒粒，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_031",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "求法僧人要一份油胡饼、一份椰枣和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_032",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "回鹘牧民要2份肉糜馅、一份驼队肉脯和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_033",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "敦煌女店客要2份乳糜、一份酪浆和一份石榴浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_034",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安侍女要一份胡麻饼、一份椒豉羊肉和2份干葡萄，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_035",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "佛寺女施主要一份酪浆、2份孜然末和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_036",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "胡姬乐伎要一份椒豉羊肉、一份椰枣和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_037",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安使者要2份炉饼、一份油胡饼和一份胡椒粒，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_038",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "驼队脚夫要2份乳糜、一份酪浆和一份无花果，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_039",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "波斯艺人随从要一份胡麻饼、一份油胡饼和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_040",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "神秘胡商要2份肉糜馅、一份椒豉羊肉和一份胡椒粒，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_041",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "商队首领要2份乳糜、一份干酪和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_042",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "粟特胡商要一份胡麻饼、一份椒豉酱和2份干葡萄，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_043",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "沙州驿卒要一份酪浆、一份干酪和一份驼队肉脯，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_044",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "城外农户要一份椒豉酱、一份椰枣和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_045",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "求法僧人要2份炉饼、一份驼队肉脯和一份椒豉羊肉，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_046",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_03_yezao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "回鹘牧民要2份乳糜、一份干酪和一份椰枣，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_047",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "敦煌女店客要一份胡麻饼、一份椒豉羊肉和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_048",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安侍女要一份酪浆、一份胡椒粒和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_049",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "佛寺女施主要一份胡麻饼、一份无花果和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_050",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "胡姬乐伎要2份肉糜馅、一份胡椒粒和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_051",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安使者要一份胡麻饼、2份乳糜和一份干酪，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_052",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "驼队脚夫要一份驼队肉脯、一份无花果和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_053",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "dairy_03_laojiang",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "波斯艺人随从要2份酪浆和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_054",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "神秘胡商要一份胡椒粒、一份无花果和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_055",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_02_roumi_xian",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "商队首领要一份胡麻饼、一份油胡饼和2份肉糜馅，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_056",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_04_shiliujiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "粟特胡商要2份乳糜、一份三勒浆和一份石榴浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_057",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "沙州驿卒要一份油胡饼、一份驼队肉脯和2份干葡萄，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_058",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_02_ziran_mo",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_03_hujiao_li",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "城外农户要一份干酪、2份孜然末和一份胡椒粒，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_059",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_03_humabing",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_02_putaojiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "求法僧人要一份胡麻饼、一份椒豉酱和2份葡萄浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_060",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "回鹘牧民要一份驼队肉脯、一份椒豉羊肉和2份干葡萄，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_061",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "敦煌女店客要2份乳糜、一份无花果和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_062",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "hubing_02_lubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安侍女要2份炉饼、一份驼队肉脯和一份椒豉酱，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_063",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "佛寺女施主要一份油胡饼、2份乳糜和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_064",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "meat_03_roupu",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_04_jiaochi_jiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_02_gan_putao",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "meat",
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "胡姬乐伎要一份驼队肉脯、一份椒豉酱和2份干葡萄，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_regular_065",
+      "orderType": "mixed",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_04_jiaochi_yangrou",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_03_sanlejiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 22,
+        "codexExp": 3
+      },
+      "weight": 12,
+      "unlock": "available_when_producible",
+      "orderTier": "regular",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "长安使者要2份乳糜、一份椒豉羊肉和一份三勒浆，备齐后便可交付。",
+      "priceBand": "regular"
+    },
+    {
+      "id": "order_exp_goal_001",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 3
+        }
+      ],
+      "reward": {
+        "coins": 30,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill"
+      ],
+      "recommendedGeneratorLevel": 2,
+      "dialogue": "驼队脚夫要3份油胡饼，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_002",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_05_guopu_pan",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "波斯艺人随从要一份香料盐、一份合香酱盏和2份果脯盘，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_003",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_06_suzhi_yanglei",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "神秘胡商要一份干酪、2份羊肉羹和一份酥炙羊肋，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_004",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "fruit_05_guopu_pan",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_06_putaojiu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "商队首领要2份果脯盘、一份蜜浆和一份蒲桃酒，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_005",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_05_congchihubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "粟特胡商要2份葱豉胡饼、一份香料盐和一份合香酱盏，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_006",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_06_suzhi_yanglei",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_06_putaojiu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "沙州驿卒要2份干酪、一份酥炙羊肋和一份蒲桃酒，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_007",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 3
+        },
+        {
+          "itemId": "fruit_06_mijian_guo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "城外农户要3份香料盐和一份蜜煎果，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_008",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "hubing_05_congchihubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_06_putaojiu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "求法僧人要2份葱豉胡饼、一份蜜浆和一份蒲桃酒，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_009",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "dairy_04_ganlao",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_06_suzhi_yanglei",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "回鹘牧民要2份干酪、一份酥炙羊肋和一份合香酱盏，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_010",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "hubing_06_yangrouhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_05_guopu_pan",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "敦煌女店客要一份羊肉胡饼、一份羊肉羹和2份果脯盘，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_011",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_06_putaojiu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "长安侍女要2份酥油、一份蜜浆和一份蒲桃酒，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_012",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 2
+        },
+        {
+          "itemId": "fruit_07_hutao_miguo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 5,
+      "dialogue": "佛寺女施主要2份香料盐和一份胡桃蜜果，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_013",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_silkroad_musician",
+      "npcName": "胡姬乐伎",
+      "demand": [
+        {
+          "itemId": "hubing_07_suibing",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 5,
+      "dialogue": "胡姬乐伎要一份髓饼和2份蜜浆，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_014",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_envoy",
+      "npcName": "长安使者",
+      "demand": [
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "dairy_06_milao",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "长安使者要2份酥油、一份蜜酪和一份羊肉羹，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_015",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_camel_worker",
+      "npcName": "驼队脚夫",
+      "demand": [
+        {
+          "itemId": "hubing_07_suibing",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 5,
+      "dialogue": "驼队脚夫要一份髓饼和2份香料盐，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_016",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_persian_attendant",
+      "npcName": "波斯艺人随从",
+      "demand": [
+        {
+          "itemId": "fruit_07_hutao_miguo",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 2
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 5,
+      "dialogue": "波斯艺人随从要一份胡桃蜜果和2份蜜浆，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_017",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_mystery_merchant",
+      "npcName": "神秘胡商",
+      "demand": [
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_06_mijian_guo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "神秘胡商要2份酥油、一份羊肉羹和一份蜜煎果，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_018",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_caravan_leader",
+      "npcName": "商队首领",
+      "demand": [
+        {
+          "itemId": "hubing_05_congchihubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "商队首领要2份葱豉胡饼、一份合香酱盏和一份蜜浆，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_019",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_sogdian_merchant",
+      "npcName": "粟特胡商",
+      "demand": [
+        {
+          "itemId": "hubing_06_yangrouhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "dairy",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "粟特胡商要一份羊肉胡饼、2份酥油和一份羊肉羹，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_020",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_shazhou_guard",
+      "npcName": "沙州驿卒",
+      "demand": [
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_05_guopu_pan",
+          "quantity": 2
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "spice",
+        "fruit",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "沙州驿卒要一份合香酱盏、2份果脯盘和一份蜜浆，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_021",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_farmer",
+      "npcName": "城外农户",
+      "demand": [
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 1
+        },
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "城外农户要2份酥油、一份香料盐和一份合香酱盏，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_022",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_pilgrim_monk",
+      "npcName": "求法僧人",
+      "demand": [
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_06_suzhi_yanglei",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_04_wuhuaguo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "求法僧人要2份羊肉羹、一份酥炙羊肋和一份无花果，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_023",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_uighur_herder",
+      "npcName": "回鹘牧民",
+      "demand": [
+        {
+          "itemId": "hubing_04_youhubing",
+          "quantity": 1
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_06_suzhi_yanglei",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "回鹘牧民要一份油胡饼、2份羊肉羹和一份酥炙羊肋，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_024",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "敦煌女店客",
+      "demand": [
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_06_hexiang_jiangzhan",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_05_mijiang",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "敦煌女店客要2份酥油、一份合香酱盏和一份蜜浆，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_025",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_changan_maid",
+      "npcName": "长安侍女",
+      "demand": [
+        {
+          "itemId": "hubing_05_congchihubing",
+          "quantity": 2
+        },
+        {
+          "itemId": "meat_05_yangrou_geng",
+          "quantity": 1
+        },
+        {
+          "itemId": "fruit_06_mijian_guo",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "mill",
+        "meat",
+        "fruit"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "长安侍女要2份葱豉胡饼、一份羊肉羹和一份蜜煎果，备齐后便可交付。",
+      "priceBand": "goal"
+    },
+    {
+      "id": "order_exp_goal_026",
+      "orderType": "rareCaravan",
+      "contentSource": "balancedExpansion",
+      "npcId": "npc_temple_donor",
+      "npcName": "佛寺女施主",
+      "demand": [
+        {
+          "itemId": "dairy_05_suyou",
+          "quantity": 2
+        },
+        {
+          "itemId": "spice_05_xiangliao_yan",
+          "quantity": 1
+        },
+        {
+          "itemId": "drink_06_putaojiu",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 82,
+        "codexExp": 6
+      },
+      "weight": 8,
+      "unlock": "available_when_producible",
+      "orderTier": "goal",
+      "requiredGeneratorCategories": [
+        "dairy",
+        "spice",
+        "drink"
+      ],
+      "recommendedGeneratorLevel": 4,
+      "dialogue": "佛寺女施主要2份酥油、一份香料盐和一份蒲桃酒，备齐后便可交付。",
+      "priceBand": "goal"
     }
   ]
 }

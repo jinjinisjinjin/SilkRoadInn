@@ -3911,13 +3911,28 @@ function pickOrder(bandId = null) {
     (order) => order.orderTier === "guide" && !state.completedOrderIds.includes(order.id),
   );
   const preferred = candidates.filter((order) => band?.preferredOrderTypes?.includes(order.orderType));
-  const weightedCandidates = bandId === "goal" && unservedMastery.length
+  let weightedCandidates = bandId === "goal" && unservedMastery.length
     ? unservedMastery
     : bandId === "quick" && unservedGuides.length
       ? unservedGuides
       : preferred.length
         ? preferred
         : candidates;
+  const visibleNpcIds = new Set(
+    state.visibleOrders.map((orderId) => getOrder(orderId)?.npcId).filter(Boolean),
+  );
+  const freshNpcCandidates = weightedCandidates.filter((order) => !visibleNpcIds.has(order.npcId));
+  if (freshNpcCandidates.length) weightedCandidates = freshNpcCandidates;
+
+  const visibleDemandLines = new Set(
+    state.visibleOrders.flatMap((orderId) => (
+      getOrder(orderId)?.demand.map((demand) => byId.get(demand.itemId)?.line).filter(Boolean) ?? []
+    )),
+  );
+  const freshLineCandidates = weightedCandidates.filter((order) => order.demand.some(
+    (demand) => !visibleDemandLines.has(byId.get(demand.itemId)?.line),
+  ));
+  if (freshLineCandidates.length) weightedCandidates = freshLineCandidates;
   const total = weightedCandidates.reduce((sum, order) => sum + order.weight, 0);
   let roll = Math.random() * total;
   for (const order of weightedCandidates) {
