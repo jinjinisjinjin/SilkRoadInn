@@ -7,8 +7,12 @@ const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
 const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
+const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
+const REPAIR_PROGRESS_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
+const REPAIR_PROGRESS_QA_STEP = Math.max(0, Number(new URLSearchParams(location.search).get("step")) || 0);
+const REPAIR_PROGRESS_QA_VIEW = new URLSearchParams(location.search).get("view") === "entry" ? "entry" : "completion";
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
 const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
@@ -17,11 +21,13 @@ const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_OR
 const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
   && GENERATOR_ORDER_QA_STAGE === "dairy"
   && new URLSearchParams(location.search).get("demo") === "milk-drop";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE;
-const SAVE_KEY = GENERATOR_QA_MODE
-  ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
-  : GENERATOR_MATERIAL_QA_MODE
-    ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || REPAIR_PROGRESS_QA_MODE;
+const SAVE_KEY = REPAIR_PROGRESS_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_repair_progress_v1"
+  : GENERATOR_QA_MODE
+    ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
+    : GENERATOR_MATERIAL_QA_MODE
+      ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
     : ORDER_GIFT_QA_MODE
       ? `silkroad_tavern_proto_v02_qa_order_gift_generator_v1_ch${ORDER_GIFT_QA_CHAPTER}`
       : RUBY_DISPLAY_QA_MODE
@@ -147,6 +153,16 @@ const INN_PACKAGE_ASSETS = [
   "./assets/npc_standee/npc_farmer.png",
   "./assets/npc_standee/npc_temple_donor.png",
   "./assets/npc_standee/npc_caravan_leader.png",
+  "./assets/npc_repair_portrait/npc_dunhuang_woman_v1.png",
+  "./assets/npc_repair_portrait/npc_farmer_v1.png",
+  "./assets/npc_repair_portrait/npc_temple_donor_v1.png",
+  "./assets/npc_repair_portrait/npc_sogdian_merchant_v1.png",
+  "./assets/npc_repair_portrait/npc_pilgrim_monk_v1.png",
+  "./assets/npc_repair_portrait/npc_uighur_herder_v1.png",
+  "./assets/npc_repair_portrait/npc_shazhou_guard_v1.png",
+  "./assets/npc_repair_portrait/npc_changan_envoy_v1.png",
+  "./assets/npc_repair_portrait/npc_changan_maid_v1.png",
+  "./assets/npc_repair_portrait/npc_caravan_leader_v1.png",
 ];
 const STARTUP_DATA_NAMES = Object.freeze([
   "items",
@@ -253,6 +269,7 @@ const state = {
   completedOrderIds: [],
   chapterOrderCounts: {},
   claimedOrderProgressPacks: [],
+  claimedChapterRewards: [],
   coinsEarned: 0,
   storyFlags: {},
   renovationChoices: {},
@@ -336,13 +353,30 @@ const els = {
   storySpeaker: document.querySelector("#storySpeaker"),
   storyText: document.querySelector("#storyText"),
   repairModal: document.querySelector("#repairModal"),
+  repairQaNav: document.querySelector("#repairQaNav"),
+  repairQaPrev: document.querySelector("#repairQaPrev"),
+  repairQaCounter: document.querySelector("#repairQaCounter"),
+  repairQaNext: document.querySelector("#repairQaNext"),
   repairTitle: document.querySelector("#repairTitle"),
   repairAvatar: document.querySelector("#repairAvatar"),
+  repairSpeaker: document.querySelector("#repairSpeaker"),
   repairStory: document.querySelector("#repairStory"),
+  repairChapterTitle: document.querySelector("#repairChapterTitle"),
+  repairChapterProgress: document.querySelector("#repairChapterProgress"),
+  repairChapterProgressBar: document.querySelector("#repairChapterProgressBar"),
+  repairMilestoneStrip: document.querySelector("#repairMilestoneStrip"),
+  repairNextLine: document.querySelector("#repairNextLine"),
+  repairCompletionTitle: document.querySelector("#repairCompletionTitle"),
+  repairGiftQuantity: document.querySelector("#repairGiftQuantity"),
+  repairStaminaQuantity: document.querySelector("#repairStaminaQuantity"),
+  repairRubyIcon: document.querySelector("#repairRubyIcon"),
+  repairRubyQuantity: document.querySelector("#repairRubyQuantity"),
+  repairEntryMeta: document.querySelector("#repairEntryMeta"),
   repairRewardLabel: document.querySelector("#repairRewardLabel"),
   repairCost: document.querySelector("#repairCost"),
   repairChoices: document.querySelector("#repairChoices"),
   repairConfirmBtn: document.querySelector("#repairConfirmBtn"),
+  repairCostIcon: document.querySelector("#repairCostIcon"),
   repairCoinProgress: document.querySelector("#repairCoinProgress"),
   repairGuideModal: document.querySelector("#repairGuideModal"),
   repairGuideTitle: document.querySelector("#repairGuideTitle"),
@@ -409,6 +443,7 @@ let lastInnFocusKey = null;
 let pendingInnFocusPosition = null;
 let repairAnchorRect = null;
 let repairModalAnimating = false;
+let repairModalMode = "entry";
 let bonusBubbleSequence = 0;
 let lastBonusCoinTapIndex = -1;
 let lastBonusCoinTapAt = 0;
@@ -673,6 +708,95 @@ function initializeGeneratorOrderQaScenario() {
   state.selectedIndex = null;
 }
 
+function initializeRepairProgressQaScenario() {
+  const chapterMilestones = state.progressionConfig.milestones.filter(
+    (milestone) => (milestone.chapter ?? 1) === REPAIR_PROGRESS_QA_CHAPTER,
+  );
+  const minimumCompleted = REPAIR_PROGRESS_QA_VIEW === "completion" ? 1 : 0;
+  const completedInChapter = Math.min(
+    chapterMilestones.length,
+    Math.max(minimumCompleted, Math.floor(REPAIR_PROGRESS_QA_STEP)),
+  );
+  const completedIds = new Set(chapterMilestones.slice(0, completedInChapter).map((milestone) => milestone.id));
+  state.renovationChoices = Object.fromEntries(
+    state.progressionConfig.milestones
+      .filter((milestone) => (milestone.chapter ?? 1) < REPAIR_PROGRESS_QA_CHAPTER || completedIds.has(milestone.id))
+      .map((milestone) => [milestone.id, "completed"]),
+  );
+  state.claimedChapterRewards = Array.from(
+    { length: Math.max(0, REPAIR_PROGRESS_QA_CHAPTER - 1) },
+    (_, index) => index + 1,
+  );
+  state.activeRepairId = null;
+  state.repairPromptedFor = [];
+  state.coins = 9999;
+  state.innLevel = REPAIR_PROGRESS_QA_CHAPTER;
+  state.currentPage = "inn";
+}
+
+function openRepairProgressQaScenario() {
+  const chapterMilestones = getMilestoneViews().filter(
+    (milestone) => milestone.chapter === REPAIR_PROGRESS_QA_CHAPTER,
+  );
+  if (!chapterMilestones.length) return;
+  const completedInChapter = Math.min(
+    chapterMilestones.length,
+    Object.keys(state.renovationChoices).filter((milestoneId) =>
+      chapterMilestones.some((milestone) => milestone.id === milestoneId),
+    ).length,
+  );
+  const focusIndex = REPAIR_PROGRESS_QA_VIEW === "completion"
+    ? Math.max(0, completedInChapter - 1)
+    : Math.min(completedInChapter, chapterMilestones.length - 1);
+  openRepairProgressModal(chapterMilestones[focusIndex], REPAIR_PROGRESS_QA_VIEW);
+}
+
+function configureRepairProgressQaState(milestone, mode) {
+  const allMilestones = state.progressionConfig.milestones;
+  const chapter = milestone.chapter ?? 1;
+  const chapterMilestones = allMilestones.filter((entry) => (entry.chapter ?? 1) === chapter);
+  const localIndex = chapterMilestones.findIndex((entry) => entry.id === milestone.id);
+  const completedCount = mode === "completion" ? localIndex + 1 : localIndex;
+  const completedIds = new Set(chapterMilestones.slice(0, Math.max(0, completedCount)).map((entry) => entry.id));
+
+  state.renovationChoices = Object.fromEntries(
+    allMilestones
+      .filter((entry) => (entry.chapter ?? 1) < chapter || completedIds.has(entry.id))
+      .map((entry) => [entry.id, "completed"]),
+  );
+  state.claimedChapterRewards = Array.from({ length: Math.max(0, chapter - 1) }, (_, index) => index + 1);
+  state.activeRepairId = null;
+  state.repairPromptedFor = [];
+  state.coins = 9999;
+  state.innLevel = chapter;
+  state.currentPage = "inn";
+
+  const params = new URLSearchParams(location.search);
+  params.set("chapter", String(chapter));
+  params.set("step", String(Math.max(0, completedCount)));
+  params.set("view", mode);
+  history.replaceState(null, "", `${location.pathname}?${params.toString()}${location.hash}`);
+}
+
+function previewRepairProgressMilestone(milestoneId) {
+  if (!REPAIR_PROGRESS_QA_MODE) return;
+  const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
+  if (!milestone) return;
+  const mode = repairModalMode === "entry" ? "entry" : "completion";
+  configureRepairProgressQaState(milestone, mode);
+  render();
+  openRepairProgressModal(milestone, mode);
+}
+
+function navigateRepairProgressQa(offset) {
+  if (!REPAIR_PROGRESS_QA_MODE) return;
+  const milestones = getMilestoneViews();
+  const currentIndex = milestones.findIndex((entry) => entry.id === activeRepairMilestoneId);
+  const nextIndex = Math.max(0, Math.min(milestones.length - 1, currentIndex + offset));
+  if (currentIndex < 0 || nextIndex === currentIndex) return;
+  previewRepairProgressMilestone(milestones[nextIndex].id);
+}
+
 let startupProgressValue = 0;
 
 function updateStartupLoading(percent, status) {
@@ -809,6 +933,7 @@ async function boot() {
   await waitForStartupPaint();
   await finishStartupLoading();
   if (state.currentPage === "board") tickGenerators();
+  if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
   setInterval(tickStamina, 1000);
 }
 
@@ -834,6 +959,7 @@ function defaultState() {
     completedOrderIds: [],
     chapterOrderCounts: { 1: 0, 2: 0, 3: 0, 4: 0 },
     claimedOrderProgressPacks: [],
+    claimedChapterRewards: [],
     coinsEarned: 0,
     storyFlags: {},
     renovationChoices: {},
@@ -879,6 +1005,9 @@ function loadState() {
     completedOrderIds: loadedOrderIds,
     chapterOrderCounts: normalizeChapterOrderCounts(data.chapterOrderCounts, data.completedOrders, data.innLevel),
     claimedOrderProgressPacks: normalizeClaimedOrderProgressPacks(data.claimedOrderProgressPacks),
+    claimedChapterRewards: Array.isArray(data.claimedChapterRewards)
+      ? data.claimedChapterRewards.filter((chapter) => Number.isInteger(chapter) && chapter >= 1 && chapter <= 4)
+      : [],
     coinsEarned: data.coinsEarned ?? 0,
     storyFlags: data.storyFlags && typeof data.storyFlags === "object" ? data.storyFlags : {},
     renovationChoices: data.renovationChoices && typeof data.renovationChoices === "object" ? data.renovationChoices : {},
@@ -900,6 +1029,7 @@ function loadState() {
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
+  if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -932,6 +1062,7 @@ function saveState() {
       completedOrderIds: state.completedOrderIds,
       chapterOrderCounts: state.chapterOrderCounts,
       claimedOrderProgressPacks: state.claimedOrderProgressPacks,
+      claimedChapterRewards: state.claimedChapterRewards,
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
       renovationChoices: state.renovationChoices,
@@ -1123,6 +1254,13 @@ function bindEvents() {
   els.orderDetailCodexBtn.addEventListener("click", openCodexFromOrderDetail);
   els.orderDetailCompleteBtn.addEventListener("click", completeOrderFromDetail);
   els.repairConfirmBtn.addEventListener("click", finalizeRepairChoice);
+  els.repairQaPrev?.addEventListener("click", () => navigateRepairProgressQa(-1));
+  els.repairQaNext?.addEventListener("click", () => navigateRepairProgressQa(1));
+  els.repairMilestoneStrip?.addEventListener("click", (event) => {
+    if (!REPAIR_PROGRESS_QA_MODE) return;
+    const card = event.target.closest("[data-milestone-id]");
+    if (card) previewRepairProgressMilestone(card.dataset.milestoneId);
+  });
   window.addEventListener("message", handleRepairPlayerMessage);
   els.repairModal.addEventListener("cancel", (event) => {
     event.preventDefault();
@@ -1656,19 +1794,126 @@ function openRepairModal(milestoneId, anchorElement) {
   const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
   if (!milestone) return;
   setRepairAnchor(anchorElement);
+  openRepairProgressModal(milestone, "entry");
+}
+
+function openRepairProgressModal(milestone, mode = "entry") {
+  if (!milestone) return;
+  repairModalMode = mode;
   activeRepairMilestoneId = milestone.id;
   activeRepairChoiceId = "completed";
+  const chapter = milestone.chapter ?? 1;
+  const chapterMilestones = getMilestoneViews().filter((entry) => entry.chapter === chapter);
+  const completedCount = chapterMilestones.filter((entry) => state.renovationChoices[entry.id]).length;
+  const nextInChapter = chapterMilestones.find((entry) => !state.renovationChoices[entry.id]);
+  const chapterComplete = completedCount === chapterMilestones.length;
+  const focusMilestone = mode === "completion" ? nextInChapter ?? milestone : milestone;
+  const chapterReward = chapterCompletionReward(chapter);
+
   els.repairTitle.textContent = milestone.sceneName ?? milestone.name;
-  els.repairAvatar.src = storyAvatarSrc(milestone.npcId);
+  els.repairAvatar.src = repairAvatarSrc(milestone.npcId);
   els.repairAvatar.alt = milestone.speaker ?? "旅人";
-  els.repairStory.textContent = milestone.storyText ?? milestone.nextText;
+  els.repairAvatar.dataset.npcId = milestone.npcId ?? "";
+  els.repairSpeaker.textContent = milestone.speaker ?? "流沙驿";
+  els.repairStory.textContent = mode === "completion"
+    ? milestone.completionText ?? "这一处已经修缮妥当。"
+    : milestone.storyText ?? milestone.nextText;
+  els.repairChapterTitle.textContent = `Lv${chapter} · ${chapterName(chapter)}`;
+  els.repairChapterProgress.textContent = `${completedCount}/${chapterMilestones.length}`;
+  els.repairChapterProgressBar.style.width = `${chapterMilestones.length ? (completedCount / chapterMilestones.length) * 100 : 0}%`;
+  els.repairMilestoneStrip.innerHTML = chapterMilestones.map((entry) => {
+    const completed = Boolean(state.renovationChoices[entry.id]);
+    const current = !completed && nextInChapter?.id === entry.id;
+    const status = completed ? "done" : current ? "current" : "locked";
+    const statusLabel = completed ? "已完成" : current ? "进行中" : "未解锁";
+    return `
+      <article class="repair-milestone-card ${status}" data-milestone-id="${entry.id}" ${current ? 'aria-current="step"' : ""}>
+        <div class="repair-milestone-image">
+          <img src="${repairMilestoneThumbnail(entry)}" alt="" loading="lazy" />
+          <i aria-hidden="true"></i>
+        </div>
+        <strong>${entry.sceneName ?? entry.name}</strong>
+        <span>${statusLabel}</span>
+      </article>
+    `;
+  }).join("");
+  const followingMilestone = nextRepairMilestone();
+  els.repairNextLine.textContent = mode === "entry"
+    ? `当前：修缮${milestone.sceneName ?? milestone.name}`
+    : nextInChapter
+      ? `下一处：修缮${nextInChapter.sceneName ?? nextInChapter.name}`
+      : followingMilestone
+        ? `下一章：${chapterName(followingMilestone.chapter)}`
+        : "四卷修缮已经全部完成";
+  els.repairCompletionTitle.textContent = `Lv${chapter} 通关奖励`;
+  els.repairGiftQuantity.textContent = "×1";
+  els.repairStaminaQuantity.textContent = `×${chapterReward?.stamina ?? 0}`;
+  els.repairRubyQuantity.textContent = `×${chapterReward?.rubies ?? 0}`;
+  const rubyLevel = Math.max(1, Math.min(4, chapterReward?.rubyIconLevel ?? chapter));
+  els.repairRubyIcon.src = `./assets/ui/bonus_ruby_lv${String(rubyLevel).padStart(2, "0")}.png`;
+  els.repairModal.classList.toggle("chapter-complete", chapterComplete);
   els.repairRewardLabel.textContent = rewardText(milestone);
   els.repairCost.textContent = repairCost(milestone);
   els.repairChoices.innerHTML = "";
   els.repairChoices.hidden = true;
-  updateRepairCostGate(milestone);
-  els.repairModal.showModal();
-  animateRepairModalIn();
+  els.repairEntryMeta.hidden = mode === "completion";
+  els.repairCostIcon.hidden = mode === "completion";
+  els.repairConfirmBtn.classList.toggle("progress-continue", mode === "completion");
+  const qaPosition = renderRepairQaNavigation(milestone);
+  if (REPAIR_PROGRESS_QA_MODE) {
+    els.repairCostIcon.hidden = true;
+    els.repairConfirmBtn.classList.add("progress-continue");
+    els.repairCoinProgress.textContent = qaPosition.hasNext ? "查看下一处" : "已经看完全部";
+    els.repairConfirmBtn.disabled = !qaPosition.hasNext;
+    els.repairConfirmBtn.classList.toggle("ready", qaPosition.hasNext);
+    els.repairConfirmBtn.classList.toggle("insufficient", !qaPosition.hasNext);
+    els.repairConfirmBtn.classList.remove("unselected");
+    els.repairConfirmBtn.setAttribute("aria-label", qaPosition.hasNext ? "查看下一处修缮效果" : "已经看完全部修缮效果");
+  } else if (mode === "completion") {
+    els.repairCoinProgress.textContent = followingMilestone ? "继续修缮" : "返回流沙驿";
+    els.repairConfirmBtn.disabled = false;
+    els.repairConfirmBtn.classList.add("ready");
+    els.repairConfirmBtn.classList.remove("insufficient", "unselected");
+    els.repairConfirmBtn.setAttribute("aria-label", followingMilestone ? "返回长卷查看下一处修缮" : "返回流沙驿");
+  } else {
+    updateRepairCostGate(milestone);
+  }
+  if (!els.repairModal.open) {
+    els.repairModal.showModal();
+    animateRepairModalIn();
+  }
+  requestAnimationFrame(() => centerRepairMilestoneCard(focusMilestone.id));
+}
+
+function repairMilestoneThumbnail(milestone) {
+  return milestone.playerPointId
+    ? `./repair-scenes/${milestone.playerPointId}/base.webp`
+    : "./assets/ui/ui_station_tavern.png";
+}
+
+function centerRepairMilestoneCard(milestoneId) {
+  const strip = els.repairMilestoneStrip;
+  const card = strip?.querySelector(`[data-milestone-id="${milestoneId}"]`);
+  if (!strip || !card) return;
+  strip.scrollLeft = Math.max(0, card.offsetLeft - (strip.clientWidth - card.clientWidth) / 2);
+}
+
+function chapterCompletionReward(chapter) {
+  return (state.progressionConfig?.chapterCompletionRewards ?? []).find((entry) => entry.chapter === chapter) ?? null;
+}
+
+function renderRepairQaNavigation(milestone) {
+  const milestones = getMilestoneViews();
+  const index = milestones.findIndex((entry) => entry.id === milestone.id);
+  const total = milestones.length;
+  const enabled = REPAIR_PROGRESS_QA_MODE && index >= 0;
+  els.repairQaNav.hidden = !enabled;
+  els.repairModal.classList.toggle("qa-preview", enabled);
+  if (!enabled) return { hasPrevious: false, hasNext: false };
+  els.repairQaCounter.textContent = `${index + 1} / ${total}`;
+  els.repairQaPrev.disabled = index === 0;
+  els.repairQaNext.disabled = index === total - 1;
+  return { hasPrevious: index > 0, hasNext: index < total - 1 };
 }
 
 function setRepairAnchor(anchorElement) {
@@ -1760,7 +2005,27 @@ function updateRepairCostGate(milestone) {
   );
 }
 
+function continueAfterRepairProgress() {
+  const next = nextRepairMilestone();
+  activeRepairMilestoneId = null;
+  activeRepairChoiceId = null;
+  closeRepairModalToAnchor(() => {
+    repairModalMode = "entry";
+    if (!next) return;
+    pendingInnFocusPosition = next.scenePosition;
+    centerInnSceneOnPosition(next.scenePosition);
+  });
+}
+
 function finalizeRepairChoice() {
+  if (REPAIR_PROGRESS_QA_MODE) {
+    navigateRepairProgressQa(1);
+    return;
+  }
+  if (repairModalMode === "completion") {
+    continueAfterRepairProgress();
+    return;
+  }
   if (!activeRepairMilestoneId) return;
   const milestone = getMilestoneViews().find((entry) => entry.id === activeRepairMilestoneId);
   if (!milestone || (state.activeRepairId && state.activeRepairId !== milestone.id)) return;
@@ -1807,6 +2072,7 @@ function completeRepairFromPlayer(milestoneId) {
   state.renovationChoices[milestoneId] = "completed";
   applyRepairRewards(milestone);
   syncGeneratorCategoryUnlocks({ announce: true });
+  if (isChapterRepairComplete(milestone.chapter)) applyChapterCompletionReward(milestone.chapter);
   syncGateOrder();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
@@ -1820,12 +2086,8 @@ function completeRepairFromPlayer(milestoneId) {
   playRepairCompleteEffect(milestone.scenePosition);
   showRepairCompleteCue();
   saveState();
-  els.storyAvatar.src = storyAvatarSrc(milestone.npcId);
-  els.storyAvatar.alt = milestone.speaker ?? "旅人";
-  els.storyTitle.textContent = milestone.sceneName ?? milestone.name;
-  els.storySpeaker.textContent = milestone.speaker ?? "流沙驿";
-  els.storyText.textContent = milestone.completionText ?? "这一处收拾妥当，流沙驿终于有了让人停脚的地方。";
-  els.storyModal.showModal();
+  const completedMilestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
+  setTimeout(() => openRepairProgressModal(completedMilestone, "completion"), 280);
 }
 
 function upgradeInn() {
@@ -2098,6 +2360,25 @@ function registerOrderProgressPacks() {
         { type: "coins", amount: entry.coinAmount },
         { type: "rubies", amount: entry.rubyQuantity ?? 1 },
         { type: "mapped_material", quantity: entry.materialQuantity ?? 1 },
+      ],
+    };
+  });
+  const chapterRewards = state.progressionConfig?.chapterCompletionRewards ?? [];
+  chapterRewards.forEach((entry) => {
+    const gift = entry.giftPack;
+    if (!gift?.id) return;
+    GIFT_PACKS[gift.id] = {
+      id: gift.id,
+      name: gift.name,
+      itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+      description: gift.description,
+      chapter: entry.chapter,
+      materialCategory: gift.materialCategory,
+      chapterCompletion: true,
+      rewards: [
+        { type: "coins", amount: gift.coinAmount },
+        { type: "stamina", amount: gift.staminaAmount },
+        { type: "mapped_material", quantity: gift.materialQuantity ?? 1 },
       ],
     };
   });
@@ -2625,7 +2906,7 @@ function renderSelected() {
     const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
     els.selectedName.textContent = pack?.name ?? item.name;
     els.selectedText.textContent = pack
-      ? pack.orderProgress
+      ? pack.orderProgress || pack.chapterCompletion
         ? `点击一次打开，${giftRewardOutputCount(pack)}份奖励会随机落入空格。`
         : `点击礼盒包，每次掉落1份奖励。还剩${pack.rewards.length - giftState.nextRewardIndex}份。`
       : item.modernName;
@@ -3932,6 +4213,11 @@ function storyAvatarSrc(npcId) {
   return `./assets/npc/${npcId}.png`;
 }
 
+function repairAvatarSrc(npcId) {
+  if (!npcId || npcId === "keeper_portrait") return "./assets/keeper_portrait.png";
+  return `./assets/npc_repair_portrait/${npcId}_v1.png`;
+}
+
 function chooseRenovation(milestoneId, choiceId) {
   const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
   const choice = milestone?.renovationChoices?.find((entry) => entry.id === choiceId);
@@ -4149,6 +4435,22 @@ function applyRepairRewards(milestone) {
   }
 }
 
+function isChapterRepairComplete(chapter) {
+  const milestones = state.progressionConfig.milestones.filter(
+    (milestone) => (milestone.chapter ?? 1) === chapter,
+  );
+  return milestones.length > 0 && milestones.every((milestone) => state.renovationChoices[milestone.id]);
+}
+
+function applyChapterCompletionReward(chapter) {
+  const reward = chapterCompletionReward(chapter);
+  if (!reward || state.claimedChapterRewards.includes(chapter)) return;
+  state.claimedChapterRewards.push(chapter);
+  state.stamina += Number(reward.stamina) || 0;
+  state.gems += Number(reward.rubies) || 0;
+  if (reward.giftPack?.id) grantGiftPack(reward.giftPack.id, 1);
+}
+
 function grantGiftPack(packId, quantity = 1) {
   const pack = GIFT_PACKS[packId];
   if (!pack || quantity <= 0) return;
@@ -4349,7 +4651,8 @@ function placeGiftPackOnBoard(packId) {
   state.giftBoxStates[boardIndex] = { packId, nextRewardIndex: 0 };
   state.selectedIndex = boardIndex;
   state.pulseIndex = boardIndex;
-  keeper(`${pack.name}已随机落到案板上。${pack.orderProgress ? "点击一次即可打开。" : "点击礼盒包，每次取一份奖励。"}`);
+  const opensAtOnce = pack.orderProgress || pack.chapterCompletion;
+  keeper(`${pack.name}已随机落到案板上。${opensAtOnce ? "点击一次即可打开。" : "点击礼盒包，每次取一份奖励。"}`);
   clearPulseSoon();
   render();
   renderBag();
@@ -4373,6 +4676,7 @@ function giftRewardOutputCount(pack) {
   return pack.rewards.reduce((sum, reward) => {
     if (reward.type === "coins") return sum + coinRewardPieceIds(reward.amount).length;
     if (reward.type === "rubies") return sum + (reward.amount ?? 1);
+    if (reward.type === "stamina") return sum;
     return sum + (reward.quantity ?? 1);
   }, 0);
 }
@@ -4395,6 +4699,7 @@ function orderProgressGiftOutputs(pack) {
       for (let i = 0; i < (reward.amount ?? 1); i += 1) outputs.push("bonus_ruby_01");
       return;
     }
+    if (reward.type === "stamina") return;
     if (reward.type === "mapped_material") {
       const materialId = mappedGiftMaterialId(pack);
       if (!materialId) return;
@@ -4406,6 +4711,14 @@ function orderProgressGiftOutputs(pack) {
     }
   });
   return outputs;
+}
+
+function applyInstantGiftResources(pack) {
+  const staminaAmount = pack.rewards.reduce(
+    (sum, reward) => sum + (reward.type === "stamina" ? Number(reward.amount) || 0 : 0),
+    0,
+  );
+  if (staminaAmount > 0) state.stamina += staminaAmount;
 }
 
 function shuffle(values) {
@@ -4428,6 +4741,7 @@ function openOrderProgressGiftBox(index, pack) {
     return;
   }
   clearGiftBox(index);
+  applyInstantGiftResources(pack);
   const targetIndices = shuffle(available).slice(0, outputs.length);
   const materialIds = new Set();
   outputs.forEach((itemId, outputIndex) => {
@@ -4451,7 +4765,7 @@ function openGiftBoxOnBoard(index) {
     toast("这个礼盒包数据还没配置。");
     return;
   }
-  if (pack.orderProgress) {
+  if (pack.orderProgress || pack.chapterCompletion) {
     openOrderProgressGiftBox(index, pack);
     return;
   }

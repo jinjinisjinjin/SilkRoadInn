@@ -823,6 +823,68 @@
       "renovationChoices": []
     }
   ],
+  "chapterCompletionRewards": [
+    {
+      "chapter": 1,
+      "stamina": 10,
+      "rubies": 1,
+      "rubyIconLevel": 1,
+      "giftPack": {
+        "id": "gift_repair_ch1_complete",
+        "name": "流沙驿初明礼匣",
+        "description": "完成第一章修缮后获得，内含铜币、驼铃和酒水厢房材料。",
+        "coinAmount": 10,
+        "staminaAmount": 3,
+        "materialQuantity": 2,
+        "materialCategory": "drink"
+      }
+    },
+    {
+      "chapter": 2,
+      "stamina": 15,
+      "rubies": 3,
+      "rubyIconLevel": 2,
+      "giftPack": {
+        "id": "gift_repair_ch2_complete",
+        "name": "西市烟火礼匣",
+        "description": "完成第二章修缮后获得，内含铜币、驼铃和肉铺材料。",
+        "coinAmount": 15,
+        "staminaAmount": 4,
+        "materialQuantity": 2,
+        "materialCategory": "meat"
+      }
+    },
+    {
+      "chapter": 3,
+      "stamina": 20,
+      "rubies": 8,
+      "rubyIconLevel": 3,
+      "giftPack": {
+        "id": "gift_repair_ch3_complete",
+        "name": "楼馆通途礼匣",
+        "description": "完成第三章修缮后获得，内含铜币、驼铃和香料架材料。",
+        "coinAmount": 20,
+        "staminaAmount": 5,
+        "materialQuantity": 3,
+        "materialCategory": "spice"
+      }
+    },
+    {
+      "chapter": 4,
+      "stamina": 30,
+      "rubies": 25,
+      "rubyIconLevel": 4,
+      "giftPack": {
+        "id": "gift_repair_ch4_complete",
+        "name": "灯火连城礼匣",
+        "description": "完成第四章修缮后获得，内含铜币、驼铃和果摊材料。",
+        "coinAmount": 25,
+        "staminaAmount": 6,
+        "materialQuantity": 4,
+        "materialCategory": "fruit"
+      }
+    }
+  ],
   "orderProgressPacks": [
     {
       "id": "gift_order_ch1_4",
