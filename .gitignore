@@ -30,6 +30,7 @@ archive/worktrees/
 
 # Playwright transient debug logs (not source)
 .playwright-cli/
+/output/playwright/*.png
 
 # WorkBuddy local workspace data (not source)
 .workbuddy/
