@@ -78,9 +78,11 @@
 .new-player-guide-portrait {
   width: 60px;
   height: 66px;
+  box-sizing: border-box;
+  padding: 5px 4px 3px;
   background: #ead29d;
-  object-fit: cover;
-  object-position: center 20%;
+  object-fit: contain;
+  object-position: center;
   clip-path: polygon(17% 0, 83% 0, 100% 17%, 100% 83%, 83% 100%, 17% 100%, 0 83%, 0 17%);
 }
 
@@ -304,6 +306,7 @@
   .new-player-guide-portrait {
     width: 50px;
     height: 56px;
+    padding: 4px 3px 2px;
   }
 
   .new-player-guide-copy p {
