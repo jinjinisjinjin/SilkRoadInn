@@ -7,12 +7,12 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=order-ready-food-v1" />
+    <link rel="stylesheet" href="./styles.css?v=page-doors-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v11" />
-    <link rel="stylesheet" href="./inn-map-ui.css?v=inn-map-ui-v4" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=inn-map-ui-v5" />
     <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
   </head>
   <body>
@@ -109,6 +109,11 @@
           <img src="./assets/ui/ui_codex_scroll.png" alt="" />
         </button>
       </section>
+      <div class="page-door-transition" id="pageDoorTransition" aria-hidden="true" hidden>
+        <div class="page-door page-door-left"><i></i></div>
+        <div class="page-door page-door-right"><i></i></div>
+        <span class="page-door-seal"></span>
+      </div>
       <nav class="tabbar" hidden>
         <button id="boardReturnBtn" data-tab="board"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>后厨</span></button>
         <button id="stationBtn" data-tab="inn"><img src="./assets/ui/ui_station_tavern.png" alt="" /><span>流沙驿</span></button>
@@ -342,6 +347,6 @@
 
     <script src="./chapter-story.js?v=inn-map-ui-v3"></script>
     <script src="./new-player-guide.js?v=new-player-guide-v4"></script>
-    <script src="./app.js?v=order-ready-food-v1"></script>
+    <script src="./app.js?v=page-doors-v1"></script>
   </body>
 </html>

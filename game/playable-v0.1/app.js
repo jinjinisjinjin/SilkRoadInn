@@ -363,6 +363,7 @@ const els = {
   stationBtn: document.querySelector("#stationBtn"),
   boardReturnBtn: document.querySelector("#boardReturnBtn"),
   innKitchenBtn: document.querySelector("#innKitchenBtn"),
+  pageDoorTransition: document.querySelector("#pageDoorTransition"),
   storyArchiveBtn: document.querySelector("#storyArchiveBtn"),
   boardPage: document.querySelector("#boardPage"),
   innPage: document.querySelector("#innPage"),
@@ -505,6 +506,7 @@ let pendingUpgradeUnlock = null;
 let innPackageLoaded = false;
 let innPackagePromise = null;
 let innReleaseTimer = null;
+let pageSwitchInProgress = false;
 let repairPulseTimer = null;
 let boardGuideTimer = null;
 let lastInnFocusKey = null;
@@ -1794,21 +1796,44 @@ function renderPage() {
 }
 
 async function switchPage(page) {
-  if (page === "inn") {
-    const packageReady = await ensureInnPackageLoaded();
-    if (!packageReady) return;
-    cancelInnPackageRelease();
-    lastInnFocusKey = null;
-  } else if (page === "board") {
-    clearBoardReturnGuide();
-    scheduleInnPackageRelease();
+  if (pageSwitchInProgress) return;
+  pageSwitchInProgress = true;
+  try {
+    if (page === "inn") {
+      const packageReady = await ensureInnPackageLoaded();
+      if (!packageReady) return;
+      cancelInnPackageRelease();
+      lastInnFocusKey = null;
+    } else if (page === "board") {
+      clearBoardReturnGuide();
+      scheduleInnPackageRelease();
+    }
+    await playPageDoorTransition(() => {
+      state.currentPage = page;
+      render();
+      if (page === "board") tickGenerators();
+      saveState();
+    });
+  } finally {
+    pageSwitchInProgress = false;
   }
-  state.currentPage = page;
-  document.querySelector("#app").classList.add("page-transitioning");
-  setTimeout(() => document.querySelector("#app").classList.remove("page-transitioning"), 320);
-  render();
-  if (page === "board") tickGenerators();
-  saveState();
+}
+
+async function playPageDoorTransition(swapPage) {
+  const transition = els.pageDoorTransition;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!transition || reducedMotion) {
+    swapPage();
+    return;
+  }
+  transition.hidden = false;
+  transition.dataset.phase = "closing";
+  await startupDelay(360);
+  swapPage();
+  transition.dataset.phase = "opening";
+  await startupDelay(440);
+  transition.hidden = true;
+  delete transition.dataset.phase;
 }
 
 function handleStationButton() {

@@ -79,7 +79,6 @@ button:disabled {
 
 .game-page {
   min-height: calc(100dvh - max(18px, env(safe-area-inset-bottom)) - 24px);
-  animation: pageEnter 0.28s ease-out both;
 }
 
 .game-page[hidden] {
@@ -1243,8 +1242,122 @@ button:disabled {
   box-shadow: 0 5px 12px rgba(50, 29, 16, 0.32);
 }
 
-.page-transitioning .game-page.active {
-  animation: pageSwitch 0.32s ease-out both;
+.page-door-transition {
+  position: absolute;
+  inset: 0;
+  z-index: 118;
+  overflow: hidden;
+  background: rgba(31, 17, 12, 0.08);
+  perspective: 900px;
+  pointer-events: auto;
+}
+
+.page-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(50% + 1px);
+  overflow: hidden;
+  border: 1px solid rgba(244, 205, 126, 0.42);
+  background:
+    radial-gradient(circle at 18px 20px, #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
+    radial-gradient(circle at calc(100% - 18px) 20px, #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
+    radial-gradient(circle at 18px calc(100% - 20px), #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
+    radial-gradient(circle at calc(100% - 18px) calc(100% - 20px), #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
+    repeating-linear-gradient(90deg, rgba(255, 222, 155, 0.04) 0 2px, transparent 2px 30px),
+    linear-gradient(90deg, rgba(51, 20, 16, 0.42), transparent 18%, transparent 82%, rgba(51, 20, 16, 0.44)),
+    linear-gradient(180deg, #7f3b30, #55251f 54%, #3f1c19);
+  box-shadow:
+    inset 0 0 0 7px rgba(75, 35, 24, 0.64),
+    inset 0 0 0 9px rgba(214, 162, 82, 0.26),
+    0 0 24px rgba(26, 13, 9, 0.58);
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.page-door::before {
+  position: absolute;
+  inset: 13% 15%;
+  border: 2px solid rgba(211, 161, 83, 0.34);
+  box-shadow:
+    inset 0 0 0 5px rgba(65, 27, 21, 0.36),
+    0 0 0 3px rgba(49, 21, 17, 0.28);
+  content: "";
+}
+
+.page-door-left {
+  left: 0;
+  transform: rotateY(-94deg);
+  transform-origin: left center;
+}
+
+.page-door-right {
+  right: 0;
+  transform: rotateY(94deg);
+  transform-origin: right center;
+}
+
+.page-door i {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  border: 4px solid #c99a4d;
+  border-radius: 50%;
+  background: #5c2b22;
+  box-shadow:
+    0 2px 5px rgba(29, 14, 9, 0.62),
+    inset 0 0 0 2px rgba(255, 224, 157, 0.24);
+  transform: translateY(-50%);
+}
+
+.page-door-left i {
+  right: 14px;
+}
+
+.page-door-right i {
+  left: 14px;
+}
+
+.page-door-seal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  border: 3px double rgba(255, 226, 160, 0.88);
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 42%, rgba(255, 225, 157, 0.72) 43% 57%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, rgba(255, 225, 157, 0.72) 43% 57%, transparent 58%),
+    #873d31;
+  box-shadow: 0 4px 10px rgba(27, 13, 9, 0.56), inset 0 0 0 4px rgba(91, 39, 29, 0.48);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.72);
+}
+
+.page-door-transition[data-phase="closing"] .page-door-left {
+  animation: pageDoorCloseLeft 340ms cubic-bezier(0.38, 0.08, 0.52, 1) both;
+}
+
+.page-door-transition[data-phase="closing"] .page-door-right {
+  animation: pageDoorCloseRight 340ms cubic-bezier(0.38, 0.08, 0.52, 1) both;
+}
+
+.page-door-transition[data-phase="closing"] .page-door-seal {
+  animation: pageDoorSealIn 160ms 220ms ease-out both;
+}
+
+.page-door-transition[data-phase="opening"] .page-door-left {
+  animation: pageDoorOpenLeft 420ms cubic-bezier(0.32, 0.02, 0.16, 1) both;
+}
+
+.page-door-transition[data-phase="opening"] .page-door-right {
+  animation: pageDoorOpenRight 420ms cubic-bezier(0.32, 0.02, 0.16, 1) both;
+}
+
+.page-door-transition[data-phase="opening"] .page-door-seal {
+  animation: pageDoorSealOut 150ms ease-in both;
 }
 
 .page-switch.locked {
@@ -1480,27 +1593,67 @@ button:disabled {
   }
 }
 
-@keyframes pageEnter {
+@keyframes pageDoorCloseLeft {
+  from {
+    transform: rotateY(-94deg);
+  }
+
+  to {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes pageDoorCloseRight {
+  from {
+    transform: rotateY(94deg);
+  }
+
+  to {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes pageDoorOpenLeft {
+  from {
+    transform: rotateY(0deg);
+  }
+
+  to {
+    transform: rotateY(-94deg);
+  }
+}
+
+@keyframes pageDoorOpenRight {
+  from {
+    transform: rotateY(0deg);
+  }
+
+  to {
+    transform: rotateY(94deg);
+  }
+}
+
+@keyframes pageDoorSealIn {
   from {
     opacity: 0;
-    transform: scale(0.985);
+    transform: translate(-50%, -50%) scale(0.72);
   }
 
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
-@keyframes pageSwitch {
-  0% {
-    opacity: 0;
-    transform: scale(0.96);
+@keyframes pageDoorSealOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 
-  100% {
-    opacity: 1;
-    transform: scale(1);
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.82);
   }
 }
 

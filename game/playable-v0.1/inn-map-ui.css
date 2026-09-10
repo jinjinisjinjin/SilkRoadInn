@@ -9,7 +9,7 @@
   position: absolute;
   left: max(88px, calc(env(safe-area-inset-left) + 80px));
   right: auto;
-  top: max(7px, env(safe-area-inset-top));
+  top: max(36px, calc(env(safe-area-inset-top) + 36px));
   display: flex;
   align-items: center;
   gap: 4px;
