@@ -3,7 +3,7 @@
   "generatorType": "manual_generator",
   "assetRoot": "generators/equipment",
   "levelsPerCategory": 6,
-  "temporaryOutputRule": "Manual generator upgrades increase charge capacity, shorten rest time, and add a conservative chance to output the matching level-2 food. Dairy remains an hourly automatic fresh-milk generator.",
+  "temporaryOutputRule": "Manual generator upgrades increase charge capacity, shorten rest time, and add a conservative chance to output the matching level-2 food. Dairy uses a level-based hourly batch: 6/10/14/18/22/26 total outputs, delivered into its eight neighboring cells whenever space is available; higher levels keep fresh milk as the main output while increasing the chance of level-2 dairy food.",
   "economy": {
     "staminaCost": 1,
     "chargeMax": 30,
@@ -77,8 +77,16 @@
         "staminaCost": 0,
         "chargeMax": 1,
         "cooldownSeconds": 3600,
-        "outputCount": 8
+        "outputCount": 6
       },
+      "levelEconomy": [
+        { "outputCount": 6 },
+        { "outputCount": 10 },
+        { "outputCount": 14 },
+        { "outputCount": 18 },
+        { "outputCount": 22 },
+        { "outputCount": 26 }
+      ],
       "masteryOrderId": "order_mastery_dairy",
       "secondaryOutputItemId": "dairy_02_rumi"
     },

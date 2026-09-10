@@ -570,7 +570,8 @@ function buildConfiguredGeneratorItems(config) {
       const level = offset + 1;
       const generatorType = category.generatorType ?? config.generatorType;
       const levelEconomy = config.levelEconomy?.[offset] ?? {};
-      const economy = { ...config.economy, ...levelEconomy, ...category.economy };
+      const categoryLevelEconomy = category.levelEconomy?.[offset] ?? {};
+      const economy = { ...config.economy, ...levelEconomy, ...category.economy, ...categoryLevelEconomy };
       const secondaryOutputWeight = category.secondaryOutputItemId
         ? Math.max(0, Math.min(100, Number(levelEconomy.secondaryOutputWeight) || 0))
         : 0;
@@ -3099,11 +3100,17 @@ function normalizeGeneratorStates(value) {
   return Object.fromEntries(
     Object.entries(value)
       .filter(([key, entry]) => /^(board|bag):\d+$/.test(key) && entry && typeof entry.itemId === "string")
-      .map(([key, entry]) => [key, {
-        itemId: migrateLegacyGeneratorId(entry.itemId),
-        charges: Math.max(0, Number(entry.charges) || 0),
-        cooldownEnd: Math.max(0, Number(entry.cooldownEnd) || 0),
-      }]),
+      .map(([key, entry]) => {
+        const normalized = {
+          itemId: migrateLegacyGeneratorId(entry.itemId),
+          charges: Math.max(0, Number(entry.charges) || 0),
+          cooldownEnd: Math.max(0, Number(entry.cooldownEnd) || 0),
+        };
+        if (Number.isFinite(Number(entry.remainingOutputs))) {
+          normalized.remainingOutputs = Math.max(0, Math.floor(Number(entry.remainingOutputs)));
+        }
+        return [key, normalized];
+      }),
   );
 }
 
@@ -3620,6 +3627,10 @@ function renderBoard() {
           badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
         } else if (item.type === "manual_generator") {
           badge.textContent = `${generatorState.charges}/${item.generator.chargeMax}`;
+        } else if (generatorState.remainingOutputs > 0) {
+          badge.textContent = `${generatorState.remainingOutputs}`;
+          badge.setAttribute("aria-label", `本轮还可投放${generatorState.remainingOutputs}份`);
+          badge.title = `本轮还可投放${generatorState.remainingOutputs}份`;
         }
         cell.append(badge);
       } else if (item.type === "gift_box") {
@@ -3803,15 +3814,16 @@ function renderSelected() {
   if (isGeneratorPiece(item)) {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+    const batchSize = item.generator.outputCount;
     const productionStatus = item.type === "manual_generator"
       ? cooldownSeconds > 0
         ? "休息中，还剩" + formatGeneratorCountdown(cooldownSeconds)
         : "充能 " + generatorState.charges + "/" + item.generator.chargeMax
       : cooldownSeconds > 0
-        ? formatGeneratorCountdown(cooldownSeconds) + "后投放鲜乳"
+        ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
         : neighborEmptyIndices(state.selectedIndex).length > 0
-          ? "鲜乳即将投放"
-          : "周边无空格，等待投放";
+          ? `本轮剩余${generatorState.remainingOutputs}/${batchSize}份，奶食即将投放`
+          : `本轮剩余${generatorState.remainingOutputs}/${batchSize}份，周边无空格`;
     els.selectedName.textContent = /Lv\d+$/.test(item.name) ? item.name : item.name + " · Lv" + (item.level ?? 1);
     els.selectedText.textContent = productionStatus + " · " + generatorUpgradeSummary(item);
     setSellButtonAction(getPieceRemovalAction(item));
@@ -3941,12 +3953,17 @@ function openSelectedPieceDetail() {
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+    const batchSize = item.generator.outputCount;
+    const secondaryOutput = item.generator.pool.find((entry) => entry.itemId !== item.generator.pool[0]?.itemId);
+    const outputChanceText = secondaryOutput
+      ? `每份有${secondaryOutput.weight}%概率直接产出${byId.get(secondaryOutput.itemId)?.name ?? "较高级奶食"}。`
+      : "本级只产出鲜乳。";
     const productionText = cooldownSeconds > 0
-      ? "奶房正在备料，" + formatGeneratorCountdown(cooldownSeconds) + "后自动向周边空格投放鲜乳。"
+      ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后恢复${batchSize}份库存。`
       : neighborEmptyIndices(state.selectedIndex).length > 0
-        ? "奶房已备好鲜乳，即将自动投放到周边空格。"
-        : "奶房周围没有空格，腾出一格后会继续自动投放鲜乳。";
-    els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
+        ? `本轮还剩${generatorState.remainingOutputs}/${batchSize}份，将自动投放到周边空格。`
+        : `本轮还剩${generatorState.remainingOutputs}/${batchSize}份；周围没有空格，腾出后会继续投放。`;
+    els.pieceDetailText.textContent = productionText + outputChanceText + generatorUpgradeDetail(item);
   } else {
     els.pieceDetailText.textContent = codex?.shortText ?? item.modernName ?? "这枚棋子还没有配置详情。";
   }
@@ -4604,6 +4621,7 @@ function getGeneratorState(itemId, stateKey) {
     state.generatorStates[stateKey] = {
       itemId,
       charges: item?.generator?.chargeMax ?? 0,
+      remainingOutputs: item?.type === "auto_generator" ? item.generator.outputCount : 0,
       cooldownEnd: 0,
     };
   }
@@ -4612,6 +4630,18 @@ function getGeneratorState(itemId, stateKey) {
   if (item?.type === "manual_generator" && generatorState.cooldownEnd > 0 && generatorState.cooldownEnd <= Date.now()) {
     generatorState.charges = item.generator.chargeMax;
     generatorState.cooldownEnd = 0;
+  }
+  if (item?.type === "auto_generator") {
+    const batchSize = Math.max(0, Math.floor(Number(item.generator.outputCount) || 0));
+    if (!Number.isFinite(Number(generatorState.remainingOutputs))) {
+      generatorState.remainingOutputs = generatorState.cooldownEnd > Date.now() ? 0 : batchSize;
+    } else {
+      generatorState.remainingOutputs = Math.min(batchSize, Math.max(0, Math.floor(Number(generatorState.remainingOutputs))));
+    }
+    if (generatorState.cooldownEnd > 0 && generatorState.cooldownEnd <= Date.now()) {
+      generatorState.remainingOutputs = batchSize;
+      generatorState.cooldownEnd = 0;
+    }
   }
   return generatorState;
 }
@@ -4628,12 +4658,14 @@ function formatGeneratorCountdown(totalSeconds) {
 
 function tickGenerators() {
   let changed = false;
+  let shouldSave = false;
   const generatedOutputs = [];
   Object.keys(state.generatorStates).forEach((stateKey) => {
     const entry = state.generatorStates[stateKey];
     const before = entry.cooldownEnd;
     getGeneratorState(entry.itemId, stateKey);
     if (before > Date.now() || (before && !state.generatorStates[stateKey].cooldownEnd)) changed = true;
+    if (before && !state.generatorStates[stateKey].cooldownEnd) shouldSave = true;
   });
   state.board.forEach((itemId, index) => {
     const item = byId.get(itemId);
@@ -4641,9 +4673,15 @@ function tickGenerators() {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
     const now = Date.now();
     if (generatorState.cooldownEnd && generatorState.cooldownEnd > now) return;
+    if (generatorState.remainingOutputs <= 0) {
+      generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
+      changed = true;
+      shouldSave = true;
+      return;
+    }
     const targets = neighborEmptyIndices(index);
     if (!targets.length) return;
-    const outputs = Math.min(item.generator.outputCount, targets.length);
+    const outputs = Math.min(generatorState.remainingOutputs, targets.length);
     for (let i = 0; i < outputs; i += 1) {
       const target = targets.splice(Math.floor(Math.random() * targets.length), 1)[0];
       const outputItemId = pickFromWeightedPool(item.generator.pool);
@@ -4652,8 +4690,13 @@ function tickGenerators() {
       generatedOutputs.push({ sourceIndex: index, targetIndex: target, itemId: outputItemId });
       state.pulseIndex = target;
     }
-    generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
+    generatorState.remainingOutputs -= outputs;
+    if (generatorState.remainingOutputs <= 0) {
+      generatorState.remainingOutputs = 0;
+      generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
+    }
     changed = true;
+    shouldSave = true;
   });
   if (changed) {
     render();
@@ -4661,6 +4704,7 @@ function tickGenerators() {
       animateGeneratorOutput(sourceIndex, targetIndex, itemId);
     });
   }
+  if (shouldSave) saveState();
 }
 
 function pickFromWeightedPool(pool) {
