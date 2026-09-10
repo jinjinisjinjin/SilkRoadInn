@@ -11,6 +11,7 @@ const PROGRESSION_FLOW_QA_MODE = QA_MODE === "progression-flow-v1";
 const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
 const CHAPTER_STORY_QA_MODE = QA_MODE === "chapter-story-v1";
 const STORY_ARCHIVE_QA_MODE = QA_MODE === "story-archive-v1";
+const NEW_PLAYER_GUIDE_QA_MODE = QA_MODE === "new-player-guide-v1";
 const STORY_ARCHIVE_QA_AUTOPEN = STORY_ARCHIVE_QA_MODE
   && new URLSearchParams(location.search).get("open") === "1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
@@ -40,8 +41,10 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE;
-const SAVE_KEY = STORY_ARCHIVE_QA_MODE
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE;
+const SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_new_player_guide_v1"
+  : STORY_ARCHIVE_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_story_archive_v1"
   : CHAPTER_STORY_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_chapter_story_v1_ch${CHAPTER_STORY_QA_CHAPTER}`
@@ -423,6 +426,8 @@ const els = {
   repairChapterProgressBar: document.querySelector("#repairChapterProgressBar"),
   repairMilestoneStrip: document.querySelector("#repairMilestoneStrip"),
   repairNextLine: document.querySelector("#repairNextLine"),
+  repairCompletionSection: document.querySelector(".repair-completion-section"),
+  repairCompletionRewards: document.querySelector(".repair-completion-rewards"),
   repairCompletionTitle: document.querySelector("#repairCompletionTitle"),
   repairGiftQuantity: document.querySelector("#repairGiftQuantity"),
   repairStaminaQuantity: document.querySelector("#repairStaminaQuantity"),
@@ -2230,9 +2235,7 @@ function openRepairProgressModal(milestone, mode = "entry") {
         ? `下一章：${chapterName(followingMilestone.chapter)}`
         : "四卷修缮已经全部完成";
   els.repairCompletionTitle.textContent = `Lv${chapter} 通关奖励`;
-  els.repairGiftQuantity.textContent = "×1";
-  els.repairStaminaQuantity.textContent = `×${chapterReward?.stamina ?? 0}`;
-  els.repairRubyQuantity.textContent = `×${chapterReward?.rubies ?? 0}`;
+  renderRepairCompletionRewards(chapterReward);
   const rubyLevel = Math.max(1, Math.min(4, chapterReward?.rubyIconLevel ?? chapter));
   els.repairRubyIcon.src = `./assets/ui/bonus_ruby_lv${String(rubyLevel).padStart(2, "0")}.png`;
   els.repairModal.classList.toggle("chapter-complete", chapterComplete);
@@ -2284,6 +2287,26 @@ function centerRepairMilestoneCard(milestoneId) {
 
 function chapterCompletionReward(chapter) {
   return (state.progressionConfig?.chapterCompletionRewards ?? []).find((entry) => entry.chapter === chapter) ?? null;
+}
+
+function renderRepairCompletionRewards(chapterReward) {
+  const rewards = [
+    [els.repairGiftQuantity, chapterReward?.giftPack?.id ? 1 : 0],
+    [els.repairStaminaQuantity, chapterReward?.stamina],
+    [els.repairRubyQuantity, chapterReward?.rubies],
+  ];
+  let visibleCount = 0;
+
+  rewards.forEach(([quantityElement, value]) => {
+    const quantity = Math.max(0, Math.floor(Number(value) || 0));
+    const rewardElement = quantityElement.closest(".repair-completion-reward");
+    quantityElement.textContent = quantity > 0 ? `×${quantity}` : "";
+    rewardElement.hidden = quantity === 0;
+    if (quantity > 0) visibleCount += 1;
+  });
+
+  els.repairCompletionRewards.dataset.visibleCount = String(visibleCount);
+  els.repairCompletionSection.hidden = visibleCount === 0;
 }
 
 function renderRepairQaNavigation(milestone) {
@@ -5863,6 +5886,8 @@ function openCodexDetail(codexId) {
 function resetGame() {
   if (!confirm("确定重置原型进度吗？")) return;
   localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem("silkroad_new_player_guide_v1");
+  localStorage.removeItem("silkroad_new_player_guide_v1_qa");
   location.reload();
 }
 
