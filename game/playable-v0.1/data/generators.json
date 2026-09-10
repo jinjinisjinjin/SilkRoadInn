@@ -119,31 +119,31 @@
       "masteryOrderId": "order_mastery_drink"
     }
   ],
-  "upgradeRequirements": [
+  "duplicateRewardMilestones": [
     {
       "targetLevel": 2,
       "lineOrders": 4,
-      "innLevel": 1
+      "rewardGeneratorLevel": 1
     },
     {
       "targetLevel": 3,
       "lineOrders": 10,
-      "innLevel": 2
+      "rewardGeneratorLevel": 2
     },
     {
       "targetLevel": 4,
       "lineOrders": 18,
-      "innLevel": 3
+      "rewardGeneratorLevel": 3
     },
     {
       "targetLevel": 5,
       "lineOrders": 30,
-      "innLevel": 4
+      "rewardGeneratorLevel": 4
     },
     {
       "targetLevel": 6,
       "lineOrders": 48,
-      "innLevel": 4,
+      "rewardGeneratorLevel": 5,
       "requiresMasteryOrder": true
     }
   ]

@@ -30,6 +30,28 @@ const categoryByLine = new Map(
 const valuesByLine = economy.orderPricing.levelValuesByLine;
 const pricingBands = economy.orderPricing.bands;
 
+assert(!("upgradeRequirements" in generators), "Generator merging must not retain hard upgrade gates");
+assert(
+  generators.duplicateRewardMilestones.length === generators.levelsPerCategory - 1,
+  "Every generator upgrade needs one duplicate reward milestone",
+);
+generators.duplicateRewardMilestones.forEach((milestone, index, milestones) => {
+  const targetLevel = index + 2;
+  assert(milestone.targetLevel === targetLevel, `Missing generator Lv${targetLevel} reward milestone`);
+  assert(
+    milestone.rewardGeneratorLevel === targetLevel - 1,
+    `Lv${targetLevel} milestone must reward a matching Lv${targetLevel - 1} duplicate`,
+  );
+  assert(Number.isInteger(milestone.lineOrders) && milestone.lineOrders > 0, `Lv${targetLevel} milestone has an invalid order target`);
+  if (index > 0) {
+    assert(milestone.lineOrders > milestones[index - 1].lineOrders, "Generator order milestones must increase by level");
+  }
+  assert(
+    Boolean(milestone.requiresMasteryOrder) === (targetLevel === generators.levelsPerCategory),
+    "Only the final generator duplicate should require a mastery order",
+  );
+});
+
 const incomeTotal = Object.values(economy.incomeTargets)
   .reduce((sum, value) => sum + Number(value), 0);
 assert(incomeTotal === 100, `Income targets must total 100, received ${incomeTotal}`);

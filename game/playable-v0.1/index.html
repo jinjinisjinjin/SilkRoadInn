@@ -185,7 +185,7 @@
     <dialog id="bagModal" class="modal">
       <div class="modal-inner">
         <button class="close" data-close="bagModal">×</button>
-        <h2>行囊</h2><p class="modal-note">可临时收起3件食物，给案板腾地方。</p>
+        <h2>行囊</h2><p class="modal-note">可临时收起10件食物，给案板腾地方。</p>
         <div class="bag-list" id="bagList"></div>
         <section class="debug-panel">
           <h3>原型调试</h3>
@@ -196,6 +196,15 @@
             <button id="debugNextRepairBtn">推进修缮条件</button>
             <button id="debugLv1UpgradeBtn">Lv1待扩建</button>
             <button id="debugClearBtn" class="danger">清空案板</button>
+          </div>
+          <h3 class="debug-stage-title">成长阶段</h3>
+          <div class="debug-stage-actions" aria-label="成长流程测试阶段">
+            <button data-progression-qa-stage="fresh">新档</button>
+            <button data-progression-qa-stage="20">20单</button>
+            <button data-progression-qa-stage="60">60单</button>
+            <button data-progression-qa-stage="120">120单</button>
+            <button data-progression-qa-stage="190">190单</button>
+            <button data-progression-qa-stage="260">260单</button>
           </div>
         </section>
         <div class="modal-actions single"><button id="resetBtn" class="danger">重置原型进度</button></div>

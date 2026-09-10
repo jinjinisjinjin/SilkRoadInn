@@ -7,6 +7,7 @@ const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
 const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
+const PROGRESSION_FLOW_QA_MODE = QA_MODE === "progression-flow-v1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
@@ -17,8 +18,17 @@ const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_OR
 const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
   && GENERATOR_ORDER_QA_STAGE === "dairy"
   && new URLSearchParams(location.search).get("demo") === "milk-drop";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE;
-const SAVE_KEY = GENERATOR_QA_MODE
+const PROGRESSION_FLOW_QA_STAGES = Object.freeze(["fresh", "20", "60", "120", "190", "260"]);
+const PROGRESSION_FLOW_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
+const PROGRESSION_FLOW_QA_STAGE = PROGRESSION_FLOW_QA_STAGES.includes(PROGRESSION_FLOW_QA_STAGE_PARAM)
+  ? PROGRESSION_FLOW_QA_STAGE_PARAM
+  : "fresh";
+const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE;
+const SAVE_KEY = PROGRESSION_FLOW_QA_MODE
+  ? `silkroad_tavern_proto_v02_qa_progression_flow_v2_${PROGRESSION_FLOW_QA_STAGE}`
+  : GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v2"
   : GENERATOR_MATERIAL_QA_MODE
     ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
@@ -255,6 +265,7 @@ const state = {
   completedOrderIds: [],
   chapterOrderCounts: {},
   generatorLineOrderCounts: {},
+  claimedGeneratorProgressRewards: [],
   claimedOrderProgressPacks: [],
   coinsEarned: 0,
   storyFlags: {},
@@ -537,6 +548,7 @@ function initializeGeneratorQaScenario() {
   state.generatorStates = {};
   state.unlockedGeneratorCategories = state.generatorConfig.categories.map((category) => category.id);
   state.generatorLineOrderCounts = Object.fromEntries(state.generatorConfig.categories.map((category) => [category.id, 48]));
+  state.claimedGeneratorProgressRewards = allGeneratorProgressRewardIds();
   state.completedOrderIds = state.generatorConfig.categories.map((category) => category.masteryOrderId);
   state.innLevel = 4;
   state.staminaMax = 99;
@@ -666,6 +678,7 @@ function initializeGeneratorOrderQaScenario() {
   state.visibleOrders = [...GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]];
   state.completedOrders = stageIndex * 3;
   state.completedOrderIds = [];
+  state.claimedGeneratorProgressRewards = [];
   state.renovationChoices = Object.fromEntries(completedRepairIds.map((repairId) => [repairId, "completed"]));
   state.unlockedCodex = new Set(
     state.items
@@ -679,6 +692,119 @@ function initializeGeneratorOrderQaScenario() {
   state.innLevel = stageIndex >= 4 ? 2 : 1;
   state.currentPage = "board";
   state.selectedIndex = null;
+}
+
+const PROGRESSION_FLOW_QA_SPECS = Object.freeze({
+  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 40, chapterOrders: 0 },
+  20: { completedOrders: 20, repairCount: 2, innLevel: 1, generatorLevel: 2, coins: 220, chapterOrders: 8 },
+  60: { completedOrders: 60, repairCount: 6, innLevel: 2, generatorLevel: 3, coins: 300, chapterOrders: 8 },
+  120: { completedOrders: 120, repairCount: 13, innLevel: 3, generatorLevel: 4, coins: 600, chapterOrders: 8 },
+  190: { completedOrders: 190, repairCount: 20, innLevel: 4, generatorLevel: 5, coins: 1200, chapterOrders: 8 },
+  260: { completedOrders: 260, repairCount: 22, innLevel: 4, generatorLevel: 6, coins: 2500, chapterOrders: 12 },
+});
+
+function initializeProgressionFlowQaScenario() {
+  const spec = PROGRESSION_FLOW_QA_SPECS[PROGRESSION_FLOW_QA_STAGE];
+  const isFreshStage = spec.completedOrders === 0;
+  const completedMilestones = state.progressionConfig.milestones.slice(0, spec.repairCount);
+  const completedRepairIds = new Set(completedMilestones.map((milestone) => milestone.id));
+  const unlockedCategories = GENERATOR_CATEGORY_UNLOCKS
+    .filter((entry) => !entry.completedRepairId || completedRepairIds.has(entry.completedRepairId))
+    .map((entry) => entry.categoryId);
+  const maxDemandLevel = Number(
+    state.economyConfig.orderPricing.availability.maxDemandLevelByGeneratorLevel[spec.generatorLevel],
+  ) || 3;
+  const unlockedFoodLines = new Set(
+    state.generatorConfig.categories
+      .filter((category) => unlockedCategories.includes(category.id))
+      .map((category) => category.foodLineId),
+  );
+  const lineOrderTarget = spec.completedOrders > 0 ? Number(
+    state.generatorConfig.duplicateRewardMilestones.find(
+      (requirement) => requirement.targetLevel === Math.min(6, spec.generatorLevel + 1),
+    )?.lineOrders,
+  ) || 0 : 0;
+  const masteryComplete = spec.generatorLevel === 6;
+  const pairReady = spec.generatorLevel < 6 && !(spec.generatorLevel === 5 && !masteryComplete);
+
+  state.board = Array(BOARD_SIZE).fill(null);
+  if (isFreshStage) {
+    state.board[starterGeneratorIndex()] = "gen_mill_01";
+  } else {
+    unlockedCategories.forEach((categoryId, index) => {
+      state.board[index * 2] = generatorItemId(categoryId, spec.generatorLevel);
+      if (pairReady) {
+        state.board[index * 2 + 1] = generatorItemId(categoryId, spec.generatorLevel);
+      }
+    });
+  }
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.bubbleStates = {};
+  state.unlockedCells = isFreshStage ? [] : Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.visibleOrders = [];
+  state.unlockedCodex = isFreshStage
+    ? new Set(["codex_hubing_01"])
+    : new Set(
+      state.items
+        .filter((item) => unlockedFoodLines.has(item.line) && item.level <= maxDemandLevel && item.codexId)
+        .map((item) => item.codexId),
+    );
+  state.coins = spec.coins;
+  state.gems = 36;
+  state.stamina = isFreshStage ? state.staminaConfig.initial.startValue : 99;
+  state.staminaMax = isFreshStage ? state.staminaConfig.initial.max : 99;
+  state.recoverMinutes = isFreshStage ? state.staminaConfig.initial.recoverMinutes : 5;
+  state.generationCount = spec.completedOrders;
+  state.completedOrders = spec.completedOrders;
+  state.completedOrderIds = spec.generatorLevel === 6
+    ? state.generatorConfig.categories
+      .filter((category) => unlockedCategories.includes(category.id))
+      .map((category) => category.masteryOrderId)
+      .filter(Boolean)
+    : [];
+  const highestClaimedTargetLevel = isFreshStage
+    ? 1
+    : spec.generatorLevel === 5 && !masteryComplete
+      ? 5
+      : Math.min(6, spec.generatorLevel + 1);
+  state.claimedGeneratorProgressRewards = unlockedCategories.flatMap((categoryId) =>
+    state.generatorConfig.duplicateRewardMilestones
+      .filter((milestone) => milestone.targetLevel <= highestClaimedTargetLevel)
+      .map((milestone) => generatorProgressRewardId(categoryId, milestone.targetLevel)),
+  );
+  state.chapterOrderCounts = { 1: 0, 2: 0, 3: 0, 4: 0, [spec.innLevel]: spec.chapterOrders };
+  state.generatorLineOrderCounts = Object.fromEntries(
+    state.generatorConfig.categories.map((category) => [
+      category.id,
+      unlockedCategories.includes(category.id) ? lineOrderTarget : 0,
+    ]),
+  );
+  state.claimedOrderProgressPacks = state.progressionConfig.orderProgressPacks
+    .filter((pack) => pack.chapter < spec.innLevel
+      || (pack.chapter === spec.innLevel && pack.threshold < spec.chapterOrders))
+    .map((pack) => pack.id);
+  state.coinsEarned = Math.max(0, Math.round(spec.completedOrders * 28));
+  state.storyFlags = Object.fromEntries(
+    completedMilestones.flatMap((milestone) => milestone.rewards?.storyFlags ?? [])
+      .map((flag) => [flag, true]),
+  );
+  state.renovationChoices = Object.fromEntries(
+    completedMilestones.map((milestone) => [milestone.id, "completed"]),
+  );
+  state.activeRepairId = null;
+  state.repairPromptedFor = [];
+  state.generatorStates = {};
+  state.unlockedGeneratorCategories = unlockedCategories;
+  state.pendingGeneratorRewards = [];
+  state.innLevel = spec.innLevel;
+  state.ownedFurniture = [];
+  state.placedFurniture = Array(6).fill(null);
+  state.currentPage = "board";
+  state.tutorialStep = spec.completedOrders ? 5 : 0;
+  state.selectedIndex = null;
+  state.lastTick = Date.now();
 }
 
 let startupProgressValue = 0;
@@ -847,6 +973,7 @@ function defaultState() {
     completedOrderIds: [],
     chapterOrderCounts: { 1: 0, 2: 0, 3: 0, 4: 0 },
     generatorLineOrderCounts: emptyGeneratorLineOrderCounts(),
+    claimedGeneratorProgressRewards: [],
     claimedOrderProgressPacks: [],
     coinsEarned: 0,
     storyFlags: {},
@@ -866,6 +993,7 @@ function defaultState() {
 }
 
 function loadState() {
+  if (PROGRESSION_FLOW_QA_RESET) localStorage.removeItem(SAVE_KEY);
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const persistedCompletedOrderIds = Array.isArray(data.completedOrderIds) ? data.completedOrderIds : [];
@@ -893,6 +1021,7 @@ function loadState() {
     completedOrderIds: loadedOrderIds,
     chapterOrderCounts: normalizeChapterOrderCounts(data.chapterOrderCounts, data.completedOrders, data.innLevel),
     generatorLineOrderCounts: normalizeGeneratorLineOrderCounts(data.generatorLineOrderCounts, loadedOrderIds),
+    claimedGeneratorProgressRewards: normalizeClaimedGeneratorProgressRewards(data.claimedGeneratorProgressRewards),
     claimedOrderProgressPacks: normalizeClaimedOrderProgressPacks(data.claimedOrderProgressPacks),
     coinsEarned: data.coinsEarned ?? 0,
     storyFlags: data.storyFlags && typeof data.storyFlags === "object" ? data.storyFlags : {},
@@ -915,14 +1044,21 @@ function loadState() {
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
+  if (PROGRESSION_FLOW_QA_MODE && !saved) initializeProgressionFlowQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
   applyOfflineRecovery();
   const generatorUnlocksChanged = ensureStarterGenerator();
+  const retroactiveGeneratorRewards = ISOLATED_QA_MODE ? [] : syncGeneratorProgressRewards();
   pruneGeneratorStates();
   syncVisibleOrders();
-  if (hasLegacyOrderIds || generatorUnlocksChanged) saveState();
+  if (hasLegacyOrderIds || generatorUnlocksChanged || retroactiveGeneratorRewards.length || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (PROGRESSION_FLOW_QA_RESET) {
+    const url = new URL(location.href);
+    url.searchParams.delete("reset");
+    history.replaceState(null, "", url);
+  }
 }
 
 function saveState() {
@@ -947,6 +1083,7 @@ function saveState() {
       completedOrderIds: state.completedOrderIds,
       chapterOrderCounts: state.chapterOrderCounts,
       generatorLineOrderCounts: state.generatorLineOrderCounts,
+      claimedGeneratorProgressRewards: state.claimedGeneratorProgressRewards,
       claimedOrderProgressPacks: state.claimedOrderProgressPacks,
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
@@ -1002,7 +1139,7 @@ function normalizePendingGeneratorRewards(value) {
   if (!Array.isArray(value)) return [];
   return value
     .map(migrateLegacyGeneratorId)
-    .filter((itemId, index, items) => isGeneratorPiece(byId.get(itemId)) && items.indexOf(itemId) === index);
+    .filter((itemId) => isGeneratorPiece(byId.get(itemId)));
 }
 
 function isRepairCompleted(repairId) {
@@ -1018,12 +1155,14 @@ function ownsGeneratorCategory(categoryId) {
     .some((itemId) => generatorCategoryForItem(itemId) === categoryId);
 }
 
-function deliverGeneratorReward(categoryId) {
-  if (ownsGeneratorCategory(categoryId)) return "owned";
-  const itemId = generatorItemId(categoryId, 1);
-  const boardIndex = firstEmptyIndex();
+function deliverGeneratorPieceReward(categoryId, level = 1) {
+  const itemId = generatorItemId(categoryId, level);
+  if (!byId.has(itemId)) return "invalid";
+  const boardIndex = randomUnlockedEmptyIndex();
   if (boardIndex >= 0) {
     state.board[boardIndex] = itemId;
+    state.pulseIndex = boardIndex;
+    clearPulseSoon();
     return "board";
   }
   const bagIndex = firstEmptyBagIndex();
@@ -1033,6 +1172,55 @@ function deliverGeneratorReward(categoryId) {
   }
   state.pendingGeneratorRewards.push(itemId);
   return "pending";
+}
+
+function deliverGeneratorReward(categoryId) {
+  if (ownsGeneratorCategory(categoryId)) return "owned";
+  return deliverGeneratorPieceReward(categoryId, 1);
+}
+
+function generatorProgressRewardId(categoryId, targetLevel) {
+  return `${categoryId}:lv${targetLevel}`;
+}
+
+function allGeneratorProgressRewardIds() {
+  return state.generatorConfig.categories.flatMap((category) =>
+    state.generatorConfig.duplicateRewardMilestones.map((milestone) =>
+      generatorProgressRewardId(category.id, milestone.targetLevel),
+    ),
+  );
+}
+
+function normalizeClaimedGeneratorProgressRewards(value) {
+  if (!Array.isArray(value)) return [];
+  const validIds = new Set(allGeneratorProgressRewardIds());
+  return [...new Set(value.filter((id) => validIds.has(id)))];
+}
+
+function syncGeneratorProgressRewards({ announce = false } = {}) {
+  const claimed = new Set(state.claimedGeneratorProgressRewards);
+  const delivered = [];
+  state.generatorConfig.categories.forEach((category) => {
+    if (!state.unlockedGeneratorCategories.includes(category.id)) return;
+    const lineOrders = state.generatorLineOrderCounts[category.id] ?? 0;
+    state.generatorConfig.duplicateRewardMilestones.forEach((milestone) => {
+      const rewardId = generatorProgressRewardId(category.id, milestone.targetLevel);
+      const masteryComplete = !milestone.requiresMasteryOrder
+        || Boolean(category.masteryOrderId && state.completedOrderIds.includes(category.masteryOrderId));
+      if (claimed.has(rewardId) || lineOrders < milestone.lineOrders || !masteryComplete) return;
+      const rewardLevel = Number(milestone.rewardGeneratorLevel) || Math.max(1, milestone.targetLevel - 1);
+      const delivery = deliverGeneratorPieceReward(category.id, rewardLevel);
+      if (delivery === "invalid") return;
+      claimed.add(rewardId);
+      delivered.push({ category, rewardLevel, delivery });
+    });
+  });
+  state.claimedGeneratorProgressRewards = [...claimed];
+  if (announce && delivered.length) {
+    const names = delivered.map(({ category, rewardLevel }) => `${category.displayName} Lv${rewardLevel}`);
+    toast(`同系订单奖励：${names.join("、")}`);
+  }
+  return delivered;
 }
 
 function syncGeneratorCategoryUnlocks({ announce = false } = {}) {
@@ -1134,6 +1322,15 @@ function bindEvents() {
   els.debugNextRepairBtn.addEventListener("click", debugAdvanceRepairGate);
   els.debugLv1UpgradeBtn.addEventListener("click", debugPrepareLv1Upgrade);
   els.debugClearBtn.addEventListener("click", debugClearBoard);
+  document.querySelectorAll("[data-progression-qa-stage]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const url = new URL(location.href);
+      url.searchParams.set("qa", "progression-flow-v1");
+      url.searchParams.set("stage", button.dataset.progressionQaStage);
+      url.searchParams.set("reset", "1");
+      location.href = url.href;
+    });
+  });
   els.loadingRetryBtn.addEventListener("click", () => switchPage("inn"));
   els.codexBtn.addEventListener("click", openCodex);
   els.orderDetailCodexBtn.addEventListener("click", openCodexFromOrderDetail);
@@ -1166,6 +1363,13 @@ function bindEvents() {
 
 function applyBuildMode() {
   document.body.dataset.buildMode = BUILD_MODE;
+  if (PROGRESSION_FLOW_QA_MODE) {
+    const activeStageButton = document.querySelector(
+      `[data-progression-qa-stage="${PROGRESSION_FLOW_QA_STAGE}"]`,
+    );
+    activeStageButton?.classList.add("active");
+    activeStageButton?.setAttribute("aria-current", "true");
+  }
   if (BUILD_MODE === "release") {
     document.querySelector(".debug-panel")?.remove();
     els.resetBtn?.closest(".modal-actions")?.remove();
@@ -3218,29 +3422,24 @@ function generatorUpgradeStatus(item) {
     return { ok: false, maxLevel: Boolean(isGeneratorPiece(item)), targetLevel: item?.level ?? 1 };
   }
   const targetLevel = (Number(item.level) || 1) + 1;
-  const requirement = state.generatorConfig.upgradeRequirements?.find((entry) => entry.targetLevel === targetLevel) ?? {};
+  const requirement = state.generatorConfig.duplicateRewardMilestones?.find((entry) => entry.targetLevel === targetLevel) ?? {};
   const category = state.generatorConfig.categories.find((entry) => entry.id === item.generatorType);
   const lineOrders = state.generatorLineOrderCounts[item.generatorType] ?? 0;
   const requiredLineOrders = Math.max(0, Number(requirement.lineOrders) || 0);
-  const requiredInnLevel = Math.max(1, Number(requirement.innLevel) || 1);
   const masteryComplete = !requirement.requiresMasteryOrder
     || Boolean(item.masteryOrderId && state.completedOrderIds.includes(item.masteryOrderId));
-  const missing = [];
-  if (lineOrders < requiredLineOrders) {
-    missing.push("再完成" + (requiredLineOrders - lineOrders) + "单" + (category?.displayName ?? "同系") + "订单");
-  }
-  if (state.innLevel < requiredInnLevel) missing.push("驿站达到Lv" + requiredInnLevel);
-  if (!masteryComplete) missing.push("完成" + (category?.displayName ?? "该生产线") + "大师订单");
+  const rewardId = generatorProgressRewardId(item.generatorType, targetLevel);
   return {
-    ok: missing.length === 0,
+    ok: true,
     maxLevel: false,
     targetLevel,
     lineOrders,
     requiredLineOrders,
-    requiredInnLevel,
+    rewardLevel: Number(requirement.rewardGeneratorLevel) || Math.max(1, targetLevel - 1),
+    rewardClaimed: state.claimedGeneratorProgressRewards.includes(rewardId),
     masteryComplete,
     requiresMasteryOrder: Boolean(requirement.requiresMasteryOrder),
-    missing,
+    categoryName: category?.displayName ?? "该生产线",
   };
 }
 
@@ -3248,36 +3447,24 @@ function generatorUpgradeSummary(item) {
   const status = generatorUpgradeStatus(item);
   if (status.maxLevel) return "已达最高等级";
   const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
-  const parts = [
-    "升Lv" + status.targetLevel,
-    "订单" + Math.min(status.lineOrders, status.requiredLineOrders) + "/" + status.requiredLineOrders,
-    "同级" + Math.min(sameLevelCount, 2) + "/2",
-  ];
-  if (state.innLevel < status.requiredInnLevel) parts.push("驿站Lv" + status.requiredInnLevel);
-  if (status.requiresMasteryOrder) parts.push(status.masteryComplete ? "大师已完成" : "大师未完成");
-  return parts.join(" · ");
+  if (sameLevelCount >= 2) return `可合成Lv${status.targetLevel} · 同级2/2`;
+  if (status.rewardClaimed) return `升Lv${status.targetLevel} · 案板同级${sameLevelCount}/2`;
+  const progress = `同系订单${Math.min(status.lineOrders, status.requiredLineOrders)}/${status.requiredLineOrders}`;
+  if (status.requiresMasteryOrder && !status.masteryComplete) return `升Lv${status.targetLevel} · ${progress} · 大师订单`;
+  return `升Lv${status.targetLevel} · ${progress}`;
 }
 
 function generatorUpgradeDetail(item) {
   const status = generatorUpgradeStatus(item);
   if (status.maxLevel) return "已经达到Lv6最高等级。";
   const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
-  const conditions = [
-    "同系订单 " + status.lineOrders + "/" + status.requiredLineOrders,
-    "案板同级生成器 " + Math.min(sameLevelCount, 2) + "/2",
-    "驿站 Lv" + state.innLevel + "/" + status.requiredInnLevel,
-  ];
-  if (status.requiresMasteryOrder) conditions.push(status.masteryComplete ? "大师订单已完成" : "大师订单未完成");
-  return "升到Lv" + status.targetLevel + "需要两个同类Lv" + item.level + "生成器。" + conditions.join("；") + "。";
-}
-function blockGeneratorUpgrade(item, selectedIndex) {
-  const status = generatorUpgradeStatus(item);
-  if (status.ok || status.maxLevel) return false;
-  state.selectedIndex = selectedIndex;
-  const reason = status.missing.join("，");
-  keeper("暂时不能升到Lv" + status.targetLevel + "：" + reason + "。");
-  toast(reason);
-  return true;
+  const mergeRule = `两个同类Lv${item.level}生成器可直接合成Lv${status.targetLevel}，不受驿站等级限制。`;
+  if (sameLevelCount >= 2) return `${mergeRule}当前案板已凑齐，拖到同级生成器上即可升级。`;
+  if (status.rewardClaimed) return `${mergeRule}对应进度奖励已经领取，当前案板同级${sameLevelCount}/2。`;
+  const condition = status.requiresMasteryOrder
+    ? `同系订单达到${status.requiredLineOrders}单并完成大师订单`
+    : `同系订单达到${status.requiredLineOrders}单`;
+  return `${mergeRule}${condition}后，会发放一枚${status.categoryName} Lv${status.rewardLevel}。`;
 }
 function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   const lockedItemId = lockedCellItemId(toIndex);
@@ -3287,7 +3474,6 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
     toast(lockedItem ? `需要用${lockedItem.name}来解开这格。` : "这格还被风沙遮住。");
     return;
   }
-  if (isGeneratorPiece(item) && blockGeneratorUpgrade(item, toIndex)) return;
   state.unlockedCells = [...new Set([...state.unlockedCells, toIndex])];
   clearGeneratorState(boardGeneratorStateKey(fromIndex));
   clearGeneratorState(boardGeneratorStateKey(toIndex));
@@ -3322,7 +3508,6 @@ function mergeCells(fromIndex, toIndex, itemId) {
     toast("已经是这条食谱的最高级了。");
     return;
   }
-  if (isGeneratorPiece(item) && blockGeneratorUpgrade(item, toIndex)) return;
   clearGeneratorState(boardGeneratorStateKey(fromIndex));
   clearGeneratorState(boardGeneratorStateKey(toIndex));
   state.board[fromIndex] = null;
@@ -3348,10 +3533,6 @@ function chainMergeAt(index) {
     if (neighbor === -1) break;
     const sourceItem = current;
     const outputItemId = current.mergeTo;
-    if (isGeneratorPiece(sourceItem) && !generatorUpgradeStatus(sourceItem).ok) {
-      state.selectedIndex = index;
-      break;
-    }
     clearGeneratorState(boardGeneratorStateKey(neighbor));
     clearGeneratorState(boardGeneratorStateKey(index));
     state.board[neighbor] = null;
@@ -3653,6 +3834,7 @@ function completeOrder(orderId) {
   if (firstClear) {
     state.completedOrderIds.push(order.id);
   }
+  syncGeneratorProgressRewards({ announce: true });
   if (state.tutorialStep === 2 && order.id === "order_001_guard_lubing") {
     state.tutorialStep = 3;
   }
@@ -3773,9 +3955,8 @@ function orderUnlockConditionMet(unlock) {
   const masteryMatch = unlock.match(/^generator_mastery_(.+)$/);
   if (masteryMatch) {
     const categoryId = masteryMatch[1];
-    const requirement = state.generatorConfig.upgradeRequirements?.find((entry) => entry.requiresMasteryOrder);
+    const requirement = state.generatorConfig.duplicateRewardMilestones?.find((entry) => entry.requiresMasteryOrder);
     return state.unlockedGeneratorCategories.includes(categoryId)
-      && state.innLevel >= (Number(requirement?.innLevel) || 4)
       && (state.generatorLineOrderCounts[categoryId] ?? 0) >= (Number(requirement?.lineOrders) || 48);
   }
   if (unlock.startsWith("generator_")) return state.unlockedGeneratorCategories.includes(unlock.slice("generator_".length));
