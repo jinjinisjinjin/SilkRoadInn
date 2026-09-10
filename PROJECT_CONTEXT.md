@@ -22,13 +22,16 @@ SilkRoadInn/
 │   ├── playable-v0.1/          # 棋盘玩法原型（主入口）
 │   │   ├── index.html          # 主页面
 │   │   ├── app.js              # 核心逻辑
-│   │   ├── styles.css          # 样式
-│   │   └── data/               # JSON 数据配置
+│   │   ├── chapter-story.js    # 章节剧情模块
+│   │   ├── *.css               # 核心与功能模块样式
+│   │   ├── data/               # JSON 数据配置
+│   │   ├── assets/             # 当前原型直接引用的运行时资产
+│   │   └── repair-scenes/      # 22 个包内修缮场景
 │   └── scroll-v0.1/            # 长卷修缮原型
 │       ├── index.html
 │       ├── app.js
 │       └── styles.css
-├── assets/                     # 正式游戏资源（运行时引用）
+├── assets/                     # 正式游戏资产母版
 │   ├── food-icons/             # 按食线分：dairy/drink/fruit/hubing/meat/spice
 │   ├── ui/                     # UI 图标与合辑
 │   ├── npc/                    # NPC 立绘与立牌
@@ -65,7 +68,7 @@ SilkRoadInn/
 
 - **主入口**: `game/playable-v0.1/index.html`
 - **原型版本**: v0.3（棋盘合成 + NPC 订单 + 驿站修缮 + 四章剧情）
-- **技术栈**: 纯 HTML/CSS/JS，无框架，单文件前端
+- **技术栈**: 纯 HTML/CSS/JS 静态前端，无框架；按核心脚本、功能模块和 JSON 配置拆分
 - **运行方式**: 通过本地 HTTP 服务器打开（不能直接双击 HTML）
 - **棋盘布局**: 7 列 × 9 行，共 63 格；锁定区与可玩区共用同一布局
 - **订单系统**: 172 个正式订单，按快速、常规、目标三档筛选，只展示已开放且当前可制作的需求
