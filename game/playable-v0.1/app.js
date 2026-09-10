@@ -8,11 +8,15 @@ const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
 const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
 const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
+const CHAPTER_STORY_QA_MODE = QA_MODE === "chapter-story-v1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const REPAIR_PROGRESS_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const REPAIR_PROGRESS_QA_STEP = Math.max(0, Number(new URLSearchParams(location.search).get("step")) || 0);
 const REPAIR_PROGRESS_QA_VIEW = new URLSearchParams(location.search).get("view") === "entry" ? "entry" : "completion";
+const CHAPTER_STORY_PREVIEW = new URLSearchParams(location.search).get("story");
+const CHAPTER_STORY_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
+const CHAPTER_STORY_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
 const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
@@ -21,8 +25,10 @@ const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_OR
 const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
   && GENERATOR_ORDER_QA_STAGE === "dairy"
   && new URLSearchParams(location.search).get("demo") === "milk-drop";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || REPAIR_PROGRESS_QA_MODE;
-const SAVE_KEY = REPAIR_PROGRESS_QA_MODE
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE;
+const SAVE_KEY = CHAPTER_STORY_QA_MODE
+  ? `silkroad_tavern_proto_v02_qa_chapter_story_v1_ch${CHAPTER_STORY_QA_CHAPTER}`
+  : REPAIR_PROGRESS_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_repair_progress_v1"
   : GENERATOR_QA_MODE
     ? "silkroad_tavern_proto_v02_qa_generator_system_v1"
@@ -149,6 +155,7 @@ const INN_PACKAGE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
+  "./assets/keeper_story_portrait_v2.png",
   "./assets/npc_standee/npc_dunhuang_woman.png",
   "./assets/npc_standee/npc_farmer.png",
   "./assets/npc_standee/npc_temple_donor.png",
@@ -184,6 +191,10 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/ui_bag_inventory.png",
   "./assets/ui/ui_kitchen_entry.png",
   "./assets/ui/order_gift_coffer_v1.png",
+  "./assets/ui/bonus_ruby_lv01.png",
+  "./assets/ui/bonus_ruby_lv02.png",
+  "./assets/ui/bonus_ruby_lv03.png",
+  "./assets/ui/bonus_ruby_lv04.png",
 ])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_REGION_BOUNDS = {
@@ -274,6 +285,7 @@ const state = {
   storyFlags: {},
   renovationChoices: {},
   activeRepairId: null,
+  activeChapterStory: null,
   repairPromptedFor: [],
   generatorStates: {},
   unlockedGeneratorCategories: [],
@@ -934,7 +946,40 @@ async function boot() {
   await finishStartupLoading();
   if (state.currentPage === "board") tickGenerators();
   if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
+  if (CHAPTER_STORY_QA_MODE) {
+    setTimeout(() => window.SilkRoadChapterStory?.playChapterQa(CHAPTER_STORY_QA_CHAPTER, CHAPTER_STORY_QA_SCENE), 80);
+  } else if (CHAPTER_STORY_PREVIEW) {
+    setTimeout(() => playChapterStory(CHAPTER_STORY_PREVIEW, null, { force: true }), 80);
+  } else if (!ISOLATED_QA_MODE && state.activeChapterStory) {
+    setTimeout(resumeActiveChapterStory, 80);
+  } else if (!ISOLATED_QA_MODE && !state.storyFlags.chapter1StoryOpeningSeen && state.completedOrders === 0 && Object.keys(state.renovationChoices).length === 0) {
+    setTimeout(() => playChapterStory("opening"), 80);
+  } else if (!ISOLATED_QA_MODE && pendingChapterOpeningId()) {
+    setTimeout(() => playChapterStory(pendingChapterOpeningId()), 80);
+  }
   setInterval(tickStamina, 1000);
+}
+
+function normalizeStoryFlags(value) {
+  const flags = value && typeof value === "object" ? { ...value } : {};
+  Object.entries(flags).forEach(([key, enabled]) => {
+    if (!enabled || !key.startsWith("chapter1Story:")) return;
+    flags[`chapterStory:${key.slice("chapter1Story:".length)}`] = true;
+  });
+  if (flags["chapterStory:opening"]) flags.chapter1StoryOpeningSeen = true;
+  for (let chapter = 2; chapter <= 4; chapter += 1) {
+    if (flags[`chapterStory:chapter${chapter}-opening`]) flags[`chapter${chapter}StoryOpeningSeen`] = true;
+  }
+  return flags;
+}
+
+function normalizeActiveChapterStory(value) {
+  if (!value || typeof value !== "object" || typeof value.segmentId !== "string") return null;
+  return {
+    segmentId: value.segmentId,
+    index: Math.max(0, Number.isInteger(value.index) ? value.index : 0),
+    rewardVisible: Boolean(value.rewardVisible),
+  };
 }
 
 function defaultState() {
@@ -964,6 +1009,7 @@ function defaultState() {
     storyFlags: {},
     renovationChoices: {},
     activeRepairId: null,
+    activeChapterStory: null,
     repairPromptedFor: [],
     generatorStates: {},
     unlockedGeneratorCategories: ["mill"],
@@ -986,6 +1032,8 @@ function loadState() {
   const loadedVisibleOrderIds = migrateLegacyOrderIds(persistedVisibleOrderIds);
   const hasLegacyOrderIds = [...persistedCompletedOrderIds, ...persistedVisibleOrderIds]
     .some((orderId) => Boolean(LEGACY_ORDER_ID_MAP[orderId]));
+  const hasLegacyStoryFlags = data.storyFlags && typeof data.storyFlags === "object"
+    && Object.entries(data.storyFlags).some(([key, enabled]) => enabled && key.startsWith("chapter1Story:"));
   Object.assign(state, {
     board: normalizeBoard(data.board),
     bag: normalizeStorageSlots(data.bag),
@@ -1009,9 +1057,10 @@ function loadState() {
       ? data.claimedChapterRewards.filter((chapter) => Number.isInteger(chapter) && chapter >= 1 && chapter <= 4)
       : [],
     coinsEarned: data.coinsEarned ?? 0,
-    storyFlags: data.storyFlags && typeof data.storyFlags === "object" ? data.storyFlags : {},
+    storyFlags: normalizeStoryFlags(data.storyFlags),
     renovationChoices: data.renovationChoices && typeof data.renovationChoices === "object" ? data.renovationChoices : {},
     activeRepairId: typeof data.activeRepairId === "string" ? data.activeRepairId : null,
+    activeChapterStory: normalizeActiveChapterStory(data.activeChapterStory),
     repairPromptedFor: Array.isArray(data.repairPromptedFor) ? data.repairPromptedFor : [],
     generatorStates: normalizeGeneratorStates(data.generatorStates),
     unlockedGeneratorCategories: normalizeUnlockedGeneratorCategories(data.unlockedGeneratorCategories, data),
@@ -1023,6 +1072,12 @@ function loadState() {
     tutorialStep: data.tutorialStep ?? 0,
     lastTick: data.lastTick ?? Date.now(),
   });
+  if (state.activeChapterStory) {
+    const segmentId = state.activeChapterStory.segmentId;
+    if (state.storyFlags[`chapterStory:${segmentId}`] || state.storyFlags[`chapter1Story:${segmentId}`]) {
+      state.activeChapterStory = null;
+    }
+  }
   if (GENERATOR_QA_MODE && !saved) initializeGeneratorQaScenario();
   if (GENERATOR_MATERIAL_QA_MODE && !saved) initializeGeneratorMaterialQaScenario();
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
@@ -1037,7 +1092,7 @@ function loadState() {
   const generatorUnlocksChanged = ensureStarterGenerator();
   pruneGeneratorStates();
   syncGateOrder();
-  if (hasLegacyOrderIds || generatorUnlocksChanged) saveState();
+  if (hasLegacyOrderIds || hasLegacyStoryFlags || generatorUnlocksChanged) saveState();
 }
 
 function saveState() {
@@ -1067,6 +1122,7 @@ function saveState() {
       storyFlags: state.storyFlags,
       renovationChoices: state.renovationChoices,
       activeRepairId: state.activeRepairId,
+      activeChapterStory: state.activeChapterStory,
       repairPromptedFor: state.repairPromptedFor,
       generatorStates: state.generatorStates,
       unlockedGeneratorCategories: state.unlockedGeneratorCategories,
@@ -2042,7 +2098,101 @@ function finalizeRepairChoice() {
     state.activeRepairId = milestone.id;
     saveState();
   }
-  closeRepairModalToAnchor(() => launchRepairPlayer(milestone));
+  closeRepairModalToAnchor(() => {
+    playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone));
+  });
+}
+
+function chapterStoryFlag(segmentId) {
+  return `chapterStory:${segmentId}`;
+}
+
+function chapterStorySeen(segmentId) {
+  return Boolean(state.storyFlags[chapterStoryFlag(segmentId)] || state.storyFlags[`chapter1Story:${segmentId}`]);
+}
+
+function markChapterOpeningSeen(segmentId) {
+  if (segmentId === "opening") {
+    state.storyFlags.chapter1StoryOpeningSeen = true;
+    return;
+  }
+  const match = segmentId.match(/^chapter([2-4])-opening$/);
+  if (match) state.storyFlags[`chapter${match[1]}StoryOpeningSeen`] = true;
+}
+
+function playChapterStory(segmentId, onComplete, options = {}) {
+  const player = window.SilkRoadChapterStory;
+  const force = Boolean(options.force);
+  const resume = Boolean(options.resume);
+  const flag = chapterStoryFlag(segmentId);
+  if (!player?.segments?.[segmentId] || (!force && !resume && chapterStorySeen(segmentId))) {
+    onComplete?.();
+    return false;
+  }
+  const checkpoint = resume && state.activeChapterStory?.segmentId === segmentId
+    ? state.activeChapterStory
+    : { segmentId, index: 0, rewardVisible: false };
+  if (!force) {
+    state.activeChapterStory = checkpoint;
+    saveState();
+  }
+  return player.play(segmentId, {
+    startIndex: checkpoint.index,
+    startAtReward: checkpoint.rewardVisible,
+    onProgress: force
+      ? null
+      : (nextCheckpoint) => {
+          state.activeChapterStory = nextCheckpoint;
+          saveState();
+        },
+    onComplete: () => {
+      if (!force) {
+        state.activeChapterStory = null;
+        state.storyFlags[flag] = true;
+        markChapterOpeningSeen(segmentId);
+        saveState();
+      }
+      onComplete?.();
+    },
+  });
+}
+
+function pendingChapterOpeningId() {
+  const chapter = Number(state.innLevel);
+  if (chapter < 2 || chapter > 4 || state.storyFlags[`chapter${chapter}StoryOpeningSeen`]) return null;
+  const chapterMilestones = (state.progressionConfig?.milestones ?? []).filter((milestone) => milestone.chapter === chapter);
+  if (!chapterMilestones.length || chapterMilestones.some((milestone) => state.renovationChoices[milestone.id])) return null;
+  return `chapter${chapter}-opening`;
+}
+
+function chapterStoryContinuation(segmentId) {
+  const [phase, milestoneId] = segmentId.split(":");
+  if (phase === "before" && milestoneId) {
+    return () => {
+      const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
+      if (milestone && state.activeRepairId === milestoneId) launchRepairPlayer(milestone);
+    };
+  }
+  if (phase === "after" && milestoneId) {
+    return () => {
+      const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
+      if (milestone) openRepairProgressModal(milestone, "completion");
+    };
+  }
+  const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
+  if (!openingMatch) return null;
+  return () => {
+    const previousLevel = state.innConfig?.levels?.find((entry) => entry.level === Number(openingMatch[1]) - 1);
+    if (!previousLevel) return;
+    pendingUpgradeUnlock = buildUpgradeUnlockSummary(previousLevel);
+    showUpgradeUnlockSummary();
+  };
+}
+
+function resumeActiveChapterStory() {
+  const segmentId = state.activeChapterStory?.segmentId;
+  if (!segmentId) return false;
+  return playChapterStory(segmentId, chapterStoryContinuation(segmentId), { resume: true });
 }
 
 function launchRepairPlayer(milestone) {
@@ -2087,7 +2237,9 @@ function completeRepairFromPlayer(milestoneId) {
   showRepairCompleteCue();
   saveState();
   const completedMilestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
-  setTimeout(() => openRepairProgressModal(completedMilestone, "completion"), 280);
+  setTimeout(() => {
+    playChapterStory(`after:${milestoneId}`, () => openRepairProgressModal(completedMilestone, "completion"));
+  }, 280);
 }
 
 function upgradeInn() {
@@ -2110,27 +2262,45 @@ function upgradeInn() {
   els.storyAvatar.src = "./assets/keeper_portrait.png";
   els.storyAvatar.alt = "掌柜";
   els.storyText.textContent = `${level.upgradeStory}${level.unlocks.length ? ` 解锁：${level.unlocks.join("、")}。` : ""}`;
-  els.storyModal.showModal();
   render();
   saveState();
+  const chapterOpeningId = `chapter${state.innLevel}-opening`;
+  if (window.SilkRoadChapterStory?.segments?.[chapterOpeningId]) {
+    playChapterStory(chapterOpeningId, showUpgradeUnlockSummary);
+    return;
+  }
+  els.storyModal.showModal();
 }
 
 function applyInnUnlocks() {
-  if (state.innLevel >= 2 && !state.board.includes("gen_dairy_01")) {
-    const index = firstEmptyIndex();
-    if (index >= 0) state.board[index] = "gen_dairy_01";
-  }
+  syncGeneratorCategoryUnlocks();
 }
 
 function buildUpgradeUnlockSummary(level) {
-  return {
-    title: `流沙驿升至 Lv${Math.min(4, level.level + 1)}`,
-    items: [
-      { label: "棋盘扩容", text: "后续版本开放更多案板格子。" },
-      { label: "新增生成器", text: level.unlocks.find((item) => item.includes("生成器")) ?? "解锁新的食材生成器。" },
-      { label: "新合成线", text: "开放下一阶段食材线预告。" },
-      { label: "高阶 NPC", text: level.unlocks.find((item) => item.includes("顾客") || item.includes("订单")) ?? "远路商旅订单逐步出现。" },
+  const targetLevel = Math.min(4, level.level + 1);
+  const summaries = {
+    2: [
+      { label: "已有产线", text: "磨坊、乳畜栏、香料架与酒水厢房继续并存。" },
+      { label: "前段解锁", text: "完成“西市开张”后加入果摊生成器。" },
+      { label: "后段解锁", text: "完成“南铺开张”后加入肉铺生成器。" },
+      { label: "订单扩充", text: "顾客会逐步提出跨品类混合订单。" },
     ],
+    3: [
+      { label: "六类产线", text: "六种生成器全部保留，可持续并行出货。" },
+      { label: "混合订单", text: "胡饼、奶食、饮品与其他品类会组合出现。" },
+      { label: "楼馆修缮", text: "开放楼馆、双院、庭园与望楼六处修缮。" },
+      { label: "远路来客", text: "商队、使团与求法旅人订单逐步增加。" },
+    ],
+    4: [
+      { label: "全部产线", text: "六种生成器继续并存，不回收已有品类。" },
+      { label: "高阶订单", text: "三品类组合订单成为终章主要挑战。" },
+      { label: "街区修缮", text: "开放货棚、长街、巷路、东院与灯市七处修缮。" },
+      { label: "终章商队", text: "康十一商队进驻，推进灯火连城主线。" },
+    ],
+  };
+  return {
+    title: `流沙驿升至 Lv${targetLevel}`,
+    items: summaries[targetLevel] ?? [],
   };
 }
 

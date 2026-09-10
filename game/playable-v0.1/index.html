@@ -9,6 +9,8 @@
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
     <link rel="stylesheet" href="./styles.css?v=global-loading-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
+    <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
+    <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
   </head>
   <body>
     <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
@@ -117,6 +119,36 @@
     <section id="repairPlayerLayer" class="repair-player-layer" hidden aria-label="修缮场景">
       <iframe id="repairPlayerFrame" title="修缮场景" allow="fullscreen"></iframe>
     </section>
+
+    <dialog id="chapterStoryModal" class="chapter-story-modal" aria-label="章节剧情">
+      <section class="chapter-story-stage">
+        <header class="chapter-story-topbar">
+          <div class="chapter-story-mark"><span id="chapterStoryEyebrow">第一章</span><strong id="chapterStoryTitle">流沙驿初明</strong></div>
+          <button id="chapterStorySkip" class="chapter-story-skip" type="button">跳过</button>
+        </header>
+        <nav id="chapterStoryQaNav" class="chapter-story-qa-nav" aria-label="剧情预览切换" hidden>
+          <button id="chapterStoryQaPrev" type="button" aria-label="上一段" title="上一段">‹</button>
+          <span id="chapterStoryQaIndex"></span>
+          <button id="chapterStoryQaNext" type="button" aria-label="下一段" title="下一段">›</button>
+        </nav>
+        <div class="chapter-story-scene" aria-hidden="true"></div>
+        <section class="chapter-story-panel">
+          <div id="chapterStoryPortraitFrame" class="chapter-story-portrait"><img id="chapterStoryPortrait" alt="" /></div>
+          <div class="chapter-story-copy">
+            <div class="chapter-story-speaker"><strong id="chapterStorySpeaker"></strong><span id="chapterStoryRole"></span></div>
+            <p id="chapterStoryText"></p>
+            <div class="chapter-story-footer"><div id="chapterStoryDots" class="chapter-story-dots"></div><button id="chapterStoryNext" type="button" aria-label="继续" title="继续"><span hidden>继续</span><i aria-hidden="true">›</i></button></div>
+          </div>
+        </section>
+        <section id="chapterStoryReward" class="chapter-story-reward" hidden>
+          <span id="chapterStoryRewardEyebrow"></span>
+          <h2 id="chapterStoryRewardTitle"></h2>
+          <p id="chapterStoryRewardDescription"></p>
+          <div id="chapterStoryRewardItems" class="chapter-story-reward-row"></div>
+          <button id="chapterStoryCollect" type="button">收下奖励</button>
+        </section>
+      </section>
+    </dialog>
 
     <dialog id="codexModal" class="modal">
       <div class="modal-inner">
@@ -254,6 +286,7 @@
       </div>
     </dialog>
 
-    <script src="./app.js?v=global-loading-v1"></script>
+    <script src="./chapter-story.js?v=chapter-story-dialogue-v03"></script>
+    <script src="./app.js?v=chapter-story-all-v1"></script>
   </body>
 </html>

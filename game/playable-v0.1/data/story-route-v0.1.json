@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "1.0",
-  "id": "silk-road-inn-story-route-v01",
-  "status": "authoritative-config-pending-runtime-integration",
-  "purpose": "Defines player-facing chapter order only. Runtime integration is intentionally deferred.",
+  "schemaVersion": "2.0",
+  "id": "silk-road-inn-story-route-v02",
+  "status": "runtime-integrated",
+  "purpose": "Defines the authoritative four-chapter repair and story order used by the playable runtime.",
   "stateDefaults": {
-    "chapterId": "open-inn",
+    "chapterId": "inn-kindles",
     "orders": {},
     "coins": 0,
     "recipes": [],
@@ -13,56 +13,428 @@
   },
   "chapters": [
     {
-      "id": "open-inn",
-      "title": "开驿篇",
+      "id": "inn-kindles",
+      "title": "流沙驿初明",
       "entry": "推门燃炉",
       "nodes": [
-        { "ordinal": 1, "milestoneId": "tutorial_complete", "pointId": "02", "playerUrl": "./repair-scenes/02/index.html", "longscrollRegionIds": [2], "requires": { "orders": ["firstBread"], "coins": 120 } },
-        { "ordinal": 2, "milestoneId": "kitchen_repair", "pointId": "04", "playerUrl": "./repair-scenes/04/index.html", "longscrollRegionIds": [4], "requires": { "repairs": ["02"], "orders": ["greensAndFlue"], "coins": 180 } }
+        {
+          "ordinal": 1,
+          "milestoneId": "tutorial_complete",
+          "pointId": "02",
+          "playerUrl": "./repair-scenes/02/index.html",
+          "longscrollRegionIds": [
+            2
+          ],
+          "requires": {
+            "orders": [
+              "order_001_guard_lubing"
+            ],
+            "coins": 120
+          }
+        },
+        {
+          "ordinal": 2,
+          "milestoneId": "kitchen_repair",
+          "pointId": "04",
+          "playerUrl": "./repair-scenes/04/index.html",
+          "longscrollRegionIds": [
+            4
+          ],
+          "requires": {
+            "repairs": [
+              "02"
+            ],
+            "orders": [
+              "order_011_dunhuang_woman_lubing"
+            ],
+            "coins": 175
+          }
+        },
+        {
+          "ordinal": 3,
+          "milestoneId": "codex_first_phase",
+          "pointId": "11",
+          "playerUrl": "./repair-scenes/11/index.html",
+          "longscrollRegionIds": [
+            11
+          ],
+          "requires": {
+            "repairs": [
+              "04"
+            ],
+            "orders": [
+              "order_005_monk_humabing"
+            ],
+            "coins": 180
+          }
+        }
       ]
     },
     {
       "id": "market-gathers",
-      "title": "市井初聚",
-      "entry": "胡麻入饼",
-      "requires": { "flags": ["marketBegins"], "orders": ["sesameBread"] },
+      "title": "西市烟火",
+      "entry": "西市风来",
       "nodes": [
-        { "ordinal": 3, "milestoneId": "lv2_front_feast", "pointId": "03", "playerUrl": "./repair-scenes/03/index.html", "longscrollRegionIds": [3], "requires": { "repairs": ["04"], "coins": 74 } },
-        { "ordinal": 4, "milestoneId": "lv2_west_market", "pointId": "05", "playerUrl": "./repair-scenes/05/index.html", "longscrollRegionIds": [5], "requires": { "repairs": ["03"], "coins": 95 } },
-        { "ordinal": 5, "milestoneId": "lv2_flower_rack", "pointId": "06", "playerUrl": "./repair-scenes/06/index.html", "longscrollRegionIds": [6], "requires": { "repairs": ["05"], "coins": 118 } },
-        { "ordinal": 6, "milestoneId": "lv2_north_shop", "pointId": "15", "playerUrl": "./repair-scenes/15/index.html", "longscrollRegionIds": [15], "requires": { "repairs": ["06"], "coins": 145 } },
-        { "ordinal": 7, "milestoneId": "lv2_south_shop", "pointId": "16", "playerUrl": "./repair-scenes/16/index.html", "longscrollRegionIds": [16], "requires": { "repairs": ["15"], "coins": 175 } },
-        { "ordinal": 8, "milestoneId": "lv2_well", "pointId": "17-18", "playerUrl": "./repair-scenes/17-18/index.html", "longscrollRegionIds": [17, 18], "requires": { "repairs": ["16"], "coins": 210 } }
+        {
+          "ordinal": 4,
+          "milestoneId": "lv2_front_feast",
+          "pointId": "03",
+          "playerUrl": "./repair-scenes/03/index.html",
+          "longscrollRegionIds": [
+            3
+          ],
+          "requires": {
+            "repairs": [
+              "11"
+            ],
+            "orders": [
+              "order_014_musician_youhubing"
+            ],
+            "coins": 80
+          }
+        },
+        {
+          "ordinal": 5,
+          "milestoneId": "lv2_west_market",
+          "pointId": "05",
+          "playerUrl": "./repair-scenes/05/index.html",
+          "longscrollRegionIds": [
+            5
+          ],
+          "requires": {
+            "repairs": [
+              "03"
+            ],
+            "orders": [
+              "order_004_changan_lubing"
+            ],
+            "coins": 95
+          }
+        },
+        {
+          "ordinal": 6,
+          "milestoneId": "lv2_flower_rack",
+          "pointId": "06",
+          "playerUrl": "./repair-scenes/06/index.html",
+          "longscrollRegionIds": [
+            6
+          ],
+          "requires": {
+            "repairs": [
+              "05"
+            ],
+            "orders": [
+              "order_006_camel_worker_youhubing"
+            ],
+            "coins": 110
+          }
+        },
+        {
+          "ordinal": 7,
+          "milestoneId": "lv2_north_shop",
+          "pointId": "15",
+          "playerUrl": "./repair-scenes/15/index.html",
+          "longscrollRegionIds": [
+            15
+          ],
+          "requires": {
+            "repairs": [
+              "06"
+            ],
+            "orders": [
+              "order_007_persian_attendant_congchi"
+            ],
+            "coins": 130
+          }
+        },
+        {
+          "ordinal": 8,
+          "milestoneId": "lv2_south_shop",
+          "pointId": "16",
+          "playerUrl": "./repair-scenes/16/index.html",
+          "longscrollRegionIds": [
+            16
+          ],
+          "requires": {
+            "repairs": [
+              "15"
+            ],
+            "orders": [
+              "order_008_uighur_yangrou"
+            ],
+            "coins": 150
+          }
+        },
+        {
+          "ordinal": 9,
+          "milestoneId": "lv2_well",
+          "pointId": "17-18",
+          "playerUrl": "./repair-scenes/17-18/index.html",
+          "longscrollRegionIds": [
+            17,
+            18
+          ],
+          "requires": {
+            "repairs": [
+              "16"
+            ],
+            "orders": [
+              "order_009_mystery_suibing"
+            ],
+            "coins": 170
+          }
+        }
       ]
     },
     {
       "id": "travellers-rest",
-      "title": "旅人停脚",
-      "entry": "夜雨乳糜",
-      "requires": { "flags": ["travellersGather"], "orders": ["rainyPorridge", "changanNoodles"] },
+      "title": "楼馆通途",
+      "entry": "夜雨来客",
       "nodes": [
-        { "ordinal": 9, "milestoneId": "lv3_upper_hall", "pointId": "07", "playerUrl": "./repair-scenes/07/index.html", "longscrollRegionIds": [7], "requires": { "repairs": ["17-18"], "coins": 250 } },
-        { "ordinal": 10, "milestoneId": "lv3_north_court", "pointId": "08", "playerUrl": "./repair-scenes/08/index.html", "longscrollRegionIds": [8], "requires": { "repairs": ["07"], "coins": 295 } },
-        { "ordinal": 11, "milestoneId": "lv3_west_gate", "pointId": "09", "playerUrl": "./repair-scenes/09/index.html", "longscrollRegionIds": [9], "requires": { "repairs": ["08"], "coins": 345 } },
-        { "ordinal": 12, "milestoneId": "lv3_east_court", "pointId": "10", "playerUrl": "./repair-scenes/10/index.html", "longscrollRegionIds": [10], "requires": { "repairs": ["09"], "coins": 400 } },
-        { "ordinal": 13, "milestoneId": "lv3_garden", "pointId": "12", "playerUrl": "./repair-scenes/12/index.html", "longscrollRegionIds": [12], "requires": { "repairs": ["10"], "coins": 465 } },
-        { "ordinal": 14, "milestoneId": "lv3_watchtower", "pointId": "13-14", "playerUrl": "./repair-scenes/13-14/index.html", "longscrollRegionIds": [13, 14], "requires": { "repairs": ["12"], "coins": 540 } },
-        { "ordinal": 15, "milestoneId": "codex_first_phase", "pointId": "11", "playerUrl": "./repair-scenes/11/index.html", "longscrollRegionIds": [11], "requires": { "repairs": ["13-14"], "recipes": 3, "coins": 55 } }
+        {
+          "ordinal": 10,
+          "milestoneId": "lv3_upper_hall",
+          "pointId": "07",
+          "playerUrl": "./repair-scenes/07/index.html",
+          "longscrollRegionIds": [
+            7
+          ],
+          "requires": {
+            "repairs": [
+              "17-18"
+            ],
+            "orders": [
+              "order_010_caravan_gulouzi"
+            ],
+            "coins": 190
+          }
+        },
+        {
+          "ordinal": 11,
+          "milestoneId": "lv3_north_court",
+          "pointId": "08",
+          "playerUrl": "./repair-scenes/08/index.html",
+          "longscrollRegionIds": [
+            8
+          ],
+          "requires": {
+            "repairs": [
+              "07"
+            ],
+            "orders": [
+              "order_015_monk_rumi"
+            ],
+            "coins": 215
+          }
+        },
+        {
+          "ordinal": 12,
+          "milestoneId": "lv3_west_gate",
+          "pointId": "09",
+          "playerUrl": "./repair-scenes/09/index.html",
+          "longscrollRegionIds": [
+            9
+          ],
+          "requires": {
+            "repairs": [
+              "08"
+            ],
+            "orders": [
+              "order_016_uighur_milk"
+            ],
+            "coins": 245
+          }
+        },
+        {
+          "ordinal": 13,
+          "milestoneId": "lv3_east_court",
+          "pointId": "10",
+          "playerUrl": "./repair-scenes/10/index.html",
+          "longscrollRegionIds": [
+            10
+          ],
+          "requires": {
+            "repairs": [
+              "09"
+            ],
+            "orders": [
+              "order_017_temple_laojiang"
+            ],
+            "coins": 275
+          }
+        },
+        {
+          "ordinal": 14,
+          "milestoneId": "lv3_garden",
+          "pointId": "12",
+          "playerUrl": "./repair-scenes/12/index.html",
+          "longscrollRegionIds": [
+            12
+          ],
+          "requires": {
+            "repairs": [
+              "10"
+            ],
+            "orders": [
+              "order_018_traveler_lubing_rumi"
+            ],
+            "coins": 310
+          }
+        },
+        {
+          "ordinal": 15,
+          "milestoneId": "lv3_watchtower",
+          "pointId": "13-14",
+          "playerUrl": "./repair-scenes/13-14/index.html",
+          "longscrollRegionIds": [
+            13,
+            14
+          ],
+          "requires": {
+            "repairs": [
+              "12"
+            ],
+            "orders": [
+              "order_019_sogdian_huma_laojiang"
+            ],
+            "coins": 350
+          }
+        }
       ]
     },
     {
       "id": "lights-connect",
       "title": "灯火连城",
-      "entry": "商队停驻",
-      "requires": { "flags": ["marketConnects"], "orders": ["caravanStay"] },
+      "entry": "商队入城",
       "nodes": [
-        { "ordinal": 16, "milestoneId": "lv4_south_shed", "pointId": "19", "playerUrl": "./repair-scenes/19/index.html", "longscrollRegionIds": [19], "requires": { "repairs": ["11"], "coins": 625 } },
-        { "ordinal": 17, "milestoneId": "lv4_central_market", "pointId": "20", "playerUrl": "./repair-scenes/20/index.html", "longscrollRegionIds": [20], "requires": { "repairs": ["19"], "coins": 715 } },
-        { "ordinal": 18, "milestoneId": "lv4_south_street", "pointId": "21-23", "playerUrl": "./repair-scenes/21-23/index.html", "longscrollRegionIds": [21, 22, 23], "requires": { "repairs": ["20"], "coins": 820 } },
-        { "ordinal": 19, "milestoneId": "lv4_lanes", "pointId": "24", "playerUrl": "./repair-scenes/24/index.html", "longscrollRegionIds": [24], "requires": { "repairs": ["21-23"], "coins": 940 } },
-        { "ordinal": 20, "milestoneId": "lv4_east_shed", "pointId": "25", "playerUrl": "./repair-scenes/25/index.html", "longscrollRegionIds": [25], "requires": { "repairs": ["24"], "coins": 1060 } },
-        { "ordinal": 21, "milestoneId": "lv4_east_court", "pointId": "26", "playerUrl": "./repair-scenes/26/index.html", "longscrollRegionIds": [26], "requires": { "repairs": ["25"], "coins": 1190 } },
-        { "ordinal": 22, "milestoneId": "lv4_lantern_city", "pointId": "27", "playerUrl": "./repair-scenes/27/index.html", "longscrollRegionIds": [27], "requires": { "repairs": ["26"], "coins": 1340 } }
+        {
+          "ordinal": 16,
+          "milestoneId": "lv4_south_shed",
+          "pointId": "19",
+          "playerUrl": "./repair-scenes/19/index.html",
+          "longscrollRegionIds": [
+            19
+          ],
+          "requires": {
+            "repairs": [
+              "13-14"
+            ],
+            "orders": [
+              "order_lv4_south_shed_stocking"
+            ],
+            "coins": 460
+          }
+        },
+        {
+          "ordinal": 17,
+          "milestoneId": "lv4_central_market",
+          "pointId": "20",
+          "playerUrl": "./repair-scenes/20/index.html",
+          "longscrollRegionIds": [
+            20
+          ],
+          "requires": {
+            "repairs": [
+              "19"
+            ],
+            "orders": [
+              "order_lv4_central_market_feast"
+            ],
+            "coins": 520
+          }
+        },
+        {
+          "ordinal": 18,
+          "milestoneId": "lv4_south_street",
+          "pointId": "21-23",
+          "playerUrl": "./repair-scenes/21-23/index.html",
+          "longscrollRegionIds": [
+            21,
+            22,
+            23
+          ],
+          "requires": {
+            "repairs": [
+              "20"
+            ],
+            "orders": [
+              "order_lv4_south_street_trade"
+            ],
+            "coins": 590
+          }
+        },
+        {
+          "ordinal": 19,
+          "milestoneId": "lv4_lanes",
+          "pointId": "24",
+          "playerUrl": "./repair-scenes/24/index.html",
+          "longscrollRegionIds": [
+            24
+          ],
+          "requires": {
+            "repairs": [
+              "21-23"
+            ],
+            "orders": [
+              "order_021_lanes_continuation"
+            ],
+            "coins": 670
+          }
+        },
+        {
+          "ordinal": 20,
+          "milestoneId": "lv4_east_shed",
+          "pointId": "25",
+          "playerUrl": "./repair-scenes/25/index.html",
+          "longscrollRegionIds": [
+            25
+          ],
+          "requires": {
+            "repairs": [
+              "24"
+            ],
+            "orders": [
+              "order_022_shed_continuation"
+            ],
+            "coins": 760
+          }
+        },
+        {
+          "ordinal": 21,
+          "milestoneId": "lv4_east_court",
+          "pointId": "26",
+          "playerUrl": "./repair-scenes/26/index.html",
+          "longscrollRegionIds": [
+            26
+          ],
+          "requires": {
+            "repairs": [
+              "25"
+            ],
+            "orders": [
+              "order_023_court_continuation"
+            ],
+            "coins": 860
+          }
+        },
+        {
+          "ordinal": 22,
+          "milestoneId": "lv4_lantern_city",
+          "pointId": "27",
+          "playerUrl": "./repair-scenes/27/index.html",
+          "longscrollRegionIds": [
+            27
+          ],
+          "requires": {
+            "repairs": [
+              "26"
+            ],
+            "orders": [
+              "order_024_lantern_continuation"
+            ],
+            "coins": 980
+          }
+        }
       ]
     }
   ]

@@ -1,0 +1,63 @@
+.chapter-story-dots {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.chapter-story-dots button {
+  display: grid;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  font: inherit;
+  place-items: center;
+}
+
+.chapter-story-dots button::before {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(111, 80, 56, 0.25);
+  content: "";
+  transition: width 0.16s ease, background-color 0.16s ease;
+}
+
+.chapter-story-dots button.active::before {
+  width: 18px;
+  background: #985043;
+}
+
+.chapter-story-dots button:hover::before,
+.chapter-story-dots button:focus-visible::before {
+  background: #7e4036;
+}
+
+.chapter-story-dots button:focus-visible {
+  border-radius: 4px;
+  outline: 1px solid rgba(126, 64, 54, 0.55);
+  outline-offset: -3px;
+}
+
+.chapter-story-footer > #chapterStoryNext {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0;
+}
+
+.chapter-story-footer > #chapterStoryNext i {
+  display: block;
+  margin-left: 0;
+  font-size: 30px;
+  line-height: 1;
+}
