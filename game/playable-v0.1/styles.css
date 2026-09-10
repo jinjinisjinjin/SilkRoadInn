@@ -2094,6 +2094,7 @@ button:disabled {
   --board-ink: #4a2f1d;
   --board-gold: #d4a457;
   --board-cell: rgba(240, 199, 118, 0.88);
+  --board-top-gutter: max(18px, env(safe-area-inset-top));
   padding: 0;
   background:
     linear-gradient(to bottom, rgba(236, 190, 111, 0.18), rgba(166, 104, 48, 0.22)),
@@ -2112,7 +2113,7 @@ button:disabled {
 #app[data-page="board"] .resources {
   position: absolute;
   z-index: 20;
-  top: max(6px, env(safe-area-inset-top));
+  top: var(--board-top-gutter);
   left: 58px;
   right: 12px;
   min-height: 30px;
@@ -2178,7 +2179,7 @@ button:disabled {
   position: absolute;
   z-index: 19;
   left: 8px;
-  top: 66px;
+  top: calc(var(--board-top-gutter) + 62px);
   width: 43px;
   padding: 0;
   gap: 8px;
@@ -2201,7 +2202,7 @@ button:disabled {
 #app[data-page="board"] .orders {
   position: absolute;
   z-index: 15;
-  top: 56px;
+  top: calc(var(--board-top-gutter) + 52px);
   left: 54px;
   right: 0;
   width: auto;
@@ -2292,9 +2293,9 @@ button:disabled {
 #app[data-page="board"] .board-wrap {
   position: absolute;
   z-index: 14;
-  left: 2px;
-  right: 2px;
-  top: 218px;
+  left: 10px;
+  right: 10px;
+  top: calc(var(--board-top-gutter) + 220px);
   bottom: 86px;
   margin: 0;
   padding: 3px;
