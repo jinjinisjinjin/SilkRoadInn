@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=global-loading-v1" />
+    <link rel="stylesheet" href="./styles.css?v=reward-bag-v3" />
   </head>
   <body>
     <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
@@ -41,6 +41,7 @@
               </button>
               <button id="rewardBagBtn" class="side-entry reward-bag-entry" aria-label="打开奖励行囊">
                 <img src="./assets/ui/ui_bag_inventory.png" alt="" />
+                <span id="rewardBagBadge" class="reward-bag-badge" hidden>0</span>
               </button>
             </div>
             <div class="orders" id="orders"></div>
@@ -182,10 +183,9 @@
         <div class="modal-actions"><button id="orderDetailCodexBtn">查看食单</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
       </div>
     </dialog>
-    <dialog id="bagModal" class="modal">
-      <div class="modal-inner">
+    <dialog id="bagModal" class="modal bag-modal" aria-label="行囊">
+      <div class="modal-inner bag-modal-inner">
         <button class="close" data-close="bagModal">×</button>
-        <h2>行囊</h2><p class="modal-note">可临时收起10件食物，给案板腾地方。</p>
         <div class="bag-list" id="bagList"></div>
         <section class="debug-panel">
           <h3>原型调试</h3>
@@ -228,6 +228,6 @@
       </div>
     </dialog>
 
-    <script src="./app.js?v=global-loading-v1"></script>
+    <script src="./app.js?v=reward-bag-v3"></script>
   </body>
 </html>

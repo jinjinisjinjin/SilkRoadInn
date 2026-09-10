@@ -227,6 +227,31 @@ button:disabled {
   filter: drop-shadow(0 3px 3px rgba(54, 31, 18, 0.18));
 }
 
+.reward-bag-badge {
+  position: absolute;
+  z-index: 2;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border: 2px solid rgba(255, 235, 190, 0.92);
+  border-radius: 999px;
+  color: #fff2d2;
+  background: #9c4636;
+  box-shadow: 0 2px 5px rgba(65, 31, 20, 0.26);
+  font: 800 9px/1 ui-sans-serif, system-ui, sans-serif;
+}
+
+.reward-bag-entry.has-rewards {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 216, 0.34),
+    0 0 0 2px rgba(161, 101, 43, 0.22),
+    0 4px 8px rgba(69, 40, 21, 0.16);
+}
+
 .repair-side-entry.repair-ready {
   background: rgba(152, 69, 51, 0.7);
   animation: tabPulse 1.35s ease-in-out infinite;
@@ -5295,58 +5320,138 @@ button:disabled {
   line-height: 1.55;
 }
 
+.bag-modal {
+  width: min(94vw, 408px);
+}
+
+.bag-modal-inner {
+  padding: 52px 15px 16px;
+  border-color: rgba(91, 54, 29, 0.9);
+  background:
+    linear-gradient(90deg, rgba(121, 77, 37, 0.09), transparent 12% 88%, rgba(121, 77, 37, 0.09)),
+    #f3deb1;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 241, 205, 0.72),
+    0 18px 38px rgba(31, 18, 11, 0.38);
+}
+
 .bag-list {
   display: grid;
-  gap: 10px;
+  min-height: 42px;
+  max-height: min(61dvh, 500px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108, 68, 36, 0.42) transparent;
+}
+
+.bag-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
 }
 
 .bag-slot {
+  position: relative;
   display: grid;
-  grid-template-columns: 58px 1fr 72px;
-  align-items: center;
-  gap: 10px;
-  min-height: 74px;
-  padding: 8px;
-  border: 2px solid rgba(126, 86, 41, 0.45);
-  border-radius: 12px;
-  background: rgba(255, 242, 210, 0.66);
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  padding: 3px 2px;
+  border: 1px solid rgba(114, 74, 39, 0.52);
+  border-radius: 6px;
+  color: #573820;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 239, 197, 0.62), transparent 52%),
+    linear-gradient(145deg, rgba(225, 192, 132, 0.78), rgba(190, 145, 85, 0.66));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 243, 208, 0.44),
+    inset 0 -5px 9px rgba(106, 63, 31, 0.1),
+    0 2px 2px rgba(72, 42, 22, 0.13);
 }
 
-.bag-slot.empty {
-  grid-template-columns: 58px 1fr;
-  opacity: 0.82;
+button.bag-slot {
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, filter 120ms ease;
+}
+
+button.bag-slot:active {
+  transform: translateY(1px) scale(0.97);
+  filter: brightness(1.05);
+}
+
+button.bag-slot:focus-visible {
+  outline: 3px solid rgba(104, 130, 91, 0.64);
+  outline-offset: 1px;
 }
 
 .bag-slot img {
-  width: 58px;
-  height: 58px;
+  width: 108%;
+  height: 108%;
+  max-width: none;
+  max-height: none;
   object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(66, 37, 19, 0.2));
 }
 
-.bag-slot strong {
-  display: block;
-  font: 800 17px/1 "Songti SC", "STSong", serif;
+.bag-slot.generator-piece img,
+.gift-pack-slot img {
+  width: 91%;
+  height: 91%;
 }
 
-.bag-slot span {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 13px;
+.bag-slot.generator-material-piece img {
+  width: 176%;
+  height: 176%;
 }
 
-.bag-slot button {
-  min-height: 36px;
-  font-size: 14px;
+.coin-reward-slot {
+  border-color: rgba(130, 85, 37, 0.62);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 239, 177, 0.74), transparent 54%),
+    linear-gradient(145deg, rgba(225, 190, 122, 0.88), rgba(179, 129, 71, 0.7));
+}
+
+.ruby-reward-slot {
+  border-color: rgba(141, 68, 64, 0.58);
 }
 
 .gift-pack-slot {
-  border-color: rgba(167, 68, 48, 0.55);
-  background: linear-gradient(135deg, rgba(255, 235, 186, 0.82), rgba(236, 190, 123, 0.6));
+  border-color: rgba(150, 65, 47, 0.62);
+  background: linear-gradient(145deg, rgba(250, 219, 160, 0.92), rgba(206, 150, 87, 0.78));
 }
 
-.gift-pack-slot strong {
-  color: var(--red);
+.bag-stack-count {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 2;
+  min-width: 15px;
+  padding: 2px 3px;
+  border-radius: 999px;
+  color: #fff0cf;
+  background: rgba(100, 66, 39, 0.92);
+  font: 800 8px/1 "Songti SC", "STSong", serif;
+  box-shadow: 0 1px 2px rgba(63, 32, 20, 0.24);
+}
+
+.gift-pack-slot .bag-stack-count {
+  background: #934738;
+}
+
+@media (max-width: 350px) {
+  .bag-grid {
+    gap: 3px;
+  }
+
+  .bag-modal-inner {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
 }
 
 .storage-cabinet-modal {
@@ -5613,22 +5718,6 @@ button:disabled {
   filter: drop-shadow(0 7px 10px rgba(118, 51, 35, 0.28));
 }
 
-.empty-mark {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border: 1px dashed rgba(112, 84, 63, 0.7);
-  border-radius: 12px;
-  color: var(--muted);
-  background: rgba(237, 201, 143, 0.42);
-  font-weight: 800;
-}
-
-.bag-store {
-  width: 100%;
-}
-
 .debug-panel {
   margin-top: 12px;
   padding-top: 12px;
@@ -5865,11 +5954,16 @@ button:disabled {
   place-items: center;
   min-height: 0;
   aspect-ratio: 1;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   color: rgba(82, 54, 34, 0.36);
+}
+
+button.storage-slot.filled {
+  cursor: pointer;
 }
 
 .storage-slot.empty::after,

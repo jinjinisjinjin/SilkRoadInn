@@ -891,7 +891,7 @@
       "name": "丝路礼盒包",
       "modernName": "点击一次掉落一份奖励",
       "line": "gift",
-      "iconKey": "gift_pack_starter",
+      "iconKey": "ui/order_gift_coffer_v1",
       "source": "bag_gift_pack",
       "mergeFrom": null,
       "mergeTo": null,

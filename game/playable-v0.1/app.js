@@ -25,9 +25,11 @@ const PROGRESSION_FLOW_QA_STAGE = PROGRESSION_FLOW_QA_STAGES.includes(PROGRESSIO
   : "fresh";
 const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
+const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
+  && new URLSearchParams(location.search).get("demo") === "reward-bag";
 const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE;
 const SAVE_KEY = PROGRESSION_FLOW_QA_MODE
-  ? `silkroad_tavern_proto_v02_qa_progression_flow_v2_${PROGRESSION_FLOW_QA_STAGE}`
+  ? `silkroad_tavern_proto_v02_qa_progression_flow_v2_${PROGRESSION_FLOW_QA_STAGE}${REWARD_BAG_DEMO_MODE ? "_reward_bag_v2" : ""}`
   : GENERATOR_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_generator_system_v2"
   : GENERATOR_MATERIAL_QA_MODE
@@ -193,7 +195,7 @@ const LONGSCROLL_REGION_BOUNDS = {
 const GIFT_PACKS = {
   gift_milk_room_parts_01: {
     name: "奶房木件包",
-    itemId: "gift_pack_starter",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
     description: "前期修缮奖励，主要产出奶房食盒材料。",
     rewards: [
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
@@ -210,7 +212,7 @@ const GIFT_PACKS = {
   },
   gift_livestock_pen_parts_01: {
     name: "栏圈木桩包",
-    itemId: "gift_pack_starter",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
     description: "第三次修缮奖励，主要产出乳畜栏材料。",
     rewards: [
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
@@ -250,6 +252,7 @@ const state = {
   economyConfig: null,
   board: [],
   bag: [],
+  rewardItems: [],
   giftPacks: [],
   giftBoxStates: {},
   bubbleStates: {},
@@ -307,6 +310,7 @@ const els = {
   stationHudBtn: document.querySelector("#stationHudBtn"),
   repairSideBtn: document.querySelector("#repairSideBtn"),
   rewardBagBtn: document.querySelector("#rewardBagBtn"),
+  rewardBagBadge: document.querySelector("#rewardBagBadge"),
   bagBtn: document.querySelector("#bagBtn"),
   stationBtn: document.querySelector("#stationBtn"),
   boardReturnBtn: document.querySelector("#boardReturnBtn"),
@@ -578,6 +582,7 @@ function initializeGeneratorMaterialQaScenario() {
 function initializeOrderGiftQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
   state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.rewardItems = [];
   state.giftPacks = [];
   state.giftBoxStates = {};
   state.bubbleStates = {};
@@ -598,6 +603,7 @@ function initializeRubyDisplayQaScenario() {
   });
   state.board[starterGeneratorIndex()] = "gen_mill_01";
   state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.rewardItems = [];
   state.giftPacks = [];
   state.giftBoxStates = {};
   state.bubbleStates = {};
@@ -629,6 +635,7 @@ function initializeLv4MarketOrdersQaScenario() {
   const firstMarketOrderIndex = REPAIR_GATE_SEQUENCE.indexOf(LV4_MARKET_ORDER_IDS[0]);
   const firstMarketMilestoneIndex = state.progressionConfig.milestones.findIndex((milestone) => milestone.id === "lv4_south_shed");
   state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.rewardItems = [];
   state.giftPacks = [];
   state.giftBoxStates = {};
   state.bubbleStates = {};
@@ -672,6 +679,8 @@ function initializeGeneratorOrderQaScenario() {
     state.board[generatorIndexes[index]] = generatorItemId(categoryId, 1);
   });
   state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.rewardItems = [];
+  state.giftPacks = [];
   state.pendingGeneratorRewards = [];
   state.unlockedGeneratorCategories = categories;
   state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
@@ -739,7 +748,21 @@ function initializeProgressionFlowQaScenario() {
     });
   }
   state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.rewardItems = [];
   state.giftPacks = [];
+  if (REWARD_BAG_DEMO_MODE) {
+    state.rewardItems = [
+      { itemId: "bonus_coin_01", quantity: 18 },
+      { itemId: "bonus_coin_02", quantity: 7 },
+      { itemId: "bonus_coin_03", quantity: 3 },
+      { itemId: "bonus_coin_04", quantity: 1 },
+      { itemId: "bonus_ruby_01", quantity: 4 },
+    ];
+    state.giftPacks = [
+      { id: "gift_order_ch1_4", quantity: 5 },
+      { id: "gift_milk_room_parts_01", quantity: 2 },
+    ];
+  }
   state.giftBoxStates = {};
   state.bubbleStates = {};
   state.unlockedCells = isFreshStage ? [] : Array.from({ length: BOARD_SIZE }, (_, index) => index);
@@ -957,6 +980,7 @@ function defaultState() {
   return {
     board,
     bag: Array(STORAGE_FREE_SLOTS).fill(null),
+    rewardItems: [],
     giftPacks: [],
     giftBoxStates: {},
     bubbleStates: {},
@@ -1005,6 +1029,7 @@ function loadState() {
   Object.assign(state, {
     board: normalizeBoard(data.board),
     bag: normalizeStorageSlots(data.bag),
+    rewardItems: normalizeRewardItems(data.rewardItems),
     giftPacks: normalizeGiftPacks(data.giftPacks),
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
     bubbleStates: normalizeBubbleStates(data.bubbleStates),
@@ -1067,6 +1092,7 @@ function saveState() {
     JSON.stringify({
       board: state.board,
       bag: state.bag,
+      rewardItems: state.rewardItems,
       giftPacks: state.giftPacks,
       giftBoxStates: state.giftBoxStates,
       bubbleStates: state.bubbleStates,
@@ -2297,8 +2323,8 @@ function registerOrderProgressPacks() {
     byId.set(ORDER_PROGRESS_GIFT_ITEM_ID, {
       ...starterGift,
       id: ORDER_PROGRESS_GIFT_ITEM_ID,
-      name: "订单进度礼匣",
-      modernName: "完成章节订单后获得的奖励礼匣",
+      name: "丝路礼匣",
+      modernName: "长卷与订单进度获得的奖励礼匣",
       iconKey: "ui/order_gift_coffer_v1",
       source: "order_progress_gift",
     });
@@ -2514,11 +2540,28 @@ function normalizeClaimedOrderProgressPacks(value) {
   return [...new Set(value.filter((id) => validIds.has(id)))];
 }
 
+function normalizeRewardItems(value) {
+  if (!Array.isArray(value)) return [];
+  const quantities = new Map();
+  value.forEach((entry) => {
+    const itemId = migrateLegacyGeneratorId(entry?.itemId);
+    const item = byId.get(itemId);
+    const quantity = Math.floor(Number(entry?.quantity));
+    if (!item || item.type === "gift_box" || item.type === "bonus_bubble" || quantity <= 0) return;
+    quantities.set(itemId, (quantities.get(itemId) ?? 0) + quantity);
+  });
+  return [...quantities].map(([itemId, quantity]) => ({ itemId, quantity }));
+}
+
 function normalizeGiftPacks(value) {
-  if (!Array.isArray(value)) return defaultState().giftPacks;
-  return value
-    .filter((entry) => GIFT_PACKS[entry?.id] && Number(entry.quantity) > 0)
-    .map((entry) => ({ id: entry.id, quantity: Math.floor(Number(entry.quantity)) }));
+  if (!Array.isArray(value)) return [];
+  const quantities = new Map();
+  value.forEach((entry) => {
+    const quantity = Math.floor(Number(entry?.quantity));
+    if (!GIFT_PACKS[entry?.id] || quantity <= 0) return;
+    quantities.set(entry.id, (quantities.get(entry.id) ?? 0) + quantity);
+  });
+  return [...quantities].map(([id, quantity]) => ({ id, quantity }));
 }
 
 function normalizeGiftBoxStates(value) {
@@ -3038,9 +3081,17 @@ function openSelectedPieceDetail() {
 }
 
 function renderBagButton() {
-  const used = state.bag.filter(Boolean).length;
-  const giftCount = totalGiftPackCount();
-  els.bagBtn.querySelector("span").textContent = giftCount > 0 ? `行囊 礼${giftCount}` : `行囊 ${used}/3`;
+  const rewardCount = totalRewardBagCount();
+  const tabLabel = els.bagBtn?.querySelector("span");
+  if (tabLabel) tabLabel.textContent = rewardCount > 0 ? `行囊 ${rewardCount}` : "行囊";
+  if (els.rewardBagBtn) {
+    els.rewardBagBtn.classList.toggle("has-rewards", rewardCount > 0);
+    els.rewardBagBtn.setAttribute("aria-label", rewardCount > 0 ? `打开奖励行囊，共${rewardCount}件` : "打开奖励行囊");
+  }
+  if (els.rewardBagBadge) {
+    els.rewardBagBadge.hidden = rewardCount === 0;
+    els.rewardBagBadge.textContent = rewardCount > 99 ? "99+" : String(rewardCount);
+  }
 }
 
 function renderInnButton() {
@@ -4435,7 +4486,7 @@ function nextStepText(name, current, target) {
 function rewardText(milestone) {
   const rewards = milestone.rewards ?? {};
   const labels = [];
-  if (rewards.coins) labels.push(`获得${rewards.coins}枚铜钱`);
+  if (rewards.coins) labels.push(`价值${rewards.coins}铜币的铜币棋子收入行囊`);
   if (rewards.unlockOrderRefresh) labels.push("开放订单刷新");
   if (rewards.boardColumns && rewards.boardRows) labels.push(`案板 ${rewards.boardColumns}x${rewards.boardRows}`);
   if (rewards.staminaMax) labels.push(`驼铃上限 ${rewards.staminaMax}`);
@@ -4449,9 +4500,7 @@ function rewardText(milestone) {
 function applyRepairRewards(milestone) {
   const rewards = milestone.rewards ?? {};
   if (rewards.coins) {
-    state.coins += rewards.coins;
-    state.coinsEarned += rewards.coins;
-    showCoinBurst(rewards.coins);
+    grantCoinRewardToBag(rewards.coins);
   }
   if (rewards.staminaMax) state.staminaMax = Math.max(state.staminaMax, rewards.staminaMax);
   if (rewards.staminaRecoverMinutes) state.recoverMinutes = rewards.staminaRecoverMinutes;
@@ -4472,14 +4521,34 @@ function applyRepairRewards(milestone) {
 
 function grantGiftPack(packId, quantity = 1) {
   const pack = GIFT_PACKS[packId];
-  if (!pack || quantity <= 0) return;
+  const amount = Math.floor(Number(quantity));
+  if (!pack || amount <= 0) return;
   const existing = state.giftPacks.find((entry) => entry.id === packId);
   if (existing) {
-    existing.quantity += quantity;
+    existing.quantity += amount;
   } else {
-    state.giftPacks.push({ id: packId, quantity });
+    state.giftPacks.push({ id: packId, quantity: amount });
   }
   toast(`${pack.name}已收入行囊。`);
+}
+
+function grantRewardItem(itemId, quantity = 1) {
+  const item = byId.get(itemId);
+  const amount = Math.floor(Number(quantity));
+  if (!item || item.type === "gift_box" || item.type === "bonus_bubble" || amount <= 0) return false;
+  const existing = state.rewardItems.find((entry) => entry.itemId === itemId);
+  if (existing) {
+    existing.quantity += amount;
+  } else {
+    state.rewardItems.push({ itemId, quantity: amount });
+  }
+  return true;
+}
+
+function grantCoinRewardToBag(amount) {
+  const coinItems = coinRewardPieceIds(amount);
+  coinItems.forEach((itemId) => grantRewardItem(itemId));
+  if (coinItems.length) toast(`铜币棋子 ×${coinItems.length} 已收入行囊。`);
 }
 
 function sellSelected() {
@@ -4527,12 +4596,16 @@ function renderStorage() {
   for (let index = 0; index < STORAGE_TOTAL_SLOTS; index += 1) {
     const itemId = index < STORAGE_FREE_SLOTS ? (state.bag[index] ?? null) : null;
     const item = itemId ? byId.get(itemId) : null;
-    const slot = document.createElement("article");
+    const slot = document.createElement(item ? "button" : "article");
     slot.className = `storage-slot ${index >= STORAGE_FREE_SLOTS ? "locked" : item ? "filled" : "empty"}`;
     if (index >= STORAGE_FREE_SLOTS) {
       slot.innerHTML = `<span class="storage-lock">锁</span>`;
     } else if (item) {
+      slot.type = "button";
+      slot.setAttribute("aria-label", `将${item.name}放回棋盘`);
+      slot.title = `放回棋盘：${item.name}`;
       slot.innerHTML = `<img src="${itemAssetSrc(item)}" alt="${item.name}" />`;
+      slot.addEventListener("click", () => retrieveFromStorage(index));
     } else {
       slot.innerHTML = `<span class="storage-empty-mark"></span>`;
     }
@@ -4541,67 +4614,51 @@ function renderStorage() {
 }
 
 function renderBag() {
+  if (!els.bagList) return;
   els.bagList.innerHTML = "";
-  renderGiftPackInventory();
-  state.bag.forEach((itemId, index) => {
-    const slot = document.createElement("article");
-    slot.className = `bag-slot ${itemId ? "" : "empty"}`;
-    if (itemId) {
-      const item = byId.get(itemId);
-      slot.innerHTML = `
-        <img src="${itemAssetSrc(item)}" alt="${item.name}" />
-        <div>
-          <strong>${item.name}</strong>
-          <span>${item.modernName}</span>
-        </div>
-        <button>取出</button>
-      `;
-      slot.querySelector("button").addEventListener("click", () => retrieveFromBag(index));
-    } else {
-      slot.innerHTML = `
-        <div class="empty-mark">空</div>
-        <div>
-          <strong>空位</strong>
-          <span>选中食物后，可收进行囊。</span>
-        </div>
-      `;
-    }
-    els.bagList.append(slot);
+  const rewardEntries = state.rewardItems
+    .map((entry) => ({ entry, item: byId.get(entry.itemId) }))
+    .filter(({ entry, item }) => item && entry.quantity > 0);
+  const giftEntries = state.giftPacks
+    .map((entry) => ({ entry, pack: GIFT_PACKS[entry.id] }))
+    .filter(({ entry, pack }) => pack && entry.quantity > 0);
+  if (!rewardEntries.length && !giftEntries.length) {
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "bag-grid";
+
+  rewardEntries.forEach(({ entry, item }) => {
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = `bag-slot reward-item-slot ${item.type === "bonus_coin" ? "coin-reward-slot" : ""} ${item.type === "bonus_ruby" ? "ruby-reward-slot" : ""} ${isGeneratorPiece(item) ? "generator-piece" : ""} ${item.type === "generator_material" ? "generator-material-piece" : ""}`;
+    slot.setAttribute("aria-label", `将1个${item.name}随机投放到棋盘，行囊内共${entry.quantity}个`);
+    slot.title = `随机投放：${item.name}`;
+    slot.innerHTML = `
+      <span class="bag-stack-count">×${entry.quantity}</span>
+      <img src="${itemAssetSrc(item)}" alt="${item.name}" />
+    `;
+    slot.addEventListener("click", () => placeRewardItemFromBag(entry.itemId));
+    grid.append(slot);
   });
 
-  const store = document.createElement("button");
-  store.className = "primary bag-store";
-  store.textContent = "收起选中食物";
-  const selectedItem = byId.get(state.board[state.selectedIndex]);
-  const cannotStore = ["gift_box", "bonus_bubble", "bonus_coin", "bonus_ruby"].includes(selectedItem?.type);
-  store.disabled = !state.board[state.selectedIndex] || cannotStore || firstEmptyBagIndex() === -1;
-  store.addEventListener("click", storeSelectedToBag);
-  els.bagList.append(store);
-}
-
-function renderGiftPackInventory() {
-  state.giftPacks.forEach((entry) => {
-    const pack = GIFT_PACKS[entry.id];
-    if (!pack || entry.quantity <= 0) return;
+  giftEntries.forEach(({ entry, pack }) => {
     const item = byId.get(pack.itemId);
     if (!item) return;
-    const slot = document.createElement("article");
+    const slot = document.createElement("button");
+    slot.type = "button";
     slot.className = "bag-slot gift-pack-slot";
+    slot.setAttribute("aria-label", `将1个${pack.name}随机投放到棋盘，行囊内共${entry.quantity}个`);
+    slot.title = `随机投放：${pack.name}`;
     slot.innerHTML = `
+      <span class="bag-stack-count">×${entry.quantity}</span>
       <img src="${itemAssetSrc(item)}" alt="${pack.name}" />
-      <div>
-        <strong>${pack.name} ×${entry.quantity}</strong>
-        <span>${pack.description}</span>
-      </div>
-      <button>放入棋盘</button>
     `;
-    slot.querySelector("button").addEventListener("click", () => placeGiftPackOnBoard(entry.id));
-    els.bagList.append(slot);
+    slot.addEventListener("click", () => placeGiftPackOnBoard(entry.id));
+    grid.append(slot);
   });
-}
-
-function storeSelectedToBag() {
-  storeBoardItemToStorage(state.selectedIndex);
+  els.bagList.append(grid);
 }
 
 function storeBoardItemToStorage(boardIndex) {
@@ -4636,7 +4693,7 @@ function storeBoardItemToStorage(boardIndex) {
   saveState();
 }
 
-function retrieveFromBag(index) {
+function retrieveFromStorage(index) {
   const itemId = state.bag[index];
   if (!itemId) return;
   const boardIndex = firstEmptyIndex();
@@ -4650,6 +4707,28 @@ function retrieveFromBag(index) {
   state.selectedIndex = boardIndex;
   const item = byId.get(itemId);
   keeper(`${item.name}已放回案板。`);
+  render();
+  renderBag();
+  saveState();
+}
+
+function placeRewardItemFromBag(itemId) {
+  const rewardEntry = state.rewardItems.find((entry) => entry.itemId === itemId);
+  const item = byId.get(itemId);
+  if (!rewardEntry || rewardEntry.quantity <= 0 || !item) return;
+  const boardIndex = randomUnlockedEmptyIndex();
+  if (boardIndex === -1) {
+    toast("案板已满，这份奖励仍留在行囊中。");
+    return;
+  }
+  rewardEntry.quantity -= 1;
+  state.rewardItems = state.rewardItems.filter((entry) => entry.quantity > 0);
+  state.board[boardIndex] = itemId;
+  state.selectedIndex = boardIndex;
+  state.pulseIndex = boardIndex;
+  keeper(`${item.name}已从行囊随机落到案板上。`);
+  if (item.type === "generator_material") tryBuildGeneratorFromMaterials(itemId);
+  clearPulseSoon();
   render();
   renderBag();
   saveState();
@@ -5095,6 +5174,11 @@ function normalizeStorageSlots(value) {
 
 function totalGiftPackCount() {
   return state.giftPacks.reduce((sum, entry) => sum + entry.quantity, 0);
+}
+
+function totalRewardBagCount() {
+  const itemCount = state.rewardItems.reduce((sum, entry) => sum + entry.quantity, 0);
+  return itemCount + totalGiftPackCount();
 }
 
 function clearPulseSoon() {
