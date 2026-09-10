@@ -11,18 +11,18 @@
 
 .new-player-guide-card {
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 14px;
+  right: 14px;
   bottom: max(94px, calc(env(safe-area-inset-bottom) + 84px));
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) 24px;
-  gap: 11px;
+  grid-template-columns: 68px minmax(0, 1fr) 28px;
+  gap: 14px;
   align-items: center;
-  min-height: 82px;
+  min-height: 108px;
   box-sizing: border-box;
-  padding: 10px 11px 10px 12px;
+  padding: 15px 14px 15px 16px;
   border: 2px solid #8b592f;
-  border-radius: 6px;
+  border-radius: 9px;
   background:
     linear-gradient(90deg, rgba(169, 106, 49, 0.08) 0 1px, transparent 1px 9px),
     linear-gradient(180deg, rgba(255, 249, 222, 0.98), rgba(240, 212, 153, 0.98));
@@ -38,9 +38,9 @@
 .new-player-guide-card::before {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 6px;
   border: 1px solid rgba(151, 93, 43, 0.34);
-  border-radius: 3px;
+  border-radius: 5px;
   pointer-events: none;
 }
 
@@ -48,8 +48,8 @@
   content: "";
   position: absolute;
   top: -2px;
-  left: 88px;
-  width: 68px;
+  left: 104px;
+  width: 76px;
   height: 3px;
   background: linear-gradient(90deg, transparent, #b25a3f 18%, #b25a3f 82%, transparent);
   pointer-events: none;
@@ -59,8 +59,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 60px;
-  height: 64px;
+  width: 66px;
+  height: 72px;
   background: linear-gradient(145deg, #f4d690, #8d582e 48%, #d9ae62 72%, #704225);
   clip-path: polygon(17% 0, 83% 0, 100% 17%, 100% 83%, 83% 100%, 17% 100%, 0 83%, 0 17%);
   filter: drop-shadow(0 3px 2px rgba(65, 35, 17, 0.24));
@@ -76,8 +76,8 @@
 }
 
 .new-player-guide-portrait {
-  width: 54px;
-  height: 58px;
+  width: 60px;
+  height: 66px;
   background: #ead29d;
   object-fit: cover;
   object-position: center 20%;
@@ -85,6 +85,8 @@
 }
 
 .new-player-guide-copy {
+  display: grid;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -92,9 +94,9 @@
   display: flex;
   gap: 7px;
   align-items: center;
-  margin-bottom: 3px;
+  margin: 0;
   color: #a14d36;
-  font: 800 11px/1.1 "Songti SC", "STSong", serif;
+  font: 800 12px/1.2 "Songti SC", "STSong", serif;
 }
 
 .new-player-guide-copy small::before {
@@ -109,63 +111,22 @@
 
 .new-player-guide-copy p {
   margin: 0;
-  font: 700 15px/1.38 "Songti SC", "STSong", serif;
-}
-
-.new-player-guide-progress {
-  position: relative;
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  width: max-content;
-  margin-top: 8px;
-  padding-inline: 2px;
-}
-
-.new-player-guide-progress::before {
-  content: "";
-  position: absolute;
-  right: 4px;
-  left: 4px;
-  height: 1px;
-  background: rgba(116, 76, 43, 0.25);
-}
-
-.new-player-guide-progress i {
-  position: relative;
-  width: 6px;
-  height: 6px;
-  border: 1px solid rgba(113, 76, 46, 0.34);
-  background: #e4c98e;
-  transform: rotate(45deg);
-}
-
-.new-player-guide-progress i.done {
-  border-color: #9a5738;
-  background: #bd7847;
-}
-
-.new-player-guide-progress i.current {
-  width: 8px;
-  height: 8px;
-  border-color: #713326;
-  background: #9c4433;
-  box-shadow: 0 0 0 3px rgba(218, 163, 83, 0.2);
+  font: 700 16px/1.52 "Songti SC", "STSong", serif;
 }
 
 .new-player-guide-skip {
   align-self: start;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   min-height: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: #794435;
-  font: 700 19px/1 Arial, sans-serif;
+  font: 700 20px/1 Arial, sans-serif;
   box-shadow: none;
   opacity: 0.78;
   pointer-events: auto;
@@ -324,29 +285,30 @@
     left: 12px;
     right: 12px;
     bottom: max(80px, calc(env(safe-area-inset-bottom) + 70px));
-    min-height: 70px;
-    grid-template-columns: 50px minmax(0, 1fr) 22px;
-    gap: 9px;
-    padding: 8px 9px 8px 10px;
+    min-height: 94px;
+    grid-template-columns: 58px minmax(0, 1fr) 26px;
+    gap: 12px;
+    padding: 12px 12px 12px 14px;
   }
 
   .new-player-guide-card::after {
-    left: 72px;
-    width: 54px;
+    left: 88px;
+    width: 64px;
   }
 
   .new-player-guide-portrait-frame {
-    width: 48px;
-    height: 52px;
+    width: 56px;
+    height: 62px;
   }
 
   .new-player-guide-portrait {
-    width: 42px;
-    height: 46px;
+    width: 50px;
+    height: 56px;
   }
 
   .new-player-guide-copy p {
-    font-size: 14px;
+    font-size: 15px;
+    line-height: 1.46;
   }
 }
 

@@ -15,11 +15,9 @@
   const FIRST_ORDER_ID = "order_001_guard_lubing";
   const FIRST_REPAIR_ID = "tutorial_complete";
   const FIRST_REPAIR_COST = 120;
-  const TOTAL_STEPS = 6;
 
   let layer;
   let copy;
-  let progress;
   let pointer;
   let acknowledgeButton;
   let refreshTimer;
@@ -78,7 +76,6 @@
         <div class="new-player-guide-copy">
           <small>掌柜指引</small>
           <p></p>
-          <div class="new-player-guide-progress" aria-hidden="true"></div>
           <button class="new-player-guide-ack" type="button" hidden>明白</button>
         </div>
         <button class="new-player-guide-skip" type="button" aria-label="跳过新手引导" title="跳过引导">×</button>
@@ -87,10 +84,8 @@
     `;
     app.append(layer);
     copy = layer.querySelector(".new-player-guide-copy p");
-    progress = layer.querySelector(".new-player-guide-progress");
     pointer = layer.querySelector(".new-player-guide-pointer");
     acknowledgeButton = layer.querySelector(".new-player-guide-ack");
-    progress.innerHTML = Array.from({ length: TOTAL_STEPS }, () => "<i></i>").join("");
 
     layer.querySelector(".new-player-guide-skip").addEventListener("click", () => {
       updateGuideState({ dismissed: true });
@@ -137,13 +132,6 @@
     layer.hidden = true;
     pointer.hidden = true;
     pointer.classList.remove("drag-path", "points-up", "points-right", "points-left");
-  }
-
-  function setProgress(activeStep) {
-    [...progress.children].forEach((pip, index) => {
-      pip.classList.toggle("done", index < activeStep);
-      pip.classList.toggle("current", index === activeStep);
-    });
   }
 
   function positionPointer(targets, drag) {
@@ -199,13 +187,12 @@
     pointer.classList.toggle("points-up", placeBelow);
   }
 
-  function showGuide({ text, step, targets = [], drag = false, acknowledge = false }) {
+  function showGuide({ text, targets = [], drag = false, acknowledge = false }) {
     clearTargets();
     currentTargets = targets.filter(isVisible);
     currentTargets.forEach((target) => target.classList.add(TARGET_CLASS));
     copy.textContent = text;
     acknowledgeButton.hidden = !acknowledge;
-    setProgress(step);
     layer.hidden = false;
     requestAnimationFrame(() => positionPointer(currentTargets, drag));
   }
@@ -242,16 +229,8 @@
         "炉饼已经做好，回后厨交给周甲。",
         "首单已经完成，回后厨翻开新收录的食单。",
       ];
-      const returnStep = tutorialStep === 0
-        ? 0
-        : tutorialStep === 1 && Array.isArray(state.board) && state.board.filter((itemId) => itemId === "hubing_01_dough").length >= 2
-          ? 2
-          : tutorialStep === 1
-            ? 1
-            : tutorialStep + 1;
       showGuide({
         text: returnCopy[tutorialStep],
-        step: returnStep,
         targets: [document.querySelector("#innKitchenBtn")],
       });
       return;
@@ -260,7 +239,6 @@
     if (tutorialStep === 0 && page === "board") {
       showGuide({
         text: "点案板中央的小石磨，取第一份麦面。",
-        step: 1,
         targets: [boardCellFor("gen_mill_01", state)],
       });
       return;
@@ -271,13 +249,11 @@
       if (dough.length < 2) {
         showGuide({
           text: "再点一次小石磨，备齐两份麦面。",
-          step: 1,
           targets: [boardCellFor("gen_mill_01", state)],
         });
       } else {
         showGuide({
           text: "按住一份麦面，拖到另一份上，合成炉饼。",
-          step: 2,
           targets: dough.slice(0, 2),
           drag: true,
         });
@@ -290,7 +266,6 @@
         .find((card) => card.getAttribute("aria-label")?.includes("沙州驿卒"));
       showGuide({
         text: "炉饼做好了。点上方的交付，把热饼递给周甲。",
-        step: 3,
         targets: [order?.querySelector(".deliver-btn") || order],
       });
       return;
@@ -299,7 +274,6 @@
     if (tutorialStep === 3 && page === "board") {
       showGuide({
         text: "新食谱已经记下。点卷轴，看看《丝路食单》。",
-        step: 4,
         targets: [document.querySelector("#newPlayerCodexBtn")],
       });
       return;
@@ -327,7 +301,6 @@
       if (!savedGuide.coreTipSeen) {
         showGuide({
           text: "基础经营已经上手。继续接单，攒够120铜币就能修缮前厅。",
-          step: 5,
           acknowledge: true,
         });
       } else {
@@ -339,7 +312,6 @@
     if (page === "board") {
       showGuide({
         text: "修缮用的铜币已经备齐。去流沙驿看看前厅。",
-        step: 5,
         targets: [document.querySelector("#stationHudBtn") || document.querySelector("#repairSideBtn")],
       });
       return;
@@ -347,7 +319,6 @@
 
     showGuide({
       text: "长卷上的亮处就是下一处修缮点，点它修好前厅。",
-      step: 5,
       targets: [repairTarget()],
     });
   }
