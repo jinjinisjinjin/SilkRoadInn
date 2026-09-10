@@ -175,6 +175,12 @@ const CHAPTER_NAMES = {
   3: "楼馆通途",
   4: "灯火连城",
 };
+const CHAPTER_TITLE_LINES = {
+  1: ["流沙驿", "初明"],
+  2: ["西市", "烟火"],
+  3: ["楼馆", "通途"],
+  4: ["灯火", "连城"],
+};
 const BUILD_MODE = new URLSearchParams(location.search).get("mode") === "release" ? "release" : "dev";
 const INN_PACKAGE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
@@ -1825,7 +1831,10 @@ function renderInnPage() {
   const completedChapterMilestones = chapterMilestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
   const chineseNumbers = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
   els.innChapterEyebrow.textContent = `第${chineseNumbers[chapter] ?? chapter}章`;
-  els.innLevelName.textContent = chapterName(chapter);
+  const chapterTitleLines = CHAPTER_TITLE_LINES[chapter] ?? [chapterName(chapter)];
+  els.innLevelName.replaceChildren(
+    ...chapterTitleLines.map((line) => Object.assign(document.createElement("span"), { textContent: line })),
+  );
   els.innChapterProgress.textContent = `${chineseNumbers[completedChapterMilestones] ?? completedChapterMilestones}之${chineseNumbers[chapterMilestones.length] ?? chapterMilestones.length}`;
   els.innCoins.textContent = state.coins;
   els.innStamina.textContent = state.stamina;

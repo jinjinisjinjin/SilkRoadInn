@@ -80,13 +80,13 @@
   position: absolute;
   left: max(8px, env(safe-area-inset-left));
   right: auto;
-  top: max(0px, env(safe-area-inset-top));
+  top: max(36px, calc(env(safe-area-inset-top) + 36px));
   display: grid;
-  width: 72px;
-  min-height: 126px;
+  width: 76px;
+  min-height: 132px;
   justify-items: center;
   align-content: start;
-  padding: 13px 7px 23px;
+  padding: 15px 8px 25px;
   color: #f6e9c1;
   border-inline: 1px solid rgba(238, 196, 116, 0.58);
   background:
@@ -115,24 +115,32 @@
 
 #app[data-page="inn"] .inn-chapter-bookmark small {
   color: #e6cc96;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 #app[data-page="inn"] .inn-chapter-bookmark h1 {
-  width: 2.1em;
-  margin: 5px 0 0;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin: 9px 0 0;
   color: #fff0c9;
-  font: 900 20px/1.04 "Songti SC", "STSong", serif;
+  font: 900 19px/1.1 "Songti SC", "STSong", serif;
   text-shadow: 0 1px 2px rgba(57, 27, 18, 0.46);
-  word-break: break-all;
+  white-space: nowrap;
+}
+
+#app[data-page="inn"] .inn-chapter-bookmark h1 > span {
+  display: block;
 }
 
 #app[data-page="inn"] .inn-chapter-bookmark > span {
-  margin-top: 8px;
+  margin-top: 13px;
   color: #ead39f;
   font-size: 10px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 #app[data-page="inn"] .inn-upgrade-seal {
@@ -227,13 +235,18 @@
   #app[data-page="inn"] .inn-chapter-bookmark {
     left: max(6px, env(safe-area-inset-left));
     right: auto;
-    width: 66px;
-    min-height: 116px;
-    padding-top: 12px;
+    width: 70px;
+    min-height: 124px;
+    padding: 13px 7px 23px;
   }
 
   #app[data-page="inn"] .inn-chapter-bookmark h1 {
-    font-size: 18px;
+    margin-top: 8px;
+    font-size: 17px;
+  }
+
+  #app[data-page="inn"] .inn-chapter-bookmark > span {
+    margin-top: 11px;
   }
 }
 
