@@ -478,6 +478,21 @@
   margin-top: 9px;
 }
 
+.repair-completion-rewards[data-visible-count="1"] {
+  grid-template-columns: minmax(0, 120px);
+  justify-content: center;
+}
+
+.repair-completion-rewards[data-visible-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 120px));
+  justify-content: center;
+}
+
+.repair-completion-section[hidden],
+.repair-completion-reward[hidden] {
+  display: none;
+}
+
 .repair-completion-reward {
   position: relative;
   display: grid;
