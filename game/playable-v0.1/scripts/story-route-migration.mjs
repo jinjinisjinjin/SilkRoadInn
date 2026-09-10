@@ -15,12 +15,16 @@ const hasCompletedPoint = (completedMilestoneIds, completedPointIds, node) =>
 const requirementStatus = (save, completedMilestoneIds, completedPointIds, node) => {
   const repairs = asArray(node.requires?.repairs);
   const missingRepairs = repairs.filter((pointId) => !completedPointIds.has(pointId));
+  const completedOrders = new Set(asArray(save.completedOrderIds));
+  const orders = asArray(node.requires?.orders);
+  const missingOrders = orders.filter((orderId) => !completedOrders.has(orderId));
   const recipesRequired = node.requires?.recipes ?? 0;
   const recipesReady = getRecipeCount(save) >= recipesRequired;
 
   return {
-    ok: missingRepairs.length === 0 && recipesReady,
+    ok: missingRepairs.length === 0 && missingOrders.length === 0 && recipesReady,
     missingRepairs,
+    missingOrders,
     recipesRequired,
     recipesReady,
     alreadyComplete: hasCompletedPoint(completedMilestoneIds, completedPointIds, node)
@@ -69,10 +73,12 @@ export function migrateStoryRouteSave(oldSave, route, migrationPlan) {
       : {
           lockedUntil: {
             repairs: asArray(menuNode?.requires?.repairs),
+            orders: asArray(menuNode?.requires?.orders),
             recipes: menuNode?.requires?.recipes ?? 0
           },
           current: {
             missingRepairs: menuRequirements.missingRepairs,
+            missingOrders: menuRequirements.missingOrders,
             recipesReady: menuRequirements.recipesReady,
             unlocked: menuRequirements.ok
           }

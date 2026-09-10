@@ -6,7 +6,9 @@ const root = resolve(import.meta.dirname, "..");
 const route = JSON.parse(readFileSync(resolve(root, "data/story-route-v0.1.json"), "utf8"));
 const progression = JSON.parse(readFileSync(resolve(root, "data/progression.json"), "utf8"));
 const migration = JSON.parse(readFileSync(resolve(root, "data/story-route-migration-v0.1.json"), "utf8"));
-const expectedOrder = ["02", "04", "03", "05", "06", "15", "16", "17-18", "07", "08", "09", "10", "12", "13-14", "11", "19", "20", "21-23", "24", "25", "26", "27"];
+const expectedOrder = progression.milestones.map((milestone) => milestone.playerPointId);
+const expectedLegacyOrder = ["02", "04", "03", "05", "06", "15", "16", "17-18", "07", "08", "09", "10", "12", "13-14", "11", "19", "20", "21-23", "24", "25", "26", "27"];
+const expectedChapterCounts = [3, 6, 6, 7];
 const nodes = route.chapters.flatMap((chapter) => chapter.nodes);
 const errors = [];
 
@@ -18,28 +20,32 @@ if (!same(routePoints, expectedOrder)) errors.push(`Player order mismatch: ${rou
 if (nodes.length !== 22 || new Set(routePoints).size !== 22) errors.push("Route must contain 22 unique point IDs.");
 if (!same(nodes.map((node) => node.ordinal), Array.from({ length: 22 }, (_, index) => index + 1))) errors.push("Route ordinals must be 1 through 22.");
 if (route.chapters.length !== 4) errors.push("Route must contain four chapters.");
+if (!same(route.chapters.map((chapter) => chapter.nodes.length), expectedChapterCounts)) errors.push("Chapter node counts must be 3/6/6/7.");
 
-for (const node of nodes) {
+for (const [chapterIndex, chapter] of route.chapters.entries()) {
+  for (const node of chapter.nodes) {
   const milestone = progressionByPoint.get(node.pointId);
   if (!milestone) {
     errors.push(`Missing progression milestone for ${node.pointId}.`);
     continue;
   }
+  if ((milestone.chapter ?? 1) !== chapterIndex + 1) errors.push(`Chapter mismatch for ${node.pointId}.`);
   if (node.milestoneId !== milestone.id) errors.push(`Milestone ID mismatch for ${node.pointId}.`);
   if (node.playerUrl !== milestone.playerUrl) errors.push(`Player URL mismatch for ${node.pointId}.`);
   if (!same(node.longscrollRegionIds, milestone.longscrollRegionIds)) errors.push(`Longscroll regions mismatch for ${node.pointId}.`);
   const relativePlayerPath = node.playerUrl.split("?")[0];
   if (!existsSync(resolve(root, relativePlayerPath))) errors.push(`Missing player page for ${node.pointId}: ${relativePlayerPath}`);
+  }
 }
 
 const menuNode = nodes.find((node) => node.pointId === "11");
-const watchtowerNode = nodes.find((node) => node.pointId === "13-14");
-if (!menuNode || !watchtowerNode || menuNode.ordinal <= watchtowerNode.ordinal) errors.push("Point 11 must be after point 13-14.");
-if (!same(menuNode?.requires?.repairs, ["13-14"]) || menuNode?.requires?.recipes !== 3) errors.push("Point 11 must require 13-14 and three recipes.");
+if (!menuNode || menuNode.ordinal !== 3) errors.push("Point 11 must be the third repair node in Chapter 1.");
+if (!same(menuNode?.requires?.repairs, ["04"]) || !same(menuNode?.requires?.orders, ["order_005_monk_humabing"])) {
+  errors.push("Point 11 must require point 04 and the monk's sesame-bread order.");
+}
 if (!same(migration.authoritativeOrder, expectedOrder)) errors.push("Migration order must match authoritative order.");
 
-const legacyOrder = progression.milestones.map((milestone) => milestone.playerPointId);
-if (!same(migration.legacyOrder, legacyOrder)) errors.push("Migration legacy order must match current progression order.");
+if (!same(migration.legacyOrder, expectedLegacyOrder)) errors.push("Migration legacy order must match the interim route order.");
 if (!same([...new Set(migration.legacyOrder)].sort(), [...new Set(expectedOrder)].sort())) errors.push("Legacy and authoritative orders must contain the same 22 points.");
 
 const legacySaveWithMenuDone = {
@@ -79,7 +85,7 @@ if (migratedMenuDone.storyRoute?.menuOnWall !== "reviewed") errors.push("Complet
 if (!migratedMenuDone.storyRoute?.completedRoutePointIds?.includes("11")) errors.push("Completed point 11 save must retain route completion.");
 if (migratedMenuPending.storyRoute?.menuOnWall !== "gated") errors.push("Incomplete point 11 save must keep menuOnWall gated.");
 if (migratedMenuPending.storyRoute?.completedRoutePointIds?.includes("11")) errors.push("Incomplete point 11 save must not complete or unlock point 11 early.");
-if (migratedMenuPending.storyRoute?.menuOnWallReview?.current?.unlocked) errors.push("Incomplete point 11 save must not be unlocked before 13-14 and three recipes.");
+if (migratedMenuPending.storyRoute?.menuOnWallReview?.current?.unlocked) errors.push("Incomplete point 11 save must remain locked until its order requirement is complete.");
 
 if (errors.length) {
   console.error("Story route validation failed:\n- " + errors.join("\n- "));
@@ -87,4 +93,4 @@ if (errors.length) {
 }
 
 console.log(`Story route validation passed: ${nodes.length} nodes, ${route.chapters.length} chapters, point 11 at position ${menuNode.ordinal}.`);
-console.log("Migration samples passed: point 11 complete -> reviewed; point 11 incomplete -> gated; resources unchanged.");
+console.log("Migration samples passed: canonical chapter counts 3/6/6/7; point 11 completion preserved; resources unchanged.");

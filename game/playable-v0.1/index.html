@@ -8,6 +8,11 @@
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
     <link rel="stylesheet" href="./styles.css?v=reward-bag-v3" />
+    <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
+    <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
+    <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
+    <link rel="stylesheet" href="./story-archive.css?v=story-archive-v11" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=inn-map-ui-v3" />
   </head>
   <body>
     <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
@@ -72,16 +77,20 @@
       </section>
 
       <section class="game-page inn-page" id="innPage" hidden>
-        <header class="inn-head">
-          <div>
-            <span>流沙驿</span>
-            <h1 id="innLevelName">Lv1 破旧流沙驿</h1>
+        <header class="inn-map-hud">
+          <div class="inn-resources" aria-label="驿站资源">
+            <span class="inn-resource-pill"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="innCoins">0</b></span>
+            <span class="inn-resource-pill"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="innStamina">0</b><button id="innStaminaPlusBtn" class="inn-resource-plus" aria-label="补充驼铃">+</button></span>
+            <span class="inn-resource-pill"><i class="ruby-icon" aria-hidden="true"></i><b id="innGems">0</b><button id="innGemPlusBtn" class="inn-resource-plus" aria-label="补充红宝石">+</button></span>
           </div>
-          <b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="innCoins">0</span></b>
-          <button id="innUpgradeBtn" class="primary">升级驿站</button>
+          <aside class="inn-chapter-bookmark" aria-label="当前章节">
+            <small id="innChapterEyebrow">第一章</small>
+            <h1 id="innLevelName">流沙驿初明</h1>
+            <span id="innChapterProgress">零之三</span>
+            <button id="innUpgradeBtn" class="inn-upgrade-seal" hidden>扩建</button>
+          </aside>
         </header>
         <section class="inn-scene" id="innScene"></section>
-        <div class="order-gift-progress-float" id="orderGiftProgress" aria-label="章节订单礼包"></div>
         <section class="inn-panel scene-panel">
           <div class="inn-progress scene-progress">
             <div>
@@ -93,7 +102,10 @@
           <p class="inn-story" id="innStoryLine">流沙驿还显破旧，先添几件能接待旅人的家具。</p>
         </section>
         <button id="innKitchenBtn" class="inn-kitchen-entry" type="button" aria-label="返回后厨" title="后厨">
-          <img src="./assets/ui/ui_kitchen_entry.png" alt="" />
+          <img src="./assets/ui/ui_kitchen_entry_bright_v1.png" alt="" />
+        </button>
+        <button id="storyArchiveBtn" class="inn-story-archive-entry" type="button" aria-label="回顾已解锁剧情" title="剧情回顾">
+          <img src="./assets/ui/ui_codex_scroll.png" alt="" />
         </button>
       </section>
       <nav class="tabbar" hidden>
@@ -117,6 +129,66 @@
     <section id="repairPlayerLayer" class="repair-player-layer" hidden aria-label="修缮场景">
       <iframe id="repairPlayerFrame" title="修缮场景" allow="fullscreen"></iframe>
     </section>
+
+    <dialog id="storyArchiveModal" class="story-archive-modal" aria-label="剧情回顾">
+      <section class="story-archive-sheet">
+        <header class="story-archive-header">
+          <div>
+            <span>流沙驿纪事</span>
+            <h2>驿路拾光</h2>
+          </div>
+          <strong id="storyArchiveTotal">尚无纪事</strong>
+          <button class="story-archive-close" type="button" data-close="storyArchiveModal" aria-label="关闭剧情回顾" title="关闭">×</button>
+        </header>
+        <button id="storyArchiveRecent" class="story-archive-recent" type="button" aria-label="重温最近剧情">
+          <img id="storyArchiveRecentPortrait" alt="" />
+          <span>
+            <small>上次发生</small>
+            <strong id="storyArchiveRecentTitle">第一缕炉烟</strong>
+            <em id="storyArchiveRecentSummary"></em>
+          </span>
+          <i aria-hidden="true">›</i>
+        </button>
+        <nav id="storyArchiveChapters" class="story-archive-chapters" aria-label="选择剧情章节"></nav>
+        <section class="story-archive-chapter">
+          <div class="story-archive-chapter-head">
+            <div><span id="storyArchiveChapterEyebrow">第一章</span><h3 id="storyArchiveChapterTitle">流沙驿初明</h3></div>
+            <b id="storyArchiveChapterCount">已记 0 则</b>
+          </div>
+          <div id="storyArchiveList" class="story-archive-list"></div>
+        </section>
+      </section>
+    </dialog>
+
+    <dialog id="chapterStoryModal" class="chapter-story-modal" aria-label="章节剧情">
+      <section class="chapter-story-stage">
+        <header class="chapter-story-topbar">
+          <div class="chapter-story-mark"><span id="chapterStoryEyebrow">第一章</span><strong id="chapterStoryTitle">流沙驿初明</strong></div>
+          <button id="chapterStorySkip" class="chapter-story-skip" type="button">跳过</button>
+        </header>
+        <nav id="chapterStoryQaNav" class="chapter-story-qa-nav" aria-label="剧情预览切换" hidden>
+          <button id="chapterStoryQaPrev" type="button" aria-label="上一段" title="上一段">‹</button>
+          <span id="chapterStoryQaIndex"></span>
+          <button id="chapterStoryQaNext" type="button" aria-label="下一段" title="下一段">›</button>
+        </nav>
+        <div class="chapter-story-scene" aria-hidden="true"></div>
+        <section class="chapter-story-panel">
+          <div id="chapterStoryPortraitFrame" class="chapter-story-portrait"><img id="chapterStoryPortrait" alt="" /></div>
+          <div class="chapter-story-copy">
+            <div class="chapter-story-speaker"><strong id="chapterStorySpeaker"></strong><span id="chapterStoryRole"></span></div>
+            <p id="chapterStoryText"></p>
+            <div class="chapter-story-footer"><div id="chapterStoryDots" class="chapter-story-dots"></div><button id="chapterStoryNext" type="button" aria-label="继续" title="继续"><span hidden>继续</span><i aria-hidden="true">›</i></button></div>
+          </div>
+        </section>
+        <section id="chapterStoryReward" class="chapter-story-reward" hidden>
+          <span id="chapterStoryRewardEyebrow"></span>
+          <h2 id="chapterStoryRewardTitle"></h2>
+          <p id="chapterStoryRewardDescription"></p>
+          <div id="chapterStoryRewardItems" class="chapter-story-reward-row"></div>
+          <button id="chapterStoryCollect" type="button">收下奖励</button>
+        </section>
+      </section>
+    </dialog>
 
     <dialog id="codexModal" class="modal">
       <div class="modal-inner">
@@ -149,14 +221,48 @@
         <p id="storyText"></p>
       </div>
     </dialog>
-    <dialog id="repairModal" class="modal repair-modal">
-      <div class="modal-inner repair-detail">
+    <dialog id="repairModal" class="modal repair-modal repair-progress-modal">
+      <div class="modal-inner repair-detail repair-progress-detail">
         <button class="close" data-close="repairModal">×</button>
-        <div class="repair-hero"><div><span>主线任务</span><h2 id="repairTitle">门前有客</h2></div><img id="repairAvatar" alt="" /></div>
-        <p id="repairStory"></p>
-        <div class="repair-reward"><span id="repairRewardLabel">奖励</span><b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="repairCost">0</span></b></div>
+        <nav id="repairQaNav" class="repair-qa-nav" aria-label="修缮效果预览导航" hidden>
+          <button id="repairQaPrev" type="button" aria-label="查看上一处修缮">‹ <span>上一处</span></button>
+          <strong id="repairQaCounter">1 / 22</strong>
+          <button id="repairQaNext" type="button" aria-label="查看下一处修缮"><span>下一处</span> ›</button>
+        </nav>
+        <div class="repair-progress-hero">
+          <div class="repair-progress-avatar"><img id="repairAvatar" alt="" /></div>
+          <div><h2 id="repairTitle">前厅客座</h2><span id="repairSpeaker">孟氏</span></div>
+        </div>
+        <p id="repairStory" class="repair-progress-story"></p>
+        <section class="repair-chapter-section" aria-label="章节修缮进度">
+          <div class="repair-chapter-heading">
+            <h3 id="repairChapterTitle">Lv1 · 流沙驿初明</h3>
+            <span>修缮进度 <b id="repairChapterProgress">0/3</b></span>
+          </div>
+          <div class="repair-chapter-bar" aria-hidden="true"><i id="repairChapterProgressBar"></i></div>
+          <div id="repairMilestoneStrip" class="repair-milestone-strip"></div>
+          <p id="repairNextLine" class="repair-next-line"></p>
+        </section>
+        <section class="repair-completion-section" aria-label="章节通关奖励">
+          <h3 id="repairCompletionTitle">Lv1 通关奖励</h3>
+          <div class="repair-completion-rewards">
+            <div class="repair-completion-reward">
+              <img src="./assets/ui/order_gift_coffer_v1.png" alt="" />
+              <strong>通关礼盒</strong><span id="repairGiftQuantity">×1</span>
+            </div>
+            <div class="repair-completion-reward">
+              <img src="./assets/ui/ui_camel_bell_stamina.png" alt="" />
+              <strong>驼铃</strong><span id="repairStaminaQuantity">×10</span>
+            </div>
+            <div class="repair-completion-reward">
+              <img id="repairRubyIcon" src="./assets/ui/bonus_ruby_lv01.png" alt="" />
+              <strong>红宝石</strong><span id="repairRubyQuantity">×1</span>
+            </div>
+          </div>
+        </section>
+        <div id="repairEntryMeta" class="repair-entry-meta"><span id="repairRewardLabel">奖励</span><b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="repairCost">0</span></b></div>
         <div class="repair-choice-list" id="repairChoices"></div>
-        <button id="repairConfirmBtn" class="repair-cost-gate" disabled><img src="./assets/ui/ui_coin_copper.png" alt="" /><span id="repairCoinProgress">0/0</span></button>
+        <button id="repairConfirmBtn" class="repair-cost-gate" disabled><img id="repairCostIcon" src="./assets/ui/ui_coin_copper.png" alt="" /><span id="repairCoinProgress">0/0</span></button>
       </div>
     </dialog>
     <dialog id="repairGuideModal" class="modal repair-modal">
@@ -228,6 +334,7 @@
       </div>
     </dialog>
 
+    <script src="./chapter-story.js?v=inn-map-ui-v3"></script>
     <script src="./app.js?v=reward-bag-v3"></script>
   </body>
 </html>
