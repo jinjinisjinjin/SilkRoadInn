@@ -1678,8 +1678,9 @@ function applyBuildMode() {
     activeStageButton?.setAttribute("aria-current", "true");
   }
   if (BUILD_MODE === "release") {
-    document.querySelector(".debug-panel")?.remove();
-    els.resetBtn?.closest(".modal-actions")?.remove();
+    document.querySelector("#debugModal")?.remove();
+  } else if (new URLSearchParams(location.search).get("debug") === "1") {
+    document.querySelector("#debugModal")?.showModal();
   }
 }
 
