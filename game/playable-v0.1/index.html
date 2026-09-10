@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
+    <link rel="stylesheet" href="./story-archive.css?v=story-archive-v11" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=inn-map-ui-v3" />
   </head>
   <body>
     <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
@@ -74,16 +76,20 @@
       </section>
 
       <section class="game-page inn-page" id="innPage" hidden>
-        <header class="inn-head">
-          <div>
-            <span>流沙驿</span>
-            <h1 id="innLevelName">Lv1 破旧流沙驿</h1>
+        <header class="inn-map-hud">
+          <div class="inn-resources" aria-label="驿站资源">
+            <span class="inn-resource-pill"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="innCoins">0</b></span>
+            <span class="inn-resource-pill"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="innStamina">0</b><button id="innStaminaPlusBtn" class="inn-resource-plus" aria-label="补充驼铃">+</button></span>
+            <span class="inn-resource-pill"><i class="ruby-icon" aria-hidden="true"></i><b id="innGems">0</b><button id="innGemPlusBtn" class="inn-resource-plus" aria-label="补充红宝石">+</button></span>
           </div>
-          <b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="innCoins">0</span></b>
-          <button id="innUpgradeBtn" class="primary">升级驿站</button>
+          <aside class="inn-chapter-bookmark" aria-label="当前章节">
+            <small id="innChapterEyebrow">第一章</small>
+            <h1 id="innLevelName">流沙驿初明</h1>
+            <span id="innChapterProgress">零之三</span>
+            <button id="innUpgradeBtn" class="inn-upgrade-seal" hidden>扩建</button>
+          </aside>
         </header>
         <section class="inn-scene" id="innScene"></section>
-        <div class="order-gift-progress-float" id="orderGiftProgress" aria-label="章节订单礼包"></div>
         <section class="inn-panel scene-panel">
           <div class="inn-progress scene-progress">
             <div>
@@ -95,7 +101,10 @@
           <p class="inn-story" id="innStoryLine">流沙驿还显破旧，先添几件能接待旅人的家具。</p>
         </section>
         <button id="innKitchenBtn" class="inn-kitchen-entry" type="button" aria-label="返回后厨" title="后厨">
-          <img src="./assets/ui/ui_kitchen_entry.png" alt="" />
+          <img src="./assets/ui/ui_kitchen_entry_bright_v1.png" alt="" />
+        </button>
+        <button id="storyArchiveBtn" class="inn-story-archive-entry" type="button" aria-label="回顾已解锁剧情" title="剧情回顾">
+          <img src="./assets/ui/ui_codex_scroll.png" alt="" />
         </button>
       </section>
       <nav class="tabbar" hidden>
@@ -119,6 +128,36 @@
     <section id="repairPlayerLayer" class="repair-player-layer" hidden aria-label="修缮场景">
       <iframe id="repairPlayerFrame" title="修缮场景" allow="fullscreen"></iframe>
     </section>
+
+    <dialog id="storyArchiveModal" class="story-archive-modal" aria-label="剧情回顾">
+      <section class="story-archive-sheet">
+        <header class="story-archive-header">
+          <div>
+            <span>流沙驿纪事</span>
+            <h2>驿路拾光</h2>
+          </div>
+          <strong id="storyArchiveTotal">尚无纪事</strong>
+          <button class="story-archive-close" type="button" data-close="storyArchiveModal" aria-label="关闭剧情回顾" title="关闭">×</button>
+        </header>
+        <button id="storyArchiveRecent" class="story-archive-recent" type="button" aria-label="重温最近剧情">
+          <img id="storyArchiveRecentPortrait" alt="" />
+          <span>
+            <small>上次发生</small>
+            <strong id="storyArchiveRecentTitle">第一缕炉烟</strong>
+            <em id="storyArchiveRecentSummary"></em>
+          </span>
+          <i aria-hidden="true">›</i>
+        </button>
+        <nav id="storyArchiveChapters" class="story-archive-chapters" aria-label="选择剧情章节"></nav>
+        <section class="story-archive-chapter">
+          <div class="story-archive-chapter-head">
+            <div><span id="storyArchiveChapterEyebrow">第一章</span><h3 id="storyArchiveChapterTitle">流沙驿初明</h3></div>
+            <b id="storyArchiveChapterCount">已记 0 则</b>
+          </div>
+          <div id="storyArchiveList" class="story-archive-list"></div>
+        </section>
+      </section>
+    </dialog>
 
     <dialog id="chapterStoryModal" class="chapter-story-modal" aria-label="章节剧情">
       <section class="chapter-story-stage">
@@ -286,7 +325,7 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=chapter-story-dialogue-v03"></script>
-    <script src="./app.js?v=chapter-story-all-v1"></script>
+    <script src="./chapter-story.js?v=inn-map-ui-v3"></script>
+    <script src="./app.js?v=dairy-material-lv1-v3"></script>
   </body>
 </html>

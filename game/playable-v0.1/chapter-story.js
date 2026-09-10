@@ -530,12 +530,167 @@
     ],
   };
 
+  const archiveMoments = {
+    1: [
+      {
+        id: "chapter1-first-fire",
+        title: "第一缕炉烟",
+        summary: "掌柜重启旧灶，也重新翻开阿爷留下的《丝路食单》。",
+        segmentIds: ["opening"],
+      },
+      {
+        id: "chapter1-first-guests",
+        title: "门前真的有客",
+        summary: "旧驿迎来第一批客人，冷了两年的长凳终于重新坐热。",
+        segmentIds: ["before:tutorial_complete", "after:tutorial_complete"],
+      },
+      {
+        id: "chapter1-steady-fire",
+        title: "灶火渐旺",
+        summary: "在众人的帮助下，旧灶有了稳稳的火，熟悉的麦香重新飘出门外。",
+        segmentIds: ["before:kitchen_repair", "after:kitchen_repair"],
+      },
+      {
+        id: "chapter1-shared-codex",
+        title: "食单见人",
+        summary: "掌柜不再把食单藏进匣中，决定把一路相遇的味道继续写下去。",
+        segmentIds: ["before:codex_first_phase", "after:codex_first_phase"],
+      },
+    ],
+    2: [
+      {
+        id: "chapter2-market-wind",
+        title: "西市风来",
+        summary: "一张胡麻饼把流沙驿的名字带进西市，也把更多旅人带到了门前。",
+        segmentIds: ["chapter2-opening"],
+      },
+      {
+        id: "chapter2-market-lights",
+        title: "灯下成市",
+        summary: "乐声、席面与新亮的灯火聚起人群，流沙驿第一次有了市井模样。",
+        segmentIds: [
+          "before:lv2_front_feast",
+          "after:lv2_front_feast",
+          "before:lv2_west_market",
+          "after:lv2_west_market",
+        ],
+      },
+      {
+        id: "chapter2-shelter",
+        title: "风雨留客",
+        summary: "屋檐挡住急雨，北铺留住晚归人，驿站开始成为旅途中的落脚处。",
+        segmentIds: [
+          "before:lv2_flower_rack",
+          "after:lv2_flower_rack",
+          "before:lv2_north_shop",
+          "after:lv2_north_shop",
+        ],
+      },
+      {
+        id: "chapter2-shared-well",
+        title: "一井同心",
+        summary: "北道带来新的滋味，众人也在同一口井边立下共同生活的规矩。",
+        segmentIds: [
+          "before:lv2_south_shop",
+          "after:lv2_south_shop",
+          "before:lv2_well",
+          "after:lv2_well",
+        ],
+      },
+    ],
+    3: [
+      {
+        id: "chapter3-night-rain",
+        title: "夜雨来客",
+        summary: "整支商队循灯而来，掌柜第一次接下让远路人安心过夜的重任。",
+        segmentIds: ["chapter3-opening"],
+      },
+      {
+        id: "chapter3-room-lights",
+        title: "一盏房灯",
+        summary: "楼馆与北院先后亮灯，流沙驿从一处食肆变成了可以托付平安的驿站。",
+        segmentIds: [
+          "before:lv3_upper_hall",
+          "after:lv3_upper_hall",
+          "before:lv3_north_court",
+          "after:lv3_north_court",
+        ],
+      },
+      {
+        id: "chapter3-roads-meet",
+        title: "东西路相逢",
+        summary: "西门送出久候的书信，东院安顿等待的人，不同方向的旅途在此相逢。",
+        segmentIds: [
+          "before:lv3_west_gate",
+          "after:lv3_west_gate",
+          "before:lv3_east_court",
+          "after:lv3_east_court",
+        ],
+      },
+      {
+        id: "chapter3-distant-light",
+        title: "替远路守灯",
+        summary: "旅人的札记被留下，望楼的灯也重新亮起，流沙驿终于能替远路指引方向。",
+        segmentIds: [
+          "before:lv3_garden",
+          "after:lv3_garden",
+          "before:lv3_watchtower",
+          "after:lv3_watchtower",
+        ],
+      },
+    ],
+    4: [
+      {
+        id: "chapter4-caravan-arrives",
+        title: "商队入城",
+        summary: "大队人马迎着尘墙抵达，掌柜第一次调度众人，一同守住整座驿站。",
+        segmentIds: ["chapter4-opening"],
+      },
+      {
+        id: "chapter4-shared-table",
+        title: "风沙中的一席",
+        summary: "货物赶在风沙前入棚，原本争执的商旅也在一碗热浆前坐到了一起。",
+        segmentIds: [
+          "before:lv4_south_shed",
+          "after:lv4_south_shed",
+          "before:lv4_central_market",
+          "after:lv4_central_market",
+        ],
+      },
+      {
+        id: "chapter4-three-shops",
+        title: "三铺同亮",
+        summary: "三间店铺同时亮起招牌，断开的巷路也重新接回了归家的灯下。",
+        segmentIds: [
+          "before:lv4_south_street",
+          "after:lv4_south_street",
+          "before:lv4_lanes",
+          "after:lv4_lanes",
+        ],
+      },
+      {
+        id: "chapter4-city-of-lights",
+        title: "灯火连城",
+        summary: "货棚、院落与长街连成灯海，阿爷留下的半页食单又把掌柜引向更远的路。",
+        segmentIds: [
+          "before:lv4_east_shed",
+          "after:lv4_east_shed",
+          "before:lv4_east_court",
+          "after:lv4_east_court",
+          "before:lv4_lantern_city",
+          "after:lv4_lantern_city",
+        ],
+      },
+    ],
+  };
+
   let active;
   let activeId;
   let index = 0;
   let done;
   let progress;
   let qaState;
+  let reviewMode = false;
   let ui;
 
   function elements() {
@@ -575,7 +730,7 @@
     ui.qaNext.addEventListener("click", () => navigateQa(1));
     ui.modal.addEventListener("cancel", (event) => {
       event.preventDefault();
-      finish();
+      finish({ completed: !reviewMode });
     });
     return ui;
   }
@@ -620,7 +775,11 @@
   }
 
   function skipSegment() {
-    if (!advanceQaSegment()) finish();
+    if (reviewMode) {
+      finish({ completed: false });
+      return;
+    }
+    if (!advanceQaSegment()) finish({ completed: true });
   }
 
   function selectDialogueStep(event) {
@@ -650,7 +809,9 @@
       .join("");
     const atLastStep = index === active.steps.length - 1;
     const hasNextQaSegment = Boolean(qaState && qaState.index < chapterSegments[qaState.chapter].length - 1);
-    const nextActionLabel = atLastStep && active.reward
+    const nextActionLabel = atLastStep && reviewMode
+      ? "结束回顾"
+      : atLastStep && active.reward
       ? "查看奖励"
       : atLastStep && hasNextQaSegment
         ? "下一段"
@@ -701,15 +862,15 @@
       renderDialogue();
       return;
     }
-    if (active.reward) {
+    if (active.reward && !reviewMode) {
       renderReward();
       return;
     }
     if (advanceQaSegment()) return;
-    finish();
+    finish({ completed: true });
   }
 
-  function finish() {
+  function finish(result = { completed: true }) {
     const callback = done;
     active = null;
     activeId = null;
@@ -717,10 +878,14 @@
     progress = null;
     qaState = null;
     const view = elements();
-    view.stage.classList.remove("reward-visible");
+    reviewMode = false;
+    view.stage.classList.remove("reward-visible", "review-mode");
+    view.skip.textContent = "跳过";
+    view.skip.setAttribute("aria-label", "跳过剧情");
+    view.skip.title = "跳过剧情";
     view.qaNav.hidden = true;
     if (view.modal.open) view.modal.close();
-    callback?.();
+    callback?.(result);
   }
 
   function play(id, options = {}) {
@@ -736,13 +901,18 @@
     done = options.onComplete ?? null;
     progress = options.onProgress ?? null;
     qaState = options.qa ?? null;
+    reviewMode = Boolean(options.review);
     view.eyebrow.textContent = segment.eyebrow;
     view.title.textContent = segment.title;
-    view.modal.setAttribute("aria-label", `${segment.eyebrow} ${segment.title}`);
+    view.modal.setAttribute("aria-label", `${reviewMode ? "剧情回顾 " : ""}${segment.eyebrow} ${segment.title}`);
     view.scene.className = `chapter-story-scene ${segment.scene || ""}`;
-    view.stage.classList.remove("reward-visible");
+    view.stage.classList.remove("reward-visible", "review-mode");
+    view.stage.classList.toggle("review-mode", reviewMode);
+    view.skip.textContent = reviewMode ? "退出" : "跳过";
+    view.skip.setAttribute("aria-label", reviewMode ? "退出剧情回顾" : "跳过剧情");
+    view.skip.title = reviewMode ? "退出剧情回顾" : "跳过剧情";
     renderQaNavigation();
-    if (options.startAtReward && segment.reward) renderReward();
+    if (options.startAtReward && segment.reward && !reviewMode) renderReward();
     else renderDialogue();
     if (!view.modal.open) view.modal.showModal();
     return true;
@@ -755,5 +925,5 @@
     return play(ids[normalizedIndex], { qa: { chapter: normalizedChapter, index: normalizedIndex } });
   }
 
-  global.SilkRoadChapterStory = { play, playChapterQa, segments, chapterSegments };
+  global.SilkRoadChapterStory = { play, playChapterQa, segments, chapterSegments, archiveMoments };
 })(window);

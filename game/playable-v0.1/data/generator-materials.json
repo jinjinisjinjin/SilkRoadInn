@@ -22,6 +22,7 @@
       "assetCategory": "milk_room",
       "foodLineId": "dairy",
       "displayName": "奶房材料",
+      "assetVersions": { "1": "dairy-lv1-parts-v1" },
       "targetGeneratorId": "gen_dairy_01"
     },
     {

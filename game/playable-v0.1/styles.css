@@ -6369,40 +6369,6 @@ button:disabled {
 }
 
 
-#app[data-page="inn"] .order-gift-progress-float {
-  position: absolute;
-  left: 14px;
-  top: max(68px, calc(env(safe-area-inset-top) + 58px));
-  z-index: 25;
-  width: min(238px, calc(100% - 28px));
-  pointer-events: none;
-}
-
-#app[data-page="inn"] .order-gift-progress-float .order-progress-gifts {
-  margin: 0;
-  padding: 6px 7px;
-  border-color: rgba(255, 238, 190, 0.44);
-  background: rgba(218, 186, 132, 0.68);
-  box-shadow: 0 5px 12px rgba(41, 25, 13, 0.18);
-  backdrop-filter: blur(2px);
-}
-
-#app[data-page="inn"] .order-gift-progress-float button {
-  pointer-events: auto;
-}
-
-#app[data-page="inn"] .order-gift-progress-float .order-progress-copy b,
-#app[data-page="inn"] .order-gift-progress-float .order-progress-copy span {
-  color: #4e321f;
-}
-
-@media (max-width: 430px) {
-  #app[data-page="inn"] .order-gift-progress-float {
-    width: 224px;
-  }
-}
-
-
 /* Global first-launch poster. It is removed after boot and never used for page-to-page navigation. */
 .startup-loading {
   --startup-progress: 0%;

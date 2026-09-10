@@ -9,6 +9,9 @@ const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
 const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
 const CHAPTER_STORY_QA_MODE = QA_MODE === "chapter-story-v1";
+const STORY_ARCHIVE_QA_MODE = QA_MODE === "story-archive-v1";
+const STORY_ARCHIVE_QA_AUTOPEN = STORY_ARCHIVE_QA_MODE
+  && new URLSearchParams(location.search).get("open") === "1";
 const GLOBAL_LOADING_QA_HOLD = GLOBAL_LOADING_QA_MODE && new URLSearchParams(location.search).get("hold") === "1";
 const ORDER_GIFT_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const REPAIR_PROGRESS_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
@@ -17,6 +20,8 @@ const REPAIR_PROGRESS_QA_VIEW = new URLSearchParams(location.search).get("view")
 const CHAPTER_STORY_PREVIEW = new URLSearchParams(location.search).get("story");
 const CHAPTER_STORY_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const CHAPTER_STORY_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
+const STORY_ARCHIVE_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
+const STORY_ARCHIVE_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
 const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
@@ -25,8 +30,10 @@ const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_OR
 const DAIRY_DROP_DEMO_MODE = GENERATOR_ORDER_QA_MODE
   && GENERATOR_ORDER_QA_STAGE === "dairy"
   && new URLSearchParams(location.search).get("demo") === "milk-drop";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE;
-const SAVE_KEY = CHAPTER_STORY_QA_MODE
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE;
+const SAVE_KEY = STORY_ARCHIVE_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_story_archive_v1"
+  : CHAPTER_STORY_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_chapter_story_v1_ch${CHAPTER_STORY_QA_CHAPTER}`
   : REPAIR_PROGRESS_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_repair_progress_v1"
@@ -91,6 +98,9 @@ const GENERATOR_MATERIAL_SCALE_PERCENT = Object.freeze({
   material_drink_01: 276,
   material_drink_02: 228,
   material_drink_03: 193,
+});
+const ITEM_ASSET_VERSIONS = Object.freeze({
+  material_dairy_01: "dairy-lv1-parts-v1",
 });
 const LV4_MARKET_ORDER_IDS = Object.freeze([
   "order_lv4_south_shed_stocking",
@@ -326,16 +336,22 @@ const els = {
   stationBtn: document.querySelector("#stationBtn"),
   boardReturnBtn: document.querySelector("#boardReturnBtn"),
   innKitchenBtn: document.querySelector("#innKitchenBtn"),
+  storyArchiveBtn: document.querySelector("#storyArchiveBtn"),
   boardPage: document.querySelector("#boardPage"),
   innPage: document.querySelector("#innPage"),
   innLevelName: document.querySelector("#innLevelName"),
+  innChapterEyebrow: document.querySelector("#innChapterEyebrow"),
+  innChapterProgress: document.querySelector("#innChapterProgress"),
   innCoins: document.querySelector("#innCoins"),
+  innStamina: document.querySelector("#innStamina"),
+  innGems: document.querySelector("#innGems"),
+  innStaminaPlusBtn: document.querySelector("#innStaminaPlusBtn"),
+  innGemPlusBtn: document.querySelector("#innGemPlusBtn"),
   innScene: document.querySelector("#innScene"),
   innScoreText: document.querySelector("#innScoreText"),
   innUpgradeText: document.querySelector("#innUpgradeText"),
   innUpgradeBtn: document.querySelector("#innUpgradeBtn"),
   furnitureShop: document.querySelector("#furnitureShop"),
-  orderGiftProgress: document.querySelector("#orderGiftProgress"),
   innStoryLine: document.querySelector("#innStoryLine"),
   resetBtn: document.querySelector("#resetBtn"),
   codexBtn: document.querySelector("#codexBtn"),
@@ -364,6 +380,17 @@ const els = {
   storyTitle: document.querySelector("#storyTitle"),
   storySpeaker: document.querySelector("#storySpeaker"),
   storyText: document.querySelector("#storyText"),
+  storyArchiveModal: document.querySelector("#storyArchiveModal"),
+  storyArchiveTotal: document.querySelector("#storyArchiveTotal"),
+  storyArchiveRecent: document.querySelector("#storyArchiveRecent"),
+  storyArchiveRecentPortrait: document.querySelector("#storyArchiveRecentPortrait"),
+  storyArchiveRecentTitle: document.querySelector("#storyArchiveRecentTitle"),
+  storyArchiveRecentSummary: document.querySelector("#storyArchiveRecentSummary"),
+  storyArchiveChapters: document.querySelector("#storyArchiveChapters"),
+  storyArchiveChapterEyebrow: document.querySelector("#storyArchiveChapterEyebrow"),
+  storyArchiveChapterTitle: document.querySelector("#storyArchiveChapterTitle"),
+  storyArchiveChapterCount: document.querySelector("#storyArchiveChapterCount"),
+  storyArchiveList: document.querySelector("#storyArchiveList"),
   repairModal: document.querySelector("#repairModal"),
   repairQaNav: document.querySelector("#repairQaNav"),
   repairQaPrev: document.querySelector("#repairQaPrev"),
@@ -461,6 +488,11 @@ let lastBonusCoinTapIndex = -1;
 let lastBonusCoinTapAt = 0;
 let lastBonusRubyTapIndex = -1;
 let lastBonusRubyTapAt = 0;
+let activeStoryArchiveChapter = 1;
+let storyArchiveCloseTimer = null;
+let storyArchivePageSwapTimer = null;
+let storyArchivePageDoneTimer = null;
+let storyArchivePageTurning = false;
 const activeGeneratorOutputIndices = new Set();
 
 async function loadJson(name) {
@@ -497,6 +529,7 @@ function buildConfiguredGeneratorMaterialItems(config) {
           : "两个同阶材料可合成一级生成器",
         line: `generator_material_${category.id}`,
         iconKey: `${config.assetRoot}/generator_material_${category.assetCategory}_${String(stage).padStart(2, "0")}`,
+        assetVersion: category.assetVersions?.[String(stage)] ?? null,
         source: "generator_material_chain_v03",
         mergeFrom: stage > 1 ? generatorMaterialItemId(category.id, stage - 1) : null,
         mergeTo: nextId,
@@ -718,6 +751,38 @@ function initializeGeneratorOrderQaScenario() {
   state.innLevel = stageIndex >= 4 ? 2 : 1;
   state.currentPage = "board";
   state.selectedIndex = null;
+}
+
+function initializeStoryArchiveQaScenario() {
+  const story = window.SilkRoadChapterStory;
+  if (!story?.chapterSegments) return;
+  const flags = {};
+  const reachedSegmentIds = [];
+  for (let chapter = 1; chapter <= STORY_ARCHIVE_QA_CHAPTER; chapter += 1) {
+    const ids = story.chapterSegments[chapter] ?? [];
+    const lastIndex = chapter < STORY_ARCHIVE_QA_CHAPTER
+      ? ids.length - 1
+      : Math.min(ids.length - 1, STORY_ARCHIVE_QA_SCENE);
+    ids.slice(0, lastIndex + 1).forEach((segmentId) => {
+      flags[chapterStoryFlag(segmentId)] = true;
+      reachedSegmentIds.push(segmentId);
+    });
+  }
+  flags.chapter1StoryOpeningSeen = Boolean(flags[chapterStoryFlag("opening")]);
+  for (let chapter = 2; chapter <= 4; chapter += 1) {
+    flags[`chapter${chapter}StoryOpeningSeen`] = Boolean(flags[chapterStoryFlag(`chapter${chapter}-opening`)]);
+  }
+  state.storyFlags = flags;
+  state.renovationChoices = Object.fromEntries(
+    reachedSegmentIds
+      .filter((segmentId) => segmentId.startsWith("after:"))
+      .map((segmentId) => [segmentId.slice("after:".length), "completed"]),
+  );
+  state.activeChapterStory = null;
+  state.activeRepairId = null;
+  state.completedOrders = 1;
+  state.innLevel = STORY_ARCHIVE_QA_CHAPTER;
+  state.currentPage = "inn";
 }
 
 function initializeRepairProgressQaScenario() {
@@ -946,7 +1011,9 @@ async function boot() {
   await finishStartupLoading();
   if (state.currentPage === "board") tickGenerators();
   if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
-  if (CHAPTER_STORY_QA_MODE) {
+  if (STORY_ARCHIVE_QA_AUTOPEN) {
+    setTimeout(() => openStoryArchive(STORY_ARCHIVE_QA_CHAPTER), 80);
+  } else if (CHAPTER_STORY_QA_MODE) {
     setTimeout(() => window.SilkRoadChapterStory?.playChapterQa(CHAPTER_STORY_QA_CHAPTER, CHAPTER_STORY_QA_SCENE), 80);
   } else if (CHAPTER_STORY_PREVIEW) {
     setTimeout(() => playChapterStory(CHAPTER_STORY_PREVIEW, null, { force: true }), 80);
@@ -1085,6 +1152,7 @@ function loadState() {
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
+  if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -1297,6 +1365,16 @@ function bindEvents() {
   els.stationBtn.addEventListener("click", handleStationButton);
   els.boardReturnBtn.addEventListener("click", () => switchPage("board"));
   els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
+  els.innStaminaPlusBtn?.addEventListener("click", () => toast("驼铃补充入口暂未接入。"));
+  els.innGemPlusBtn?.addEventListener("click", () => toast("红宝石入口暂未接入。"));
+  els.storyArchiveBtn?.addEventListener("click", () => openStoryArchive());
+  els.storyArchiveChapters?.addEventListener("click", selectStoryArchiveChapter);
+  els.storyArchiveList?.addEventListener("click", selectStoryArchiveSegment);
+  els.storyArchiveRecent?.addEventListener("click", selectStoryArchiveSegment);
+  els.storyArchiveModal?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeStoryArchive();
+  });
   els.innUpgradeBtn.addEventListener("click", upgradeInn);
   els.resetBtn.addEventListener("click", resetGame);
   els.debugStaminaBtn.addEventListener("click", debugAddStamina);
@@ -1334,6 +1412,10 @@ function bindEvents() {
     btn.addEventListener("click", () => {
       if (btn.dataset.close === "repairModal") {
         closeRepairModalToAnchor();
+        return;
+      }
+      if (btn.dataset.close === "storyArchiveModal") {
+        closeStoryArchive();
         return;
       }
       document.querySelector(`#${btn.dataset.close}`).close();
@@ -1430,6 +1512,7 @@ function render() {
   renderSelected();
   renderBagButton();
   renderInnButton();
+  renderStoryArchiveEntry();
   if (els.storageModal?.open) renderStorage();
   if (state.currentPage === "inn") {
     renderInnPage();
@@ -1476,7 +1559,6 @@ function handleStationButton() {
 function destroyInnTemporaryNodes() {
   els.innScene.innerHTML = "";
   els.furnitureShop.innerHTML = "";
-  if (els.orderGiftProgress) els.orderGiftProgress.innerHTML = "";
   document.querySelector(".inn-task-list")?.remove();
 }
 
@@ -1486,8 +1568,15 @@ function renderInnPage() {
   const canUpgrade = canUpgradeInn();
   const nextMilestone = nextRepairMilestone();
   const chapter = activeStoryChapter();
-  els.innLevelName.textContent = `Lv${chapter} ${chapterName(chapter)}`;
+  const chapterMilestones = getMilestoneViews().filter((milestone) => (milestone.chapter ?? 1) === chapter);
+  const completedChapterMilestones = chapterMilestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
+  const chineseNumbers = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+  els.innChapterEyebrow.textContent = `第${chineseNumbers[chapter] ?? chapter}章`;
+  els.innLevelName.textContent = chapterName(chapter);
+  els.innChapterProgress.textContent = `${chineseNumbers[completedChapterMilestones] ?? completedChapterMilestones}之${chineseNumbers[chapterMilestones.length] ?? chapterMilestones.length}`;
   els.innCoins.textContent = state.coins;
+  els.innStamina.textContent = state.stamina;
+  els.innGems.textContent = state.gems ?? 0;
   els.innScoreText.textContent = "主线修缮";
   els.innUpgradeText.textContent =
     level.level >= 4
@@ -1497,13 +1586,14 @@ function renderInnPage() {
         : canUpgrade.reason;
   els.innUpgradeBtn.disabled = level.level >= 4;
   els.innUpgradeBtn.classList.toggle("locked", !canUpgrade.ok);
-  els.innUpgradeBtn.textContent = level.level >= 4 ? "已满级" : canUpgrade.ok ? `扩建 ${level.upgradeCost}铜币` : "扩建未达成";
+  els.innUpgradeBtn.hidden = level.level >= 4 || !canUpgrade.ok;
+  els.innUpgradeBtn.textContent = "扩建";
+  els.innUpgradeBtn.title = canUpgrade.ok ? `扩建流沙驿，消耗${level.upgradeCost}铜币` : canUpgrade.reason;
   els.innStoryLine.textContent = nextMilestone
     ? `${nextMilestone.sceneName ?? nextMilestone.name}：${nextMilestone.nextText}`
     : level.story;
   renderInnScene(level, repairValue);
   renderMainlineDock();
-  renderVisibleOrderGiftProgress();
 }
 
 function renderInnTasks(level) {
@@ -1718,14 +1808,6 @@ function renderMainlineDock() {
       toast(check.ok ? "扩建条件已满足。" : check.reason);
       keeper(check.ok ? "可以扩建流沙驿了。" : check.reason);
     });
-  });
-}
-
-function renderVisibleOrderGiftProgress() {
-  if (!els.orderGiftProgress) return;
-  els.orderGiftProgress.innerHTML = renderOrderProgressGiftRail();
-  els.orderGiftProgress.querySelectorAll("[data-order-progress-pack]").forEach((button) => {
-    button.addEventListener("click", () => claimOrderProgressPack(button.dataset.orderProgressPack));
   });
 }
 
@@ -2151,6 +2233,7 @@ function playChapterStory(segmentId, onComplete, options = {}) {
         state.storyFlags[flag] = true;
         markChapterOpeningSeen(segmentId);
         saveState();
+        renderStoryArchiveEntry();
       }
       onComplete?.();
     },
@@ -2193,6 +2276,315 @@ function resumeActiveChapterStory() {
   const segmentId = state.activeChapterStory?.segmentId;
   if (!segmentId) return false;
   return playChapterStory(segmentId, chapterStoryContinuation(segmentId), { resume: true });
+}
+
+function orderedChapterStoryIds() {
+  const chapters = window.SilkRoadChapterStory?.chapterSegments;
+  if (!chapters) return [];
+  return [1, 2, 3, 4].flatMap((chapter) => chapters[chapter] ?? []);
+}
+
+function storySegmentReached(segmentId) {
+  if (chapterStorySeen(segmentId)) return true;
+  if (segmentId === "opening") {
+    return Boolean(
+      state.storyFlags.chapter1StoryOpeningSeen
+      || state.completedOrders > 0
+      || Object.keys(state.renovationChoices).length > 0
+      || state.innLevel > 1
+    );
+  }
+  const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
+  if (openingMatch) {
+    const chapter = Number(openingMatch[1]);
+    return Boolean(state.storyFlags[`chapter${chapter}StoryOpeningSeen`] || state.innLevel >= chapter);
+  }
+  const repairMatch = segmentId.match(/^(?:before|after):(.+)$/);
+  return Boolean(repairMatch && state.renovationChoices[repairMatch[1]]);
+}
+
+function unlockedChapterStoryIds() {
+  const orderedIds = orderedChapterStoryIds();
+  let lastReachedIndex = -1;
+  orderedIds.forEach((segmentId, index) => {
+    if (storySegmentReached(segmentId)) lastReachedIndex = index;
+  });
+  return new Set(orderedIds.slice(0, lastReachedIndex + 1));
+}
+
+function storyArchiveChapterIds(chapter) {
+  return window.SilkRoadChapterStory?.chapterSegments?.[chapter] ?? [];
+}
+
+function storyArchiveMoments(chapter) {
+  return window.SilkRoadChapterStory?.archiveMoments?.[chapter] ?? [];
+}
+
+function storyArchiveMomentIsUnlocked(moment, unlockedIds = unlockedChapterStoryIds()) {
+  return moment.segmentIds.every((segmentId) => unlockedIds.has(segmentId));
+}
+
+function unlockedStoryArchiveMoments(unlockedIds = unlockedChapterStoryIds()) {
+  return [1, 2, 3, 4].flatMap((chapter) =>
+    storyArchiveMoments(chapter).filter((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds)),
+  );
+}
+
+function storyArchiveChapterIsUnlocked(chapter, unlockedIds = unlockedChapterStoryIds()) {
+  return storyArchiveMoments(chapter).some((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds));
+}
+
+function storyArchiveChapterForSegment(segmentId) {
+  return [1, 2, 3, 4].find((chapter) => storyArchiveChapterIds(chapter).includes(segmentId)) ?? 1;
+}
+
+function storyArchiveChapterForMoment(momentId) {
+  return [1, 2, 3, 4].find((chapter) =>
+    storyArchiveMoments(chapter).some((moment) => moment.id === momentId),
+  ) ?? 1;
+}
+
+function renderStoryArchiveEntry() {
+  if (!els.storyArchiveBtn) return;
+  const count = unlockedStoryArchiveMoments().length;
+  els.storyArchiveBtn.disabled = count === 0;
+  els.storyArchiveBtn.setAttribute("aria-label", count ? "回顾已解锁剧情" : "剧情尚未解锁");
+  els.storyArchiveBtn.title = count ? "剧情回顾" : "剧情尚未解锁";
+}
+
+function latestUnlockedStorySegmentId(unlockedIds) {
+  const orderedIds = orderedChapterStoryIds();
+  for (let index = orderedIds.length - 1; index >= 0; index -= 1) {
+    if (unlockedIds.has(orderedIds[index])) return orderedIds[index];
+  }
+  return null;
+}
+
+function renderStoryArchiveRecent(unlockedIds) {
+  const player = window.SilkRoadChapterStory;
+  const segmentId = latestUnlockedStorySegmentId(unlockedIds);
+  const segment = segmentId ? player?.segments?.[segmentId] : null;
+  const lastStep = segment?.steps?.[segment.steps.length - 1];
+  if (!segmentId || !segment || !lastStep || !els.storyArchiveRecent) return;
+  const completedMoments = unlockedStoryArchiveMoments(unlockedIds);
+  const latestMoment = completedMoments[completedMoments.length - 1];
+  const momentEndsHere = latestMoment?.segmentIds[latestMoment.segmentIds.length - 1] === segmentId;
+  delete els.storyArchiveRecent.dataset.storyMomentId;
+  delete els.storyArchiveRecent.dataset.storySegmentId;
+  if (momentEndsHere) els.storyArchiveRecent.dataset.storyMomentId = latestMoment.id;
+  else els.storyArchiveRecent.dataset.storySegmentId = segmentId;
+  els.storyArchiveRecent.setAttribute("aria-label", `重温最近剧情：${momentEndsHere ? latestMoment.title : segment.title}`);
+  els.storyArchiveRecentPortrait.src = lastStep[2];
+  els.storyArchiveRecentPortrait.alt = "";
+  els.storyArchiveRecentTitle.textContent = momentEndsHere ? latestMoment.title : segment.title;
+  els.storyArchiveRecentSummary.textContent = momentEndsHere ? latestMoment.summary : lastStep[4];
+}
+
+function openStoryArchive(requestedChapter = null) {
+  if (!els.storyArchiveModal || !window.SilkRoadChapterStory) return;
+  const unlockedIds = unlockedChapterStoryIds();
+  const unlockedChapters = [1, 2, 3, 4].filter((chapter) => storyArchiveChapterIsUnlocked(chapter, unlockedIds));
+  if (!unlockedChapters.length) {
+    toast("第一段故事发生后，才会记入驿事。");
+    return;
+  }
+  const normalizedRequest = Number(requestedChapter);
+  activeStoryArchiveChapter = unlockedChapters.includes(normalizedRequest)
+    ? normalizedRequest
+    : unlockedChapters[unlockedChapters.length - 1];
+  renderStoryArchive(unlockedIds);
+  if (!els.storyArchiveModal.open) {
+    resetStoryArchivePageTurn();
+    clearTimeout(storyArchiveCloseTimer);
+    els.storyArchiveModal.classList.remove("is-closing");
+    els.storyArchiveModal.classList.add("is-opening");
+    els.storyArchiveModal.showModal();
+    setTimeout(() => els.storyArchiveModal.classList.remove("is-opening"), 620);
+  }
+}
+
+function closeStoryArchive(onClosed = null) {
+  if (!els.storyArchiveModal?.open) {
+    onClosed?.();
+    return;
+  }
+  resetStoryArchivePageTurn();
+  clearTimeout(storyArchiveCloseTimer);
+  els.storyArchiveModal.classList.remove("is-opening");
+  els.storyArchiveModal.classList.add("is-closing");
+  storyArchiveCloseTimer = setTimeout(() => {
+    els.storyArchiveModal.close();
+    els.storyArchiveModal.classList.remove("is-closing");
+    storyArchiveCloseTimer = null;
+    onClosed?.();
+  }, 360);
+}
+
+function resetStoryArchivePageTurn() {
+  clearTimeout(storyArchivePageSwapTimer);
+  clearTimeout(storyArchivePageDoneTimer);
+  storyArchivePageSwapTimer = null;
+  storyArchivePageDoneTimer = null;
+  storyArchivePageTurning = false;
+  const sheet = els.storyArchiveModal?.querySelector(".story-archive-sheet");
+  sheet?.classList.remove(
+    "is-page-turn-forward",
+    "is-page-turn-backward",
+    "is-page-content-out",
+    "is-page-content-in",
+  );
+  els.storyArchiveChapters?.removeAttribute("aria-busy");
+}
+
+function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
+  const player = window.SilkRoadChapterStory;
+  if (!player || !els.storyArchiveChapters || !els.storyArchiveList) return;
+  const unlockedMoments = unlockedStoryArchiveMoments(unlockedIds);
+  els.storyArchiveTotal.textContent = `${unlockedMoments.length} 则可回顾`;
+  renderStoryArchiveRecent(unlockedIds);
+  els.storyArchiveChapters.replaceChildren();
+  [1, 2, 3, 4].forEach((chapter) => {
+    const unlocked = storyArchiveChapterIsUnlocked(chapter, unlockedIds);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.storyArchiveChapter = String(chapter);
+    button.disabled = !unlocked;
+    button.setAttribute("aria-selected", String(chapter === activeStoryArchiveChapter));
+    button.setAttribute("aria-label", unlocked ? `查看第${chapter}章剧情` : `第${chapter}章尚未解锁`);
+    button.textContent = `第${chapter}章`;
+    els.storyArchiveChapters.append(button);
+  });
+
+  const chapterMoments = storyArchiveMoments(activeStoryArchiveChapter);
+  const availableMoments = chapterMoments.filter((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds));
+  els.storyArchiveChapterEyebrow.textContent = `第${activeStoryArchiveChapter}章`;
+  els.storyArchiveChapterTitle.textContent = chapterName(activeStoryArchiveChapter);
+  els.storyArchiveChapterCount.textContent = `已记 ${availableMoments.length} 则`;
+  els.storyArchiveList.replaceChildren();
+
+  availableMoments.forEach((archiveMoment, momentIndex) => {
+    const segment = player.segments[archiveMoment.segmentIds[0]];
+    const firstStep = segment?.steps?.[0];
+    if (!segment || !firstStep) return;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "story-archive-card";
+    card.dataset.storyMomentId = archiveMoment.id;
+    card.setAttribute("aria-label", `回顾${archiveMoment.title}，共${archiveMoment.segmentIds.length}段剧情`);
+
+    const portrait = document.createElement("img");
+    portrait.src = firstStep[2];
+    portrait.alt = "";
+    const copy = document.createElement("span");
+    const moment = document.createElement("small");
+    const title = document.createElement("strong");
+    const excerpt = document.createElement("em");
+    const arrow = document.createElement("i");
+    moment.textContent = `第${momentIndex + 1}则`;
+    title.textContent = archiveMoment.title;
+    excerpt.textContent = archiveMoment.summary;
+    arrow.textContent = "›";
+    arrow.setAttribute("aria-hidden", "true");
+    copy.append(moment, title, excerpt);
+    card.append(portrait, copy, arrow);
+    els.storyArchiveList.append(card);
+  });
+
+  if (availableMoments.length < chapterMoments.length) {
+    const next = document.createElement("div");
+    next.className = "story-archive-next";
+    next.textContent = "新的纪事将在旅途中写下";
+    els.storyArchiveList.append(next);
+  }
+  els.storyArchiveList.scrollTop = 0;
+}
+
+function selectStoryArchiveChapter(event) {
+  const button = event.target.closest("button[data-story-archive-chapter]");
+  if (!button || button.disabled || storyArchivePageTurning) return;
+  const chapter = Number(button.dataset.storyArchiveChapter);
+  if (!storyArchiveChapterIsUnlocked(chapter)) return;
+  if (chapter === activeStoryArchiveChapter) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    activeStoryArchiveChapter = chapter;
+    renderStoryArchive();
+    return;
+  }
+
+  const sheet = els.storyArchiveModal?.querySelector(".story-archive-sheet");
+  if (!sheet) {
+    activeStoryArchiveChapter = chapter;
+    renderStoryArchive();
+    return;
+  }
+
+  const turnClass = chapter > activeStoryArchiveChapter
+    ? "is-page-turn-forward"
+    : "is-page-turn-backward";
+  const unlockedIds = unlockedChapterStoryIds();
+  storyArchivePageTurning = true;
+  els.storyArchiveChapters.setAttribute("aria-busy", "true");
+  sheet.classList.add(turnClass, "is-page-content-out");
+
+  storyArchivePageSwapTimer = setTimeout(() => {
+    activeStoryArchiveChapter = chapter;
+    renderStoryArchive(unlockedIds);
+    els.storyArchiveChapters.setAttribute("aria-busy", "true");
+    sheet.classList.remove("is-page-content-out");
+    sheet.classList.add("is-page-content-in");
+    storyArchivePageSwapTimer = null;
+  }, 340);
+
+  storyArchivePageDoneTimer = setTimeout(() => {
+    resetStoryArchivePageTurn();
+  }, 720);
+}
+
+function selectStoryArchiveSegment(event) {
+  const card = event.target.closest("button[data-story-segment-id], button[data-story-moment-id]");
+  if (!card) return;
+  if (card.dataset.storyMomentId) replayChapterStoryMoment(card.dataset.storyMomentId);
+  else replayChapterStory(card.dataset.storySegmentId);
+}
+
+function replayChapterStory(segmentId) {
+  const player = window.SilkRoadChapterStory;
+  if (!player?.segments?.[segmentId] || !unlockedChapterStoryIds().has(segmentId)) return;
+  const returnChapter = storyArchiveChapterForSegment(segmentId);
+  const startReplay = () => {
+    player.play(segmentId, {
+      review: true,
+      onComplete: () => openStoryArchive(returnChapter),
+    });
+  };
+  if (els.storyArchiveModal.open) closeStoryArchive(startReplay);
+  else startReplay();
+}
+
+function replayChapterStoryMoment(momentId) {
+  const player = window.SilkRoadChapterStory;
+  const returnChapter = storyArchiveChapterForMoment(momentId);
+  const archiveMoment = storyArchiveMoments(returnChapter).find((moment) => moment.id === momentId);
+  const unlockedIds = unlockedChapterStoryIds();
+  if (!archiveMoment || !storyArchiveMomentIsUnlocked(archiveMoment, unlockedIds)) return;
+
+  let segmentIndex = 0;
+  const playNextSegment = () => {
+    const segmentId = archiveMoment.segmentIds[segmentIndex];
+    player.play(segmentId, {
+      review: true,
+      onComplete: (result) => {
+        if (result?.completed && segmentIndex < archiveMoment.segmentIds.length - 1) {
+          segmentIndex += 1;
+          playNextSegment();
+          return;
+        }
+        openStoryArchive(returnChapter);
+      },
+    });
+  };
+  if (els.storyArchiveModal.open) closeStoryArchive(playNextSegment);
+  else playNextSegment();
 }
 
 function launchRepairPlayer(milestone) {
@@ -2394,6 +2786,7 @@ function currentInnLevel() {
 function activeStoryChapter() {
   if (ORDER_GIFT_QA_MODE) return ORDER_GIFT_QA_CHAPTER;
   if (LV4_MARKET_ORDERS_QA_MODE) return 4;
+  if (STORY_ARCHIVE_QA_MODE) return STORY_ARCHIVE_QA_CHAPTER;
   const next = nextRepairMilestone();
   if (next?.chapter) return next.chapter;
   return getMilestoneViews().reduce((chapter, milestone) => (state.renovationChoices[milestone.id] ? Math.max(chapter, milestone.chapter ?? 1) : chapter), 1);
@@ -2783,7 +3176,7 @@ function lockedCellItemId(index) {
 function lockedCellVisual(index) {
   const item = byId.get(lockedCellItemId(index));
   if (!item) return null;
-  return { name: item.name, src: itemAssetSrc(item), kind: item.type };
+  return { id: item.id, name: item.name, src: itemAssetSrc(item), kind: item.type };
 }
 
 function renderOrders() {
@@ -2865,10 +3258,15 @@ function renderBoard() {
       const visual = lockedCellVisual(index);
       cell.setAttribute("aria-label", visual ? visual.name : lockedItem ? lockedItem.name : "待解锁格");
       if (visual) {
+        const isGeneratorMaterial = visual.kind === "generator_material";
         const img = document.createElement("img");
-        img.className = `item locked-preview ${visual.kind === "material" ? "locked-material-preview" : ""}`;
+        img.className = `item locked-preview ${isGeneratorMaterial ? "generator-material locked-material-preview" : ""}`;
         img.alt = visual.name;
         img.src = visual.src;
+        if (isGeneratorMaterial) {
+          const scale = GENERATOR_MATERIAL_SCALE_PERCENT[visual.id] ?? 220;
+          img.style.setProperty("--generator-material-scale", `${scale}%`);
+        }
         cell.append(img);
       }
       const dust = Object.assign(document.createElement("img"), {
@@ -5270,8 +5668,10 @@ function clearPulseSoon() {
 }
 
 function itemAssetSrc(item) {
-  if (item.iconKey?.startsWith("ui_")) return `./assets/ui/${item.iconKey}.png`;
-  return `./assets/${item.iconKey}.png`;
+  const assetVersion = item.assetVersion ?? ITEM_ASSET_VERSIONS[item.id];
+  const version = assetVersion ? `?v=${encodeURIComponent(assetVersion)}` : "";
+  if (item.iconKey?.startsWith("ui_")) return `./assets/ui/${item.iconKey}.png${version}`;
+  return `./assets/${item.iconKey}.png${version}`;
 }
 
 function keeper(line) {
