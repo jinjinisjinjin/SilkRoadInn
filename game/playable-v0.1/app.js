@@ -3569,12 +3569,37 @@ function renderOrders() {
   });
 }
 
+function readyOrderBoardHighlightIndices() {
+  const requiredByItem = new Map();
+  state.visibleOrders.forEach((orderId) => {
+    const order = getOrder(orderId);
+    if (!order?.demand?.length) return;
+    const canComplete = order.demand.every((demand) => countItem(demand.itemId) >= demand.quantity);
+    if (!canComplete) return;
+    order.demand.forEach((demand) => {
+      const quantity = Math.max(0, Math.floor(Number(demand.quantity) || 0));
+      requiredByItem.set(demand.itemId, Math.max(requiredByItem.get(demand.itemId) ?? 0, quantity));
+    });
+  });
+
+  const remainingByItem = new Map(requiredByItem);
+  const highlighted = new Set();
+  state.board.forEach((itemId, index) => {
+    const remaining = remainingByItem.get(itemId) ?? 0;
+    if (remaining <= 0) return;
+    highlighted.add(index);
+    remainingByItem.set(itemId, remaining - 1);
+  });
+  return highlighted;
+}
+
 function renderBoard() {
   els.board.innerHTML = "";
+  const readyOrderHighlights = readyOrderBoardHighlightIndices();
   state.board.forEach((itemId, index) => {
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
-    cell.className = `cell ${locked ? "locked" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
+    cell.className = `cell ${locked ? "locked" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
     cell.dataset.index = index;
     cell.setAttribute("role", "button");
     cell.tabIndex = locked ? -1 : 0;
