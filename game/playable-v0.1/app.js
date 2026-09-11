@@ -461,11 +461,8 @@ const els = {
   orderDetailCodexBtn: document.querySelector("#orderDetailCodexBtn"),
   orderDetailCompleteBtn: document.querySelector("#orderDetailCompleteBtn"),
   orderFoodModal: document.querySelector("#orderFoodModal"),
-  orderFoodEyebrow: document.querySelector("#orderFoodEyebrow"),
   orderFoodTitle: document.querySelector("#orderFoodTitle"),
-  orderFoodSummary: document.querySelector("#orderFoodSummary"),
   orderFoodRoute: document.querySelector("#orderFoodRoute"),
-  orderFoodUnlocked: document.querySelector("#orderFoodUnlocked"),
   bagModal: document.querySelector("#bagModal"),
   bagList: document.querySelector("#bagList"),
   storageModal: document.querySelector("#storageModal"),
@@ -3636,7 +3633,7 @@ function renderOrders() {
       }
       trigger.addEventListener("click", (event) => {
         event.stopPropagation();
-        openOrderFoodDetail(order.id, item.id, demand.quantity);
+        openOrderFoodDetail(order.id, item.id);
       });
       trigger.addEventListener("keydown", (event) => event.stopPropagation());
       foods.append(trigger);
@@ -4971,15 +4968,13 @@ function highestUnlockedFoodLevel(item, lineItems) {
   return Math.min(highestLineLevel, Math.max(targetLevel, progressionLevel, historicalLevel, currentlyOwnedLevel));
 }
 
-function openOrderFoodDetail(orderId, itemId, quantity) {
+function openOrderFoodDetail(orderId, itemId) {
   const order = getOrder(orderId);
   const item = byId.get(itemId);
   const demand = order?.demand?.find((entry) => entry.itemId === itemId);
   if (!order || !item || !demand) return;
   activeOrderFoodContext = {
-    orderId,
     itemId,
-    quantity: Math.max(1, Number(quantity) || Number(demand.quantity) || 1),
   };
   renderOrderFoodDetail();
   els.orderFoodModal.showModal();
@@ -4987,18 +4982,13 @@ function openOrderFoodDetail(orderId, itemId, quantity) {
 
 function renderOrderFoodDetail() {
   if (!activeOrderFoodContext) return;
-  const { itemId, quantity } = activeOrderFoodContext;
+  const { itemId } = activeOrderFoodContext;
   const item = byId.get(itemId);
   if (!item) return;
   const lineItems = foodItemsForLine(item.line);
   const highestUnlockedLevel = highestUnlockedFoodLevel(item, lineItems);
   const visibleItems = lineItems.filter((lineItem) => Number(lineItem.level) <= highestUnlockedLevel);
-  const targetOwned = effectiveBoardItemCount(item.id);
-
-  els.orderFoodEyebrow.textContent = `食客所需 · ${lineLabel(item.line)}`;
   els.orderFoodTitle.textContent = item.name;
-  els.orderFoodSummary.textContent = `需要 ×${quantity} · 棋盘可用 ${targetOwned}`;
-  els.orderFoodUnlocked.textContent = `已解锁至 Lv${highestUnlockedLevel}`;
   els.orderFoodRoute.setAttribute("role", "list");
   els.orderFoodRoute.setAttribute("aria-label", `${lineLabel(item.line)}合成路线`);
   els.orderFoodRoute.replaceChildren();
@@ -5011,7 +5001,7 @@ function renderOrderFoodDetail() {
     routeItem.setAttribute("role", "listitem");
     routeItem.setAttribute(
       "aria-label",
-      `${lineItem.name}，Lv${lineItem.level}，棋盘可用${owned}${isTarget ? "，食客所需" : ""}`,
+      `${lineItem.name}，棋盘可用${owned}${isTarget ? "，食客所需" : ""}`,
     );
     if (isTarget) routeItem.setAttribute("aria-current", "true");
 
@@ -5031,9 +5021,7 @@ function renderOrderFoodDetail() {
 
     const name = document.createElement("strong");
     name.textContent = lineItem.name;
-    const level = document.createElement("small");
-    level.textContent = `Lv${lineItem.level}`;
-    routeItem.append(art, name, level);
+    routeItem.append(art, name);
     els.orderFoodRoute.append(routeItem);
   });
 }
