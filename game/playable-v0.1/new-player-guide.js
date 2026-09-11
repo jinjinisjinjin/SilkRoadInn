@@ -50,8 +50,8 @@
     button.id = "newPlayerCodexBtn";
     button.type = "button";
     button.className = "side-entry codex-side-entry";
-    button.setAttribute("aria-label", "打开丝路食单");
-    button.title = "丝路食单";
+    button.setAttribute("aria-label", "打开丝路食鉴");
+    button.title = "丝路食鉴";
     button.innerHTML = '<img src="./assets/ui/ui_codex_scroll.png" alt="" />';
     button.addEventListener("click", () => {
       document.querySelector("#codexBtn")?.click();
@@ -227,7 +227,7 @@
         "先去后厨续上炉火，备好迎接第一位客人。",
         "回后厨继续备面，合成第一张炉饼。",
         "炉饼已经做好，回后厨交给周甲。",
-        "首单已经完成，回后厨翻开新收录的食单。",
+        "首单已经完成，回后厨打开食鉴，看看刚收录的食物。",
       ];
       showGuide({
         text: returnCopy[tutorialStep],
@@ -273,7 +273,7 @@
 
     if (tutorialStep === 3 && page === "board") {
       showGuide({
-        text: "新食谱已经记下。点卷轴，看看《丝路食单》。",
+        text: "新食谱已经记下。点卷轴，看看《丝路食鉴》。",
         targets: [document.querySelector("#newPlayerCodexBtn")],
       });
       return;

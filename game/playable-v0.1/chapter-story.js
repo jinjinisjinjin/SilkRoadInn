@@ -64,7 +64,7 @@
       steps: [
         ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "风从门缝里灌进来，旧灶积着灰。阿爷走后，流沙驿已经两年没有亮过火了。"],
         ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "灶台底下还压着他的旧火石。第一下只擦出冷光，第二下，火星终于落进干草里。"],
-        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "《丝路食单》扉页上，是阿爷留下的那句话：“驿路不止，食火不灭。”阿爷，我先替你把这炉火续上。"],
+        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "《丝路食鉴》扉页上，是阿爷留下的那句话：“驿路不止，食火不灭。”阿爷，我先替你把这炉火续上。"],
       ],
     },
     "before:tutorial_complete": {
@@ -105,8 +105,8 @@
       title: "食单见人",
       scene: "codex repaired-two",
       steps: [
-        ["周氏", "佛寺女施主", portraits.donor, "left", "你总把食单收进匣里，是怕人翻坏，还是怕自己续不好它？"],
-        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "从前总觉得，少一笔都像辜负阿爷。如今我想明白了，这本食单，本就是许多人一路走出来的。"],
+        ["周氏", "佛寺女施主", portraits.donor, "left", "你总把食鉴收进匣里，是怕人翻坏，还是怕自己续不好它？"],
+        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "从前总觉得，少一笔都像辜负阿爷。如今我想明白了，这本食鉴，本就是许多人一路走出来的。"],
       ],
     },
     "after:codex_first_phase": {
@@ -318,7 +318,7 @@
       title: "花影庭园",
       scene: "chapter-three garden completed",
       steps: [
-        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "第一张札记写的不是菜名，而是“已平安到沙州”。我这才明白，食单旁还该记下人的归处。"],
+        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "第一张札记写的不是菜名，而是“已平安到沙州”。我这才明白，食鉴旁还该记下人的归处。"],
       ],
     },
     "before:lv3_watchtower": {
@@ -465,7 +465,7 @@
       steps: [
         ["粟特胡商", "西市行商", portraits.merchant, "left", "从西市望过来，一盏、十盏、百盏。如今谁再问流沙驿在何处，我只消指向这片灯。"],
         ["孟氏", "敦煌女店客", portraits.woman, "right", "我还记得你推门那日，门缝里只有一点火。如今整条街的人，都在替它添柴。"],
-        ["康十一", "远路商队首领", portraits.caravan, "left", "西来的旧货里夹着半页食单，纸角有你阿爷的记号。送货人说，余下几页还在更西边。"],
+        ["康十一", "远路商队首领", portraits.caravan, "left", "西来的旧货里夹着半页食鉴，纸角有你阿爷的记号。送货人说，余下几页还在更西边。"],
         ["掌柜", "流沙驿掌柜", portraits.keeper, "right", "原来阿爷留下的路还没有走完。“驿路不止，食火不灭。”这一回，我知道该往哪里走了。"],
       ],
     },
@@ -535,7 +535,7 @@
       {
         id: "chapter1-first-fire",
         title: "第一缕炉烟",
-        summary: "掌柜重启旧灶，也重新翻开阿爷留下的《丝路食单》。",
+        summary: "掌柜重启旧灶，也重新翻开阿爷留下的《丝路食鉴》。",
         segmentIds: ["opening"],
       },
       {
@@ -553,7 +553,7 @@
       {
         id: "chapter1-shared-codex",
         title: "食单见人",
-        summary: "掌柜不再把食单藏进匣中，决定把一路相遇的味道继续写下去。",
+        summary: "掌柜不再把食鉴藏进匣中，决定把一路相遇的味道继续写下去。",
         segmentIds: ["before:codex_first_phase", "after:codex_first_phase"],
       },
     ],
@@ -671,7 +671,7 @@
       {
         id: "chapter4-city-of-lights",
         title: "灯火连城",
-        summary: "货棚、院落与长街连成灯海，阿爷留下的半页食单又把掌柜引向更远的路。",
+        summary: "货棚、院落与长街连成灯海，阿爷留下的半页食鉴又把掌柜引向更远的路。",
         segmentIds: [
           "before:lv4_east_shed",
           "after:lv4_east_shed",

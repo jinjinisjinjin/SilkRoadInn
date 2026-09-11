@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=storage-unlimited-v2" />
+    <link rel="stylesheet" href="./styles.css?v=board-merge-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
@@ -20,7 +20,7 @@
       <img class="startup-loading-poster" src="./assets/ui/loading_poster_character_v1.webp" alt="丝路肆食" fetchpriority="high" />
       <div class="startup-loading-footer">
         <div class="startup-loading-line">
-          <span id="startupLoadingStatus">正在翻开丝路食单</span>
+          <span id="startupLoadingStatus">正在翻开丝路食鉴</span>
           <b id="startupLoadingPercent">0%</b>
         </div>
         <div class="startup-loading-track" id="startupLoadingTrack" role="progressbar" aria-label="游戏加载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -116,7 +116,7 @@
       <nav class="tabbar" hidden>
         <button id="boardReturnBtn" data-tab="board"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>后厨</span></button>
         <button id="stationBtn" data-tab="inn"><img src="./assets/ui/ui_station_tavern.png" alt="" /><span>流沙驿</span></button>
-        <button id="codexBtn" data-tab="codex"><img src="./assets/ui/ui_codex_scroll.png" alt="" /><span>食单</span></button>
+        <button id="codexBtn" data-tab="codex"><img src="./assets/ui/ui_codex_scroll.png" alt="" /><span>食鉴</span></button>
         <button id="bagBtn" data-tab="bag"><img src="./assets/ui/ui_bag_inventory.png" alt="" /><span>行囊</span></button>
       </nav>
     </main>
@@ -195,11 +195,23 @@
       </section>
     </dialog>
 
-    <dialog id="codexModal" class="modal">
-      <div class="modal-inner">
-        <button class="close" data-close="codexModal">×</button>
-        <h2>《丝路食单》</h2>
-        <div class="codex-list" id="codexList"></div>
+    <dialog id="codexModal" class="modal codex-modal" aria-labelledby="codexTitle">
+      <div class="modal-inner codex-index">
+        <button class="close codex-close" data-close="codexModal" aria-label="关闭食鉴">×</button>
+        <header class="codex-index-head">
+          <h2 id="codexTitle">《丝路食鉴》</h2>
+          <p>已识 <strong id="codexKnownCount">0</strong><span> / 48</span></p>
+        </header>
+        <button id="codexSelected" class="codex-selected" type="button">
+          <img id="codexSelectedIcon" alt="" />
+          <span class="codex-selected-copy">
+            <strong id="codexSelectedName"></strong>
+            <small id="codexSelectedText"></small>
+          </span>
+          <span class="codex-selected-action">札记 <i aria-hidden="true">›</i></span>
+        </button>
+        <div class="codex-matrix" id="codexList" role="grid" aria-label="六类食物的一至八阶总谱"></div>
+        <p class="codex-index-hint">轻触已识食物，在上方查看名称与札记</p>
       </div>
     </dialog>
     <dialog id="codexDetailModal" class="modal">
@@ -208,15 +220,15 @@
         <img id="codexDetailIcon" alt="" />
         <div class="codex-detail-title"><h2 id="codexDetailName"></h2><span id="codexDetailModern"></span></div>
         <p class="codex-short" id="codexDetailShort"></p>
-        <section><h3>食单札记</h3><p id="codexDetailLong"></p></section>
-        <section><h3>出处备注</h3><p id="codexDetailSource"></p></section>
+        <section><h3 id="codexDetailNotesTitle">食鉴札记</h3><p id="codexDetailLong"></p></section>
+        <section id="codexDetailSourceSection"><h3>出处</h3><p id="codexDetailSource"></p></section>
       </div>
     </dialog>
     <dialog id="unlockModal" class="modal">
       <div class="modal-inner unlock">
-        <h2>收入《丝路食单》</h2>
+        <h2>收入《丝路食鉴》</h2>
         <img id="unlockIcon" alt="" /><h3 id="unlockName"></h3><p id="unlockText"></p>
-        <div class="modal-actions"><button data-close="unlockModal">知道了</button><button id="viewCodexFromUnlock" class="primary">查看食单</button></div>
+        <div class="modal-actions"><button data-close="unlockModal">知道了</button><button id="viewCodexFromUnlock" class="primary">查看食鉴</button></div>
       </div>
     </dialog>
     <dialog id="storyModal" class="modal">
@@ -291,8 +303,17 @@
         <div class="order-detail-head"><img id="orderDetailAvatar" class="order-detail-avatar" alt="" /><div><h2 id="orderDetailNpc"></h2><p id="orderDetailDialogue"></p></div></div>
         <section class="order-detail-demand"><div id="orderDetailDemandList" class="order-detail-demand-list"></div></section>
         <section class="order-recipe-box"><h3>合成提示</h3><p id="orderDetailRecipe"></p></section>
-        <div class="modal-actions"><button id="orderDetailCodexBtn">查看食单</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
+        <div class="modal-actions"><button id="orderDetailCodexBtn">查看食鉴</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
       </div>
+    </dialog>
+    <dialog id="orderFoodModal" class="modal order-food-modal" aria-labelledby="orderFoodTitle">
+      <section class="modal-inner order-food-detail">
+        <button class="close order-food-close" data-close="orderFoodModal" aria-label="关闭食物合成路线">×</button>
+        <header class="order-food-head">
+          <h2 id="orderFoodTitle">食物合成路线</h2>
+        </header>
+        <div id="orderFoodRoute" class="order-food-route"></div>
+      </section>
     </dialog>
     <dialog id="bagModal" class="modal bag-modal" aria-label="行囊">
       <div class="modal-inner bag-modal-inner">
@@ -365,8 +386,8 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=inn-map-ui-v3"></script>
-    <script src="./new-player-guide.js?v=new-player-guide-v4"></script>
-    <script src="./app.js?v=storage-unlimited-v1"></script>
+    <script src="./chapter-story.js?v=board-merge-v1"></script>
+    <script src="./new-player-guide.js?v=board-merge-v1"></script>
+    <script src="./app.js?v=board-merge-v1"></script>
   </body>
 </html>

@@ -2198,6 +2198,7 @@ button:disabled {
   --board-ink: #4a2f1d;
   --board-gold: #d4a457;
   --board-cell: rgba(240, 199, 118, 0.88);
+  --board-top-gutter: max(18px, env(safe-area-inset-top));
   padding: 0;
   background:
     linear-gradient(to bottom, rgba(236, 190, 111, 0.18), rgba(166, 104, 48, 0.22)),
@@ -2282,7 +2283,7 @@ button:disabled {
   position: absolute;
   z-index: 19;
   left: 8px;
-  top: 66px;
+  top: calc(var(--board-top-gutter) + 62px);
   width: 43px;
   padding: 0;
   gap: 8px;
@@ -2305,7 +2306,7 @@ button:disabled {
 #app[data-page="board"] .orders {
   position: absolute;
   z-index: 15;
-  top: 56px;
+  top: calc(var(--board-top-gutter) + 52px);
   left: 54px;
   right: 0;
   width: auto;
@@ -2356,6 +2357,53 @@ button:disabled {
   gap: 8px;
   pointer-events: none;
 }
+
+#app[data-page="board"] .order-food-trigger {
+  position: relative;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+#app[data-page="board"] .order-food-trigger img {
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+}
+
+#app[data-page="board"] .order-food-needed {
+  position: absolute;
+  right: -3px;
+  bottom: -1px;
+  z-index: 2;
+  min-width: 18px;
+  padding: 2px 4px;
+  border: 1px solid rgba(255, 237, 196, 0.76);
+  border-radius: 999px;
+  color: #fff0cf;
+  background: rgba(91, 53, 31, 0.9);
+  box-shadow: 0 1px 3px rgba(55, 30, 17, 0.24);
+  font: 800 9px/1 Georgia, serif;
+  pointer-events: none;
+}
+
+#app[data-page="board"] .order-food-trigger:active {
+  transform: scale(0.9);
+  filter: brightness(1.08);
+}
+
+#app[data-page="board"] .order-food-trigger:focus-visible {
+  outline: 2px solid rgba(154, 68, 49, 0.82);
+  outline-offset: 1px;
+}
 #app[data-page="board"] .deliver-btn {
   position: absolute;
   left: 50%;
@@ -2396,9 +2444,9 @@ button:disabled {
 #app[data-page="board"] .board-wrap {
   position: absolute;
   z-index: 14;
-  left: 2px;
-  right: 2px;
-  top: 218px;
+  left: 10px;
+  right: 10px;
+  top: calc(var(--board-top-gutter) + 220px);
   bottom: 86px;
   margin: 0;
   padding: 3px;
@@ -4654,43 +4702,392 @@ button:disabled {
   font: 800 26px/1.2 "Songti SC", "STSong", serif;
 }
 
-.codex-card {
-  display: grid;
-  grid-template-columns: 58px 1fr;
-  gap: 10px;
-  padding: 10px 0;
-  border-top: 1px solid rgba(117, 74, 34, 0.25);
+.codex-modal {
+  width: min(96vw, 414px);
+  overflow: visible;
 }
 
-.codex-card:not(.locked) {
-  cursor: pointer;
+.codex-index {
+  position: relative;
+  max-height: min(88dvh, 700px);
+  overflow: hidden;
+  padding: 16px 12px 13px;
+  border: 2px solid rgba(105, 61, 31, 0.9);
+  border-radius: 19px;
+  background:
+    radial-gradient(circle at 46% -8%, rgba(255, 249, 222, 0.98), transparent 42%),
+    linear-gradient(90deg, rgba(145, 89, 43, 0.08), transparent 10% 90%, rgba(145, 89, 43, 0.08)),
+    #f6dfb0;
+  box-shadow:
+    0 18px 44px rgba(41, 24, 14, 0.4),
+    inset 0 0 0 3px rgba(255, 244, 210, 0.62),
+    inset 0 -8px 20px rgba(114, 67, 29, 0.08);
 }
 
-.codex-card:not(.locked):hover {
-  background: rgba(255, 242, 210, 0.42);
+.codex-index::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(137, 85, 40, 0.2);
+  border-radius: 13px;
+  pointer-events: none;
 }
 
-.codex-card.locked {
-  opacity: 0.45;
-  filter: grayscale(0.8);
+.codex-modal[open] .codex-index {
+  animation: codexIndexOpen 190ms ease-out both;
 }
 
-.codex-card img {
-  width: 58px;
-  height: 58px;
-  object-fit: contain;
+.codex-close {
+  z-index: 5;
+  top: 9px;
+  right: 9px;
+  width: 34px;
+  min-height: 34px;
+  border: 1px solid rgba(91, 45, 30, 0.72);
+  border-radius: 11px;
+  color: #fff1d1;
+  background: linear-gradient(180deg, #aa5140, #84372f);
+  box-shadow:
+    0 3px 0 rgba(67, 34, 22, 0.22),
+    inset 0 1px 0 rgba(255, 238, 204, 0.28);
+  font: 800 23px/1 system-ui, sans-serif;
 }
 
-.codex-card h3 {
-  margin: 0 0 4px;
-  font: 800 18px/1 "Songti SC", "STSong", serif;
+.codex-index-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 43px;
+  margin-bottom: 8px;
+  padding: 0 42px 7px 4px;
+  border-bottom: 1px solid rgba(133, 79, 37, 0.22);
 }
 
-.codex-card p {
+.codex-index .codex-index-head h2 {
   margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+  color: #49301f;
+  font: 900 25px/1 "Songti SC", "STSong", serif;
+  letter-spacing: 0.02em;
+}
+
+.codex-index-head p {
+  margin: 2px 0 0;
+  color: #886d4e;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.codex-index-head p strong {
+  color: #994637;
+  font: 900 14px/1 Georgia, serif;
+}
+
+.codex-selected {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 78px;
+  padding: 5px 9px;
+  border: 1px solid rgba(146, 87, 34, 0.26);
+  border-radius: 12px;
+  color: #4a301f;
+  background: rgba(255, 245, 211, 0.67);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  text-align: left;
+  font-family: inherit;
+}
+
+.codex-selected:hover,
+.codex-selected:focus-visible {
+  border-color: rgba(155, 70, 55, 0.72);
+  background: rgba(255, 239, 195, 0.9);
+}
+
+.codex-selected:focus-visible {
+  outline: 2px solid rgba(155, 70, 55, 0.45);
+  outline-offset: 2px;
+}
+
+.codex-selected > img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 2px rgba(67, 37, 18, 0.2));
+}
+
+.codex-selected-copy {
+  min-width: 0;
+}
+
+.codex-selected-copy strong,
+.codex-selected-copy small {
+  display: block;
+}
+
+.codex-selected-copy strong {
+  overflow: hidden;
+  color: #4d2f1e;
+  font: 900 17px/1.15 "Songti SC", "STSong", serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.codex-selected-copy small {
+  display: -webkit-box;
+  max-height: 2.7em;
+  margin-top: 5px;
+  overflow: hidden;
+  color: #806448;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.codex-selected-action {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding-left: 7px;
+  border-left: 1px solid rgba(133, 79, 37, 0.18);
+  color: #984535;
+  font: 800 10px/1 "Songti SC", "STSong", serif;
+  white-space: nowrap;
+}
+
+.codex-selected-action i {
+  margin-top: -1px;
+  font: normal 20px/1 Georgia, serif;
+}
+
+.codex-matrix-row {
+  display: grid;
+  grid-template-columns: 40px repeat(8, minmax(0, 1fr));
+  gap: 1px;
+  align-items: center;
+}
+
+.codex-matrix {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.codex-matrix-row {
+  min-height: 51px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(116, 72, 31, 0.14);
+}
+
+.codex-matrix-label {
+  color: #4f3422;
+  font: 900 12px/1 "Songti SC", "STSong", serif;
+  text-align: center;
+}
+
+.codex-matrix-row.is-locked-line .codex-matrix-label {
+  color: rgba(91, 65, 40, 0.48);
+}
+
+.codex-matrix-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 47px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.codex-matrix-cell.is-unlocked {
+  border-color: rgba(142, 88, 37, 0.09);
+  background: rgba(255, 248, 224, 0.43);
+}
+
+.codex-matrix-cell.is-unlocked:hover {
+  border-color: rgba(155, 70, 55, 0.48);
+  background: rgba(255, 237, 193, 0.72);
+}
+
+.codex-matrix-cell[aria-pressed="true"] {
+  border-color: #9b4637;
+  background: #f6d998;
+  box-shadow:
+    0 0 0 2px rgba(155, 70, 55, 0.14),
+    inset 0 0 10px rgba(177, 105, 37, 0.1);
+}
+
+.codex-matrix-cell:focus-visible {
+  outline: 2px solid rgba(155, 70, 55, 0.58);
+  outline-offset: 1px;
+}
+
+.codex-matrix-cell:disabled {
+  cursor: default;
+  filter: none;
+  opacity: 1;
+}
+
+.codex-matrix-cell img {
+  display: block;
+  width: min(43px, 112%);
+  height: 43px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(67, 37, 18, 0.18));
+}
+
+.codex-matrix-cell.is-locked img {
+  width: min(37px, 96%);
+  height: 37px;
+  opacity: 0.84;
+  filter: drop-shadow(0 2px 2px rgba(67, 37, 18, 0.12));
+}
+
+.codex-matrix-level {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(255, 235, 185, 0.9);
+  border-radius: 50%;
+  color: #fff2d0;
+  background: #9f4b39;
+  box-shadow: 0 1px 2px rgba(68, 35, 20, 0.22);
+  font: 900 7px/1 Georgia, serif;
+  pointer-events: none;
+}
+
+.codex-matrix-cell.is-locked .codex-matrix-level {
+  border-color: rgba(241, 223, 181, 0.9);
+  color: #7f6648;
+  background: #ddc590;
+  box-shadow: none;
+}
+
+.codex-index-hint {
+  position: relative;
+  z-index: 1;
+  margin: 8px 0 0;
+  color: #8a704f;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@keyframes codexIndexOpen {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.975);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 350px) {
+  .codex-index {
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .codex-selected {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    min-height: 70px;
+    padding-right: 7px;
+    padding-left: 7px;
+  }
+
+  .codex-selected > img {
+    width: 55px;
+    height: 55px;
+  }
+
+  .codex-selected-copy strong {
+    font-size: 15px;
+  }
+
+  .codex-matrix-row {
+    grid-template-columns: 36px repeat(8, minmax(0, 1fr));
+  }
+
+  .codex-matrix-label {
+    font-size: 11px;
+  }
+
+  .codex-matrix-cell {
+    height: 43px;
+  }
+
+  .codex-matrix-cell img {
+    height: 39px;
+  }
+
+  .codex-matrix-cell.is-locked img {
+    height: 34px;
+  }
+}
+
+@media (max-height: 650px) {
+  .codex-index {
+    padding-top: 11px;
+    padding-bottom: 9px;
+  }
+
+  .codex-index-head {
+    min-height: 38px;
+    margin-bottom: 5px;
+  }
+
+  .codex-selected {
+    min-height: 64px;
+  }
+
+  .codex-selected > img {
+    width: 53px;
+    height: 53px;
+  }
+
+  .codex-matrix-row {
+    min-height: 45px;
+  }
+
+  .codex-matrix-cell {
+    height: 41px;
+  }
+
+  .codex-matrix-cell img {
+    height: 38px;
+  }
+
+  .codex-index-hint {
+    margin-top: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .codex-modal[open] .codex-index {
+    animation: none;
+  }
 }
 
 .codex-detail {
@@ -5455,6 +5852,236 @@ button:disabled {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.order-food-modal {
+  width: min(90vw, 356px);
+  overflow: visible;
+}
+
+.order-food-detail {
+  position: relative;
+  max-height: min(74dvh, 520px);
+  overflow: hidden;
+  padding: 18px 16px 15px;
+  border: 2px solid rgba(105, 61, 31, 0.9);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 248, 218, 0.96), transparent 46%),
+    linear-gradient(90deg, rgba(145, 89, 43, 0.09), transparent 12% 88%, rgba(145, 89, 43, 0.09)),
+    #f6dfb0;
+  box-shadow:
+    0 18px 44px rgba(41, 24, 14, 0.38),
+    inset 0 0 0 3px rgba(255, 244, 210, 0.58),
+    inset 0 -7px 18px rgba(114, 67, 29, 0.08);
+}
+
+.order-food-detail::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(137, 85, 40, 0.24);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.order-food-modal[open] .order-food-detail {
+  animation: orderFoodOpen 180ms ease-out both;
+}
+
+.order-food-close {
+  z-index: 5;
+  top: 9px;
+  right: 9px;
+  width: 32px;
+  min-height: 32px;
+  border: 1px solid rgba(91, 45, 30, 0.72);
+  border-radius: 50%;
+  color: #fff1d1;
+  background: linear-gradient(180deg, #aa5140, #84372f);
+  box-shadow:
+    0 2px 5px rgba(67, 34, 22, 0.24),
+    inset 0 1px 0 rgba(255, 238, 204, 0.28);
+  font: 800 20px/1 system-ui, sans-serif;
+}
+
+.order-food-close:focus-visible {
+  outline: 2px solid rgba(250, 222, 157, 0.96);
+  outline-offset: 2px;
+}
+
+.order-food-head {
+  position: relative;
+  z-index: 1;
+  padding: 2px 38px 11px 2px;
+  border-bottom: 1px solid rgba(133, 79, 37, 0.22);
+}
+
+.order-food-detail .order-food-head h2 {
+  margin: 0;
+  color: #54321f;
+  font: 900 23px/1.12 "Songti SC", "STSong", serif;
+}
+
+.order-food-route {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px 3px;
+  padding: 13px 1px 5px;
+}
+
+.order-food-route-item {
+  min-width: 0;
+  color: #65442d;
+  text-align: center;
+}
+
+.order-food-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 3px;
+  isolation: isolate;
+}
+
+.order-food-art::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 10px;
+  border: 1px solid rgba(190, 137, 72, 0.22);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 38% 28%, rgba(255, 245, 200, 0.78), transparent 52%),
+    rgba(225, 185, 112, 0.42);
+  box-shadow: inset 0 0 0 2px rgba(255, 243, 205, 0.34);
+  transform: rotate(45deg);
+}
+
+.order-food-route-item.has-stock .order-food-art::before {
+  border-color: rgba(180, 113, 48, 0.38);
+  background:
+    radial-gradient(circle at 38% 28%, rgba(255, 248, 211, 0.9), transparent 52%),
+    rgba(231, 186, 101, 0.58);
+}
+
+.order-food-route-item.is-locked .order-food-art::before {
+  inset: 10px;
+  border-color: rgba(151, 105, 58, 0.2);
+  background:
+    radial-gradient(circle at 38% 28%, rgba(255, 241, 199, 0.7), transparent 52%),
+    rgba(209, 173, 106, 0.34);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 241, 204, 0.2),
+    0 2px 4px rgba(70, 42, 25, 0.08);
+}
+
+.order-food-route-item.is-locked .order-food-art::after {
+  content: none;
+}
+
+.order-food-art img.order-food-box-lid {
+  width: 74px;
+  height: 74px;
+  filter: drop-shadow(0 4px 3px rgba(61, 34, 18, 0.24));
+  transform: translateY(1px) scale(0.94);
+}
+
+.order-food-art img {
+  width: 72px;
+  height: 72px;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 2px rgba(61, 34, 18, 0.2));
+}
+
+.order-food-route-item.is-target .order-food-art::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background:
+    linear-gradient(#a34a37, #a34a37) left top / 16px 2px no-repeat,
+    linear-gradient(#a34a37, #a34a37) left top / 2px 16px no-repeat,
+    linear-gradient(#a34a37, #a34a37) right top / 16px 2px no-repeat,
+    linear-gradient(#a34a37, #a34a37) right top / 2px 16px no-repeat,
+    linear-gradient(#a34a37, #a34a37) left bottom / 16px 2px no-repeat,
+    linear-gradient(#a34a37, #a34a37) left bottom / 2px 16px no-repeat,
+    linear-gradient(#a34a37, #a34a37) right bottom / 16px 2px no-repeat,
+    linear-gradient(#a34a37, #a34a37) right bottom / 2px 16px no-repeat;
+  filter: drop-shadow(0 0 4px rgba(171, 72, 49, 0.28));
+  pointer-events: none;
+}
+
+.order-food-count {
+  position: absolute;
+  z-index: 4;
+  top: -2px;
+  right: -1px;
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: 2px solid #f8e6b7;
+  border-radius: 999px;
+  color: #fff5d7;
+  background: linear-gradient(180deg, #bd513d, #923128);
+  box-shadow: 0 2px 4px rgba(73, 35, 22, 0.28);
+  font: 900 12px/1 Georgia, serif;
+}
+
+.order-food-route-item strong {
+  display: block;
+  min-height: 2.35em;
+  overflow: hidden;
+  color: #563821;
+  font: 800 11px/1.18 "Songti SC", "STSong", serif;
+}
+
+.order-food-route-item.is-target strong {
+  color: #943e31;
+}
+
+@keyframes orderFoodOpen {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 350px) {
+  .order-food-detail {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .order-food-art {
+    width: 62px;
+    height: 62px;
+  }
+
+  .order-food-art img {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app[data-page="board"] .order-food-trigger,
+  .order-food-modal[open] .order-food-detail {
+    animation: none;
+    transition: none;
+  }
 }
 
 .bag-modal {

@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "codexName": "丝路食单",
+  "codexName": "丝路食鉴",
   "entries": [
     {
       "id": "codex_hubing_01",
@@ -161,6 +161,326 @@
       "longText": "高阶乳糜用于表现乳食、谷物与供养叙事的结合，是奶食线的典藏终点。正式剧情应避免直接编造某一敦煌文书专名，需在美术与文案阶段补充确证出处。",
       "confidence": "B-",
       "sourceNote": "宗教供养与乳糜意象有基础，敦煌精确来源待核。"
+    },
+    {
+      "id": "codex_meat_01",
+      "itemId": "meat_01_yangrou_luan",
+      "name": "羊肉脔",
+      "modernName": "生切羊肉块",
+      "shortText": "羊肉切脔，是北地灶火最朴实的起手。",
+      "longText": "“脔”本指切成小块的肉。敦煌文书与壁画所见的饮食场景中，羊是常见肉食来源，河西宴设账目也可见羊只与羊肉支出。本级以未经复杂调味的羊肉块作为肉食线起点。",
+      "confidence": "B",
+      "sourceNote": "参考敦煌饮食研究中的羊肉消费记录；“羊肉脔”为游戏分级名。"
+    },
+    {
+      "id": "codex_meat_02",
+      "itemId": "meat_02_roumi_xian",
+      "name": "肉糜馅",
+      "modernName": "细剁羊肉馅",
+      "shortText": "细剁成糜，葱、椒与豉汁才容易入味。",
+      "longText": "《齐民要术》所录肉食做法中，可见羊肉细切后配葱白、盐、豉汁、姜与椒末调和。游戏把这种细剁、调味的加工阶段概括为“肉糜馅”，用来承接生肉与熟食。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》卷九所载细锉羊肉及葱白、豉汁、姜、椒末的调味组合。"
+    },
+    {
+      "id": "codex_meat_03",
+      "itemId": "meat_03_roupu",
+      "name": "驼队肉脯",
+      "modernName": "风干肉条",
+      "shortText": "晒去水气，肉脯才能陪商队走过长路。",
+      "longText": "“脯”是古代干肉的常见称谓。切条、腌渍和干燥可以延长保存时间，也符合长途行旅对便携肉食的需要。“驼队肉脯”强调使用场景，并非敦煌文书中的固定菜名。",
+      "confidence": "B",
+      "sourceNote": "参考《齐民要术》脯腊加工记载及古代肉食保存方法；名称为策划归纳。"
+    },
+    {
+      "id": "codex_meat_04",
+      "itemId": "meat_04_jiaochi_yangrou",
+      "name": "椒豉羊肉",
+      "modernName": "香料炖羊肉",
+      "shortText": "椒末与豉汁同煨，羊肉香得更深。",
+      "longText": "椒末提供辛香，豉汁带来咸鲜，两者与姜、葱一起出现在《齐民要术》的多种肉食调味中。游戏将这些古代常见调味关系汇成一碗慢煨羊肉，表现丝路香料进入日常灶火。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》肉食条目中的椒末、豉汁、姜与葱白组合；菜名为游戏归纳。"
+    },
+    {
+      "id": "codex_meat_05",
+      "itemId": "meat_05_yangrou_geng",
+      "name": "羊肉羹",
+      "modernName": "羊肉汤羹",
+      "shortText": "肉汤慢熬成羹，寒夜里最能压住风沙。",
+      "longText": "羹与臛是古代常见的浓汤类食物，《齐民要术》还保存了以羊肉配葱、蒜、豉汁等煮成胡羹的记录。本级把羊肉从炖煮推进到汤羹形态，适合作为驿站留客的暖食。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》羹臛法及作胡羹法中的羊肉、葱蒜与豉汁用料。"
+    },
+    {
+      "id": "codex_meat_06",
+      "itemId": "meat_06_suzhi_yanglei",
+      "name": "酥炙羊肋",
+      "modernName": "酥烤羊肋",
+      "shortText": "酥脂润肋，微火炙出一层焦香。",
+      "longText": "古代“炙”法重视肉的肥瘦、火候与反复涂味。《齐民要术》炙法收录多种牲畜肉和椒、姜、豉汁等调味。游戏加入乳酥润烤的丝路风味，形成高阶羊肋形象。",
+      "confidence": "B-",
+      "sourceNote": "炙法参考《齐民要术》；以乳酥烤羊肋的具体组合为游戏设计。"
+    },
+    {
+      "id": "codex_meat_07",
+      "itemId": "meat_07_zhiyangrou",
+      "name": "炙羊肉",
+      "modernName": "烤羊肉串",
+      "shortText": "炙火一逼，羊肉在签上滴下热油。",
+      "longText": "“炙”是把肉近火烤熟的古老方法，北方与西域的羊肉饮食也强化了这种火烤印象。游戏以肉签呈现，帮助玩家快速识别；签烤造型是视觉转译，不等同于单一古菜复原。",
+      "confidence": "B",
+      "sourceNote": "参考《齐民要术》炙法及敦煌饮食研究中的羊肉、烤肉文化。"
+    },
+    {
+      "id": "codex_meat_08",
+      "itemId": "meat_08_shangdui_zhiyangyan",
+      "name": "商队炙羊宴",
+      "modernName": "整席烤羊肉",
+      "shortText": "一席炙羊，才接得住远道而来的大商队。",
+      "longText": "敦煌宴设与供食记录显示，羊肉既是日常肉食，也是集体宴饮中的重要物资。本级把炙肉、香料与大盘陈设合为肉食线终点，用来表现商队抵驿后的共享宴席。",
+      "confidence": "B-",
+      "sourceNote": "参考敦煌宴设账目、壁画饮食场景与羊肉消费研究；宴名为策划组合。"
+    },
+    {
+      "id": "codex_spice_01",
+      "itemId": "spice_01_huma",
+      "name": "胡麻",
+      "modernName": "芝麻籽",
+      "shortText": "一把胡麻，能让素饼先有西域的香。",
+      "longText": "胡麻经丝路交流进入中原饮食，古籍中的“胡麻”有时还牵涉芝麻与亚麻的名物辨析。游戏采用最常见的芝麻解释，让它成为香料线和胡饼线相连的起点。",
+      "confidence": "B",
+      "sourceNote": "参考丝路作物交流研究及《齐民要术》胡麻条；本作按芝麻形态表现。"
+    },
+    {
+      "id": "codex_spice_02",
+      "itemId": "spice_02_ziran_mo",
+      "name": "孜然末",
+      "modernName": "孜然粉",
+      "shortText": "辛香研成细末，最懂得追着炙火走。",
+      "longText": "孜然是今日西北烤肉常用香料，丝路农业交流研究也将其列入隋唐宋时期进入中国的域外作物。游戏直接采用现代熟悉名称，强调风味识别，不主张敦煌文书已使用同一菜名。",
+      "confidence": "C+",
+      "sourceNote": "参考丝路农业物种交流研究；古代名称、传入年代与敦煌具体用法仍待细考。"
+    },
+    {
+      "id": "codex_spice_03",
+      "itemId": "spice_03_hujiao_li",
+      "name": "胡椒粒",
+      "modernName": "黑胡椒",
+      "shortText": "小小胡椒渡过远路，落进肉汤便醒了香。",
+      "longText": "胡椒与荜拨等辛香料随陆海贸易进入中国，既用于饮食，也进入香药与配制酒。《齐民要术》保存胡椒酒等相关记载。本级用整粒胡椒表现外来香料的珍贵。",
+      "confidence": "B+",
+      "sourceNote": "参考《齐民要术》胡椒酒记载及唐代外来香药研究。"
+    },
+    {
+      "id": "codex_spice_04",
+      "itemId": "spice_04_jiaochi_jiang",
+      "name": "椒豉酱",
+      "modernName": "香料豆豉酱",
+      "shortText": "椒辛入豉，咸香就能慢慢挂在肉上。",
+      "longText": "豉、椒、姜、葱和油是古代酱汁与熟食中常见的搭配。《齐民要术》既记录作豉、作酱，也记录用豉汁和椒末调肉。游戏把这些关系浓缩成可蘸、可煨的椒豉酱。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》作豉法、作酱法及肉食调味条目；酱名为策划归纳。"
+    },
+    {
+      "id": "codex_spice_05",
+      "itemId": "spice_05_xiangliao_yan",
+      "name": "香料盐",
+      "modernName": "调味盐",
+      "shortText": "盐收住百味，也替远行食物守住时日。",
+      "longText": "盐既调味，也参与腌渍保存。古代农书中可见制盐、腌肉和辛香调味的多种做法。本级把盐与丝路香料合装，表现驿站为旅人准备的便携调味物。",
+      "confidence": "B-",
+      "sourceNote": "参考《齐民要术》制盐、腌藏与椒姜调味记录；混合香料盐为游戏设计。"
+    },
+    {
+      "id": "codex_spice_06",
+      "itemId": "spice_06_hexiang_jiangzhan",
+      "name": "合香酱盏",
+      "modernName": "复合香料酱",
+      "shortText": "几路香味在一只小盏里相逢。",
+      "longText": "古代调味并非只靠一种香料，豉汁、酱、椒、姜、橘皮、胡芹与油常按食物需要组合。游戏以一盏复合酱表现多味调和，也呼应丝路物产在驿站汇聚。",
+      "confidence": "B",
+      "sourceNote": "参考《齐民要术》多种酱、豉及复合调味记载；“合香酱盏”为策划名。"
+    },
+    {
+      "id": "codex_spice_07",
+      "itemId": "spice_07_xiyu_xiangliao_xia",
+      "name": "西域香料匣",
+      "modernName": "香料盒",
+      "shortText": "揭开小匣，像同时推开几座远方城门。",
+      "longText": "丝路贸易带来胡椒、茴香等域外香料，也让本地盐、豉和草木香与外来风味相遇。本级不是一道食物，而是把多种辛香料整理成便于交易和取用的收藏形态。",
+      "confidence": "C+",
+      "sourceNote": "参考丝路香料与作物交流史；匣中组合和器物外形为游戏表现。"
+    },
+    {
+      "id": "codex_spice_08",
+      "itemId": "spice_08_silu_baiwei_xia",
+      "name": "丝路百味匣",
+      "modernName": "高阶香料匣",
+      "shortText": "百味归匣，整条商路都能在灶上开口。",
+      "longText": "从胡麻、胡椒到复合酱料，香料线记录的是物产流动与本地烹调的结合。“丝路百味匣”以收藏终点的方式概括这种交流，不对应历史上的单一器名或固定配方。",
+      "confidence": "C",
+      "sourceNote": "基于丝路香料交流史的策划归纳；名称、配方与陈设均为游戏设计。"
+    },
+    {
+      "id": "codex_fruit_01",
+      "itemId": "fruit_01_putao",
+      "name": "葡萄",
+      "modernName": "鲜葡萄",
+      "shortText": "葡萄珠里，盛着绿洲最清亮的一口甜。",
+      "longText": "葡萄是丝路物产交流中最具代表性的果品之一，汉代以后在河西与西域持续种植，也进入唐代诗歌、宴饮和酿酒文化。本级以鲜果作为果品线起点。",
+      "confidence": "A-",
+      "sourceNote": "参考丝路作物交流史、河西葡萄种植史及敦煌葡萄酒研究。"
+    },
+    {
+      "id": "codex_fruit_02",
+      "itemId": "fruit_02_gan_putao",
+      "name": "干葡萄",
+      "modernName": "葡萄干",
+      "shortText": "晒去水分，绿洲的甜便能装进行囊。",
+      "longText": "日晒脱水能让葡萄更耐储运，也浓缩糖分，适合干燥地区和长途商旅。游戏以“干葡萄”表现鲜果经过保存加工后的第二阶段，不绑定某件敦煌文书中的固定名称。",
+      "confidence": "B-",
+      "sourceNote": "依据葡萄干燥保存原理与丝路商旅场景归纳；敦煌专名待考。"
+    },
+    {
+      "id": "codex_fruit_03",
+      "itemId": "fruit_03_yezao",
+      "name": "椰枣",
+      "modernName": "西域椰枣",
+      "shortText": "一枚椰枣，把更西边的日光带到沙州。",
+      "longText": "椰枣原产西亚、北非，是适合干热环境的高糖果实。丝路农业交流研究把它列入隋唐宋时期东来的域外作物。游戏用它表现商旅携来的西方干果。",
+      "confidence": "C+",
+      "sourceNote": "参考丝路农业物种交流研究；椰枣在敦煌的具体消费证据仍待补充。"
+    },
+    {
+      "id": "codex_fruit_04",
+      "itemId": "fruit_04_wuhuaguo",
+      "name": "无花果",
+      "modernName": "鲜无花果",
+      "shortText": "薄皮一破，蜜甜便从西来的果心里流出。",
+      "longText": "无花果与多种西亚果树一道，经丝路逐步传入中国。它耐旱、含糖高，既可鲜食也可晒干。游戏将鲜无花果置于中阶，强调绿洲果园和远方物产的联系。",
+      "confidence": "C+",
+      "sourceNote": "参考丝路农业交流史；唐五代敦煌的具体品种与食法仍待考。"
+    },
+    {
+      "id": "codex_fruit_05",
+      "itemId": "fruit_05_guopu_pan",
+      "name": "果脯盘",
+      "modernName": "干果拼盘",
+      "shortText": "几样果脯同盘，甜味也有了远近层次。",
+      "longText": "晒干、切曝和密藏都是古代延长果品保存时间的方法。《齐民要术》记录晒枣、枣脯等做法。游戏把葡萄干、椰枣等耐存果品合盘，作为商旅分享的小食。",
+      "confidence": "B",
+      "sourceNote": "参考《齐民要术》晒枣、枣脯与果品保存条目；拼盘组合为游戏设计。"
+    },
+    {
+      "id": "codex_fruit_06",
+      "itemId": "fruit_06_mijian_guo",
+      "name": "蜜煎果",
+      "modernName": "蜜渍果品",
+      "shortText": "果子在蜜里收了锋芒，只留下柔软的甜。",
+      "longText": "古代果品可用蜜煮、蜜藏等方式加工，《齐民要术》保存了多种以蜜处理果实的记录。游戏以“蜜煎果”概括蜜渍、微煮和晾干后的甜果形态。",
+      "confidence": "A-",
+      "sourceNote": "参考《齐民要术》卷四、卷十有关蜜藏、蜜煮与果品加工的记载。"
+    },
+    {
+      "id": "codex_fruit_07",
+      "itemId": "fruit_07_hutao_miguo",
+      "name": "胡桃蜜果",
+      "modernName": "坚果蜜果",
+      "shortText": "胡桃添脆，蜜果添软，一盘能走两种路。",
+      "longText": "胡桃是丝路交流中常被提及的西来物产，蜂蜜又能为果品增甜并帮助保存。游戏把坚果与蜜渍果组合成高阶甜食，突出不同口感与物产的相遇。",
+      "confidence": "B-",
+      "sourceNote": "胡桃东传参考丝路作物交流史；胡桃与蜜果的同盘组合为策划归纳。"
+    },
+    {
+      "id": "codex_fruit_08",
+      "itemId": "fruit_08_xiyu_zhenguo_pan",
+      "name": "西域珍果盘",
+      "modernName": "西域果品宴盘",
+      "shortText": "绿洲与远国的果实，在一只宴盘里会齐。",
+      "longText": "葡萄、石榴、胡桃、无花果等物产共同见证了丝路上的植物传播。“西域珍果盘”把鲜果、干果与蜜果汇为果品线终点，用于表现宴席中的丰盛与交流。",
+      "confidence": "C+",
+      "sourceNote": "参考丝路作物交流史；宴盘构成与名称为游戏化组合，不对应单一古食谱。"
+    },
+    {
+      "id": "codex_drink_01",
+      "itemId": "drink_01_putaozhi",
+      "name": "葡萄汁",
+      "modernName": "鲜榨葡萄汁",
+      "shortText": "鲜葡萄轻轻一压，先流出绿洲的清甜。",
+      "longText": "葡萄既可鲜食，也能榨汁、煮浆或酿酒。游戏以未发酵的鲜汁作为浆饮线起点，帮助玩家理解同一种果实如何逐步走向浓浆与酒饮。",
+      "confidence": "B",
+      "sourceNote": "基于河西葡萄种植与古代果汁加工逻辑归纳；“葡萄汁”为现代化分级名。"
+    },
+    {
+      "id": "codex_drink_02",
+      "itemId": "drink_02_putaojiang",
+      "name": "葡萄浆",
+      "modernName": "浓葡萄浆",
+      "shortText": "果汁稍浓，甜味便能在盏中停得更久。",
+      "longText": "古代“浆”可泛指多种饮料，并不必然等于现代果汁。游戏把葡萄汁经过浓缩或短时发酵的阶段称为“葡萄浆”，用于连接鲜汁与后续复合饮、酒饮。",
+      "confidence": "B-",
+      "sourceNote": "参考古代“浆”类饮品语义与葡萄加工史；具体工艺为策划归纳。"
+    },
+    {
+      "id": "codex_drink_03",
+      "itemId": "drink_03_sanlejiang",
+      "name": "三勒浆",
+      "modernName": "古法果浆",
+      "shortText": "三种异果同酿，甜里藏着波斯来的酒意。",
+      "longText": "唐代文献称“三勒浆类酒，法出波斯”。相关研究指出，三勒指诃梨勒、毗梨勒与庵摩勒，配蜜和水密封酿成。它是丝路饮食交流中出处较清楚的一种异域酒浆。",
+      "confidence": "A",
+      "sourceNote": "参考李肇《唐国史补》及《“法出波斯”：三勒浆源流考》。"
+    },
+    {
+      "id": "codex_drink_04",
+      "itemId": "drink_04_shiliujiang",
+      "name": "石榴浆",
+      "modernName": "石榴饮",
+      "shortText": "石榴籽压成红浆，酸甜像落日一样明亮。",
+      "longText": "石榴是经丝路进入中国的代表性果品，古称安石榴，名称也保留了西来印记。游戏把果肉压汁、调水制成石榴浆，表现绿洲果品转化为解渴饮料。",
+      "confidence": "B",
+      "sourceNote": "石榴东传参考《博物志》相关引文与丝路作物交流史；饮法为策划归纳。"
+    },
+    {
+      "id": "codex_drink_05",
+      "itemId": "drink_05_mijiang",
+      "name": "蜜浆",
+      "modernName": "蜂蜜饮",
+      "shortText": "清水调蜜，赶路人喝下去才肯慢一口气。",
+      "longText": "蜂蜜在古代既用于甜味，也用于果品加工和配制饮料。游戏将蜜与清水调和，设为介于果浆和酒饮之间的柔甜饮品；“蜜浆”是便于理解的概括名称。",
+      "confidence": "B",
+      "sourceNote": "参考古代蜂蜜加工与浆饮记录；敦煌地区的具体配方仍待核。"
+    },
+    {
+      "id": "codex_drink_06",
+      "itemId": "drink_06_putaojiu",
+      "name": "蒲桃酒",
+      "modernName": "葡萄酒",
+      "shortText": "蒲桃入瓮，绿洲的甜终于酿成暖意。",
+      "longText": "“蒲桃”是葡萄的古写之一。葡萄酒在唐代名酒记录、诗歌和敦煌饮食研究中都占有醒目位置，反映西域种植与酿造传统对河西生活的影响。",
+      "confidence": "A-",
+      "sourceNote": "参考《唐国史补》名酒记录及唐五代敦煌饮食研究中的葡萄酒材料。"
+    },
+    {
+      "id": "codex_drink_07",
+      "itemId": "drink_07_xiangyaojiu",
+      "name": "香药酒",
+      "modernName": "药香酒",
+      "shortText": "辛香浸进酒里，入口先暖，余味才慢慢展开。",
+      "longText": "古代配制酒常加入椒、姜、荜拨等辛香或药材，《齐民要术》也保存胡椒酒等记录。游戏以“香药酒”概括丝路香料与酒饮结合的高阶形态。",
+      "confidence": "B",
+      "sourceNote": "参考《齐民要术》胡椒酒及唐代外来香药研究；配方与造型为游戏归纳。"
+    },
+    {
+      "id": "codex_drink_08",
+      "itemId": "drink_08_silu_yanyin",
+      "name": "丝路宴饮",
+      "modernName": "宴席酒水",
+      "shortText": "诸路酒浆同席，举杯便是一次远方相逢。",
+      "longText": "敦煌饮食研究可见麦酒、清酒、白醪、葡萄酒和胡酒等多种酒名，宴饮也是旅人、商队与地方社会交往的重要场景。本级以多样酒浆合席，作为浆饮线终点。",
+      "confidence": "B-",
+      "sourceNote": "参考唐五代敦煌酒类与宴饮研究；“丝路宴饮”为综合性的游戏终阶名。"
     }
   ]
 }
