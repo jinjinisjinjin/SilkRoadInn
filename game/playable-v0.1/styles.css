@@ -2265,7 +2265,7 @@ button:disabled {
 #app[data-page="board"] .resources {
   position: absolute;
   z-index: 20;
-  top: max(6px, env(safe-area-inset-top));
+  top: max(36px, calc(env(safe-area-inset-top) + 36px));
   left: 58px;
   right: 12px;
   min-height: 30px;
