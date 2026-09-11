@@ -617,7 +617,7 @@
       },
       "weight": 10,
       "unlock": "available_when_producible",
-      "dialogue": "胡麻饼、乳糜和新磨的胡麻各备一份。三味能在一席相合，才算把流沙驿的第一卷食单写全。",
+      "dialogue": "胡麻饼、乳糜和新磨的胡麻各备一份。三味能在一席相合，才算把流沙驿的第一卷食鉴写全。",
       "chapter": 1,
       "orderType": "repairMain",
       "contentSource": "handcrafted",
