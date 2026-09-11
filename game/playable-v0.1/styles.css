@@ -6037,16 +6037,20 @@ button.bag-slot:focus-visible {
 }
 
 .storage-cabinet .close {
-  top: 8.5%;
-  right: 6.5%;
+  top: 9.3%;
+  right: 6.8%;
   z-index: 5;
-  width: 32px;
-  min-height: 32px;
-  border: 0;
+  width: 38px;
+  min-height: 38px;
+  border: 2px solid rgba(140, 66, 46, 0.82);
   border-radius: 999px;
-  color: #fff1cf;
-  background: rgba(101, 59, 34, 0.9);
-  box-shadow: 0 3px 8px rgba(48, 27, 13, 0.25);
+  color: #943f35;
+  background: #fff4d5;
+  box-shadow:
+    0 3px 8px rgba(48, 27, 13, 0.3),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.48);
+  font-size: 25px;
+  line-height: 1;
 }
 
 .storage-interior {
@@ -6104,7 +6108,7 @@ button.storage-slot.filled {
 }
 
 .storage-slot.empty::after,
-.storage-empty-mark {
+.storage-slot .storage-empty-mark {
   display: none;
 }
 
@@ -6126,7 +6130,7 @@ button.storage-slot.filled {
   cursor: pointer;
 }
 
-.storage-slot .storage-add {
+.storage-slot span.storage-add {
   position: static;
   right: auto;
   bottom: auto;
@@ -6144,7 +6148,22 @@ button.storage-slot.filled {
     inset 0 0 0 2px rgba(105, 76, 49, 0.32);
   overflow: visible;
   font: 800 40px/1 system-ui, sans-serif;
+  text-align: center;
+  white-space: normal;
   text-shadow: 0 2px 3px rgba(48, 27, 13, 0.42);
+}
+
+.storage-slot.empty .storage-empty-mark {
+  position: static;
+  display: block;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(93, 60, 34, 0.22);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 234, 188, 0.12), rgba(76, 47, 27, 0.1));
+  box-shadow:
+    inset 0 2px 5px rgba(57, 33, 18, 0.16),
+    0 1px 0 rgba(255, 229, 174, 0.15);
 }
 
 .storage-slot.unlockable:active .storage-add {
@@ -6155,23 +6174,28 @@ button.storage-slot.filled {
   position: absolute;
   z-index: 4;
   right: 18.5%;
-  bottom: 9.2%;
+  bottom: 8.8%;
   left: 18.5%;
   display: grid;
   grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.9fr);
-  gap: 8px;
+  gap: 7px;
+  padding: 5px;
+  border: 1px solid rgba(70, 40, 22, 0.5);
+  border-radius: 7px;
+  background: rgba(92, 52, 28, 0.68);
+  box-shadow: inset 0 1px 4px rgba(42, 23, 12, 0.36);
 }
 
 .storage-capacity-card,
 .storage-unlock-card {
   display: flex;
   min-width: 0;
-  min-height: 38px;
+  min-height: 36px;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 5px 8px;
-  border: 2px solid rgba(77, 49, 31, 0.72);
+  border: 1px solid rgba(255, 235, 195, 0.5);
   border-radius: 4px;
   color: #fff7df;
   box-shadow:
@@ -6183,7 +6207,7 @@ button.storage-slot.filled {
 }
 
 .storage-capacity-card {
-  background: linear-gradient(180deg, #38bde1, #118bbd);
+  background: linear-gradient(180deg, #4f9eb2, #34788c);
 }
 
 .storage-capacity-card b {
@@ -6191,7 +6215,7 @@ button.storage-slot.filled {
 }
 
 .storage-unlock-card {
-  background: linear-gradient(180deg, #67d8aa, #34a97c);
+  background: linear-gradient(180deg, #74b995, #4a8d6d);
 }
 
 .storage-unlock-card .ruby-icon,

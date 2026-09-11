@@ -5777,7 +5777,11 @@ function renderStorage() {
       isFull ? "柜中仓位已经全部开启" : `花费${nextPrice}颗红宝石开启一个柜中仓位`,
     );
   }
-  for (let index = 0; index < STORAGE_TOTAL_SLOTS; index += 1) {
+  const visibleSlotCount = Math.min(
+    STORAGE_TOTAL_SLOTS,
+    state.unlockedStorageSlots + (state.unlockedStorageSlots < STORAGE_TOTAL_SLOTS ? 1 : 0),
+  );
+  for (let index = 0; index < visibleSlotCount; index += 1) {
     const isUnlocked = index < state.unlockedStorageSlots;
     const isNextUnlock = index === state.unlockedStorageSlots;
     const itemId = isUnlocked ? (state.bag[index] ?? null) : null;
