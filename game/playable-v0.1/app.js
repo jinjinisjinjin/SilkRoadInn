@@ -493,7 +493,10 @@ const els = {
   staminaPurchaseAmount: document.querySelector("#staminaPurchaseAmount"),
   staminaPurchaseCount: document.querySelector("#staminaPurchaseCount"),
   staminaPurchasePrice: document.querySelector("#staminaPurchasePrice"),
+  staminaPurchaseRule: document.querySelector("#staminaPurchaseRule"),
   staminaPurchaseConfirm: document.querySelector("#staminaPurchaseConfirm"),
+  rubyRechargeModal: document.querySelector("#rubyRechargeModal"),
+  rubyRechargeBalance: document.querySelector("#rubyRechargeBalance"),
   pieceDetailModal: document.querySelector("#pieceDetailModal"),
   pieceDetailIcon: document.querySelector("#pieceDetailIcon"),
   pieceDetailName: document.querySelector("#pieceDetailName"),
@@ -1764,7 +1767,7 @@ function bindEvents() {
   els.sellBtn.addEventListener("click", sellSelected);
   els.selectedDetailBtn?.addEventListener("click", openSelectedPieceDetail);
   els.staminaPlusBtn?.addEventListener("click", openStaminaPurchase);
-  els.gemPlusBtn?.addEventListener("click", explainRubyUse);
+  els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.storageBtn?.addEventListener("click", openStorage);
   els.stationHudBtn?.addEventListener("click", handleStationButton);
   els.repairSideBtn?.addEventListener("click", handleStationButton);
@@ -1774,7 +1777,7 @@ function bindEvents() {
   els.boardReturnBtn.addEventListener("click", () => switchPage("board"));
   els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
-  els.innGemPlusBtn?.addEventListener("click", explainRubyUse);
+  els.innGemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.storageInviteBtn?.addEventListener("click", explainStorageInvite);
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
   els.staminaPurchaseConfirm?.addEventListener("click", purchaseStamina);
@@ -5927,8 +5930,9 @@ function openStorage() {
   els.storageModal.showModal();
 }
 
-function explainRubyUse() {
-  toast("红宝石可扩充柜中仓位，也可购买驼铃。");
+function openRubyRecharge() {
+  if (els.rubyRechargeBalance) els.rubyRechargeBalance.textContent = state.gems ?? 0;
+  els.rubyRechargeModal?.showModal();
 }
 
 function explainStorageInvite() {
@@ -5948,9 +5952,14 @@ function renderStaminaPurchase() {
   if (!els.staminaPurchaseModal) return;
   const amount = Math.max(1, Number(staminaPurchaseConfig().staminaAmount) || 100);
   const price = currentStaminaPurchasePrice();
+  const multiplier = Math.max(1, Number(staminaPurchaseConfig().priceMultiplier) || 2);
+  const nextPrice = Math.round(price * multiplier);
   els.staminaPurchaseAmount.textContent = amount;
-  els.staminaPurchaseCount.textContent = `今日第${state.staminaPurchasesToday + 1}次补充`;
+  els.staminaPurchaseCount.textContent = `今日第${state.staminaPurchasesToday + 1}次兑换`;
   els.staminaPurchasePrice.textContent = price;
+  if (els.staminaPurchaseRule) {
+    els.staminaPurchaseRule.textContent = `本次${price}颗，下一次${nextPrice}颗；每日重置`;
+  }
   els.staminaPurchaseConfirm.setAttribute("aria-label", `花费${price}颗红宝石购买${amount}点驼铃`);
 }
 

@@ -6937,68 +6937,331 @@ button.storage-slot.filled {
 }
 
 .stamina-purchase-modal {
-  width: min(86vw, 330px);
+  width: min(90vw, 350px);
 }
 
-.stamina-purchase-inner {
+.stamina-purchase-inner,
+.ruby-recharge-inner {
   display: grid;
   justify-items: center;
   overflow: hidden;
-  padding: 24px 20px 20px;
+  padding: 0 18px 18px;
+  border-color: rgba(126, 72, 35, 0.9);
   text-align: center;
   background:
-    radial-gradient(circle at 50% 12%, rgba(255, 250, 221, 0.92), transparent 42%),
-    #f5dfad;
+    linear-gradient(90deg, rgba(151, 93, 42, 0.08), transparent 12% 88%, rgba(151, 93, 42, 0.08)),
+    #f8e8c5;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 249, 221, 0.7),
+    0 18px 48px rgba(43, 24, 14, 0.44);
 }
 
-.stamina-purchase-inner > img {
-  width: 92px;
-  height: 92px;
-  margin-top: 4px;
-  object-fit: contain;
-  filter: drop-shadow(0 7px 7px rgba(70, 42, 21, 0.2));
+.stamina-purchase-inner > .close,
+.ruby-recharge-inner > .close {
+  z-index: 3;
 }
 
-.stamina-purchase-inner > span {
-  margin-top: 2px;
-  color: #95613b;
-  font-size: 13px;
+.currency-panel-head {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: calc(100% + 36px);
+  margin: 0 -18px 12px;
+  padding: 13px 52px 12px;
+  color: #fff1cb;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 224, 166, 0.16) 22% 78%, transparent),
+    linear-gradient(180deg, #a9553d, #7f382f);
+  box-shadow: inset 0 -2px 0 rgba(87, 36, 27, 0.38), 0 3px 8px rgba(69, 37, 22, 0.18);
+}
+
+.currency-panel-head::before,
+.currency-panel-head::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 231, 186, 0.56);
+}
+
+.currency-panel-head::before {
+  left: 19px;
+}
+
+.currency-panel-head::after {
+  right: 19px;
+}
+
+.currency-panel-head > span {
+  color: #f1c98e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.currency-panel-head h2,
+.stamina-purchase-inner h2,
+.ruby-recharge-inner h2 {
+  margin: 2px 0 0;
+  color: #fff5d8;
+  font: 800 26px/1.12 "Songti SC", "STSong", serif;
+  text-shadow: 0 2px 2px rgba(75, 29, 24, 0.5);
+}
+
+.currency-panel-intro {
+  max-width: 290px;
+  margin: 0 0 11px;
+  color: #79513a;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.stamina-offer {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  padding: 10px 12px 13px;
+  border: 1px solid rgba(150, 95, 48, 0.32);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 58%, rgba(255, 231, 163, 0.9), transparent 45%),
+    rgba(255, 248, 224, 0.58);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.32);
+}
+
+.currency-panel-count {
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #8b5938;
+  background: rgba(142, 83, 42, 0.1);
+  font-size: 12px;
   font-weight: 800;
 }
 
-.stamina-purchase-inner h2 {
-  margin: 5px 0 8px;
-  color: #5d3722;
-  font-size: 27px;
+.stamina-offer-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  margin: 2px 0 -4px;
 }
 
-.stamina-purchase-inner p {
-  margin: 0 0 18px;
-  color: #765039;
-  font-size: 15px;
+.stamina-offer-main img {
+  width: 94px;
+  height: 94px;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 6px rgba(70, 42, 21, 0.24));
+  transform: rotate(-6deg);
 }
 
-.stamina-purchase-inner p strong {
-  color: #8d3e32;
-  font-size: 18px;
+.stamina-offer-main strong {
+  margin-left: -3px;
+  color: #8b382d;
+  font: 900 34px/1 system-ui, sans-serif;
+  text-shadow: 0 2px 0 #fff2cd;
 }
 
-.stamina-purchase-inner .modal-actions {
-  width: 100%;
+.stamina-offer-main strong b {
+  font-size: 40px;
+}
+
+.stamina-offer-name {
+  color: #68432f;
+  font: 800 15px/1 "Songti SC", "STSong", serif;
+  letter-spacing: 0.12em;
 }
 
 .stamina-purchase-confirm {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: min(70%, 210px);
+  min-height: 48px;
+  margin-top: 12px;
   gap: 8px;
+  border: 2px solid rgba(55, 115, 83, 0.62);
+  border-radius: 8px;
   color: #fff8df;
   background: linear-gradient(180deg, #67d8aa, #34a97c);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.18),
+    0 3px 0 #27775a,
+    0 7px 12px rgba(49, 84, 61, 0.2);
 }
 
 .stamina-purchase-confirm b {
-  font-size: 19px;
+  font-size: 21px;
+}
+
+.stamina-purchase-confirm span {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.currency-panel-rule {
+  margin: 10px 0 0;
+  color: #9a704f;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ruby-recharge-modal {
+  width: min(94vw, 390px);
+}
+
+.ruby-recharge-inner {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+
+.ruby-recharge-inner .currency-panel-head {
+  width: calc(100% + 24px);
+  margin-right: -12px;
+  margin-left: -12px;
+}
+
+.ruby-panel-head {
+  min-height: 78px;
+  padding-left: 92px;
+}
+
+.ruby-panel-head > img {
+  position: absolute;
+  left: 21px;
+  bottom: 5px;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 5px rgba(66, 18, 19, 0.36));
+}
+
+.ruby-panel-head::before {
+  display: none;
+}
+
+.ruby-current-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  margin: -2px 0 8px;
+  padding: 5px 15px;
+  border: 1px solid rgba(138, 83, 42, 0.26);
+  border-radius: 999px;
+  color: #805339;
+  background: rgba(255, 248, 225, 0.72);
+  font-size: 13px;
+}
+
+.ruby-current-balance .ruby-icon {
+  width: 17px;
+  height: 17px;
+  margin: 0 8px 0 12px;
+}
+
+.ruby-current-balance b {
+  color: #9c2933;
+  font-size: 18px;
+}
+
+.ruby-recharge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  gap: 7px;
+}
+
+.ruby-recharge-grid > button {
+  display: grid;
+  grid-template-rows: auto 67px auto auto;
+  justify-items: center;
+  min-width: 0;
+  min-height: 174px;
+  padding: 10px 5px 8px;
+  border: 1px solid rgba(142, 83, 41, 0.38);
+  border-radius: 10px;
+  color: #6f4630;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 237, 0.96), rgba(238, 211, 161, 0.82)),
+    #f2d8a5;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.46),
+    0 3px 7px rgba(72, 41, 22, 0.15);
+  filter: none;
+  opacity: 1;
+  cursor: default;
+}
+
+.ruby-recharge-grid > button > span:first-child {
+  font: 800 13px/1.2 "Songti SC", "STSong", serif;
+}
+
+.ruby-pack-art {
+  position: relative;
+  display: block;
+  width: 68px;
+  height: 67px;
+}
+
+.ruby-pack-art i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 29px;
+  height: 29px;
+  border: 2px solid rgba(118, 19, 36, 0.46);
+  border-radius: 8px 11px 8px 11px;
+  background:
+    linear-gradient(135deg, rgba(255, 224, 217, 0.88) 0 20%, transparent 21%),
+    linear-gradient(45deg, #9e172d, #ec5e56 48%, #821629 100%);
+  box-shadow:
+    inset -4px -4px 5px rgba(84, 5, 23, 0.24),
+    0 4px 6px rgba(93, 25, 25, 0.22);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.ruby-pack-art.three i:nth-child(1) { left: 31%; top: 57%; }
+.ruby-pack-art.three i:nth-child(2) { left: 68%; top: 57%; }
+.ruby-pack-art.three i:nth-child(3) { left: 50%; top: 32%; }
+.ruby-pack-art.five i:nth-child(1) { left: 24%; top: 63%; }
+.ruby-pack-art.five i:nth-child(2) { left: 50%; top: 67%; }
+.ruby-pack-art.five i:nth-child(3) { left: 76%; top: 63%; }
+.ruby-pack-art.five i:nth-child(4) { left: 37%; top: 34%; }
+.ruby-pack-art.five i:nth-child(5) { left: 64%; top: 31%; }
+
+.ruby-recharge-grid strong {
+  color: #8e342f;
+  font-size: 13px;
+}
+
+.ruby-recharge-grid em {
+  align-self: end;
+  width: 100%;
+  margin-top: 7px;
+  padding: 6px 2px;
+  border-radius: 6px;
+  color: #f7e4bc;
+  background: linear-gradient(180deg, #9c7051, #76503b);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@media (max-height: 620px) {
+  .stamina-purchase-inner,
+  .ruby-recharge-inner {
+    max-height: 92dvh;
+  }
+
+  .ruby-recharge-grid > button {
+    min-height: 154px;
+  }
+
+  .ruby-pack-art {
+    height: 50px;
+  }
 }
 
 /* Inn longscroll UI polish v1 */

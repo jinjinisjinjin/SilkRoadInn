@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=codex-detail-nav-v1" />
+    <link rel="stylesheet" href="./styles.css?v=currency-panels-v3" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
@@ -370,19 +370,61 @@
         <div class="storage-drawer"></div>
       </div>
     </dialog>
-    <dialog id="staminaPurchaseModal" class="modal stamina-purchase-modal">
+    <dialog id="staminaPurchaseModal" class="modal stamina-purchase-modal" aria-labelledby="staminaPurchaseTitle">
       <div class="modal-inner stamina-purchase-inner">
-        <button class="close" data-close="staminaPurchaseModal">×</button>
-        <img src="./assets/ui/ui_camel_bell_stamina.png" alt="" />
-        <span id="staminaPurchaseCount">今日第1次补充</span>
-        <h2>补充驼铃</h2>
-        <p>立即获得 <strong><b id="staminaPurchaseAmount">100</b> 驼铃</strong></p>
-        <div class="modal-actions">
-          <button data-close="staminaPurchaseModal">稍后</button>
-          <button id="staminaPurchaseConfirm" class="primary stamina-purchase-confirm" type="button">
-            <i class="ruby-icon" aria-hidden="true"></i><b id="staminaPurchasePrice">10</b>
+        <button class="close" data-close="staminaPurchaseModal" aria-label="关闭驼铃兑换">×</button>
+        <header class="currency-panel-head stamina-panel-head">
+          <span>驼铃补给</span>
+          <h2 id="staminaPurchaseTitle">兑换驼铃</h2>
+        </header>
+        <p class="currency-panel-intro">合成食物会消耗驼铃，可用红宝石立即补充。</p>
+        <section class="stamina-offer" aria-label="本次兑换内容">
+          <span id="staminaPurchaseCount" class="currency-panel-count">今日第1次兑换</span>
+          <div class="stamina-offer-main">
+            <img src="./assets/ui/ui_camel_bell_stamina.png" alt="" />
+            <strong>+<b id="staminaPurchaseAmount">100</b></strong>
+          </div>
+          <span class="stamina-offer-name">驼铃</span>
+        </section>
+        <button id="staminaPurchaseConfirm" class="primary stamina-purchase-confirm" type="button">
+          <i class="ruby-icon" aria-hidden="true"></i><b id="staminaPurchasePrice">10</b><span>兑换</span>
+        </button>
+        <p id="staminaPurchaseRule" class="currency-panel-rule">本次10颗，下一次20颗；每日重置</p>
+      </div>
+    </dialog>
+    <dialog id="rubyRechargeModal" class="modal ruby-recharge-modal" aria-labelledby="rubyRechargeTitle">
+      <div class="modal-inner ruby-recharge-inner">
+        <button class="close" data-close="rubyRechargeModal" aria-label="关闭红宝石商铺">×</button>
+        <header class="currency-panel-head ruby-panel-head">
+          <img src="./assets/ui/bonus_ruby_lv01.png" alt="" />
+          <span>红宝石商铺</span>
+          <h2 id="rubyRechargeTitle">补充红宝石</h2>
+        </header>
+        <div class="ruby-current-balance">
+          <span>当前持有</span><i class="ruby-icon" aria-hidden="true"></i><b id="rubyRechargeBalance">0</b>
+        </div>
+        <p class="currency-panel-intro">红宝石可开启柜中仓位、兑换驼铃；商铺正在筹备。</p>
+        <div class="ruby-recharge-grid" aria-label="红宝石充值档位">
+          <button type="button" disabled>
+            <span>红宝石小袋</span>
+            <span class="ruby-pack-art one" aria-hidden="true"><i></i></span>
+            <strong>档位待定</strong>
+            <em>暂未开放</em>
+          </button>
+          <button type="button" disabled>
+            <span>商旅宝匣</span>
+            <span class="ruby-pack-art three" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>档位待定</strong>
+            <em>暂未开放</em>
+          </button>
+          <button type="button" disabled>
+            <span>掌柜宝箱</span>
+            <span class="ruby-pack-art five" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <strong>档位待定</strong>
+            <em>暂未开放</em>
           </button>
         </div>
+        <p class="currency-panel-rule">开放后可在这里选择红宝石份额。</p>
       </div>
     </dialog>
     <dialog id="pieceDetailModal" class="modal piece-detail-modal">
@@ -395,8 +437,8 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=board-merge-v2"></script>
-    <script src="./new-player-guide.js?v=board-merge-v2"></script>
-    <script src="./app.js?v=codex-detail-nav-v1"></script>
+    <script src="./chapter-story.js?v=currency-panels-v1"></script>
+    <script src="./new-player-guide.js?v=currency-panels-v1"></script>
+    <script src="./app.js?v=currency-panels-v3"></script>
   </body>
 </html>
