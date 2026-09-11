@@ -4763,7 +4763,6 @@ button:disabled {
   font: normal 20px/1 Georgia, serif;
 }
 
-.codex-level-axis,
 .codex-matrix-row {
   display: grid;
   grid-template-columns: 40px repeat(8, minmax(0, 1fr));
@@ -4771,25 +4770,12 @@ button:disabled {
   align-items: center;
 }
 
-.codex-level-axis {
-  position: relative;
-  z-index: 1;
-  min-height: 23px;
-  padding-top: 3px;
-  color: #8a6b48;
-  text-align: center;
-  font: 800 9px/1 Georgia, "Songti SC", serif;
-}
-
-.codex-level-axis span {
-  font-family: "Songti SC", "STSong", serif;
-}
-
 .codex-matrix {
   position: relative;
   z-index: 1;
   display: grid;
   gap: 2px;
+  margin-top: 6px;
 }
 
 .codex-matrix-row {
@@ -4936,7 +4922,6 @@ button:disabled {
     font-size: 15px;
   }
 
-  .codex-level-axis,
   .codex-matrix-row {
     grid-template-columns: 36px repeat(8, minmax(0, 1fr));
   }
