@@ -331,7 +331,28 @@
         <button class="close" data-close="storageModal">×</button>
         <div class="storage-title">柜中仓位</div>
         <div class="storage-interior"><div class="storage-slot-scroll" id="storageSlotList"></div></div>
+        <div class="storage-footer">
+          <div class="storage-capacity-card">已开 <b id="storageCapacity">8/28</b></div>
+          <button id="storageUnlockBtn" class="storage-unlock-card" type="button">
+            <i class="ruby-icon" aria-hidden="true"></i><b id="storageUnlockPrice">5</b>
+          </button>
+        </div>
         <div class="storage-drawer"></div>
+      </div>
+    </dialog>
+    <dialog id="staminaPurchaseModal" class="modal stamina-purchase-modal">
+      <div class="modal-inner stamina-purchase-inner">
+        <button class="close" data-close="staminaPurchaseModal">×</button>
+        <img src="./assets/ui/ui_camel_bell_stamina.png" alt="" />
+        <span id="staminaPurchaseCount">今日第1次补充</span>
+        <h2>补充驼铃</h2>
+        <p>立即获得 <strong><b id="staminaPurchaseAmount">100</b> 驼铃</strong></p>
+        <div class="modal-actions">
+          <button data-close="staminaPurchaseModal">稍后</button>
+          <button id="staminaPurchaseConfirm" class="primary stamina-purchase-confirm" type="button">
+            <i class="ruby-icon" aria-hidden="true"></i><b id="staminaPurchasePrice">10</b>
+          </button>
+        </div>
       </div>
     </dialog>
     <dialog id="pieceDetailModal" class="modal piece-detail-modal">
@@ -346,6 +367,6 @@
 
     <script src="./chapter-story.js?v=inn-map-ui-v3"></script>
     <script src="./new-player-guide.js?v=new-player-guide-v4"></script>
-    <script src="./app.js?v=ready-orders-first-v1"></script>
+    <script src="./app.js?v=ruby-uses-v1"></script>
   </body>
 </html>

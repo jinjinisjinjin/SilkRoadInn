@@ -71,7 +71,7 @@ const NPC_STANDEE_VERSION = "standee-size-02";
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
 const BOARD_SIZE = BOARD_COLUMNS * BOARD_ROWS;
-const STORAGE_FREE_SLOTS = 10;
+const STORAGE_FREE_SLOTS = 8;
 const STORAGE_TOTAL_SLOTS = 28;
 const ACTIVE_BOARD_COLUMNS = 3;
 const ACTIVE_BOARD_ROWS = 3;
@@ -326,6 +326,9 @@ const state = {
   generatorStates: {},
   unlockedGeneratorCategories: [],
   pendingGeneratorRewards: [],
+  unlockedStorageSlots: STORAGE_FREE_SLOTS,
+  staminaPurchaseDay: "",
+  staminaPurchasesToday: 0,
   innLevel: 1,
   ownedFurniture: [],
   placedFurniture: [],
@@ -470,6 +473,14 @@ const els = {
   bagList: document.querySelector("#bagList"),
   storageModal: document.querySelector("#storageModal"),
   storageSlotList: document.querySelector("#storageSlotList"),
+  storageCapacity: document.querySelector("#storageCapacity"),
+  storageUnlockBtn: document.querySelector("#storageUnlockBtn"),
+  storageUnlockPrice: document.querySelector("#storageUnlockPrice"),
+  staminaPurchaseModal: document.querySelector("#staminaPurchaseModal"),
+  staminaPurchaseAmount: document.querySelector("#staminaPurchaseAmount"),
+  staminaPurchaseCount: document.querySelector("#staminaPurchaseCount"),
+  staminaPurchasePrice: document.querySelector("#staminaPurchasePrice"),
+  staminaPurchaseConfirm: document.querySelector("#staminaPurchaseConfirm"),
   pieceDetailModal: document.querySelector("#pieceDetailModal"),
   pieceDetailIcon: document.querySelector("#pieceDetailIcon"),
   pieceDetailName: document.querySelector("#pieceDetailName"),
@@ -675,7 +686,8 @@ function initializeGeneratorMaterialQaScenario() {
 
 function initializeOrderGiftQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
-  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
   state.giftBoxStates = {};
@@ -696,7 +708,8 @@ function initializeRubyDisplayQaScenario() {
     state.board[index] = itemId;
   });
   state.board[starterGeneratorIndex()] = "gen_mill_01";
-  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
   state.giftBoxStates = {};
@@ -728,7 +741,8 @@ function initializeLv4MarketOrdersQaScenario() {
   });
   const firstMarketOrderIndex = REPAIR_GATE_SEQUENCE.indexOf(LV4_MARKET_ORDER_IDS[0]);
   const firstMarketMilestoneIndex = state.progressionConfig.milestones.findIndex((milestone) => milestone.id === "lv4_south_shed");
-  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
   state.giftBoxStates = {};
@@ -772,7 +786,8 @@ function initializeGeneratorOrderQaScenario() {
   categories.forEach((categoryId, index) => {
     state.board[generatorIndexes[index]] = generatorItemId(categoryId, 1);
   });
-  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
   state.pendingGeneratorRewards = [];
@@ -841,7 +856,8 @@ function initializeProgressionFlowQaScenario() {
       }
     });
   }
-  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
   if (REWARD_BAG_DEMO_MODE) {
@@ -869,7 +885,7 @@ function initializeProgressionFlowQaScenario() {
         .map((item) => item.codexId),
     );
   state.coins = spec.coins;
-  state.gems = 36;
+  state.gems = startingGemBalance();
   state.stamina = isFreshStage ? state.staminaConfig.initial.startValue : 99;
   state.staminaMax = isFreshStage ? state.staminaConfig.initial.max : 99;
   state.recoverMinutes = isFreshStage ? state.staminaConfig.initial.recoverMinutes : 5;
@@ -1203,6 +1219,46 @@ function startingCoinBalance() {
   return Math.max(0, Number(state.economyConfig?.currency?.startingBalance) || 40);
 }
 
+function startingGemBalance() {
+  return Math.max(0, Number(state.economyConfig?.premiumCurrency?.startingBalance) || 0);
+}
+
+function storageUnlockPrices() {
+  return state.economyConfig?.premiumCurrency?.storage?.unlockPrices ?? [];
+}
+
+function nextStorageUnlockPrice() {
+  const priceIndex = state.unlockedStorageSlots - STORAGE_FREE_SLOTS;
+  const price = Number(storageUnlockPrices()[priceIndex]);
+  return Number.isFinite(price) && price > 0 ? price : null;
+}
+
+function staminaPurchaseConfig() {
+  return state.economyConfig?.premiumCurrency?.staminaPurchase ?? {};
+}
+
+function currentLocalDayKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function syncDailyStaminaPurchases() {
+  const today = currentLocalDayKey();
+  if (state.staminaPurchaseDay === today) return false;
+  state.staminaPurchaseDay = today;
+  state.staminaPurchasesToday = 0;
+  return true;
+}
+
+function currentStaminaPurchasePrice() {
+  const config = staminaPurchaseConfig();
+  const firstPrice = Math.max(1, Number(config.firstPrice) || 10);
+  const multiplier = Math.max(1, Number(config.priceMultiplier) || 2);
+  return Math.round(firstPrice * (multiplier ** state.staminaPurchasesToday));
+}
+
 function normalizeStoryFlags(value) {
   const flags = value && typeof value === "object" ? { ...value } : {};
   Object.entries(flags).forEach(([key, enabled]) => {
@@ -1230,7 +1286,7 @@ function defaultState() {
   board[starterGeneratorIndex()] = "gen_mill_01";
   return {
     board,
-    bag: Array(STORAGE_FREE_SLOTS).fill(null),
+    bag: Array(STORAGE_TOTAL_SLOTS).fill(null),
     rewardItems: [],
     giftPacks: [],
     giftBoxStates: {},
@@ -1239,7 +1295,7 @@ function defaultState() {
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
     unlockedCodex: ["codex_hubing_01"],
     coins: startingCoinBalance(),
-    gems: 36,
+    gems: startingGemBalance(),
     stamina: state.staminaConfig.initial.startValue,
     staminaMax: state.staminaConfig.initial.max,
     recoverMinutes: state.staminaConfig.initial.recoverMinutes,
@@ -1260,6 +1316,9 @@ function defaultState() {
     generatorStates: {},
     unlockedGeneratorCategories: ["mill"],
     pendingGeneratorRewards: [],
+    unlockedStorageSlots: STORAGE_FREE_SLOTS,
+    staminaPurchaseDay: currentLocalDayKey(),
+    staminaPurchasesToday: 0,
     innLevel: 1,
     ownedFurniture: [],
     placedFurniture: Array(6).fill(null),
@@ -1292,7 +1351,7 @@ function loadState() {
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
     coins: data.coins ?? startingCoinBalance(),
-    gems: data.gems ?? 36,
+    gems: data.gems ?? startingGemBalance(),
     stamina: data.stamina ?? state.staminaConfig.initial.startValue,
     staminaMax: Math.max(data.staminaMax ?? state.staminaConfig.initial.max, state.staminaConfig.initial.max),
     recoverMinutes: data.recoverMinutes ?? state.staminaConfig.initial.recoverMinutes,
@@ -1315,6 +1374,13 @@ function loadState() {
     generatorStates: normalizeGeneratorStates(data.generatorStates),
     unlockedGeneratorCategories: normalizeUnlockedGeneratorCategories(data.unlockedGeneratorCategories, data),
     pendingGeneratorRewards: normalizePendingGeneratorRewards(data.pendingGeneratorRewards),
+    unlockedStorageSlots: normalizeUnlockedStorageSlots(data.unlockedStorageSlots, data.bag),
+    staminaPurchaseDay: data.staminaPurchaseDay === currentLocalDayKey()
+      ? data.staminaPurchaseDay
+      : currentLocalDayKey(),
+    staminaPurchasesToday: data.staminaPurchaseDay === currentLocalDayKey()
+      ? Math.max(0, Math.floor(Number(data.staminaPurchasesToday) || 0))
+      : 0,
     innLevel: data.innLevel ?? 1,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
@@ -1388,6 +1454,9 @@ function saveState() {
       generatorStates: state.generatorStates,
       unlockedGeneratorCategories: state.unlockedGeneratorCategories,
       pendingGeneratorRewards: state.pendingGeneratorRewards,
+      unlockedStorageSlots: state.unlockedStorageSlots,
+      staminaPurchaseDay: state.staminaPurchaseDay,
+      staminaPurchasesToday: state.staminaPurchasesToday,
       innLevel: state.innLevel,
       ownedFurniture: state.ownedFurniture,
       placedFurniture: state.placedFurniture,
@@ -1599,8 +1668,8 @@ function bindEvents() {
   els.generateBtn.addEventListener("click", generateItem);
   els.sellBtn.addEventListener("click", sellSelected);
   els.selectedDetailBtn?.addEventListener("click", openSelectedPieceDetail);
-  els.staminaPlusBtn?.addEventListener("click", () => toast("驼铃补充入口暂未接入。"));
-  els.gemPlusBtn?.addEventListener("click", () => toast("红宝石入口暂未接入。"));
+  els.staminaPlusBtn?.addEventListener("click", openStaminaPurchase);
+  els.gemPlusBtn?.addEventListener("click", explainRubyUse);
   els.storageBtn?.addEventListener("click", openStorage);
   els.stationHudBtn?.addEventListener("click", handleStationButton);
   els.repairSideBtn?.addEventListener("click", handleStationButton);
@@ -1609,8 +1678,10 @@ function bindEvents() {
   els.stationBtn.addEventListener("click", handleStationButton);
   els.boardReturnBtn.addEventListener("click", () => switchPage("board"));
   els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
-  els.innStaminaPlusBtn?.addEventListener("click", () => toast("驼铃补充入口暂未接入。"));
-  els.innGemPlusBtn?.addEventListener("click", () => toast("红宝石入口暂未接入。"));
+  els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
+  els.innGemPlusBtn?.addEventListener("click", explainRubyUse);
+  els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
+  els.staminaPurchaseConfirm?.addEventListener("click", purchaseStamina);
   els.storyArchiveBtn?.addEventListener("click", () => openStoryArchive());
   els.storyArchiveChapters?.addEventListener("click", selectStoryArchiveChapter);
   els.storyArchiveList?.addEventListener("click", selectStoryArchiveSegment);
@@ -1775,6 +1846,7 @@ function render() {
   renderInnButton();
   renderStoryArchiveEntry();
   if (els.storageModal?.open) renderStorage();
+  if (els.staminaPurchaseModal?.open) renderStaminaPurchase();
   if (state.currentPage === "inn") {
     renderInnPage();
   } else {
@@ -5628,15 +5700,96 @@ function openStorage() {
   els.storageModal.showModal();
 }
 
+function explainRubyUse() {
+  toast("红宝石可扩充柜中仓位，也可购买驼铃。");
+}
+
+function openStaminaPurchase() {
+  if (syncDailyStaminaPurchases()) saveState();
+  renderStaminaPurchase();
+  els.staminaPurchaseModal?.showModal();
+}
+
+function renderStaminaPurchase() {
+  if (!els.staminaPurchaseModal) return;
+  const amount = Math.max(1, Number(staminaPurchaseConfig().staminaAmount) || 100);
+  const price = currentStaminaPurchasePrice();
+  els.staminaPurchaseAmount.textContent = amount;
+  els.staminaPurchaseCount.textContent = `今日第${state.staminaPurchasesToday + 1}次补充`;
+  els.staminaPurchasePrice.textContent = price;
+  els.staminaPurchaseConfirm.setAttribute("aria-label", `花费${price}颗红宝石购买${amount}点驼铃`);
+}
+
+function purchaseStamina() {
+  syncDailyStaminaPurchases();
+  const amount = Math.max(1, Number(staminaPurchaseConfig().staminaAmount) || 100);
+  const price = currentStaminaPurchasePrice();
+  if (state.gems < price) {
+    toast(`红宝石不足，还差${price - state.gems}颗。`);
+    renderStaminaPurchase();
+    return;
+  }
+  state.gems -= price;
+  state.stamina += amount;
+  state.staminaPurchasesToday += 1;
+  keeper(`用${price}颗红宝石换得${amount}点驼铃。`);
+  toast(`驼铃 +${amount}`);
+  render();
+  saveState();
+}
+
+function purchaseNextStorageSlot() {
+  if (state.unlockedStorageSlots >= STORAGE_TOTAL_SLOTS) {
+    toast("柜中仓位已经全部开启。");
+    return;
+  }
+  const price = nextStorageUnlockPrice();
+  if (!price) {
+    toast("后续仓位价格还未配置。");
+    return;
+  }
+  if (state.gems < price) {
+    toast(`红宝石不足，还差${price - state.gems}颗。`);
+    return;
+  }
+  state.gems -= price;
+  state.unlockedStorageSlots += 1;
+  keeper(`柜中第${state.unlockedStorageSlots}格已经开启。`);
+  toast(`仓位 +1 · 红宝石 -${price}`);
+  render();
+  saveState();
+}
+
 function renderStorage() {
   if (!els.storageSlotList) return;
   els.storageSlotList.innerHTML = "";
+  if (els.storageCapacity) {
+    els.storageCapacity.textContent = `${state.unlockedStorageSlots}/${STORAGE_TOTAL_SLOTS}`;
+  }
+  const nextPrice = nextStorageUnlockPrice();
+  if (els.storageUnlockBtn && els.storageUnlockPrice) {
+    const isFull = state.unlockedStorageSlots >= STORAGE_TOTAL_SLOTS;
+    els.storageUnlockBtn.disabled = isFull;
+    els.storageUnlockBtn.classList.toggle("is-full", isFull);
+    els.storageUnlockPrice.textContent = isFull ? "已满" : nextPrice;
+    els.storageUnlockBtn.setAttribute(
+      "aria-label",
+      isFull ? "柜中仓位已经全部开启" : `花费${nextPrice}颗红宝石开启一个柜中仓位`,
+    );
+  }
   for (let index = 0; index < STORAGE_TOTAL_SLOTS; index += 1) {
-    const itemId = index < STORAGE_FREE_SLOTS ? (state.bag[index] ?? null) : null;
+    const isUnlocked = index < state.unlockedStorageSlots;
+    const isNextUnlock = index === state.unlockedStorageSlots;
+    const itemId = isUnlocked ? (state.bag[index] ?? null) : null;
     const item = itemId ? byId.get(itemId) : null;
-    const slot = document.createElement(item ? "button" : "article");
-    slot.className = `storage-slot ${index >= STORAGE_FREE_SLOTS ? "locked" : item ? "filled" : "empty"}`;
-    if (index >= STORAGE_FREE_SLOTS) {
+    const slot = document.createElement(item || isNextUnlock ? "button" : "article");
+    slot.className = `storage-slot ${!isUnlocked ? "locked" : item ? "filled" : "empty"}${isNextUnlock ? " unlockable" : ""}`;
+    if (!isUnlocked && isNextUnlock) {
+      slot.type = "button";
+      slot.setAttribute("aria-label", `开启第${index + 1}个柜中仓位`);
+      slot.innerHTML = `<span class="storage-add" aria-hidden="true">+</span>`;
+      slot.addEventListener("click", purchaseNextStorageSlot);
+    } else if (!isUnlocked) {
       slot.innerHTML = `<span class="storage-lock">锁</span>`;
     } else if (item) {
       slot.type = "button";
@@ -6211,17 +6364,36 @@ function randomUnlockedEmptyIndex() {
 }
 
 function firstEmptyBagIndex() {
-  return state.bag.findIndex((item) => !item);
+  for (let index = 0; index < state.unlockedStorageSlots; index += 1) {
+    if (!state.bag[index]) return index;
+  }
+  return -1;
 }
 
 function normalizeStorageSlots(value) {
-  const slots = Array(STORAGE_FREE_SLOTS).fill(null);
+  const slots = Array(STORAGE_TOTAL_SLOTS).fill(null);
   if (Array.isArray(value)) {
-    value.slice(0, STORAGE_FREE_SLOTS).forEach((item, index) => {
+    value.slice(0, STORAGE_TOTAL_SLOTS).forEach((item, index) => {
       slots[index] = migrateLegacyGeneratorId(item ?? null);
     });
   }
   return slots;
+}
+
+function normalizeUnlockedStorageSlots(value, savedBag) {
+  const configured = Number(value);
+  const highestOccupiedIndex = Array.isArray(savedBag)
+    ? savedBag.slice(0, STORAGE_TOTAL_SLOTS).reduce(
+      (highest, item, index) => item ? index : highest,
+      -1,
+    )
+    : -1;
+  const minimumToPreserveItems = highestOccupiedIndex + 1;
+  const requested = Number.isInteger(configured) ? configured : STORAGE_FREE_SLOTS;
+  return Math.max(
+    STORAGE_FREE_SLOTS,
+    Math.min(STORAGE_TOTAL_SLOTS, Math.max(requested, minimumToPreserveItems)),
+  );
 }
 
 function totalGiftPackCount() {

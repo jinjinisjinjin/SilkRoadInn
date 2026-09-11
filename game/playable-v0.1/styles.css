@@ -6122,6 +6122,170 @@ button.storage-slot.filled {
   font: 800 16px/1 "Kaiti SC", "STKaiti", serif;
 }
 
+.storage-slot.unlockable {
+  cursor: pointer;
+}
+
+.storage-slot .storage-add {
+  position: static;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(244, 222, 176, 0.7);
+  border-radius: 50%;
+  color: #fff7dc;
+  background: rgba(78, 55, 36, 0.68);
+  box-shadow:
+    0 3px 8px rgba(42, 24, 13, 0.34),
+    inset 0 0 0 2px rgba(105, 76, 49, 0.32);
+  overflow: visible;
+  font: 800 40px/1 system-ui, sans-serif;
+  text-shadow: 0 2px 3px rgba(48, 27, 13, 0.42);
+}
+
+.storage-slot.unlockable:active .storage-add {
+  transform: scale(0.94);
+}
+
+.storage-footer {
+  position: absolute;
+  z-index: 4;
+  right: 18.5%;
+  bottom: 9.2%;
+  left: 18.5%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.9fr);
+  gap: 8px;
+}
+
+.storage-capacity-card,
+.storage-unlock-card {
+  display: flex;
+  min-width: 0;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 2px solid rgba(77, 49, 31, 0.72);
+  border-radius: 4px;
+  color: #fff7df;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 3px 0 rgba(61, 38, 24, 0.48);
+  font-size: 15px;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(50, 29, 16, 0.42);
+}
+
+.storage-capacity-card {
+  background: linear-gradient(180deg, #38bde1, #118bbd);
+}
+
+.storage-capacity-card b {
+  font-size: 17px;
+}
+
+.storage-unlock-card {
+  background: linear-gradient(180deg, #67d8aa, #34a97c);
+}
+
+.storage-unlock-card .ruby-icon,
+.stamina-purchase-confirm .ruby-icon {
+  flex: 0 0 auto;
+  width: 19px;
+  height: 19px;
+}
+
+.storage-unlock-card b {
+  font-size: 20px;
+}
+
+.storage-unlock-card:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.16),
+    0 1px 0 rgba(61, 38, 24, 0.48);
+}
+
+.storage-unlock-card:disabled {
+  opacity: 0.62;
+  background: linear-gradient(180deg, #8b9d8f, #65786b);
+}
+
+.storage-unlock-card.is-full .ruby-icon {
+  display: none;
+}
+
+.stamina-purchase-modal {
+  width: min(86vw, 330px);
+}
+
+.stamina-purchase-inner {
+  display: grid;
+  justify-items: center;
+  overflow: hidden;
+  padding: 24px 20px 20px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 250, 221, 0.92), transparent 42%),
+    #f5dfad;
+}
+
+.stamina-purchase-inner > img {
+  width: 92px;
+  height: 92px;
+  margin-top: 4px;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 7px rgba(70, 42, 21, 0.2));
+}
+
+.stamina-purchase-inner > span {
+  margin-top: 2px;
+  color: #95613b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.stamina-purchase-inner h2 {
+  margin: 5px 0 8px;
+  color: #5d3722;
+  font-size: 27px;
+}
+
+.stamina-purchase-inner p {
+  margin: 0 0 18px;
+  color: #765039;
+  font-size: 15px;
+}
+
+.stamina-purchase-inner p strong {
+  color: #8d3e32;
+  font-size: 18px;
+}
+
+.stamina-purchase-inner .modal-actions {
+  width: 100%;
+}
+
+.stamina-purchase-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff8df;
+  background: linear-gradient(180deg, #67d8aa, #34a97c);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18);
+}
+
+.stamina-purchase-confirm b {
+  font-size: 19px;
+}
+
 /* Inn longscroll UI polish v1 */
 #app[data-page="inn"] .inn-page .inn-head {
   left: 14px;

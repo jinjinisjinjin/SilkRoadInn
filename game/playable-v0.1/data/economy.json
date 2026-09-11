@@ -5,6 +5,22 @@
     "name": "铜钱",
     "startingBalance": 40
   },
+  "premiumCurrency": {
+    "id": "ruby",
+    "name": "红宝石",
+    "startingBalance": 36,
+    "storage": {
+      "freeSlots": 8,
+      "totalSlots": 28,
+      "unlockPrices": [5, 6, 7, 8, 10, 12, 15, 18, 22, 26, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
+    },
+    "staminaPurchase": {
+      "staminaAmount": 100,
+      "firstPrice": 10,
+      "priceMultiplier": 2,
+      "reset": "local_calendar_day"
+    }
+  },
   "orderPricing": {
     "formula": "sum_fixed_item_values",
     "firstClearBonusCoins": 0,
