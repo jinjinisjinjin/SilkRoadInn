@@ -6456,10 +6456,7 @@ function renderCodex() {
       const image = document.createElement("img");
       image.src = unlocked ? itemAssetSrc(item) : "./assets/ui/ui_food_box_lid_locked_v2.png";
       image.alt = "";
-      const level = document.createElement("span");
-      level.className = "codex-matrix-level";
-      level.textContent = String(Number(item.level));
-      cell.append(image, level);
+      cell.append(image);
       if (unlocked) cell.addEventListener("click", () => selectCodexItem(item.id));
       row.append(cell);
     });
