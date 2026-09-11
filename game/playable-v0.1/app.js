@@ -91,6 +91,13 @@ const BONUS_RUBY_SCALE_PERCENT = Object.freeze([0, 50, 70, 70, 70]);
 const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
 const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
 const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
+const DAILY_POUCH_REWARD_POOL = Object.freeze([
+  { id: "traveler", name: "行旅小礼", weight: 45, coins: 8, stamina: 10 },
+  { id: "market", name: "市集馈赠", weight: 30, coins: 14, stamina: 12 },
+  { id: "caravan", name: "驼队余响", weight: 16, coins: 10, stamina: 22 },
+  { id: "harvest", name: "绿洲丰收", weight: 7, coins: 24, stamina: 18 },
+  { id: "silkroad", name: "丝路厚礼", weight: 2, coins: 40, stamina: 30 },
+]);
 const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
   generator: 6,
@@ -561,6 +568,7 @@ let storyArchivePageDoneTimer = null;
 let storyArchivePageTurning = false;
 let activeOrderFoodContext = null;
 let activeCodexItemId = null;
+let dailyPouchRevealTimer = null;
 const activeGeneratorOutputIndices = new Set();
 
 async function loadJson(name) {
@@ -3414,10 +3422,8 @@ function registerOrderProgressPacks() {
     itemId: DAILY_POUCH_ITEM_ID,
     description: "每日刷新，可开出铜板与驼铃。",
     dailyReward: true,
-    rewards: [
-      { type: "coins", amount: 8 },
-      { type: "stamina", amount: 10 },
-    ],
+    rewardPool: DAILY_POUCH_REWARD_POOL,
+    rewards: [],
   };
   const entries = state.progressionConfig?.orderProgressPacks ?? [];
   entries.forEach((entry) => {
@@ -3929,7 +3935,7 @@ function renderBoard() {
         const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
         if (pack?.orderProgress) {
           cell.classList.add("order-progress-gift-cell");
-        } else {
+        } else if (!pack?.dailyReward) {
           const badge = document.createElement("span");
           badge.className = "generator-badge gift-badge";
           badge.textContent = pack ? `${Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
@@ -4095,7 +4101,9 @@ function renderSelected() {
     const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
     els.selectedName.textContent = pack?.name ?? item.name;
     els.selectedText.textContent = pack
-      ? opensGiftPackAtOnce(pack)
+      ? pack.dailyReward
+        ? "点击打开，揭晓今日的铜板与驼铃奖励。"
+        : opensGiftPackAtOnce(pack)
         ? `点击一次打开，${giftRewardOutputCount(pack)}份奖励会随机落入空格。`
         : `点击礼盒包，每次掉落1份奖励。还剩${pack.rewards.length - giftState.nextRewardIndex}份。`
       : item.modernName;
@@ -6300,6 +6308,107 @@ function applyInstantGiftResources(pack) {
   if (staminaAmount > 0) state.stamina += staminaAmount;
 }
 
+function rollDailyPouchReward(pack) {
+  const pool = pack?.rewardPool?.length ? pack.rewardPool : DAILY_POUCH_REWARD_POOL;
+  const totalWeight = pool.reduce((sum, reward) => sum + Math.max(0, Number(reward.weight) || 0), 0);
+  let ticket = Math.random() * totalWeight;
+  for (const reward of pool) {
+    ticket -= Math.max(0, Number(reward.weight) || 0);
+    if (ticket <= 0) return reward;
+  }
+  return pool[pool.length - 1];
+}
+
+function dailyPouchTarget(type) {
+  const number = state.currentPage === "inn"
+    ? (type === "coins" ? els.innCoins : els.innStamina)
+    : (type === "coins" ? els.coins : els.stamina);
+  return number?.closest(".resource-pill, .inn-resource-pill") ?? null;
+}
+
+function animateDailyPouchRewardFlight(layer, type, amount, delay) {
+  const source = layer.querySelector(`[data-daily-reward="${type}"]`);
+  const target = dailyPouchTarget(type);
+  if (!source || !target) return;
+  const sourceRect = source.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const particle = document.createElement("span");
+  particle.className = `daily-pouch-flight daily-pouch-flight-${type}`;
+  particle.innerHTML = type === "coins"
+    ? `<img src="./assets/ui/ui_coin_copper.png" alt="" /><b>+${amount}</b>`
+    : `<img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b>+${amount}</b>`;
+  document.body.append(particle);
+  const fromX = sourceRect.left + sourceRect.width / 2;
+  const fromY = sourceRect.top + sourceRect.height / 2;
+  const toX = targetRect.left + targetRect.width / 2;
+  const toY = targetRect.top + targetRect.height / 2;
+  const motion = particle.animate([
+    { left: `${fromX}px`, top: `${fromY}px`, opacity: 0, transform: "translate(-50%, -50%) scale(0.62)" },
+    { left: `${fromX}px`, top: `${fromY - 12}px`, opacity: 1, transform: "translate(-50%, -50%) scale(1.08)", offset: 0.22 },
+    { left: `${toX}px`, top: `${toY}px`, opacity: 1, transform: "translate(-50%, -50%) scale(0.72)", offset: 0.84 },
+    { left: `${toX}px`, top: `${toY}px`, opacity: 0, transform: "translate(-50%, -50%) scale(0.4)" },
+  ], {
+    duration: 760,
+    delay,
+    easing: "cubic-bezier(.2,.76,.25,1)",
+    fill: "forwards",
+  });
+  motion.finished.then(() => {
+    particle.remove();
+    target.classList.remove("daily-reward-arrival");
+    void target.offsetWidth;
+    target.classList.add("daily-reward-arrival");
+    setTimeout(() => target.classList.remove("daily-reward-arrival"), 560);
+  }).catch(() => particle.remove());
+}
+
+function showDailyPouchReveal(reward) {
+  clearTimeout(dailyPouchRevealTimer);
+  document.querySelector(".daily-pouch-reveal")?.remove();
+  const layer = document.createElement("div");
+  layer.className = "daily-pouch-reveal";
+  layer.setAttribute("role", "status");
+  layer.setAttribute("aria-live", "polite");
+  layer.innerHTML = `
+    <div class="daily-pouch-reveal-card">
+      <span class="daily-pouch-rays" aria-hidden="true"></span>
+      <img class="daily-pouch-reveal-art" src="./assets/ui/ui_daily_pomegranate_pouch_v1.png" alt="" />
+      <small>每日宝袋</small>
+      <strong>${reward.name}</strong>
+      <div class="daily-pouch-reward-list">
+        <span data-daily-reward="coins"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b>+${reward.coins}</b></span>
+        <span data-daily-reward="stamina"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b>+${reward.stamina}</b></span>
+      </div>
+    </div>
+  `;
+  document.body.append(layer);
+  requestAnimationFrame(() => layer.classList.add("is-opening"));
+  setTimeout(() => {
+    layer.classList.add("is-open");
+    animateDailyPouchRewardFlight(layer, "coins", reward.coins, 260);
+    animateDailyPouchRewardFlight(layer, "stamina", reward.stamina, 390);
+  }, 560);
+  const dismiss = () => {
+    clearTimeout(dailyPouchRevealTimer);
+    layer.classList.add("is-leaving");
+    setTimeout(() => layer.remove(), 260);
+  };
+  layer.addEventListener("click", dismiss, { once: true });
+  dailyPouchRevealTimer = setTimeout(dismiss, 2350);
+}
+
+function openDailyPouchGiftBox(index, pack) {
+  const reward = rollDailyPouchReward(pack);
+  clearGiftBox(index);
+  state.coins += reward.coins;
+  state.coinsEarned += reward.coins;
+  state.stamina += reward.stamina;
+  keeper(`${pack.name}开出了${reward.coins}枚铜板和${reward.stamina}点驼铃。`);
+  render();
+  saveState();
+  showDailyPouchReveal(reward);
+}
+
 function shuffle(values) {
   const result = [...values];
   for (let i = result.length - 1; i > 0; i -= 1) {
@@ -6310,6 +6419,10 @@ function shuffle(values) {
 }
 
 function openOrderProgressGiftBox(index, pack) {
+  if (pack.dailyReward) {
+    openDailyPouchGiftBox(index, pack);
+    return;
+  }
   const outputs = orderProgressGiftOutputs(pack);
   const available = state.board
     .map((itemId, cellIndex) => (cellIndex === index || (!itemId && !isBoardCellLocked(cellIndex)) ? cellIndex : null))
