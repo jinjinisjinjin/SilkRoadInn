@@ -501,6 +501,7 @@ const els = {
 
 const byId = new Map();
 const codexById = new Map();
+const codexByItemId = new Map();
 const foodLineMaxLevels = new Map();
 let dragging = null;
 let toastTimer = null;
@@ -1176,7 +1177,10 @@ async function boot() {
   });
   registerBonusCoinItems();
   registerOrderProgressPacks();
-  codex.entries.forEach((entry) => codexById.set(entry.id, entry));
+  codex.entries.forEach((entry) => {
+    codexById.set(entry.id, entry);
+    codexByItemId.set(entry.itemId, entry);
+  });
 
   loadState();
   if (!ISOLATED_QA_MODE || GLOBAL_LOADING_QA_MODE) state.currentPage = "inn";
@@ -6174,7 +6178,7 @@ function codexKnownFoodCount(lines) {
 function renderCodexSelected(item) {
   els.codexSelected.hidden = !item;
   if (!item) return;
-  const entry = item.codexId ? codexById.get(item.codexId) : null;
+  const entry = codexByItemId.get(item.id);
   els.codexSelectedIcon.src = itemAssetSrc(item);
   els.codexSelectedIcon.alt = "";
   els.codexSelectedName.textContent = `${item.name} · ${Number(item.level)}阶`;
@@ -6254,7 +6258,7 @@ function openActiveCodexDetail() {
 function openCodexItemDetail(itemId) {
   const item = byId.get(itemId);
   if (!isFoodItemUnlocked(item)) return;
-  const entry = item.codexId ? codexById.get(item.codexId) : null;
+  const entry = codexByItemId.get(item.id);
   els.codexDetailIcon.src = itemAssetSrc(item);
   els.codexDetailIcon.alt = item.name;
   els.codexDetailName.textContent = item.name;
