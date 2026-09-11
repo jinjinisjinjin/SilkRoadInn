@@ -3539,9 +3539,18 @@ function lockedCellVisual(index) {
   return { id: item.id, name: item.name, src: itemAssetSrc(item), kind: item.type };
 }
 
+function canCompleteOrder(order) {
+  return Boolean(order?.demand?.length)
+    && order.demand.every((demand) => countItem(demand.itemId) >= demand.quantity);
+}
+
 function renderOrders() {
   els.orders.innerHTML = "";
-  state.visibleOrders.forEach((orderId) => {
+  const orderedOrderIds = state.visibleOrders
+    .map((orderId, index) => ({ orderId, index, ready: canCompleteOrder(getOrder(orderId)) }))
+    .sort((left, right) => Number(right.ready) - Number(left.ready) || left.index - right.index)
+    .map((entry) => entry.orderId);
+  orderedOrderIds.forEach((orderId) => {
     const order = getOrder(orderId);
     if (!order) return;
     const demandStates = order.demand
@@ -3553,7 +3562,7 @@ function renderOrders() {
         return { demand, item, owned, missing };
       })
       .filter(Boolean);
-    const canComplete = demandStates.length > 0 && demandStates.every((entry) => entry.missing === 0);
+    const canComplete = canCompleteOrder(order);
     const card = document.createElement("article");
     card.className = `order-card ${canComplete ? "ready" : ""}`;
     card.tabIndex = 0;
@@ -3608,8 +3617,7 @@ function readyOrderBoardHighlightIndices() {
   state.visibleOrders.forEach((orderId) => {
     const order = getOrder(orderId);
     if (!order?.demand?.length) return;
-    const canComplete = order.demand.every((demand) => countItem(demand.itemId) >= demand.quantity);
-    if (!canComplete) return;
+    if (!canCompleteOrder(order)) return;
     order.demand.forEach((demand) => {
       const quantity = Math.max(0, Math.floor(Number(demand.quantity) || 0));
       requiredByItem.set(demand.itemId, Math.max(requiredByItem.get(demand.itemId) ?? 0, quantity));
