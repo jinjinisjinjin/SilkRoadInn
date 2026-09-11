@@ -5010,11 +5010,6 @@ function unlockCodex(codexId) {
   const item = byId.get(entry.itemId);
   if (!item) return;
   state.unlockedCodex.add(codexId);
-  activeCodexItemId = item.id;
-  els.unlockIcon.src = itemAssetSrc(item);
-  els.unlockName.textContent = entry.name;
-  els.unlockText.textContent = entry.shortText;
-  els.unlockModal.showModal();
 }
 
 function generateItem() {
