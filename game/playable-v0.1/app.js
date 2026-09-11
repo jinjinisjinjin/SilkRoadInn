@@ -5062,6 +5062,35 @@ function orderMatchesBand(order, bandId) {
   return !bandId || orderPricingBand(order)?.id === bandId;
 }
 
+function rollVisibleOrderTarget() {
+  const policy = state.ordersConfig.arrivalPolicy ?? {};
+  const minimum = Math.max(1, Math.floor(Number(policy.minVisibleOrders) || 2));
+  const maximum = Math.max(minimum, Math.floor(Number(state.ordersConfig.maxVisibleOrders) || 7));
+  const weightedCounts = Object.entries(policy.visibleCountWeights ?? {})
+    .map(([count, weight]) => ({
+      count: Math.floor(Number(count)),
+      weight: Math.max(0, Number(weight) || 0),
+    }))
+    .filter((entry) => entry.count >= minimum && entry.count <= maximum && entry.weight > 0);
+  if (!weightedCounts.length) {
+    const typical = Math.floor(Number(policy.typicalVisibleOrders) || 4);
+    return Math.min(maximum, Math.max(minimum, typical));
+  }
+  const totalWeight = weightedCounts.reduce((sum, entry) => sum + entry.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const entry of weightedCounts) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry.count;
+  }
+  return weightedCounts[weightedCounts.length - 1].count;
+}
+
+function missingVisibleOrderBandId(bands) {
+  return bands.find((band) => !state.visibleOrders.some((orderId) => (
+    orderPricingBand(getOrder(orderId))?.id === band.id
+  )))?.id ?? null;
+}
+
 function syncVisibleOrders() {
   if (LV4_MARKET_ORDERS_QA_MODE) {
     state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
@@ -5075,22 +5104,26 @@ function syncVisibleOrders() {
       }));
     return;
   }
-  const maxVisible = state.ordersConfig.maxVisibleOrders ?? 3;
+  const maxVisible = Math.max(2, Math.floor(Number(state.ordersConfig.maxVisibleOrders) || 7));
+  const targetVisible = Math.min(maxVisible, rollVisibleOrderTarget());
   const bands = state.economyConfig?.orderPricing?.bands ?? [];
-  const previous = [...state.visibleOrders];
+  const preserveWaitingGuests = state.ordersConfig.arrivalPolicy?.preserveWaitingGuests !== false;
+  const previous = preserveWaitingGuests ? [...state.visibleOrders] : [];
   state.visibleOrders = [];
-  for (let index = 0; index < maxVisible; index += 1) {
-    const bandId = bands[index]?.id;
-    const existing = getOrder(previous[index]);
+  for (const orderId of previous) {
+    if (state.visibleOrders.length >= maxVisible) break;
+    const existing = getOrder(orderId);
     if (existing
       && !state.visibleOrders.includes(existing.id)
-      && isOrderEligible(existing, { ignoreVisible: true })
-      && orderMatchesBand(existing, bandId)) {
+      && isOrderEligible(existing, { ignoreVisible: true })) {
       state.visibleOrders.push(existing.id);
-      continue;
     }
+  }
+  while (state.visibleOrders.length < targetVisible) {
+    const bandId = missingVisibleOrderBandId(bands);
     const next = pickOrder(bandId) ?? pickOrder();
-    if (next) state.visibleOrders.push(next.id);
+    if (!next) break;
+    state.visibleOrders.push(next.id);
   }
 }
 
