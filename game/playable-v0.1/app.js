@@ -5952,15 +5952,15 @@ function renderStaminaPurchase() {
   if (!els.staminaPurchaseModal) return;
   const amount = Math.max(1, Number(staminaPurchaseConfig().staminaAmount) || 100);
   const price = currentStaminaPurchasePrice();
-  const multiplier = Math.max(1, Number(staminaPurchaseConfig().priceMultiplier) || 2);
-  const nextPrice = Math.round(price * multiplier);
-  els.staminaPurchaseAmount.textContent = amount;
-  els.staminaPurchaseCount.textContent = `今日第${state.staminaPurchasesToday + 1}次兑换`;
-  els.staminaPurchasePrice.textContent = price;
+  if (els.staminaPurchaseAmount) els.staminaPurchaseAmount.textContent = amount;
+  if (els.staminaPurchaseCount) els.staminaPurchaseCount.textContent = `今日第${state.staminaPurchasesToday + 1}次兑换`;
+  if (els.staminaPurchasePrice) els.staminaPurchasePrice.textContent = price;
   if (els.staminaPurchaseRule) {
+    const multiplier = Math.max(1, Number(staminaPurchaseConfig().priceMultiplier) || 2);
+    const nextPrice = Math.round(price * multiplier);
     els.staminaPurchaseRule.textContent = `本次${price}颗，下一次${nextPrice}颗；每日重置`;
   }
-  els.staminaPurchaseConfirm.setAttribute("aria-label", `花费${price}颗红宝石购买${amount}点驼铃`);
+  els.staminaPurchaseConfirm?.setAttribute("aria-label", `花费${price}颗红宝石购买${amount}点驼铃`);
 }
 
 function purchaseStamina() {
