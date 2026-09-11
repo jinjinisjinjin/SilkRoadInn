@@ -3059,6 +3059,144 @@ button:disabled {
   height: 100dvh;
 }
 
+.inn-upgrade-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.inn-upgrade-reveal[hidden] {
+  display: none;
+}
+
+.inn-upgrade-reveal::before,
+.inn-upgrade-reveal::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.inn-upgrade-reveal::before {
+  inset: 0;
+  z-index: 0;
+  background: rgba(42, 25, 14, 0.68);
+  opacity: 0;
+}
+
+.inn-upgrade-reveal::after {
+  inset: -42%;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 250, 205, 0.96) 0 7%,
+    rgba(255, 211, 109, 0.78) 17%,
+    rgba(226, 151, 54, 0.38) 34%,
+    rgba(195, 105, 32, 0.12) 49%,
+    transparent 66%
+  );
+  opacity: 0;
+  transform: scale(0.16);
+}
+
+.inn-upgrade-reveal-copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  padding: 22px 34px;
+  color: #fff2c7;
+  opacity: 0;
+  text-align: center;
+  text-shadow:
+    0 2px 3px rgba(58, 30, 12, 0.84),
+    0 0 16px rgba(255, 202, 91, 0.86);
+}
+
+.inn-upgrade-reveal-copy::before,
+.inn-upgrade-reveal-copy::after {
+  content: "";
+  width: 88px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 232, 166, 0.9), transparent);
+}
+
+.inn-upgrade-reveal-copy strong {
+  font: 900 clamp(28px, 8vw, 36px)/1.16 "Songti SC", "STSong", serif;
+  letter-spacing: 0.04em;
+}
+
+.inn-upgrade-reveal.is-playing::before {
+  animation: innUpgradeVeil 2.8s ease-out both;
+}
+
+.inn-upgrade-reveal.is-playing::after {
+  animation: innUpgradeLightSpread 2.8s cubic-bezier(0.2, 0.62, 0.26, 1) both;
+}
+
+.inn-upgrade-reveal.is-playing .inn-upgrade-reveal-copy {
+  animation: innUpgradeTitle 2.8s ease-out both;
+}
+
+.inn-page.upgrade-reveal-active .inn-scene {
+  animation: innUpgradeSceneBrighten 2.8s ease-out both;
+}
+
+@keyframes innUpgradeVeil {
+  0% { opacity: 0; }
+  12% { opacity: 0.58; }
+  28% { opacity: 0.4; }
+  58%, 100% { opacity: 0; }
+}
+
+@keyframes innUpgradeLightSpread {
+  0%, 14% { opacity: 0; transform: scale(0.16); }
+  28% { opacity: 0.92; transform: scale(0.34); }
+  62% { opacity: 0.42; transform: scale(1.32); }
+  100% { opacity: 0; transform: scale(2.05); }
+}
+
+@keyframes innUpgradeTitle {
+  0%, 25% { opacity: 0; transform: translateY(10px) scale(0.96); }
+  38%, 72% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-7px) scale(1.015); }
+}
+
+@keyframes innUpgradeSceneBrighten {
+  0% { filter: brightness(1) saturate(1); }
+  13% { filter: brightness(0.74) saturate(0.88); }
+  48% { filter: brightness(1.13) saturate(1.08); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inn-upgrade-reveal.is-playing::before {
+    animation: none;
+    opacity: 0.12;
+  }
+
+  .inn-upgrade-reveal.is-playing::after {
+    animation: none;
+    opacity: 0.28;
+    transform: scale(1.2);
+  }
+
+  .inn-upgrade-reveal.is-playing .inn-upgrade-reveal-copy {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .inn-page.upgrade-reveal-active .inn-scene {
+    animation: none;
+    filter: brightness(1.04);
+  }
+}
+
 /* The exterior uses the approved 1254px longscroll assets. */
 .longscroll-map {
   position: relative;
@@ -4795,67 +4933,8 @@ button:disabled {
   transform: scale(1.2);
 }
 
-.confirm-detail .modal-actions,
-.unlock-summary .modal-actions {
+.confirm-detail .modal-actions {
   padding: 0 18px 18px;
-}
-
-.unlock-summary .repair-hero img {
-  width: 96px;
-  height: 96px;
-  align-self: center;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 4px rgba(54, 32, 20, 0.18));
-}
-
-.unlock-sequence {
-  display: grid;
-  gap: 8px;
-  padding: 14px 18px;
-}
-
-.unlock-sequence article {
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  gap: 9px;
-  align-items: center;
-  padding: 9px 10px;
-  border-radius: 12px;
-  background: rgba(255, 242, 210, 0.66);
-  box-shadow: inset 0 0 0 1px rgba(126, 86, 41, 0.16);
-}
-
-.unlock-sequence i {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #4b805d;
-  color: #fff1d3;
-  font-style: normal;
-  font-weight: 900;
-}
-
-.unlock-sequence b,
-.unlock-sequence span {
-  display: block;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.unlock-sequence b {
-  color: #4f3321;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.unlock-sequence span {
-  margin-top: 3px;
-  color: #70543f;
-  font-size: 12px;
-  line-height: 1.35;
 }
 
 .loading-overlay {

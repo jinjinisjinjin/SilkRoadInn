@@ -32,6 +32,14 @@ const pricingBands = economy.orderPricing.bands;
 const storageEconomy = economy.premiumCurrency?.storage;
 const staminaPurchase = economy.premiumCurrency?.staminaPurchase;
 
+assert(orders.arrivalPolicy?.preserveWaitingGuests === true, "Incomplete orders must remain visible until delivered");
+assert(!("autoRefreshMinutes" in orders), "Orders must not retain an automatic refresh setting");
+assert(!("freeRefreshPerDay" in orders), "Orders must not retain a free refresh setting");
+assert(
+  !progression.milestones.some((milestone) => "unlockOrderRefresh" in (milestone.rewards ?? {})),
+  "Repair rewards must not promise order refresh",
+);
+
 assert(storageEconomy?.freeSlots === 8, "Storage must start with eight free slots");
 assert(storageEconomy?.unlimited === true, "Storage expansion must not have a slot limit");
 assert(storageEconomy.unlockPrices?.length > 0, "Storage needs an initial ruby price table");
@@ -44,7 +52,7 @@ assert(
     && storageEconomy.priceAfterTable.incrementPerSlot > 0,
   "Unlimited storage prices need a positive per-slot increment after the table",
 );
-assert(storageEconomy.inviteUnlock?.requiredNewPlayers === 5, "A storage slot invite unlock must require five new players");
+assert(storageEconomy.inviteUnlock?.requiredNewPlayers === 1, "A storage slot invite unlock must require one new player");
 assert(staminaPurchase?.staminaAmount === 100, "Each ruby stamina purchase must grant 100 stamina");
 assert(staminaPurchase?.firstPrice === 10, "The first daily stamina purchase must cost 10 rubies");
 assert(staminaPurchase?.priceMultiplier === 2, "Daily stamina purchase prices must double");

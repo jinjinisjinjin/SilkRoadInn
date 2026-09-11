@@ -55,6 +55,7 @@ const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
 const CHAPTER_STORY_QA_MODE = QA_MODE === "chapter-story-v1";
 const STORY_ARCHIVE_QA_MODE = QA_MODE === "story-archive-v1";
 const NEW_PLAYER_GUIDE_QA_MODE = QA_MODE === "new-player-guide-v1";
+const UPGRADE_REVEAL_QA_MODE = QA_MODE === "upgrade-reveal-v1";
 const FOOD_CODEX_PREVIEW = new URLSearchParams(location.search).get("preview") === "food-codex-matrix-v1";
 const STORY_ARCHIVE_QA_AUTOPEN = STORY_ARCHIVE_QA_MODE
   && new URLSearchParams(location.search).get("open") === "1";
@@ -68,6 +69,7 @@ const CHAPTER_STORY_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchPar
 const CHAPTER_STORY_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
 const STORY_ARCHIVE_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const STORY_ARCHIVE_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
+const UPGRADE_REVEAL_QA_LEVEL = Math.max(2, Math.min(4, Math.trunc(Number(new URLSearchParams(location.search).get("level"))) || 2));
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
 const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
@@ -85,8 +87,10 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE;
-const SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE;
+const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
+  ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
+  : NEW_PLAYER_GUIDE_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_new_player_guide_v1"
   : STORY_ARCHIVE_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_story_archive_v1"
@@ -435,12 +439,14 @@ const els = {
   storageBtn: document.querySelector("#storageBtn"),
   stationHudBtn: document.querySelector("#stationHudBtn"),
   repairSideBtn: document.querySelector("#repairSideBtn"),
+  boardCodexBtn: document.querySelector("#boardCodexBtn"),
   rewardBagBtn: document.querySelector("#rewardBagBtn"),
   rewardBagBadge: document.querySelector("#rewardBagBadge"),
   bagBtn: document.querySelector("#bagBtn"),
   stationBtn: document.querySelector("#stationBtn"),
   boardReturnBtn: document.querySelector("#boardReturnBtn"),
   innKitchenBtn: document.querySelector("#innKitchenBtn"),
+  innCodexBtn: document.querySelector("#innCodexBtn"),
   pageDoorTransition: document.querySelector("#pageDoorTransition"),
   storyArchiveBtn: document.querySelector("#storyArchiveBtn"),
   boardPage: document.querySelector("#boardPage"),
@@ -543,10 +549,8 @@ const els = {
   repairGuideBtn: document.querySelector("#repairGuideBtn"),
   repairPlayerLayer: document.querySelector("#repairPlayerLayer"),
   repairPlayerFrame: document.querySelector("#repairPlayerFrame"),
-  upgradeUnlockModal: document.querySelector("#upgradeUnlockModal"),
-  upgradeUnlockTitle: document.querySelector("#upgradeUnlockTitle"),
-  upgradeUnlockList: document.querySelector("#upgradeUnlockList"),
-  upgradeReturnBtn: document.querySelector("#upgradeReturnBtn"),
+  innUpgradeReveal: document.querySelector("#innUpgradeReveal"),
+  innUpgradeRevealText: document.querySelector("#innUpgradeRevealText"),
   orderDetailModal: document.querySelector("#orderDetailModal"),
   orderDetailAvatar: document.querySelector("#orderDetailAvatar"),
   orderDetailNpc: document.querySelector("#orderDetailNpc"),
@@ -607,7 +611,8 @@ let suppressNextCellClick = false;
 let suppressNextCellClickTimer = null;
 let activeRepairMilestoneId = null;
 let activeRepairChoiceId = null;
-let pendingUpgradeUnlock = null;
+let pendingInnUpgradeRevealLevel = null;
+let innUpgradeRevealTimer = null;
 let innPackageLoaded = false;
 let innPackagePromise = null;
 let innReleaseTimer = null;
@@ -1311,6 +1316,19 @@ function initializeProgressionFlowQaScenario() {
   state.lastTick = Date.now();
 }
 
+function initializeUpgradeRevealQaScenario() {
+  const completedMilestones = state.progressionConfig.milestones.filter(
+    (milestone) => (milestone.chapter ?? 1) < UPGRADE_REVEAL_QA_LEVEL,
+  );
+  state.innLevel = UPGRADE_REVEAL_QA_LEVEL;
+  state.renovationChoices = Object.fromEntries(
+    completedMilestones.map((milestone) => [milestone.id, "completed"]),
+  );
+  state.activeRepairId = null;
+  state.activeChapterStory = null;
+  state.currentPage = "inn";
+}
+
 function initializeStoryArchiveQaScenario() {
   const story = window.SilkRoadChapterStory;
   if (!story?.chapterSegments) return;
@@ -1580,6 +1598,7 @@ async function boot() {
   await waitForStartupPaint();
   await finishStartupLoading();
   if (state.currentPage === "board") tickGenerators();
+  if (UPGRADE_REVEAL_QA_MODE) setTimeout(() => playInnUpgradeReveal(UPGRADE_REVEAL_QA_LEVEL), 80);
   if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
   if (STORY_ARCHIVE_QA_AUTOPEN) {
     setTimeout(() => openStoryArchive(STORY_ARCHIVE_QA_CHAPTER), 80);
@@ -1852,6 +1871,7 @@ function loadState() {
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
   if (PROGRESSION_FLOW_QA_MODE && !saved) initializeProgressionFlowQaScenario();
+  if (UPGRADE_REVEAL_QA_MODE) initializeUpgradeRevealQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   reconcileGiftBoxStates();
@@ -2172,7 +2192,9 @@ function bindEvents() {
     });
   });
   els.loadingRetryBtn.addEventListener("click", () => switchPage("inn"));
-  els.codexBtn.addEventListener("click", openCodex);
+  [els.codexBtn, els.boardCodexBtn, els.innCodexBtn].filter(Boolean).forEach((button) => {
+    button.addEventListener("click", openCodex);
+  });
   els.codexSelected?.addEventListener("click", openActiveCodexDetail);
   els.codexDetailPrev?.addEventListener("click", () => navigateCodexDetail(-1));
   els.codexDetailNext?.addEventListener("click", () => navigateCodexDetail(1));
@@ -2200,9 +2222,6 @@ function bindEvents() {
     closeRepairModalToAnchor();
   });
   els.repairGuideBtn.addEventListener("click", () => els.repairGuideModal.close());
-  els.upgradeReturnBtn.addEventListener("click", () => {
-    els.upgradeUnlockModal.close();
-  });
   els.viewCodexFromUnlock.addEventListener("click", () => {
     els.unlockModal.close();
     openCodex();
@@ -2218,7 +2237,7 @@ function bindEvents() {
         return;
       }
       document.querySelector(`#${btn.dataset.close}`).close();
-      if (btn.dataset.close === "storyModal" && pendingUpgradeUnlock) showUpgradeUnlockSummary();
+      if (btn.dataset.close === "storyModal" && pendingInnUpgradeRevealLevel) showPendingInnUpgradeReveal();
     });
   });
   document.addEventListener("pointerdown", startBgmIfAllowed, { passive: true });
@@ -3128,10 +3147,8 @@ function chapterStoryContinuation(segmentId) {
   const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
   if (!openingMatch) return null;
   return () => {
-    const previousLevel = state.innConfig?.levels?.find((entry) => entry.level === Number(openingMatch[1]) - 1);
-    if (!previousLevel) return;
-    pendingUpgradeUnlock = buildUpgradeUnlockSummary(previousLevel);
-    showUpgradeUnlockSummary();
+    pendingInnUpgradeRevealLevel = Number(openingMatch[1]);
+    showPendingInnUpgradeReveal();
   };
 }
 
@@ -3509,7 +3526,7 @@ function upgradeInn() {
   state.innLevel = Math.min(4, state.innLevel + 1);
   applyInnUnlocks();
   syncVisibleOrders();
-  pendingUpgradeUnlock = buildUpgradeUnlockSummary(level);
+  pendingInnUpgradeRevealLevel = state.innLevel;
   toast(`流沙驿升至 Lv${state.innLevel}`);
   keeper(level.upgradeStory);
   els.storyTitle.textContent = `流沙驿 Lv${state.innLevel}`;
@@ -3521,7 +3538,7 @@ function upgradeInn() {
   saveState();
   const chapterOpeningId = `chapter${state.innLevel}-opening`;
   if (window.SilkRoadChapterStory?.segments?.[chapterOpeningId]) {
-    playChapterStory(chapterOpeningId, showUpgradeUnlockSummary);
+    playChapterStory(chapterOpeningId, showPendingInnUpgradeReveal);
     return;
   }
   els.storyModal.showModal();
@@ -3531,37 +3548,31 @@ function applyInnUnlocks() {
   syncGeneratorCategoryUnlocks();
 }
 
-function buildUpgradeUnlockSummary(level) {
-  const targetLevel = Math.min(4, level.level + 1);
-  const summaries = {
-    2: [
-      { label: "已有产线", text: "磨坊、乳畜栏、香料架与酒水厢房继续并存。" },
-      { label: "前段解锁", text: "完成“西市开张”后加入果摊生成器。" },
-      { label: "后段解锁", text: "完成“南铺开张”后加入肉铺生成器。" },
-      { label: "订单扩充", text: "顾客会逐步提出跨品类混合订单。" },
-    ],
-    3: [
-      { label: "六类产线", text: "六种生成器全部保留，可持续并行出货。" },
-      { label: "混合订单", text: "胡饼、奶食、饮品与其他品类会组合出现。" },
-      { label: "楼馆修缮", text: "开放楼馆、双院、庭园与望楼六处修缮。" },
-      { label: "远路来客", text: "商队、使团与求法旅人订单逐步增加。" },
-    ],
-    4: [
-      { label: "全部产线", text: "六种生成器继续并存，不回收已有品类。" },
-      { label: "高阶订单", text: "三品类组合订单成为终章主要挑战。" },
-      { label: "街区修缮", text: "开放货棚、长街、巷路、东院与灯市七处修缮。" },
-      { label: "终章商队", text: "康十一商队进驻，推进灯火连城主线。" },
-    ],
-  };
-  return {
-    title: `流沙驿升至 Lv${targetLevel}`,
-    items: summaries[targetLevel] ?? [],
-  };
+function showPendingInnUpgradeReveal() {
+  if (!pendingInnUpgradeRevealLevel) return;
+  const level = pendingInnUpgradeRevealLevel;
+  pendingInnUpgradeRevealLevel = null;
+  playInnUpgradeReveal(level);
 }
 
-function showUpgradeUnlockSummary() {
-  if (!pendingUpgradeUnlock) return;
-  pendingUpgradeUnlock = null;
+function playInnUpgradeReveal(level) {
+  if (!els.innUpgradeReveal || !els.innUpgradeRevealText) return;
+  const targetLevel = Math.max(2, Math.min(4, Math.trunc(Number(level)) || 2));
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  clearTimeout(innUpgradeRevealTimer);
+  els.innUpgradeRevealText.textContent = `流沙驿升至 Lv${targetLevel}`;
+  els.innUpgradeReveal.hidden = false;
+  els.innPage.classList.remove("upgrade-reveal-active");
+  els.innUpgradeReveal.classList.remove("is-playing");
+  void els.innUpgradeReveal.offsetWidth;
+  els.innPage.classList.add("upgrade-reveal-active");
+  els.innUpgradeReveal.classList.add("is-playing");
+  innUpgradeRevealTimer = setTimeout(() => {
+    els.innPage.classList.remove("upgrade-reveal-active");
+    els.innUpgradeReveal.classList.remove("is-playing");
+    els.innUpgradeReveal.hidden = true;
+    innUpgradeRevealTimer = null;
+  }, reducedMotion ? 1200 : 2800);
 }
 
 function canUpgradeInn() {
@@ -4815,7 +4826,7 @@ function renderTutorial() {
   } else if (state.tutorialStep === 2) {
     keeper("炉饼做好了，交给沙州驿卒试试。");
   } else if (state.tutorialStep === 3) {
-    els.codexBtn.classList.add("tutorial-action");
+    els.boardCodexBtn?.classList.add("tutorial-action");
     keeper("第一张食谱已经记下。点「食鉴」看看收录。");
   }
 }
@@ -6408,7 +6419,6 @@ function rewardText(milestone) {
   const rewards = milestone.rewards ?? {};
   const labels = [];
   if (rewards.coins) labels.push(`价值${rewards.coins}铜币的铜币棋子收入行囊`);
-  if (rewards.unlockOrderRefresh) labels.push("开放订单刷新");
   if (rewards.boardColumns && rewards.boardRows) labels.push(`案板 ${rewards.boardColumns}x${rewards.boardRows}`);
   if (rewards.staminaMax) labels.push(`驼铃上限 ${rewards.staminaMax}`);
   if (rewards.staminaRecoverMinutes) labels.push(`${rewards.staminaRecoverMinutes}分钟恢复1点`);
@@ -6535,8 +6545,8 @@ function openRubyRecharge() {
 function explainStorageInvite() {
   const requiredNewPlayers = Number(
     state.economyConfig?.premiumCurrency?.storage?.inviteUnlock?.requiredNewPlayers,
-  ) || 5;
-  toast(`每邀请${requiredNewPlayers}位新掌柜，可免费开启1个仓位。`);
+  ) || 1;
+  toast(`平台邀请功能尚未接入。开放后，每成功邀请${requiredNewPlayers}位新掌柜，可免费开启1个仓位。`);
 }
 
 function openStaminaPurchase() {

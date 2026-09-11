@@ -14,8 +14,6 @@
       "7": 2
     }
   },
-  "autoRefreshMinutes": 20,
-  "freeRefreshPerDay": 3,
   "contentPlan": {
     "status": "order_pool_integrated",
     "currentOrderCount": 172,

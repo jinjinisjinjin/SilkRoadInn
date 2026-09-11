@@ -103,9 +103,7 @@
       "storyText": "周甲的炉饼刚出炉，孟氏便停在门前。先让人坐得下来，流沙驿才算真的开了门。",
       "completionText": "孟氏轻轻拍去长凳上的浮尘。前厅终于能让赶路的人坐下，流沙驿也有了第一处人声。",
       "conditions": {},
-      "rewards": {
-        "unlockOrderRefresh": true
-      },
+      "rewards": {},
       "renovationChoices": []
     },
     {

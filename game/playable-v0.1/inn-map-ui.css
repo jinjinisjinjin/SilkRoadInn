@@ -189,6 +189,7 @@
   display: none;
 }
 
+#app[data-page="inn"] .inn-codex-entry,
 #app[data-page="inn"] .inn-story-archive-entry,
 #app[data-page="inn"] .inn-kitchen-entry {
   width: 72px;
@@ -202,18 +203,42 @@
   backdrop-filter: none;
 }
 
+#app[data-page="inn"] .inn-codex-entry {
+  position: absolute;
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 30;
+  display: grid;
+  cursor: pointer;
+}
+
+#app[data-page="inn"] .inn-story-archive-entry {
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 78px);
+}
+
 #app[data-page="inn"] .inn-kitchen-entry {
   width: 82px;
   height: 90px;
   min-height: 90px;
 }
 
+#app[data-page="inn"] .inn-codex-entry img,
 #app[data-page="inn"] .inn-story-archive-entry img,
 #app[data-page="inn"] .inn-kitchen-entry img {
   width: 68px;
   height: 68px;
   object-fit: contain;
   filter: drop-shadow(0 4px 5px rgba(49, 29, 17, 0.34));
+}
+
+#app[data-page="inn"] .inn-codex-entry:focus-visible,
+#app[data-page="inn"] .inn-story-archive-entry:focus-visible {
+  outline: 2px solid rgba(255, 224, 158, 0.94);
+  outline-offset: 2px;
+}
+
+#app[data-page="inn"] .inn-codex-entry:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 #app[data-page="inn"] .inn-kitchen-entry img {
@@ -279,6 +304,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  #app[data-page="inn"] .inn-codex-entry:active:not(:disabled),
   #app[data-page="inn"] .inn-story-archive-entry:active:not(:disabled),
   #app[data-page="inn"] .inn-kitchen-entry:active {
     transform: none;

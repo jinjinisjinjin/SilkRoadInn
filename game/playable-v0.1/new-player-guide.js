@@ -43,23 +43,6 @@
     localStorage.setItem(GUIDE_SAVE_KEY, JSON.stringify({ ...guideState(), ...patch }));
   }
 
-  function ensureCodexEntry() {
-    const rail = document.querySelector(".order-side-rail");
-    if (!rail || document.querySelector("#newPlayerCodexBtn")) return;
-    const button = document.createElement("button");
-    button.id = "newPlayerCodexBtn";
-    button.type = "button";
-    button.className = "side-entry codex-side-entry";
-    button.setAttribute("aria-label", "打开丝路食鉴");
-    button.title = "丝路食鉴";
-    button.innerHTML = '<img src="./assets/ui/ui_codex_scroll.png" alt="" />';
-    button.addEventListener("click", () => {
-      document.querySelector("#codexBtn")?.click();
-      scheduleRefresh(80);
-    });
-    rail.insertBefore(button, document.querySelector("#rewardBagBtn"));
-  }
-
   function createLayer() {
     const app = document.querySelector("#app");
     if (!app || document.querySelector("#newPlayerGuide")) return;
@@ -207,7 +190,6 @@
   }
 
   function refresh() {
-    ensureCodexEntry();
     if (!layer) createLayer();
     if (!layer) return;
     const startup = document.querySelector("#startupLoading");
@@ -274,7 +256,7 @@
     if (tutorialStep === 3 && page === "board") {
       showGuide({
         text: "新食谱已经记下。点卷轴，看看《丝路食鉴》。",
-        targets: [document.querySelector("#newPlayerCodexBtn")],
+        targets: [document.querySelector("#boardCodexBtn")],
       });
       return;
     }
@@ -352,7 +334,6 @@
   }
 
   function initialize() {
-    ensureCodexEntry();
     createLayer();
     bindRefreshSignals();
     scheduleRefresh(80);

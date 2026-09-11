@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v11" />
-    <link rel="stylesheet" href="./inn-map-ui.css?v=daily-pouch-cutout-v2" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=food-codex-icon-v1" />
     <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
   </head>
   <body>
@@ -50,6 +50,9 @@
               <button id="repairSideBtn" class="side-entry repair-side-entry" aria-label="进入流沙驿修缮">
                 <img src="./assets/ui/ui_station_tavern.png" alt="" />
                 <i></i>
+              </button>
+              <button id="boardCodexBtn" class="side-entry codex-side-entry" type="button" aria-label="打开丝路食鉴" title="丝路食鉴">
+                <img src="./assets/ui/ui_food_codex_book_v1.png" alt="" />
               </button>
               <button id="rewardBagBtn" class="side-entry reward-bag-entry" aria-label="打开奖励行囊">
                 <img src="./assets/ui/ui_bag_inventory.png" alt="" />
@@ -104,6 +107,11 @@
           </aside>
         </header>
         <section class="inn-scene" id="innScene"></section>
+        <div id="innUpgradeReveal" class="inn-upgrade-reveal" role="status" aria-live="polite" hidden>
+          <div class="inn-upgrade-reveal-copy">
+            <strong id="innUpgradeRevealText">流沙驿升至 Lv2</strong>
+          </div>
+        </div>
         <section class="inn-panel scene-panel">
           <div class="inn-progress scene-progress">
             <div>
@@ -116,6 +124,9 @@
         </section>
         <button id="innKitchenBtn" class="inn-kitchen-entry" type="button" aria-label="返回后厨" title="后厨">
           <img src="./assets/ui/ui_kitchen_entry_bright_v1.png" alt="" />
+        </button>
+        <button id="innCodexBtn" class="side-entry codex-side-entry inn-codex-entry" type="button" aria-label="打开丝路食鉴" title="丝路食鉴">
+          <img src="./assets/ui/ui_food_codex_book_v1.png" alt="" />
         </button>
         <button id="storyArchiveBtn" class="inn-story-archive-entry" type="button" aria-label="回顾已解锁剧情" title="剧情回顾">
           <img src="./assets/ui/ui_codex_scroll.png" alt="" />
@@ -326,13 +337,6 @@
         <div class="modal-actions single"><button id="repairGuideBtn" class="primary">知道了</button></div>
       </div>
     </dialog>
-    <dialog id="upgradeUnlockModal" class="modal repair-modal">
-      <div class="modal-inner repair-detail unlock-summary">
-        <div class="repair-hero"><div><span>驿站升级</span><h2 id="upgradeUnlockTitle">新功能已解锁</h2></div><img src="./assets/ui/ui_station_tavern.png" alt="" /></div>
-        <div class="unlock-sequence" id="upgradeUnlockList"></div>
-        <div class="modal-actions single"><button id="upgradeReturnBtn" class="primary">知道了</button></div>
-      </div>
-    </dialog>
     <dialog id="orderDetailModal" class="modal">
       <div class="modal-inner order-detail">
         <button class="close" data-close="orderDetailModal">×</button>
@@ -389,7 +393,7 @@
         <div class="storage-title">柜中仓位</div>
         <div class="storage-interior"><div class="storage-slot-scroll" id="storageSlotList"></div></div>
         <div class="storage-footer">
-          <button id="storageInviteBtn" class="storage-invite-card" type="button">邀请5人</button>
+          <button id="storageInviteBtn" class="storage-invite-card" type="button">邀请新用户</button>
           <button id="storageUnlockBtn" class="storage-unlock-card" type="button">
             <i class="ruby-icon" aria-hidden="true"></i><b id="storageUnlockPrice">5</b>
           </button>

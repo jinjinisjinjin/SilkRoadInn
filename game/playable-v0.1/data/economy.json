@@ -17,7 +17,7 @@
         "incrementPerSlot": 10
       },
       "inviteUnlock": {
-        "requiredNewPlayers": 5
+        "requiredNewPlayers": 1
       }
     },
     "staminaPurchase": {
