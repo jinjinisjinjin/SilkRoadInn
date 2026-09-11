@@ -6004,9 +6004,10 @@ button.bag-slot:focus-visible {
 
 .storage-cabinet {
   position: relative;
-  width: min(92vw, 392px);
-  height: min(84dvh, 720px);
-  min-height: 560px;
+  width: min(92vw, calc(82dvh * 0.6667), 392px);
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 2 / 3;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -6058,8 +6059,8 @@ button.bag-slot:focus-visible {
   z-index: 2;
   left: 18.5%;
   right: 18.5%;
-  top: 21.5%;
-  bottom: 18.2%;
+  top: 20.5%;
+  bottom: 21.5%;
   max-height: none;
   padding: 0;
   border: 0;
@@ -6072,11 +6073,13 @@ button.bag-slot:focus-visible {
 .storage-slot-scroll {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: minmax(44px, 1fr);
-  gap: 19px 3px;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  grid-auto-rows: calc((100% - 32px) / 5);
+  gap: 8px 3px;
   width: 100%;
-  max-height: 100%;
-  padding: 2px 13px 24px;
+  height: 100%;
+  max-height: none;
+  padding: 0 13px;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
@@ -6093,6 +6096,9 @@ button.bag-slot:focus-visible {
 .storage-slot.locked {
   display: grid;
   place-items: center;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
   min-height: 0;
   aspect-ratio: 1;
   padding: 0;
@@ -6186,7 +6192,7 @@ button.storage-slot.filled {
   box-shadow: inset 0 1px 4px rgba(42, 23, 12, 0.36);
 }
 
-.storage-capacity-card,
+.storage-invite-card,
 .storage-unlock-card {
   display: flex;
   min-width: 0;
@@ -6206,12 +6212,8 @@ button.storage-slot.filled {
   text-shadow: 0 1px 2px rgba(50, 29, 16, 0.42);
 }
 
-.storage-capacity-card {
+.storage-invite-card {
   background: linear-gradient(180deg, #4f9eb2, #34788c);
-}
-
-.storage-capacity-card b {
-  font-size: 17px;
 }
 
 .storage-unlock-card {
@@ -6239,10 +6241,6 @@ button.storage-slot.filled {
 .storage-unlock-card:disabled {
   opacity: 0.62;
   background: linear-gradient(180deg, #8b9d8f, #65786b);
-}
-
-.storage-unlock-card.is-full .ruby-icon {
-  display: none;
 }
 
 .stamina-purchase-modal {

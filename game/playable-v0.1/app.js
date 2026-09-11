@@ -72,7 +72,6 @@ const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
 const BOARD_SIZE = BOARD_COLUMNS * BOARD_ROWS;
 const STORAGE_FREE_SLOTS = 8;
-const STORAGE_TOTAL_SLOTS = 28;
 const ACTIVE_BOARD_COLUMNS = 3;
 const ACTIVE_BOARD_ROWS = 3;
 const ACTIVE_BOARD_START_COL = 2;
@@ -473,7 +472,7 @@ const els = {
   bagList: document.querySelector("#bagList"),
   storageModal: document.querySelector("#storageModal"),
   storageSlotList: document.querySelector("#storageSlotList"),
-  storageCapacity: document.querySelector("#storageCapacity"),
+  storageInviteBtn: document.querySelector("#storageInviteBtn"),
   storageUnlockBtn: document.querySelector("#storageUnlockBtn"),
   storageUnlockPrice: document.querySelector("#storageUnlockPrice"),
   staminaPurchaseModal: document.querySelector("#staminaPurchaseModal"),
@@ -686,7 +685,7 @@ function initializeGeneratorMaterialQaScenario() {
 
 function initializeOrderGiftQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
-  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
   state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
@@ -708,7 +707,7 @@ function initializeRubyDisplayQaScenario() {
     state.board[index] = itemId;
   });
   state.board[starterGeneratorIndex()] = "gen_mill_01";
-  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
   state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
@@ -741,7 +740,7 @@ function initializeLv4MarketOrdersQaScenario() {
   });
   const firstMarketOrderIndex = REPAIR_GATE_SEQUENCE.indexOf(LV4_MARKET_ORDER_IDS[0]);
   const firstMarketMilestoneIndex = state.progressionConfig.milestones.findIndex((milestone) => milestone.id === "lv4_south_shed");
-  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
   state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
@@ -786,7 +785,7 @@ function initializeGeneratorOrderQaScenario() {
   categories.forEach((categoryId, index) => {
     state.board[generatorIndexes[index]] = generatorItemId(categoryId, 1);
   });
-  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
   state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
@@ -856,7 +855,7 @@ function initializeProgressionFlowQaScenario() {
       }
     });
   }
-  state.bag = Array(STORAGE_TOTAL_SLOTS).fill(null);
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
   state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
   state.rewardItems = [];
   state.giftPacks = [];
@@ -1229,8 +1228,15 @@ function storageUnlockPrices() {
 
 function nextStorageUnlockPrice() {
   const priceIndex = state.unlockedStorageSlots - STORAGE_FREE_SLOTS;
-  const price = Number(storageUnlockPrices()[priceIndex]);
-  return Number.isFinite(price) && price > 0 ? price : null;
+  const prices = storageUnlockPrices();
+  const listedPrice = Number(prices[priceIndex]);
+  if (Number.isFinite(listedPrice) && listedPrice > 0) return listedPrice;
+  const lastListedPrice = Number(prices.at(-1));
+  const increment = Number(
+    state.economyConfig?.premiumCurrency?.storage?.priceAfterTable?.incrementPerSlot,
+  );
+  if (!Number.isFinite(lastListedPrice) || !Number.isFinite(increment) || increment <= 0) return null;
+  return lastListedPrice + increment * (priceIndex - prices.length + 1);
 }
 
 function staminaPurchaseConfig() {
@@ -1286,7 +1292,7 @@ function defaultState() {
   board[starterGeneratorIndex()] = "gen_mill_01";
   return {
     board,
-    bag: Array(STORAGE_TOTAL_SLOTS).fill(null),
+    bag: Array(STORAGE_FREE_SLOTS).fill(null),
     rewardItems: [],
     giftPacks: [],
     giftBoxStates: {},
@@ -1342,7 +1348,7 @@ function loadState() {
     && Object.entries(data.storyFlags).some(([key, enabled]) => enabled && key.startsWith("chapter1Story:"));
   Object.assign(state, {
     board: normalizeBoard(data.board),
-    bag: normalizeStorageSlots(data.bag),
+    bag: normalizeStorageSlots(data.bag, data.unlockedStorageSlots),
     rewardItems: normalizeRewardItems(data.rewardItems),
     giftPacks: normalizeGiftPacks(data.giftPacks),
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
@@ -1680,6 +1686,7 @@ function bindEvents() {
   els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.innGemPlusBtn?.addEventListener("click", explainRubyUse);
+  els.storageInviteBtn?.addEventListener("click", explainStorageInvite);
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
   els.staminaPurchaseConfirm?.addEventListener("click", purchaseStamina);
   els.storyArchiveBtn?.addEventListener("click", () => openStoryArchive());
@@ -5704,6 +5711,13 @@ function explainRubyUse() {
   toast("红宝石可扩充柜中仓位，也可购买驼铃。");
 }
 
+function explainStorageInvite() {
+  const requiredNewPlayers = Number(
+    state.economyConfig?.premiumCurrency?.storage?.inviteUnlock?.requiredNewPlayers,
+  ) || 5;
+  toast(`每邀请${requiredNewPlayers}位新掌柜，可免费开启1个仓位。`);
+}
+
 function openStaminaPurchase() {
   if (syncDailyStaminaPurchases()) saveState();
   renderStaminaPurchase();
@@ -5739,10 +5753,6 @@ function purchaseStamina() {
 }
 
 function purchaseNextStorageSlot() {
-  if (state.unlockedStorageSlots >= STORAGE_TOTAL_SLOTS) {
-    toast("柜中仓位已经全部开启。");
-    return;
-  }
   const price = nextStorageUnlockPrice();
   if (!price) {
     toast("后续仓位价格还未配置。");
@@ -5754,6 +5764,7 @@ function purchaseNextStorageSlot() {
   }
   state.gems -= price;
   state.unlockedStorageSlots += 1;
+  while (state.bag.length < state.unlockedStorageSlots) state.bag.push(null);
   keeper(`柜中第${state.unlockedStorageSlots}格已经开启。`);
   toast(`仓位 +1 · 红宝石 -${price}`);
   render();
@@ -5763,24 +5774,16 @@ function purchaseNextStorageSlot() {
 function renderStorage() {
   if (!els.storageSlotList) return;
   els.storageSlotList.innerHTML = "";
-  if (els.storageCapacity) {
-    els.storageCapacity.textContent = `${state.unlockedStorageSlots}/${STORAGE_TOTAL_SLOTS}`;
-  }
   const nextPrice = nextStorageUnlockPrice();
   if (els.storageUnlockBtn && els.storageUnlockPrice) {
-    const isFull = state.unlockedStorageSlots >= STORAGE_TOTAL_SLOTS;
-    els.storageUnlockBtn.disabled = isFull;
-    els.storageUnlockBtn.classList.toggle("is-full", isFull);
-    els.storageUnlockPrice.textContent = isFull ? "已满" : nextPrice;
+    els.storageUnlockBtn.disabled = !nextPrice;
+    els.storageUnlockPrice.textContent = nextPrice ?? "—";
     els.storageUnlockBtn.setAttribute(
       "aria-label",
-      isFull ? "柜中仓位已经全部开启" : `花费${nextPrice}颗红宝石开启一个柜中仓位`,
+      nextPrice ? `花费${nextPrice}颗红宝石开启一个柜中仓位` : "仓位价格还未配置",
     );
   }
-  const visibleSlotCount = Math.min(
-    STORAGE_TOTAL_SLOTS,
-    state.unlockedStorageSlots + (state.unlockedStorageSlots < STORAGE_TOTAL_SLOTS ? 1 : 0),
-  );
+  const visibleSlotCount = state.unlockedStorageSlots + 1;
   for (let index = 0; index < visibleSlotCount; index += 1) {
     const isUnlocked = index < state.unlockedStorageSlots;
     const isNextUnlock = index === state.unlockedStorageSlots;
@@ -6374,10 +6377,14 @@ function firstEmptyBagIndex() {
   return -1;
 }
 
-function normalizeStorageSlots(value) {
-  const slots = Array(STORAGE_TOTAL_SLOTS).fill(null);
+function normalizeStorageSlots(value, unlockedValue) {
+  const requestedUnlocked = Number.isInteger(Number(unlockedValue))
+    ? Math.max(STORAGE_FREE_SLOTS, Number(unlockedValue))
+    : STORAGE_FREE_SLOTS;
+  const slotCount = Math.max(STORAGE_FREE_SLOTS, requestedUnlocked, Array.isArray(value) ? value.length : 0);
+  const slots = Array(slotCount).fill(null);
   if (Array.isArray(value)) {
-    value.slice(0, STORAGE_TOTAL_SLOTS).forEach((item, index) => {
+    value.forEach((item, index) => {
       slots[index] = migrateLegacyGeneratorId(item ?? null);
     });
   }
@@ -6387,17 +6394,14 @@ function normalizeStorageSlots(value) {
 function normalizeUnlockedStorageSlots(value, savedBag) {
   const configured = Number(value);
   const highestOccupiedIndex = Array.isArray(savedBag)
-    ? savedBag.slice(0, STORAGE_TOTAL_SLOTS).reduce(
+    ? savedBag.reduce(
       (highest, item, index) => item ? index : highest,
       -1,
     )
     : -1;
   const minimumToPreserveItems = highestOccupiedIndex + 1;
   const requested = Number.isInteger(configured) ? configured : STORAGE_FREE_SLOTS;
-  return Math.max(
-    STORAGE_FREE_SLOTS,
-    Math.min(STORAGE_TOTAL_SLOTS, Math.max(requested, minimumToPreserveItems)),
-  );
+  return Math.max(STORAGE_FREE_SLOTS, requested, minimumToPreserveItems);
 }
 
 function totalGiftPackCount() {

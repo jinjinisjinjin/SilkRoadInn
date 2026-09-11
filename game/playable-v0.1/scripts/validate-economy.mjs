@@ -33,15 +33,18 @@ const storageEconomy = economy.premiumCurrency?.storage;
 const staminaPurchase = economy.premiumCurrency?.staminaPurchase;
 
 assert(storageEconomy?.freeSlots === 8, "Storage must start with eight free slots");
-assert(storageEconomy?.totalSlots === 28, "Storage must define 28 total slots");
-assert(
-  storageEconomy.unlockPrices?.length === storageEconomy.totalSlots - storageEconomy.freeSlots,
-  "Storage needs one unlock price for every paid slot",
-);
+assert(storageEconomy?.unlimited === true, "Storage expansion must not have a slot limit");
+assert(storageEconomy.unlockPrices?.length > 0, "Storage needs an initial ruby price table");
 storageEconomy.unlockPrices.forEach((price, index, prices) => {
   assert(Number.isInteger(price) && price > 0, `Storage slot ${index + 9} has an invalid ruby price`);
   if (index > 0) assert(price > prices[index - 1], "Storage unlock prices must increase one slot at a time");
 });
+assert(
+  Number.isInteger(storageEconomy.priceAfterTable?.incrementPerSlot)
+    && storageEconomy.priceAfterTable.incrementPerSlot > 0,
+  "Unlimited storage prices need a positive per-slot increment after the table",
+);
+assert(storageEconomy.inviteUnlock?.requiredNewPlayers === 5, "A storage slot invite unlock must require five new players");
 assert(staminaPurchase?.staminaAmount === 100, "Each ruby stamina purchase must grant 100 stamina");
 assert(staminaPurchase?.firstPrice === 10, "The first daily stamina purchase must cost 10 rubies");
 assert(staminaPurchase?.priceMultiplier === 2, "Daily stamina purchase prices must double");
