@@ -1,9 +1,52 @@
 const DATA_PATH = "./data/";
+const AUDIO_PATH = "./assets/audio/";
+const AUDIO_MUTED_KEY = "silkroad_tavern_audio_muted_v1";
+const AUDIO_BGM_ENABLED_KEY = "silkroad_tavern_audio_bgm_enabled_v1";
+const AUDIO_SFX_ENABLED_KEY = "silkroad_tavern_audio_sfx_enabled_v1";
+const SFX_VOLUME = 0.72;
+const AUDIO_SOURCES = Object.freeze({
+  coin: `${AUDIO_PATH}coin-event.m4a`,
+  merge: `${AUDIO_PATH}food-merge.m4a`,
+  generate: `${AUDIO_PATH}generator-produce.m4a`,
+  click: `${AUDIO_PATH}basic-click-v3.m4a`,
+  bubble: `${AUDIO_PATH}bubble-pop.m4a`,
+  enterShop: `${AUDIO_PATH}enter-shop.m4a`,
+  exitShop: `${AUDIO_PATH}exit-shop.m4a`,
+  bgm: `${AUDIO_PATH}bgm.m4a`,
+});
+const AUDIO_VOLUMES = Object.freeze({
+  coin: 0.336,
+  merge: SFX_VOLUME,
+  generate: 0.504,
+  click: 0.9,
+  bubble: SFX_VOLUME,
+  enterShop: SFX_VOLUME,
+  exitShop: SFX_VOLUME,
+  bgm: 0.24,
+});
+const AUDIO_START_OFFSETS = Object.freeze({
+  click: 0.1,
+  exitShop: 0.05,
+});
+const SPECIAL_AUDIO_BUTTONS = [
+  "#soundToggleBtn",
+  "#innSoundToggleBtn",
+  "#stationHudBtn",
+  "#repairSideBtn",
+  "#stationBtn",
+  "#boardReturnBtn",
+  "#innKitchenBtn",
+].join(",");
 const QA_MODE = new URLSearchParams(location.search).get("qa");
 const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
 const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
+const STAMINA_POUCH_QA_MODE = QA_MODE === "stamina-pouch-v1";
+const STAMINA_POUCH_QA_FULL = STAMINA_POUCH_QA_MODE
+  && new URLSearchParams(location.search).get("full") === "1";
+const STAMINA_POUCH_QA_RESET = STAMINA_POUCH_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
 const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
@@ -42,7 +85,7 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE;
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE;
 const SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_new_player_guide_v1"
   : STORY_ARCHIVE_QA_MODE
@@ -61,6 +104,8 @@ const SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
       ? `silkroad_tavern_proto_v02_qa_order_gift_generator_v1_ch${ORDER_GIFT_QA_CHAPTER}`
       : RUBY_DISPLAY_QA_MODE
         ? "silkroad_tavern_proto_v02_qa_ruby_display_v1"
+        : STAMINA_POUCH_QA_MODE
+          ? `silkroad_tavern_proto_v02_qa_stamina_pouch_v1${STAMINA_POUCH_QA_FULL ? "_full" : ""}`
         : LV4_MARKET_ORDERS_QA_MODE
           ? "silkroad_tavern_proto_v02_qa_lv4_market_orders_v1"
           : GENERATOR_ORDER_QA_MODE
@@ -88,15 +133,25 @@ const BONUS_RUBY_PREFIX = "bonus_ruby_";
 const BONUS_RUBY_MAX_LEVEL = 4;
 const BONUS_RUBY_VALUES = Object.freeze([0, 1, 3, 8, 25]);
 const BONUS_RUBY_SCALE_PERCENT = Object.freeze([0, 50, 70, 70, 70]);
+const BONUS_STAMINA_PREFIX = "bonus_stamina_";
+const BONUS_STAMINA_MAX_LEVEL = 4;
+const BONUS_STAMINA_VALUES = Object.freeze([0, 2, 8, 30, 100]);
+const BONUS_STAMINA_ICON_KEYS = Object.freeze([
+  "",
+  "ui/ui_camel_bell_stamina",
+  "ui/ui_camel_bells_stamina_lv02_v1",
+  "ui/ui_camel_stamina_lv03_dromedary_v1",
+  "ui/ui_camel_stamina_lv04_bactrian_v1",
+]);
 const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
 const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
 const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
 const DAILY_POUCH_REWARD_POOL = Object.freeze([
-  { id: "traveler", name: "行旅小礼", weight: 45, coins: 8, stamina: 10 },
-  { id: "market", name: "市集馈赠", weight: 30, coins: 14, stamina: 12 },
-  { id: "caravan", name: "驼队余响", weight: 16, coins: 10, stamina: 22 },
-  { id: "harvest", name: "绿洲丰收", weight: 7, coins: 24, stamina: 18 },
-  { id: "silkroad", name: "丝路厚礼", weight: 2, coins: 40, stamina: 30 },
+  { id: "traveler", name: "行旅小礼", weight: 45, coins: 8, stamina: 2 },
+  { id: "market", name: "市集馈赠", weight: 30, coins: 14, stamina: 8 },
+  { id: "caravan", name: "驼队余响", weight: 16, coins: 10, stamina: 30 },
+  { id: "harvest", name: "绿洲丰收", weight: 7, coins: 24, stamina: 30 },
+  { id: "silkroad", name: "丝路厚礼", weight: 2, coins: 25, stamina: 100 },
 ]);
 const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
@@ -229,8 +284,11 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/order_tray_approved_front.png",
   "./assets/ui/ui_coin_copper.png",
   "./assets/ui/ui_camel_bell_stamina.png",
+  "./assets/ui/ui_camel_bells_stamina_lv02_v1.png",
+  "./assets/ui/ui_camel_stamina_lv03_dromedary_v1.png",
+  "./assets/ui/ui_camel_stamina_lv04_bactrian_v1.png",
   "./assets/ui/ui_bag_inventory.png",
-  "./assets/ui/ui_daily_pomegranate_pouch_v1.png",
+  "./assets/ui/ui_daily_pomegranate_pouch_v2.png",
   "./assets/ui/ui_kitchen_entry.png",
   "./assets/ui/order_gift_coffer_v1.png",
   "./assets/ui/bonus_ruby_lv01.png",
@@ -370,6 +428,10 @@ const els = {
   staminaPlusBtn: document.querySelector("#staminaPlusBtn"),
   gemPlusBtn: document.querySelector("#gemPlusBtn"),
   dailyPouchBtn: document.querySelector("#dailyPouchBtn"),
+  soundToggleBtn: document.querySelector("#soundToggleBtn"),
+  audioSettingsPanel: document.querySelector("#audioSettingsPanel"),
+  bgmToggleBtn: document.querySelector("#bgmToggleBtn"),
+  sfxToggleBtn: document.querySelector("#sfxToggleBtn"),
   storageBtn: document.querySelector("#storageBtn"),
   stationHudBtn: document.querySelector("#stationHudBtn"),
   repairSideBtn: document.querySelector("#repairSideBtn"),
@@ -392,6 +454,7 @@ const els = {
   innStaminaPlusBtn: document.querySelector("#innStaminaPlusBtn"),
   innGemPlusBtn: document.querySelector("#innGemPlusBtn"),
   innDailyPouchBtn: document.querySelector("#innDailyPouchBtn"),
+  innSoundToggleBtn: document.querySelector("#innSoundToggleBtn"),
   innScene: document.querySelector("#innScene"),
   innScoreText: document.querySelector("#innScoreText"),
   innUpgradeText: document.querySelector("#innUpgradeText"),
@@ -561,6 +624,8 @@ let lastBonusCoinTapIndex = -1;
 let lastBonusCoinTapAt = 0;
 let lastBonusRubyTapIndex = -1;
 let lastBonusRubyTapAt = 0;
+let lastBonusStaminaTapIndex = -1;
+let lastBonusStaminaTapAt = 0;
 let activeStoryArchiveChapter = 1;
 let storyArchiveCloseTimer = null;
 let storyArchivePageSwapTimer = null;
@@ -568,8 +633,220 @@ let storyArchivePageDoneTimer = null;
 let storyArchivePageTurning = false;
 let activeOrderFoodContext = null;
 let activeCodexItemId = null;
-let dailyPouchRevealTimer = null;
 const activeGeneratorOutputIndices = new Set();
+const activeDailyPouchStates = new Set();
+const activeDailyPouchOutputIndices = new Set();
+const audioRuntime = {
+  initialized: false,
+  bgmEnabled: true,
+  sfxEnabled: true,
+  bgm: null,
+  bgmStarted: false,
+  fadeFrame: null,
+  pools: new Map(),
+  cursors: new Map(),
+  lastSpecificAt: -Infinity,
+};
+
+function readAudioEnabledPreference(key) {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved !== null) return saved !== "0";
+    return localStorage.getItem(AUDIO_MUTED_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
+function saveAudioPreferences() {
+  try {
+    localStorage.setItem(AUDIO_BGM_ENABLED_KEY, audioRuntime.bgmEnabled ? "1" : "0");
+    localStorage.setItem(AUDIO_SFX_ENABLED_KEY, audioRuntime.sfxEnabled ? "1" : "0");
+    localStorage.removeItem(AUDIO_MUTED_KEY);
+  } catch { /* local storage may be unavailable in private previews */ }
+}
+
+function createGameAudio(src, volume) {
+  const audio = new Audio(src);
+  audio.preload = "auto";
+  audio.playsInline = true;
+  audio.volume = volume;
+  return audio;
+}
+
+function initAudio() {
+  if (audioRuntime.initialized) return;
+  audioRuntime.initialized = true;
+  audioRuntime.bgmEnabled = readAudioEnabledPreference(AUDIO_BGM_ENABLED_KEY);
+  audioRuntime.sfxEnabled = readAudioEnabledPreference(AUDIO_SFX_ENABLED_KEY);
+  audioRuntime.bgm = createGameAudio(AUDIO_SOURCES.bgm, 0);
+  audioRuntime.bgm.loop = true;
+  Object.entries(AUDIO_SOURCES).forEach(([name, src]) => {
+    if (name === "bgm") return;
+    const poolSize = name === "click" ? 4 : 2;
+    const pool = Array.from({ length: poolSize }, () => createGameAudio(src, AUDIO_VOLUMES[name]));
+    audioRuntime.pools.set(name, pool);
+    audioRuntime.cursors.set(name, 0);
+  });
+  renderAudioControls();
+}
+
+function playSfx(name, { markSpecific = name !== "click" } = {}) {
+  if (!audioRuntime.initialized) initAudio();
+  if (!audioRuntime.sfxEnabled || document.hidden) return;
+  const pool = audioRuntime.pools.get(name);
+  if (!pool?.length) return;
+  const cursor = audioRuntime.cursors.get(name) ?? 0;
+  const audio = pool[cursor % pool.length];
+  audioRuntime.cursors.set(name, (cursor + 1) % pool.length);
+  const startOffset = AUDIO_START_OFFSETS[name] ?? 0;
+  try {
+    audio.pause();
+    if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      audio.currentTime = startOffset;
+    } else if (startOffset > 0) {
+      audio.addEventListener("loadedmetadata", () => {
+        try {
+          audio.currentTime = startOffset;
+        } catch { /* the browser may still be finalizing the media timeline */ }
+      }, { once: true });
+    }
+  } catch { /* metadata may still be loading on the first tap */ }
+  audio.volume = AUDIO_VOLUMES[name];
+  audio.play().catch(() => {});
+  if (markSpecific) audioRuntime.lastSpecificAt = performance.now();
+}
+
+function fadeBgmTo(targetVolume, duration = 520) {
+  const bgm = audioRuntime.bgm;
+  if (!bgm) return;
+  if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
+  const startedAt = performance.now();
+  const initialVolume = bgm.volume;
+  const step = (now) => {
+    const progress = Math.min(1, (now - startedAt) / duration);
+    bgm.volume = initialVolume + (targetVolume - initialVolume) * progress;
+    if (progress < 1) audioRuntime.fadeFrame = requestAnimationFrame(step);
+    else audioRuntime.fadeFrame = null;
+  };
+  audioRuntime.fadeFrame = requestAnimationFrame(step);
+}
+
+function startBgmIfAllowed() {
+  if (!audioRuntime.initialized) initAudio();
+  if (!audioRuntime.bgmEnabled || document.hidden || !audioRuntime.bgm) return;
+  if (!audioRuntime.bgm.paused && audioRuntime.bgmStarted) return;
+  const playAttempt = audioRuntime.bgm.play();
+  if (!playAttempt) return;
+  playAttempt
+    .then(() => {
+      audioRuntime.bgmStarted = true;
+      fadeBgmTo(AUDIO_VOLUMES.bgm);
+    })
+    .catch(() => {});
+}
+
+function renderAudioControls() {
+  const muted = !audioRuntime.bgmEnabled && !audioRuntime.sfxEnabled;
+  const mixed = audioRuntime.bgmEnabled !== audioRuntime.sfxEnabled;
+  const panelOpen = Boolean(els.audioSettingsPanel && !els.audioSettingsPanel.hidden);
+  [els.soundToggleBtn, els.innSoundToggleBtn].filter(Boolean).forEach((button) => {
+    button.classList.toggle("is-muted", muted);
+    button.classList.toggle("is-mixed", mixed);
+    button.classList.toggle("is-open", panelOpen);
+    const label = `声音设置，背景音乐${audioRuntime.bgmEnabled ? "已开启" : "已关闭"}，操作音效${audioRuntime.sfxEnabled ? "已开启" : "已关闭"}`;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("aria-expanded", String(panelOpen));
+    button.title = label;
+  });
+  [
+    [els.bgmToggleBtn, audioRuntime.bgmEnabled],
+    [els.sfxToggleBtn, audioRuntime.sfxEnabled],
+  ].forEach(([button, enabled]) => {
+    if (!button) return;
+    button.classList.toggle("is-on", enabled);
+    button.setAttribute("aria-pressed", String(enabled));
+  });
+}
+
+function closeAudioSettings() {
+  if (!els.audioSettingsPanel || els.audioSettingsPanel.hidden) return;
+  els.audioSettingsPanel.hidden = true;
+  renderAudioControls();
+}
+
+function toggleAudioSettings() {
+  if (!audioRuntime.initialized) initAudio();
+  if (!els.audioSettingsPanel) return;
+  playSfx("click", { markSpecific: false });
+  els.audioSettingsPanel.hidden = !els.audioSettingsPanel.hidden;
+  renderAudioControls();
+}
+
+function toggleBgm() {
+  if (!audioRuntime.initialized) initAudio();
+  playSfx("click", { markSpecific: false });
+  audioRuntime.bgmEnabled = !audioRuntime.bgmEnabled;
+  saveAudioPreferences();
+  renderAudioControls();
+  if (!audioRuntime.bgmEnabled) {
+    if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
+    audioRuntime.fadeFrame = null;
+    audioRuntime.bgm?.pause();
+    if (audioRuntime.bgm) audioRuntime.bgm.volume = 0;
+    return;
+  }
+  startBgmIfAllowed();
+}
+
+function toggleSfx() {
+  if (!audioRuntime.initialized) initAudio();
+  const wasEnabled = audioRuntime.sfxEnabled;
+  if (wasEnabled) playSfx("click", { markSpecific: false });
+  audioRuntime.sfxEnabled = !audioRuntime.sfxEnabled;
+  saveAudioPreferences();
+  renderAudioControls();
+  if (!audioRuntime.sfxEnabled) {
+    audioRuntime.pools.forEach((pool) => pool.forEach((audio) => audio.pause()));
+    return;
+  }
+  if (!wasEnabled) playSfx("click", { markSpecific: false });
+}
+
+function handleAudioSettingsPointerDown(event) {
+  if (!els.audioSettingsPanel || els.audioSettingsPanel.hidden) return;
+  const target = event.target instanceof Element ? event.target : null;
+  if (target?.closest("#audioSettingsPanel, .sound-toggle")) return;
+  closeAudioSettings();
+}
+
+function handleAudioSettingsKeydown(event) {
+  if (event.key === "Escape") closeAudioSettings();
+}
+
+function handleBasicButtonSound(event) {
+  const target = event.target instanceof Element ? event.target.closest("button") : null;
+  if (!target || target.disabled || target.dataset.sound === "none") return;
+  if (target.matches(SPECIAL_AUDIO_BUTTONS)) return;
+  if (performance.now() - audioRuntime.lastSpecificAt < 80) return;
+  playSfx("click", { markSpecific: false });
+}
+
+function queueBoardClickSound() {
+  const previousSpecificAt = audioRuntime.lastSpecificAt;
+  queueMicrotask(() => {
+    if (audioRuntime.lastSpecificAt !== previousSpecificAt) return;
+    playSfx("click", { markSpecific: false });
+  });
+}
+
+function handleAudioVisibility() {
+  if (document.hidden) {
+    audioRuntime.bgm?.pause();
+    return;
+  }
+  if (audioRuntime.bgmEnabled && audioRuntime.bgmStarted) startBgmIfAllowed();
+}
 
 async function loadJson(name) {
   const response = await fetch(`${DATA_PATH}${name}.json`);
@@ -754,6 +1031,42 @@ function initializeRubyDisplayQaScenario() {
   state.stamina = 99;
   state.currentPage = "board";
   state.selectedIndex = null;
+}
+
+function initializeStaminaPouchQaScenario() {
+  const pouchIndex = boardIndex(4, 3);
+  state.board = Array(BOARD_SIZE).fill(STAMINA_POUCH_QA_FULL ? "hubing_01_dough" : null);
+  if (!STAMINA_POUCH_QA_FULL) {
+    ["bonus_stamina_01", "bonus_stamina_02", "bonus_stamina_03", "bonus_stamina_04"].forEach((itemId, index) => {
+      state.board[index] = itemId;
+    });
+    state.board[7] = "bonus_stamina_01";
+    state.board[8] = "bonus_stamina_01";
+  } else {
+    state.board[pouchIndex - 1] = null;
+  }
+  state.board[pouchIndex] = DAILY_POUCH_ITEM_ID;
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.unlockedStorageSlots = STORAGE_FREE_SLOTS;
+  state.rewardItems = [];
+  state.giftPacks = [];
+  state.giftBoxStates = {
+    [pouchIndex]: STAMINA_POUCH_QA_FULL
+      ? {
+          packId: DAILY_POUCH_PACK_ID,
+          dailyRewardId: "traveler",
+          pendingOutputs: [bonusStaminaId(1), bonusCoinId(1)],
+          nextRewardIndex: 0,
+        }
+      : { packId: DAILY_POUCH_PACK_ID, nextRewardIndex: 0 },
+  };
+  state.bubbleStates = {};
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.generatorStates = {};
+  state.staminaMax = 100;
+  state.stamina = 0;
+  state.currentPage = "board";
+  state.selectedIndex = pouchIndex;
 }
 
 function initializeLv4MarketOrdersQaScenario() {
@@ -1218,6 +1531,7 @@ async function boot() {
     }
   });
   registerBonusCoinItems();
+  registerBonusStaminaItems();
   registerOrderProgressPacks();
   codex.entries.forEach((entry) => {
     codexById.set(entry.id, entry);
@@ -1225,6 +1539,7 @@ async function boot() {
   });
 
   loadState();
+  initAudio();
   if (!ISOLATED_QA_MODE || GLOBAL_LOADING_QA_MODE) state.currentPage = "inn";
   const startupAssets = [...new Set([...STARTUP_REQUIRED_ASSETS, ...currentInnStartupAssets()])];
   await loadStartupGroup(
@@ -1509,11 +1824,13 @@ function loadState() {
   if (GENERATOR_MATERIAL_QA_MODE && !saved) initializeGeneratorMaterialQaScenario();
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
+  if (STAMINA_POUCH_QA_MODE && (!saved || STAMINA_POUCH_QA_RESET)) initializeStaminaPouchQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
   if (PROGRESSION_FLOW_QA_MODE && !saved) initializeProgressionFlowQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
+  reconcileGiftBoxStates();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
@@ -1787,6 +2104,9 @@ function bindEvents() {
   els.staminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.dailyPouchBtn?.addEventListener("click", claimDailyPouch);
+  els.soundToggleBtn?.addEventListener("click", toggleAudioSettings);
+  els.bgmToggleBtn?.addEventListener("click", toggleBgm);
+  els.sfxToggleBtn?.addEventListener("click", toggleSfx);
   els.storageBtn?.addEventListener("click", openStorage);
   els.stationHudBtn?.addEventListener("click", handleStationButton);
   els.repairSideBtn?.addEventListener("click", handleStationButton);
@@ -1798,6 +2118,7 @@ function bindEvents() {
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.innGemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.innDailyPouchBtn?.addEventListener("click", claimDailyPouch);
+  els.innSoundToggleBtn?.addEventListener("click", toggleAudioSettings);
   els.storageInviteBtn?.addEventListener("click", explainStorageInvite);
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
   els.staminaPurchaseConfirm?.addEventListener("click", purchaseStamina);
@@ -1876,6 +2197,12 @@ function bindEvents() {
       if (btn.dataset.close === "storyModal" && pendingUpgradeUnlock) showUpgradeUnlockSummary();
     });
   });
+  document.addEventListener("pointerdown", startBgmIfAllowed, { passive: true });
+  document.addEventListener("pointerdown", handleAudioSettingsPointerDown);
+  document.addEventListener("keydown", startBgmIfAllowed);
+  document.addEventListener("keydown", handleAudioSettingsKeydown);
+  document.addEventListener("click", handleBasicButtonSound);
+  document.addEventListener("visibilitychange", handleAudioVisibility);
 }
 
 function applyBuildMode() {
@@ -2002,6 +2329,8 @@ function renderPage() {
 async function switchPage(page) {
   if (pageSwitchInProgress) return;
   pageSwitchInProgress = true;
+  closeAudioSettings();
+  const previousPage = state.currentPage;
   try {
     if (page === "inn") {
       const packageReady = await ensureInnPackageLoaded();
@@ -2012,6 +2341,7 @@ async function switchPage(page) {
       clearBoardReturnGuide();
       scheduleInnPackageRelease();
     }
+    if (page !== previousPage) playSfx(page === "inn" ? "enterShop" : "exitShop");
     await playPageDoorTransition(() => {
       state.currentPage = page;
       render();
@@ -3314,6 +3644,10 @@ function normalizeBoard(value) {
       const level = Number(itemId.slice(BONUS_RUBY_PREFIX.length));
       if (level > BONUS_RUBY_MAX_LEVEL) return BONUS_RUBY_PREFIX + String(BONUS_RUBY_MAX_LEVEL).padStart(2, "0");
     }
+    if (typeof itemId === "string" && itemId.startsWith(BONUS_STAMINA_PREFIX)) {
+      const level = Number(itemId.slice(BONUS_STAMINA_PREFIX.length));
+      if (level > BONUS_STAMINA_MAX_LEVEL) return bonusStaminaId(BONUS_STAMINA_MAX_LEVEL);
+    }
     return migrateLegacyGeneratorId(itemId);
   });
 }
@@ -3353,6 +3687,16 @@ function transferGeneratorState(itemId, fromKey, toKey) {
     state.generatorStates[toKey] = existing;
   }
   delete state.generatorStates[fromKey];
+}
+
+function transferBoardItemState(itemId, fromIndex, toIndex) {
+  transferGeneratorState(itemId, boardGeneratorStateKey(fromIndex), boardGeneratorStateKey(toIndex));
+  const giftState = state.giftBoxStates[fromIndex];
+  delete state.giftBoxStates[toIndex];
+  if (byId.get(itemId)?.type === "gift_box" && giftState) {
+    state.giftBoxStates[toIndex] = giftState;
+  }
+  delete state.giftBoxStates[fromIndex];
 }
 
 function clearGeneratorState(stateKey) {
@@ -3396,6 +3740,33 @@ function registerBonusCoinItems() {
   }
 }
 
+function bonusStaminaId(level) {
+  return BONUS_STAMINA_PREFIX + String(level).padStart(2, "0");
+}
+
+function registerBonusStaminaItems() {
+  const names = ["", "一声驼铃", "双铃同行", "单峰驼", "成熟双峰驼"];
+  for (let level = 1; level <= BONUS_STAMINA_MAX_LEVEL; level += 1) {
+    const staminaValue = BONUS_STAMINA_VALUES[level];
+    byId.set(bonusStaminaId(level), {
+      id: bonusStaminaId(level),
+      type: "bonus_stamina",
+      level,
+      staminaValue,
+      name: names[level],
+      modernName: level === BONUS_STAMINA_MAX_LEVEL
+        ? `双击收获${staminaValue}点体力`
+        : `与同级体力棋子合成，或双击收获${staminaValue}点体力`,
+      iconKey: BONUS_STAMINA_ICON_KEYS[level],
+      source: "daily_reward_pouch",
+      mergeFrom: level > 1 ? bonusStaminaId(level - 1) : null,
+      mergeTo: level < BONUS_STAMINA_MAX_LEVEL ? bonusStaminaId(level + 1) : null,
+      sellValue: 0,
+      highValueConfirm: false,
+    });
+  }
+}
+
 function registerOrderProgressPacks() {
   const starterGift = byId.get("gift_pack_starter");
   if (starterGift) {
@@ -3412,7 +3783,7 @@ function registerOrderProgressPacks() {
       id: DAILY_POUCH_ITEM_ID,
       name: "西域晨礼宝袋",
       modernName: "每日领取的葡萄石榴纹锦囊",
-      iconKey: "ui/ui_daily_pomegranate_pouch_v1",
+      iconKey: "ui/ui_daily_pomegranate_pouch_v2",
       source: "daily_reward_pouch",
     });
   }
@@ -3522,7 +3893,7 @@ function restoreBonusBubbleItems() {
 
 function isBubbleEligibleMerge(sourceItem, outputItem) {
   if (!sourceItem || !outputItem || (sourceItem.level ?? 0) < BONUS_BUBBLE_MIN_LEVEL) return false;
-  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box", "box_material", "generator_material"].includes(sourceItem.type)) return false;
+  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina", "gift_box", "box_material", "generator_material"].includes(sourceItem.type)) return false;
   return Boolean(sourceItem.line) || sourceItem.type?.includes("generator");
 }
 
@@ -3683,15 +4054,54 @@ function normalizeGiftBoxStates(value) {
   if (!value || typeof value !== "object") return {};
   return Object.fromEntries(
     Object.entries(value)
-      .filter(([, entry]) => GIFT_PACKS[entry?.packId])
-      .map(([index, entry]) => [
-        index,
-        {
+      .filter(([index, entry]) => {
+        const boardIndex = Number(index);
+        return Number.isInteger(boardIndex)
+          && boardIndex >= 0
+          && boardIndex < BOARD_SIZE
+          && GIFT_PACKS[entry?.packId];
+      })
+      .map(([index, entry]) => {
+        const pack = GIFT_PACKS[entry.packId];
+        const normalized = {
           packId: entry.packId,
           nextRewardIndex: Math.max(0, Math.floor(Number(entry.nextRewardIndex) || 0)),
-        },
-      ]),
+        };
+        if (pack.dailyReward && Array.isArray(entry.pendingOutputs)) {
+          normalized.pendingOutputs = entry.pendingOutputs
+            .slice(0, 32)
+            .filter((itemId) => {
+              const item = byId.get(itemId);
+              return item?.type === "bonus_coin" || item?.type === "bonus_stamina";
+            });
+          const reward = pack.rewardPool?.find((candidate) => candidate.id === entry.dailyRewardId);
+          if (reward) normalized.dailyRewardId = reward.id;
+        }
+        return [index, normalized];
+      }),
   );
+}
+
+function reconcileGiftBoxStates() {
+  const dailyBoardIndices = state.board
+    .map((itemId, index) => (itemId === DAILY_POUCH_ITEM_ID ? index : -1))
+    .filter((index) => index >= 0);
+  const dailyBoardIndexKeys = new Set(dailyBoardIndices.map(String));
+  const orphanDailyStates = Object.entries(state.giftBoxStates)
+    .filter(([index, entry]) => entry.packId === DAILY_POUCH_PACK_ID && !dailyBoardIndexKeys.has(String(Number(index))));
+  dailyBoardIndices.forEach((index) => {
+    if (state.giftBoxStates[index]?.packId === DAILY_POUCH_PACK_ID) return;
+    const [oldIndex, existing] = orphanDailyStates.shift() ?? [];
+    state.giftBoxStates[index] = existing ?? {
+      packId: DAILY_POUCH_PACK_ID,
+      nextRewardIndex: 0,
+    };
+    if (oldIndex !== undefined) delete state.giftBoxStates[oldIndex];
+  });
+  Object.keys(state.giftBoxStates).forEach((index) => {
+    const pack = GIFT_PACKS[state.giftBoxStates[index]?.packId];
+    if (!pack || state.board[Number(index)] !== pack.itemId) delete state.giftBoxStates[index];
+  });
 }
 
 function normalizeUnlockedCells(value) {
@@ -3810,6 +4220,7 @@ function renderOrders() {
         trigger.append(f);
         trigger.addEventListener("click", (event) => {
           event.stopPropagation();
+          playSfx("click", { markSpecific: false });
           openOrderFoodDetail(order.id, item.id);
         });
         trigger.addEventListener("keydown", (event) => event.stopPropagation());
@@ -3823,6 +4234,7 @@ function renderOrders() {
     deliver.textContent = "交付";
     deliver.addEventListener("click", (event) => {
       event.stopPropagation();
+      if (!canComplete) playSfx("click", { markSpecific: false });
       completeOrder(order.id);
     });
 
@@ -3871,7 +4283,7 @@ function renderBoard() {
   state.board.forEach((itemId, index) => {
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
-    cell.className = `cell ${locked ? "locked" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
+    cell.className = `cell ${locked ? "locked" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${activeDailyPouchOutputIndices.has(index) ? "daily-pouch-receiving" : ""} ${activeDailyPouchStates.has(state.giftBoxStates[index]) ? "daily-pouch-dispensing" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
     cell.dataset.index = index;
     cell.setAttribute("role", "button");
     cell.tabIndex = locked ? -1 : 0;
@@ -3903,7 +4315,7 @@ function renderBoard() {
       if (!item) return;
       if (!renderBonusBoardItem(cell, item, itemId, index)) {
       const img = document.createElement("img");
-      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""}`;
+      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""} ${item.id === DAILY_POUCH_ITEM_ID ? "daily-pouch-gift" : ""}`;
       img.alt = item.name;
       img.src = itemAssetSrc(item);
       if (item.type === "generator_material") {
@@ -3933,9 +4345,11 @@ function renderBoard() {
       } else if (item.type === "gift_box") {
         const giftState = state.giftBoxStates[index];
         const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
-        if (pack?.orderProgress) {
+        if (pack?.dailyReward) {
+          cell.classList.add("daily-pouch-cell");
+        } else if (pack?.orderProgress) {
           cell.classList.add("order-progress-gift-cell");
-        } else if (!pack?.dailyReward) {
+        } else {
           const badge = document.createElement("span");
           badge.className = "generator-badge gift-badge";
           badge.textContent = pack ? `${Math.max(0, pack.rewards.length - giftState.nextRewardIndex)}份` : "礼";
@@ -3952,6 +4366,7 @@ function renderBoard() {
       cell.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" && event.key !== " ") return;
         event.preventDefault();
+        if (activeDailyPouchOutputIndices.has(index)) return;
         handleCellClick(index);
       });
     } else {
@@ -4015,7 +4430,26 @@ function renderBonusBoardItem(cell, item, itemId, index) {
     cell.setAttribute("aria-label", `${item.name}${mergeHint}，双击收取${item.rubyValue}颗红宝石`);
     return true;
   }
+  if (item.type === "bonus_stamina") {
+    cell.classList.add("bonus-stamina-cell");
+    if (item.level === BONUS_STAMINA_MAX_LEVEL) cell.classList.add("collect-ready");
+    const stamina = document.createElement("div");
+    stamina.className = "bonus-stamina bonus-stamina-level-" + item.level;
+    appendBonusStaminaArt(stamina, item);
+    cell.append(stamina);
+    const mergeHint = item.level < BONUS_STAMINA_MAX_LEVEL ? "，可与同级合成" : "";
+    cell.setAttribute("aria-label", `${item.name}${mergeHint}，双击收获${item.staminaValue}点体力`);
+    return true;
+  }
   return false;
+}
+
+function appendBonusStaminaArt(container, item) {
+  const art = document.createElement("img");
+  art.className = "bonus-stamina-art";
+  art.src = itemAssetSrc(item);
+  art.alt = "";
+  container.append(art);
 }
 
 function preventBrowserSmartZoom() {
@@ -4095,14 +4529,30 @@ function renderSelected() {
     els.sellBtn.disabled = true;
     return;
   }
+  if (item.type === "bonus_stamina") {
+    selectedPanel?.classList.add("no-sell");
+    els.selectedName.textContent = item.name;
+    els.selectedText.textContent = item.level === BONUS_STAMINA_MAX_LEVEL
+      ? `双击收获${item.staminaValue}点体力`
+      : `两枚同级体力棋子可以合成下一等级；双击收获${item.staminaValue}点体力`;
+    els.sellBtn.disabled = true;
+    return;
+  }
   if (item.type === "gift_box") {
     selectedPanel?.classList.add("no-sell");
     const giftState = state.giftBoxStates[state.selectedIndex];
     const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
     els.selectedName.textContent = pack?.name ?? item.name;
+    const dailyRemaining = Array.isArray(giftState?.pendingOutputs) ? giftState.pendingOutputs.length : null;
     els.selectedText.textContent = pack
       ? pack.dailyReward
-        ? "点击打开，揭晓今日的铜板与驼铃奖励。"
+        ? activeDailyPouchStates.has(giftState)
+          ? `宝袋正在投放，剩余${dailyRemaining ?? 0}份。`
+          : dailyRemaining === null
+            ? "点击宝袋，铜币与驼铃会逐个落到棋盘上。"
+            : dailyRemaining > 0
+              ? `还剩${dailyRemaining}份奖励；腾出空格后再点宝袋继续。`
+              : "奖励已经投放完毕，再点一下收起宝袋。"
         : opensGiftPackAtOnce(pack)
         ? `点击一次打开，${giftRewardOutputCount(pack)}份奖励会随机落入空格。`
         : `点击礼盒包，每次掉落1份奖励。还剩${pack.rewards.length - giftState.nextRewardIndex}份。`
@@ -4146,7 +4596,7 @@ function isGeneratorMaterialPiece(item) {
 }
 
 function getPieceRemovalAction(item) {
-  if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "gift_box"].includes(item.type)) {
+  if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina", "gift_box"].includes(item.type)) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
   const cleanup = state.economyConfig?.boardCleanup ?? {};
@@ -4235,6 +4685,14 @@ function openSelectedPieceDetail() {
     els.pieceDetailText.textContent = item.level === BONUS_RUBY_MAX_LEVEL
       ? "已达最高等级，双击即可收入红宝石。"
       : "与另一颗同级红宝石合成可以升级，也可直接双击收入。";
+    els.pieceDetailModal.showModal();
+    return;
+  }
+  if (item.type === "bonus_stamina") {
+    els.pieceDetailMeta.textContent = `体力棋子 Lv${item.level} · 可收获${item.staminaValue}点体力`;
+    els.pieceDetailText.textContent = item.level === BONUS_STAMINA_MAX_LEVEL
+      ? "成熟双峰驼已经整装待发，双击即可收获100点体力。"
+      : "与另一枚同级体力棋子合成可以升级，也可直接双击收获体力。";
     els.pieceDetailModal.showModal();
     return;
   }
@@ -4350,6 +4808,18 @@ function onCellPointerDown(event) {
   const item = itemId ? byId.get(itemId) : null;
   const cell = event.currentTarget;
 
+  if (activeDailyPouchOutputIndices.has(index)) {
+    event.preventDefault();
+    return;
+  }
+
+  const giftState = state.giftBoxStates[index];
+  if (item?.id === DAILY_POUCH_ITEM_ID && activeDailyPouchStates.has(giftState)) {
+    event.preventDefault();
+    toast("宝袋正在一份份投放奖励。");
+    return;
+  }
+
   if (item?.type === "bonus_bubble") {
     event.preventDefault();
     handleCellClick(index, prevSelected);
@@ -4425,7 +4895,10 @@ function moveCellPointer(event) {
   dragging.moved = true;
   if (!dragging.ghost) {
     const item = byId.get(sourceItemId);
-    if (item) dragging.ghost = createDragGhost(item);
+    if (item) {
+      dragging.sourceCell?.classList.add("is-drag-source");
+      dragging.ghost = createDragGhost(item);
+    }
   }
   positionDragGhost(event.clientX, event.clientY);
   els.storageBtn?.classList.toggle("drop-ready", isStorageDropPoint(event.clientX, event.clientY));
@@ -4473,7 +4946,7 @@ function endCellPointer(event) {
   if (!targetItemId) {
     state.board[toIndex] = itemId;
     state.board[fromIndex] = null;
-    transferGeneratorState(itemId, boardGeneratorStateKey(fromIndex), boardGeneratorStateKey(toIndex));
+    transferBoardItemState(itemId, fromIndex, toIndex);
     state.selectedIndex = toIndex;
     keeper("挪一挪案板，路上的吃食就有地方摆了。");
   } else if (targetItemId === itemId) {
@@ -4498,6 +4971,7 @@ function cancelCellPointer(event) {
 
 function cleanupCellPointer(_cell, pointerId) {
   const sourceCell = dragging?.sourceCell;
+  sourceCell?.classList.remove("is-drag-source");
   try {
     if (sourceCell?.hasPointerCapture?.(pointerId)) sourceCell.releasePointerCapture(pointerId);
   } catch { /* ignore */ }
@@ -4553,8 +5027,16 @@ function getCellIndexFromPoint(x, y) {
 }
 
 function handleCellClick(index, prevSelected = state.selectedIndex) {
+  if (activeDailyPouchOutputIndices.has(index)) return;
+  const activeSelectedGiftState = state.giftBoxStates[prevSelected];
+  if (prevSelected !== index && activeDailyPouchStates.has(activeSelectedGiftState)) {
+    playSfx("click", { markSpecific: false });
+    toast("宝袋正在投放，落完这一份再挪动棋盘。");
+    return;
+  }
   // Click on locked cell: try to unlock with selected piece
   if (isBoardCellLocked(index)) {
+    queueBoardClickSound();
     if (prevSelected !== null && !isBoardCellLocked(prevSelected)) {
       const selectedItemId = state.board[prevSelected];
       unlockLockedCellByMerge(prevSelected, index, selectedItemId);
@@ -4571,10 +5053,19 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
   const itemId = state.board[index];
   const item = itemId ? byId.get(itemId) : null;
 
+  // Manual generators own this interaction completely: never layer the generic click over it.
+  if (item?.type === "manual_generator") {
+    activateManualGenerator(index);
+    return;
+  }
+
+  queueBoardClickSound();
+
   if (item?.type === "bonus_bubble") {
     const bubbleState = state.bubbleStates[itemId];
     const contained = byId.get(item.bubbleItemId);
     const seconds = bubbleState ? Math.max(0, Math.ceil((bubbleState.expiresAt - Date.now()) / 1000)) : 0;
+    playSfx("bubble");
     state.selectedIndex = index;
     render();
     toast((contained?.name ?? "这枚棋子") + "还在气泡中，" + seconds + "秒后变为铜币。");
@@ -4605,11 +5096,18 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
     lastBonusRubyTapAt = now;
   }
 
-  // Generator click
-  if (item?.type === "manual_generator") {
-    activateManualGenerator(index);
-    return;
+  if (item?.type === "bonus_stamina") {
+    const now = Date.now();
+    if (lastBonusStaminaTapIndex === index && now - lastBonusStaminaTapAt <= 450) {
+      lastBonusStaminaTapIndex = -1;
+      lastBonusStaminaTapAt = 0;
+      collectBonusStamina(index);
+      return;
+    }
+    lastBonusStaminaTapIndex = index;
+    lastBonusStaminaTapAt = now;
   }
+
   if (item?.type === "gift_box") {
     openGiftBoxOnBoard(index);
     return;
@@ -4636,7 +5134,7 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
     if (!itemId) {
       state.board[index] = selectedItemId;
       state.board[prevSelected] = null;
-      transferGeneratorState(selectedItemId, boardGeneratorStateKey(prevSelected), boardGeneratorStateKey(index));
+      transferBoardItemState(selectedItemId, prevSelected, index);
       state.selectedIndex = index;
       render();
       saveState();
@@ -4672,8 +5170,22 @@ function collectBonusRuby(index) {
   state.board[index] = null;
   state.selectedIndex = null;
   state.gems += amount;
+  playSfx("coin");
   keeper(`${item.name}已收入宝石囊，顶部红宝石增加${amount}颗。`);
   toast(`收取${item.name} +${amount}`);
+  render();
+  saveState();
+}
+
+function collectBonusStamina(index) {
+  const item = byId.get(state.board[index]);
+  if (item?.type !== "bonus_stamina") return;
+  const amount = item.staminaValue ?? BONUS_STAMINA_VALUES[item.level] ?? 0;
+  state.board[index] = null;
+  state.selectedIndex = null;
+  state.stamina += amount;
+  keeper(`${item.name}已化作行路体力，顶部驼铃增加${amount}点。`);
+  toast(`收获${item.name} +${amount}体力`);
   render();
   saveState();
 }
@@ -4748,6 +5260,7 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   const outputId = item?.mergeTo ?? itemId;
   state.board[toIndex] = outputId;
   state.selectedIndex = toIndex;
+  playSfx("merge");
   maybeCreateMergeBubble(item, outputId, toIndex);
   state.pulseIndex = toIndex;
   state.unlockPulseIndex = toIndex;
@@ -4780,6 +5293,7 @@ function mergeCells(fromIndex, toIndex, itemId) {
   state.board[fromIndex] = null;
   state.board[toIndex] = item.mergeTo;
   state.selectedIndex = toIndex;
+  playSfx("merge");
   maybeCreateMergeBubble(item, item.mergeTo, toIndex);
   state.pulseIndex = toIndex;
   const next = byId.get(item.mergeTo);
@@ -4870,6 +5384,7 @@ function activateManualGenerator(index) {
     generatedOutputs.push({ targetIndex: outIndex, itemId: newItemId });
     state.pulseIndex = outIndex;
   }
+  if (generatedOutputs.length > 0) playSfx("generate");
   state.generationCount += 1;
   state.selectedIndex = index;
   if (state.tutorialStep === 0) state.tutorialStep = 1;
@@ -6033,6 +6548,7 @@ function purchaseStamina() {
   state.gems -= price;
   state.stamina += amount;
   state.staminaPurchasesToday += 1;
+  playSfx("coin");
   keeper(`用${price}颗红宝石换得${amount}点驼铃。`);
   toast(`驼铃 +${amount}`);
   render();
@@ -6052,6 +6568,7 @@ function purchaseNextStorageSlot() {
   state.gems -= price;
   state.unlockedStorageSlots += 1;
   while (state.bag.length < state.unlockedStorageSlots) state.bag.push(null);
+  playSfx("coin");
   keeper(`柜中第${state.unlockedStorageSlots}格已经开启。`);
   toast(`仓位 +1 · 红宝石 -${price}`);
   render();
@@ -6117,7 +6634,7 @@ function renderBag() {
   rewardEntries.forEach(({ entry, item }) => {
     const slot = document.createElement("button");
     slot.type = "button";
-    slot.className = `bag-slot reward-item-slot ${item.type === "bonus_coin" ? "coin-reward-slot" : ""} ${item.type === "bonus_ruby" ? "ruby-reward-slot" : ""} ${isGeneratorPiece(item) ? "generator-piece" : ""} ${item.type === "generator_material" ? "generator-material-piece" : ""}`;
+    slot.className = `bag-slot reward-item-slot ${item.type === "bonus_coin" ? "coin-reward-slot" : ""} ${item.type === "bonus_ruby" ? "ruby-reward-slot" : ""} ${item.type === "bonus_stamina" ? "stamina-reward-slot" : ""} ${isGeneratorPiece(item) ? "generator-piece" : ""} ${item.type === "generator_material" ? "generator-material-piece" : ""}`;
     slot.setAttribute("aria-label", `将1个${item.name}随机投放到棋盘，行囊内共${entry.quantity}个`);
     slot.title = `随机投放：${item.name}`;
     slot.innerHTML = `
@@ -6146,6 +6663,14 @@ function renderBag() {
   els.bagList.append(grid);
 }
 
+function refreshRewardBagAfterPlacement() {
+  if (totalRewardBagCount() === 0 && els.bagModal?.open) {
+    els.bagModal.close();
+    return;
+  }
+  renderBag();
+}
+
 function storeBoardItemToStorage(boardIndex) {
   const itemId = state.board[boardIndex];
   const bagIndex = firstEmptyBagIndex();
@@ -6154,8 +6679,8 @@ function storeBoardItemToStorage(boardIndex) {
     return;
   }
   const boardItem = byId.get(itemId);
-  if (["bonus_bubble", "bonus_coin", "bonus_ruby"].includes(boardItem?.type)) {
-    toast("气泡、铜币和红宝石需要留在棋盘上继续合成。");
+  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina"].includes(boardItem?.type)) {
+    toast("气泡、铜币、红宝石和体力棋子需要留在棋盘上继续合成。");
     return;
   }
   if (byId.get(itemId)?.type === "gift_box") {
@@ -6215,7 +6740,7 @@ function placeRewardItemFromBag(itemId) {
   if (item.type === "generator_material") tryBuildGeneratorFromMaterials(itemId);
   clearPulseSoon();
   render();
-  renderBag();
+  refreshRewardBagAfterPlacement();
   saveState();
 }
 
@@ -6238,7 +6763,7 @@ function placeGiftPackOnBoard(packId) {
   keeper(`${pack.name}已随机落到案板上。${opensAtOnce ? "点击一次即可打开。" : "点击礼盒包，每次取一份奖励。"}`);
   clearPulseSoon();
   render();
-  renderBag();
+  refreshRewardBagAfterPlacement();
   saveState();
 }
 
@@ -6253,6 +6778,39 @@ function coinRewardPieceIds(amount) {
     }
   }
   return result;
+}
+
+function dailyCoinRewardPieceIds(amount) {
+  const result = [];
+  let remaining = Math.max(0, Math.floor(Number(amount) || 0));
+  for (const level of [4, 3, 2, 1]) {
+    const value = BONUS_COIN_VALUES[level];
+    while (remaining >= value) {
+      result.push(bonusCoinId(level));
+      remaining -= value;
+    }
+  }
+  return result;
+}
+
+function staminaRewardPieceIds(amount) {
+  const result = [];
+  let remaining = Math.max(0, Math.floor(Number(amount) || 0));
+  for (const level of [4, 3, 2, 1]) {
+    const value = BONUS_STAMINA_VALUES[level];
+    while (remaining >= value) {
+      result.push(bonusStaminaId(level));
+      remaining -= value;
+    }
+  }
+  return result;
+}
+
+function dailyPouchRewardOutputs(reward) {
+  return shuffle([
+    ...dailyCoinRewardPieceIds(reward?.coins),
+    ...staminaRewardPieceIds(reward?.stamina),
+  ]);
 }
 
 function giftRewardOutputCount(pack) {
@@ -6319,94 +6877,145 @@ function rollDailyPouchReward(pack) {
   return pool[pool.length - 1];
 }
 
-function dailyPouchTarget(type) {
-  const number = state.currentPage === "inn"
-    ? (type === "coins" ? els.innCoins : els.innStamina)
-    : (type === "coins" ? els.coins : els.stamina);
-  return number?.closest(".resource-pill, .inn-resource-pill") ?? null;
+function dailyPouchRewardById(pack, rewardId) {
+  return pack?.rewardPool?.find((reward) => reward.id === rewardId) ?? null;
 }
 
-function animateDailyPouchRewardFlight(layer, type, amount, delay) {
-  const source = layer.querySelector(`[data-daily-reward="${type}"]`);
-  const target = dailyPouchTarget(type);
-  if (!source || !target) return;
+function dailyPouchStateIndex(giftState) {
+  const entry = Object.entries(state.giftBoxStates)
+    .find(([index, candidate]) => candidate === giftState && state.board[Number(index)] === DAILY_POUCH_ITEM_ID);
+  return entry ? Number(entry[0]) : -1;
+}
+
+function dailyPouchDelay(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function finishDailyPouchLanding(targetIndex) {
+  activeDailyPouchOutputIndices.delete(targetIndex);
+  const targetCell = els.board.querySelector(`.cell[data-index="${targetIndex}"]`);
+  if (!targetCell) return;
+  targetCell.classList.remove("daily-pouch-receiving");
+  targetCell.classList.add("daily-pouch-land");
+  setTimeout(() => targetCell.classList.remove("daily-pouch-land"), 360);
+}
+
+async function animateDailyPouchOutput(sourceIndex, targetIndex, itemId) {
+  const source = els.board.querySelector(`.cell[data-index="${sourceIndex}"] .daily-pouch-gift`);
+  const target = els.board.querySelector(`.cell[data-index="${targetIndex}"]`);
+  const item = byId.get(itemId);
+  if (!source || !target || !item || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    finishDailyPouchLanding(targetIndex);
+    return;
+  }
   const sourceRect = source.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
-  const particle = document.createElement("span");
-  particle.className = `daily-pouch-flight daily-pouch-flight-${type}`;
-  particle.innerHTML = type === "coins"
-    ? `<img src="./assets/ui/ui_coin_copper.png" alt="" /><b>+${amount}</b>`
-    : `<img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b>+${amount}</b>`;
-  document.body.append(particle);
   const fromX = sourceRect.left + sourceRect.width / 2;
   const fromY = sourceRect.top + sourceRect.height / 2;
   const toX = targetRect.left + targetRect.width / 2;
   const toY = targetRect.top + targetRect.height / 2;
-  const motion = particle.animate([
-    { left: `${fromX}px`, top: `${fromY}px`, opacity: 0, transform: "translate(-50%, -50%) scale(0.62)" },
-    { left: `${fromX}px`, top: `${fromY - 12}px`, opacity: 1, transform: "translate(-50%, -50%) scale(1.08)", offset: 0.22 },
-    { left: `${toX}px`, top: `${toY}px`, opacity: 1, transform: "translate(-50%, -50%) scale(0.72)", offset: 0.84 },
-    { left: `${toX}px`, top: `${toY}px`, opacity: 0, transform: "translate(-50%, -50%) scale(0.4)" },
-  ], {
-    duration: 760,
-    delay,
-    easing: "cubic-bezier(.2,.76,.25,1)",
-    fill: "forwards",
-  });
-  motion.finished.then(() => {
-    particle.remove();
-    target.classList.remove("daily-reward-arrival");
-    void target.offsetWidth;
-    target.classList.add("daily-reward-arrival");
-    setTimeout(() => target.classList.remove("daily-reward-arrival"), 560);
-  }).catch(() => particle.remove());
+  const midX = fromX + (toX - fromX) * 0.54;
+  const midY = Math.min(fromY, toY) - Math.min(54, 22 + Math.abs(toX - fromX) * 0.12);
+  const isStamina = item.type === "bonus_stamina";
+  const flight = document.createElement(isStamina ? "div" : "img");
+  try {
+    flight.className = `daily-pouch-output-flight ${isStamina ? `stamina-output bonus-stamina-level-${item.level}` : "coin-output"}`;
+    if (isStamina) {
+      flight.setAttribute("aria-hidden", "true");
+      appendBonusStaminaArt(flight, item);
+    } else {
+      flight.src = itemAssetSrc(item);
+      flight.alt = "";
+    }
+    document.body.append(flight);
+    const motion = flight.animate([
+      { left: `${fromX}px`, top: `${fromY}px`, opacity: 1, transform: "translate(-50%, -50%) scale(0.48) rotate(-10deg)" },
+      { left: `${fromX}px`, top: `${fromY - 12}px`, opacity: 1, transform: "translate(-50%, -50%) scale(1.04) rotate(8deg)", offset: 0.18 },
+      { left: `${midX}px`, top: `${midY}px`, opacity: 1, transform: "translate(-50%, -50%) scale(0.98) rotate(176deg)", offset: 0.58 },
+      { left: `${toX}px`, top: `${toY - 3}px`, opacity: 1, transform: "translate(-50%, -50%) scale(0.88) rotate(344deg)", offset: 0.9 },
+      { left: `${toX}px`, top: `${toY}px`, opacity: 1, transform: "translate(-50%, -50%) scale(0.88) rotate(360deg)" },
+    ], {
+      duration: 520,
+      easing: "cubic-bezier(.2,.72,.28,1)",
+      fill: "forwards",
+    });
+    await motion.finished;
+  } catch { /* the landed board item is already safely saved */ } finally {
+    finishDailyPouchLanding(targetIndex);
+    flight.remove();
+  }
 }
 
-function showDailyPouchReveal(reward) {
-  clearTimeout(dailyPouchRevealTimer);
-  document.querySelector(".daily-pouch-reveal")?.remove();
-  const layer = document.createElement("div");
-  layer.className = "daily-pouch-reveal";
-  layer.setAttribute("role", "status");
-  layer.setAttribute("aria-live", "polite");
-  layer.innerHTML = `
-    <div class="daily-pouch-reveal-card">
-      <span class="daily-pouch-rays" aria-hidden="true"></span>
-      <img class="daily-pouch-reveal-art" src="./assets/ui/ui_daily_pomegranate_pouch_v1.png" alt="" />
-      <small>每日宝袋</small>
-      <strong>${reward.name}</strong>
-      <div class="daily-pouch-reward-list">
-        <span data-daily-reward="coins"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b>+${reward.coins}</b></span>
-        <span data-daily-reward="stamina"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b>+${reward.stamina}</b></span>
-      </div>
-    </div>
-  `;
-  document.body.append(layer);
-  requestAnimationFrame(() => layer.classList.add("is-opening"));
-  setTimeout(() => {
-    layer.classList.add("is-open");
-    animateDailyPouchRewardFlight(layer, "coins", reward.coins, 260);
-    animateDailyPouchRewardFlight(layer, "stamina", reward.stamina, 390);
-  }, 560);
-  const dismiss = () => {
-    clearTimeout(dailyPouchRevealTimer);
-    layer.classList.add("is-leaving");
-    setTimeout(() => layer.remove(), 260);
-  };
-  layer.addEventListener("click", dismiss, { once: true });
-  dailyPouchRevealTimer = setTimeout(dismiss, 2350);
-}
+async function openDailyPouchGiftBox(index, pack) {
+  const giftState = state.giftBoxStates[index];
+  if (!giftState || giftState.packId !== pack.id) return;
+  if (activeDailyPouchStates.has(giftState)) {
+    toast("宝袋正在一份份投放奖励。");
+    return;
+  }
+  if (!Array.isArray(giftState.pendingOutputs)) {
+    const reward = rollDailyPouchReward(pack);
+    giftState.dailyRewardId = reward.id;
+    giftState.pendingOutputs = dailyPouchRewardOutputs(reward);
+    giftState.nextRewardIndex = 0;
+    keeper(`${pack.name}装着${reward.name}，正准备一份份落入棋盘。`);
+    saveState();
+  }
+  if (!giftState.pendingOutputs.length) {
+    clearGiftBox(index);
+    render();
+    saveState();
+    return;
+  }
 
-function openDailyPouchGiftBox(index, pack) {
-  const reward = rollDailyPouchReward(pack);
-  clearGiftBox(index);
-  state.coins += reward.coins;
-  state.coinsEarned += reward.coins;
-  state.stamina += reward.stamina;
-  keeper(`${pack.name}开出了${reward.coins}枚铜板和${reward.stamina}点驼铃。`);
+  activeDailyPouchStates.add(giftState);
+  state.selectedIndex = index;
+  render();
+  let blockedByBoard = false;
+  let pausedByPage = false;
+  let emitted = 0;
+  try {
+    while (giftState.pendingOutputs.length) {
+      if (state.currentPage !== "board") {
+        pausedByPage = true;
+        break;
+      }
+      const sourceIndex = dailyPouchStateIndex(giftState);
+      if (sourceIndex < 0) break;
+      const targetIndex = nearestBubbleSpawnIndex(sourceIndex);
+      if (targetIndex < 0) {
+        blockedByBoard = true;
+        break;
+      }
+      const itemId = giftState.pendingOutputs.shift();
+      state.board[targetIndex] = itemId;
+      giftState.nextRewardIndex += 1;
+      state.selectedIndex = sourceIndex;
+      activeDailyPouchOutputIndices.add(targetIndex);
+      saveState();
+      render();
+      await animateDailyPouchOutput(sourceIndex, targetIndex, itemId);
+      emitted += 1;
+      if (giftState.pendingOutputs.length) await dailyPouchDelay(130);
+    }
+  } finally {
+    activeDailyPouchStates.delete(giftState);
+  }
+
+  const currentIndex = dailyPouchStateIndex(giftState);
+  if (!giftState.pendingOutputs.length && currentIndex >= 0) {
+    const reward = dailyPouchRewardById(pack, giftState.dailyRewardId);
+    clearGiftBox(currentIndex);
+    keeper(`${pack.name}已经吐完${reward?.name ?? "今日奖励"}，棋子都落进棋盘了。`);
+    toast("宝袋奖励已全部落下。");
+  } else if (blockedByBoard) {
+    keeper(`${pack.name}里还有${giftState.pendingOutputs.length}份奖励，腾出格子后再点它继续。`);
+    toast(`棋盘已满，宝袋还留着${giftState.pendingOutputs.length}份奖励。`);
+  } else if (pausedByPage && emitted > 0) {
+    keeper(`${pack.name}暂停投放，回到棋盘后再点它继续。`);
+  }
   render();
   saveState();
-  showDailyPouchReveal(reward);
 }
 
 function shuffle(values) {
@@ -6826,6 +7435,7 @@ function debugClearBoard() {
   if (!confirm("确定清空案板吗？行囊不会清空。")) return;
   Object.keys(state.bubbleStates).forEach((bubbleId) => byId.delete(bubbleId));
   state.board = Array(BOARD_SIZE).fill(null);
+  state.giftBoxStates = {};
   state.bubbleStates = {};
   state.selectedIndex = null;
   state.pulseIndex = null;
@@ -6982,6 +7592,7 @@ function toast(message) {
 }
 
 function showCoinBurst(amount) {
+  playSfx("coin");
   const burst = document.createElement("div");
   burst.className = "coin-burst";
   burst.innerHTML = `<img src="./assets/ui/ui_coin_copper.png" alt="" />+${amount}`;

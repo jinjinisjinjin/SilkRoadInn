@@ -204,12 +204,12 @@ button:disabled {
   height: 43px;
   min-height: 43px;
   place-items: center;
-  padding: 6px;
-  overflow: hidden;
+  padding: 2px;
+  overflow: visible;
   border: 0;
-  border-radius: 15px;
-  background: rgba(255, 235, 190, 0.72);
-  box-shadow: 0 3px 10px rgba(72, 42, 20, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   transition: filter 160ms ease, opacity 160ms ease, transform 120ms ease;
 }
 
@@ -217,8 +217,9 @@ button:disabled {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
+  border-radius: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(54, 31, 18, 0.18));
 }
 
 .daily-pouch-entry.is-ready {
@@ -226,25 +227,215 @@ button:disabled {
 }
 
 .daily-pouch-entry.is-ready::after {
-  position: absolute;
-  right: 1px;
-  top: 1px;
-  width: 6px;
-  height: 6px;
-  border: 1px solid #ffe8b0;
-  border-radius: 50%;
-  background: #bd4d36;
-  box-shadow: 0 0 5px rgba(255, 213, 118, 0.82);
-  content: "";
+  content: none;
 }
 
-.daily-pouch-entry.is-claimed {
-  opacity: 0.58;
-  filter: saturate(0.62) brightness(0.8);
+.daily-pouch-entry.is-claimed,
+.daily-pouch-entry.is-claimed:disabled {
+  opacity: 1;
+  filter: none;
 }
 
 .daily-pouch-entry:active:not(:disabled) {
   transform: translateY(1px) scale(0.94);
+}
+
+.sound-toggle {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(224, 184, 107, 0.72);
+  border-radius: 50%;
+  color: #ffe2a1;
+  background: linear-gradient(180deg, rgba(104, 69, 39, 0.92), rgba(61, 38, 24, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 246, 217, 0.24), 0 2px 6px rgba(49, 27, 16, 0.22);
+  font: 900 17px/1 Georgia, serif;
+  text-shadow: 0 1px 2px rgba(38, 20, 11, 0.48);
+  transition: opacity 160ms ease, transform 120ms ease;
+}
+
+.sound-toggle span {
+  transform: translateY(-1px);
+}
+
+.sound-toggle::after {
+  position: absolute;
+  width: 19px;
+  height: 2px;
+  border-radius: 999px;
+  background: #e3b56c;
+  box-shadow: 0 0 0 1px rgba(65, 35, 21, 0.32);
+  content: "";
+  opacity: 0;
+  transform: rotate(-42deg) scaleX(0.35);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.sound-toggle.is-muted {
+  color: rgba(255, 226, 161, 0.52);
+  background: linear-gradient(180deg, rgba(88, 66, 47, 0.82), rgba(55, 42, 32, 0.9));
+}
+
+.sound-toggle.is-muted::after {
+  opacity: 1;
+  transform: rotate(-42deg) scaleX(1);
+}
+
+.sound-toggle:active {
+  transform: translateY(1px) scale(0.94);
+}
+
+.sound-toggle.is-open {
+  border-color: #f2c66f;
+  color: #fff0bd;
+  box-shadow: inset 0 1px 0 rgba(255, 246, 217, 0.32), 0 0 0 2px rgba(224, 168, 75, 0.22), 0 3px 8px rgba(49, 27, 16, 0.28);
+}
+
+.sound-toggle.is-mixed::before {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(67, 38, 22, 0.9);
+  border-radius: 50%;
+  background: #dca64d;
+  content: "";
+}
+
+.audio-settings-panel {
+  position: absolute;
+  z-index: 86;
+  top: max(61px, calc(env(safe-area-inset-top) + 61px));
+  right: 12px;
+  width: min(224px, calc(100% - 24px));
+  padding: 10px;
+  border: 1px solid rgba(116, 69, 35, 0.82);
+  border-radius: 15px;
+  color: #4b2d1d;
+  background: linear-gradient(160deg, #fff2c9 0%, #f4dca1 100%);
+  box-shadow: 0 10px 24px rgba(36, 22, 14, 0.34), inset 0 0 0 2px rgba(255, 249, 220, 0.62);
+}
+
+.audio-settings-panel[hidden] {
+  display: none;
+}
+
+.audio-settings-panel::before {
+  position: absolute;
+  top: -7px;
+  right: 7px;
+  width: 13px;
+  height: 13px;
+  border-top: 1px solid rgba(116, 69, 35, 0.76);
+  border-left: 1px solid rgba(116, 69, 35, 0.76);
+  background: #fff0c4;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.audio-settings-panel header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 1px 5px 8px;
+}
+
+.audio-settings-panel header strong {
+  font: 900 15px/1.1 "STKaiti", "KaiTi", serif;
+  letter-spacing: 0.08em;
+}
+
+.audio-settings-panel header span {
+  color: #98714e;
+  font-size: 10px;
+}
+
+.audio-setting-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 35px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 6px 7px;
+  border: 0;
+  border-top: 1px solid rgba(130, 87, 48, 0.18);
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.audio-setting-row:active {
+  background: rgba(154, 93, 44, 0.08);
+}
+
+.audio-setting-icon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid rgba(128, 74, 35, 0.46);
+  border-radius: 50%;
+  color: #f5d58b;
+  background: linear-gradient(180deg, #825334, #54301f);
+  box-shadow: inset 0 1px 0 rgba(255, 235, 184, 0.28);
+  font: 900 16px/1 Georgia, serif;
+}
+
+.audio-setting-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.audio-setting-copy b {
+  font: 800 13px/1.15 "STKaiti", "KaiTi", serif;
+}
+
+.audio-setting-copy small {
+  overflow: hidden;
+  color: #8b6a50;
+  font-size: 9px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.audio-setting-switch {
+  position: relative;
+  width: 34px;
+  height: 19px;
+  border: 1px solid rgba(91, 59, 38, 0.28);
+  border-radius: 999px;
+  background: #b5a07f;
+  box-shadow: inset 0 1px 3px rgba(63, 39, 25, 0.24);
+  transition: background 150ms ease;
+}
+
+.audio-setting-switch i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff3cf;
+  box-shadow: 0 1px 3px rgba(64, 37, 22, 0.35);
+  transition: transform 150ms ease;
+}
+
+.audio-setting-row.is-on .audio-setting-switch {
+  background: #9f4b38;
+}
+
+.audio-setting-row.is-on .audio-setting-switch i {
+  transform: translateX(15px);
 }
 
 @keyframes dailyPouchReadyPulse {
@@ -766,6 +957,10 @@ button:disabled {
   pointer-events: none;
   transform: translate(-50%, -50%) scale(1.12);
   filter: drop-shadow(0 12px 10px rgba(45, 24, 10, .36));
+}
+
+.cell.is-drag-source > * {
+  visibility: hidden;
 }
 
 .ghost {
@@ -1331,76 +1526,75 @@ button:disabled {
   inset: 0;
   z-index: 118;
   overflow: hidden;
-  background: rgba(31, 17, 12, 0.08);
-  perspective: 900px;
+  isolation: isolate;
+  background: rgba(31, 17, 12, 0.22);
+  perspective: 1100px;
+  perspective-origin: 50% 48%;
   pointer-events: auto;
+}
+
+.page-door-transition::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(249, 205, 116, 0.2), transparent 32%),
+    rgba(22, 11, 8, 0.22);
+  content: "";
+  pointer-events: none;
 }
 
 .page-door {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: calc(50% + 1px);
+  z-index: 1;
+  width: 50%;
   overflow: hidden;
-  border: 1px solid rgba(244, 205, 126, 0.42);
-  background:
-    radial-gradient(circle at 18px 20px, #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
-    radial-gradient(circle at calc(100% - 18px) 20px, #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
-    radial-gradient(circle at 18px calc(100% - 20px), #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
-    radial-gradient(circle at calc(100% - 18px) calc(100% - 20px), #d3a654 0 3px, #76502d 4px 5px, transparent 6px),
-    repeating-linear-gradient(90deg, rgba(255, 222, 155, 0.04) 0 2px, transparent 2px 30px),
-    linear-gradient(90deg, rgba(51, 20, 16, 0.42), transparent 18%, transparent 82%, rgba(51, 20, 16, 0.44)),
-    linear-gradient(180deg, #7f3b30, #55251f 54%, #3f1c19);
+  border: 0;
+  background-color: #251711;
+  background-image: url("./assets/ui/ui_page_transition_dunhuang_gate_v1.jpg");
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
   box-shadow:
-    inset 0 0 0 7px rgba(75, 35, 24, 0.64),
-    inset 0 0 0 9px rgba(214, 162, 82, 0.26),
-    0 0 24px rgba(26, 13, 9, 0.58);
+    inset 0 0 0 1px rgba(255, 217, 132, 0.2),
+    0 0 28px rgba(20, 10, 7, 0.68);
   backface-visibility: hidden;
   transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .page-door::before {
   position: absolute;
-  inset: 13% 15%;
-  border: 2px solid rgba(211, 161, 83, 0.34);
-  box-shadow:
-    inset 0 0 0 5px rgba(65, 27, 21, 0.36),
-    0 0 0 3px rgba(49, 21, 17, 0.28);
+  inset: 0;
   content: "";
+  pointer-events: none;
 }
 
 .page-door-left {
   left: 0;
+  background-position: left top;
   transform: rotateY(-94deg);
   transform-origin: left center;
 }
 
+.page-door-left::before {
+  background: linear-gradient(90deg, rgba(14, 7, 5, 0.14), transparent 18%, transparent 78%, rgba(20, 9, 6, 0.3));
+}
+
 .page-door-right {
   right: 0;
+  background-position: right top;
   transform: rotateY(94deg);
   transform-origin: right center;
 }
 
+.page-door-right::before {
+  background: linear-gradient(90deg, rgba(20, 9, 6, 0.3), transparent 22%, transparent 82%, rgba(14, 7, 5, 0.14));
+}
+
 .page-door i {
-  position: absolute;
-  top: 50%;
-  width: 22px;
-  height: 22px;
-  border: 4px solid #c99a4d;
-  border-radius: 50%;
-  background: #5c2b22;
-  box-shadow:
-    0 2px 5px rgba(29, 14, 9, 0.62),
-    inset 0 0 0 2px rgba(255, 224, 157, 0.24);
-  transform: translateY(-50%);
-}
-
-.page-door-left i {
-  right: 14px;
-}
-
-.page-door-right i {
-  left: 14px;
+  display: none;
 }
 
 .page-door-transition[data-phase="closing"] .page-door-left {
@@ -2350,12 +2544,21 @@ button:disabled {
 
 #app[data-page="board"] .daily-pouch-entry {
   position: absolute;
-  left: -50px;
+  left: auto;
+  right: 0;
   top: 2px;
   width: 43px;
   height: 43px;
   min-height: 43px;
   margin: 0;
+}
+
+#app[data-page="board"] .sound-toggle {
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  border-color: rgba(244, 207, 134, 0.68);
+  font-size: 15px;
 }
 
 #app[data-page="board"] .ruby-icon {
@@ -4779,195 +4982,6 @@ button:disabled {
   100% {
     opacity: 0;
     transform: translateY(-34px) scale(1);
-  }
-}
-
-.daily-pouch-reveal {
-  position: fixed;
-  z-index: 180;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 22px;
-  overflow: hidden;
-  background: rgba(43, 27, 18, 0);
-  backdrop-filter: blur(0);
-  opacity: 0;
-  transition: opacity 220ms ease, background-color 260ms ease, backdrop-filter 260ms ease;
-}
-
-.daily-pouch-reveal.is-opening {
-  background: rgba(43, 27, 18, 0.56);
-  backdrop-filter: blur(2px);
-  opacity: 1;
-}
-
-.daily-pouch-reveal.is-leaving {
-  opacity: 0;
-}
-
-.daily-pouch-reveal-card {
-  position: relative;
-  display: grid;
-  width: min(78vw, 286px);
-  min-height: 250px;
-  place-items: center;
-  align-content: center;
-  gap: 6px;
-  padding: 28px 22px 24px;
-  overflow: hidden;
-  border: 1px solid rgba(226, 184, 101, 0.76);
-  border-radius: 24px;
-  color: #5d341f;
-  background:
-    radial-gradient(circle at 50% 24%, rgba(255, 246, 196, 0.95), transparent 42%),
-    linear-gradient(155deg, #f7e5b9, #eac98b);
-  box-shadow: inset 0 0 0 3px rgba(255, 246, 212, 0.58), 0 22px 50px rgba(38, 21, 12, 0.42);
-  transform: translateY(12px) scale(0.9);
-  transition: transform 360ms cubic-bezier(.2,.78,.24,1);
-}
-
-.daily-pouch-reveal.is-opening .daily-pouch-reveal-card {
-  transform: translateY(0) scale(1);
-}
-
-.daily-pouch-rays {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, rgba(194, 127, 43, 0.17) 0 8deg, transparent 8deg 18deg);
-  opacity: 0;
-  transform: scale(0.45) rotate(0deg);
-  transition: opacity 320ms ease, transform 820ms cubic-bezier(.18,.72,.22,1);
-}
-
-.daily-pouch-reveal.is-open .daily-pouch-rays {
-  opacity: 1;
-  transform: scale(1.08) rotate(22deg);
-}
-
-.daily-pouch-reveal-art {
-  z-index: 1;
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 8px rgba(89, 49, 20, 0.28));
-  transform: translateY(20px) scale(0.72) rotate(-7deg);
-  animation: dailyPouchOpenShake 560ms cubic-bezier(.2,.74,.24,1) forwards;
-}
-
-.daily-pouch-reveal.is-open .daily-pouch-reveal-art {
-  transform: translateY(-4px) scale(0.9) rotate(0deg);
-  transition: transform 340ms cubic-bezier(.2,.76,.2,1);
-}
-
-.daily-pouch-reveal-card small,
-.daily-pouch-reveal-card strong,
-.daily-pouch-reward-list {
-  position: relative;
-  z-index: 2;
-  opacity: 0;
-  transform: translateY(9px);
-  transition: opacity 260ms ease, transform 320ms ease;
-}
-
-.daily-pouch-reveal-card small {
-  color: #9b5638;
-  font: 800 13px/1 "Songti SC", "STSong", serif;
-  letter-spacing: 0.16em;
-}
-
-.daily-pouch-reveal-card strong {
-  font: 900 25px/1.18 "Kaiti SC", "STKaiti", "Songti SC", serif;
-}
-
-.daily-pouch-reveal.is-open .daily-pouch-reveal-card small,
-.daily-pouch-reveal.is-open .daily-pouch-reveal-card strong,
-.daily-pouch-reveal.is-open .daily-pouch-reward-list {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.daily-pouch-reward-list {
-  display: flex;
-  gap: 10px;
-  margin-top: 9px;
-  transition-delay: 70ms;
-}
-
-.daily-pouch-reward-list > span {
-  display: flex;
-  min-width: 90px;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 8px 12px;
-  border: 1px solid rgba(135, 83, 40, 0.24);
-  border-radius: 999px;
-  background: rgba(255, 246, 215, 0.7);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 3px 8px rgba(90, 48, 22, 0.1);
-  font: 900 19px/1 Georgia, serif;
-}
-
-.daily-pouch-reward-list img {
-  width: 29px;
-  height: 29px;
-  object-fit: contain;
-}
-
-.daily-pouch-flight {
-  position: fixed;
-  z-index: 190;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 4px 7px;
-  border-radius: 999px;
-  color: #6f3c20;
-  background: rgba(255, 239, 187, 0.96);
-  box-shadow: 0 5px 13px rgba(61, 34, 17, 0.24);
-  pointer-events: none;
-  font: 900 14px/1 Georgia, serif;
-}
-
-.daily-pouch-flight img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.resource-pill.daily-reward-arrival,
-.inn-resource-pill.daily-reward-arrival {
-  animation: dailyRewardArrival 520ms cubic-bezier(.18,.72,.24,1);
-}
-
-@keyframes dailyPouchOpenShake {
-  0% { opacity: 0; transform: translateY(20px) scale(0.72) rotate(-7deg); }
-  36% { opacity: 1; transform: translateY(-3px) scale(1.04) rotate(6deg); }
-  62% { transform: translateY(1px) scale(0.98) rotate(-4deg); }
-  82% { transform: translateY(-2px) scale(1.02) rotate(2deg); }
-  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
-}
-
-@keyframes dailyRewardArrival {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  44% { transform: scale(1.12); filter: brightness(1.38); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .daily-pouch-reveal,
-  .daily-pouch-reveal-card,
-  .daily-pouch-reveal-art,
-  .daily-pouch-rays,
-  .daily-pouch-reveal-card small,
-  .daily-pouch-reveal-card strong,
-  .daily-pouch-reward-list,
-  .resource-pill.daily-reward-arrival,
-  .inn-resource-pill.daily-reward-arrival {
-    animation: none;
-    transition-duration: 0.01ms;
   }
 }
 
@@ -7891,6 +7905,111 @@ button.storage-slot.filled {
   .bonus-bubble,
   #app[data-page="board"] .cell.bubble-born,
   #app[data-page="board"] .cell.collect-ready .bonus-coin {
+    animation: none;
+  }
+}
+
+/* Four-level stamina chain: one bell, two bells, dromedary, then a mature Bactrian. */
+.bonus-stamina {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  isolation: isolate;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(67, 39, 18, 0.28));
+}
+
+.bonus-stamina-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  width: var(--stamina-art-size, 96%);
+  height: var(--stamina-art-size, 96%);
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 1px 1px rgba(57, 32, 15, 0.24));
+}
+
+.bonus-stamina-level-1 {
+  --stamina-art-size: 82%;
+}
+
+.bonus-stamina-level-2 {
+  --stamina-art-size: 88%;
+}
+
+.bonus-stamina-level-3 {
+  --stamina-art-size: 101%;
+}
+
+.bonus-stamina-level-4 {
+  --stamina-art-size: 108%;
+}
+
+#app[data-page="board"] .cell.bonus-stamina-cell {
+  display: grid;
+  place-items: center;
+}
+
+#app[data-page="board"] .cell.bonus-stamina-cell.collect-ready .bonus-stamina {
+  animation: collectReadyPulse 1.45s ease-in-out infinite;
+}
+
+#app[data-page="board"] .cell.daily-pouch-dispensing .daily-pouch-gift {
+  animation: dailyPouchDispense 520ms cubic-bezier(.2, .72, .3, 1) both;
+  transform-origin: 50% 72%;
+}
+
+#app[data-page="board"] .cell.daily-pouch-receiving .bonus-coin,
+#app[data-page="board"] .cell.daily-pouch-receiving .bonus-stamina {
+  opacity: 0;
+}
+
+.daily-pouch-output-flight {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 190;
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  pointer-events: none;
+  will-change: left, top, transform, opacity;
+  filter: drop-shadow(0 5px 4px rgba(55, 30, 14, 0.28));
+}
+
+.daily-pouch-output-flight.stamina-output {
+  width: 40px;
+  height: 40px;
+}
+
+#app[data-page="board"] .cell.daily-pouch-land .bonus-coin,
+#app[data-page="board"] .cell.daily-pouch-land .bonus-stamina {
+  animation: dailyPouchLand 330ms cubic-bezier(.18, .78, .3, 1.25) both;
+}
+
+@keyframes dailyPouchDispense {
+  0%, 100% { transform: scale(1) rotate(0); }
+  20% { transform: translateY(1px) scale(.96, 1.04) rotate(-7deg); }
+  42% { transform: translateY(-3px) scale(1.04, .94) rotate(8deg); }
+  64% { transform: translateY(-5px) scale(1.06, .92) rotate(-4deg); }
+  80% { transform: translateY(1px) scale(.97, 1.05) rotate(2deg); }
+}
+
+@keyframes dailyPouchLand {
+  0% { opacity: 1; transform: translateY(-3px) scale(.88); }
+  68% { opacity: 1; transform: translateY(1px) scale(1.1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app[data-page="board"] .cell.bonus-stamina-cell.collect-ready .bonus-stamina,
+  #app[data-page="board"] .cell.daily-pouch-dispensing .daily-pouch-gift,
+  #app[data-page="board"] .cell.daily-pouch-land .bonus-coin,
+  #app[data-page="board"] .cell.daily-pouch-land .bonus-stamina {
     animation: none;
   }
 }
