@@ -4987,26 +4987,36 @@ function renderOrderFoodDetail() {
   if (!item) return;
   const lineItems = foodItemsForLine(item.line);
   const highestUnlockedLevel = highestUnlockedFoodLevel(item, lineItems);
-  const visibleItems = lineItems.filter((lineItem) => Number(lineItem.level) <= highestUnlockedLevel);
   els.orderFoodTitle.textContent = item.name;
   els.orderFoodRoute.setAttribute("role", "list");
   els.orderFoodRoute.setAttribute("aria-label", `${lineLabel(item.line)}合成路线`);
   els.orderFoodRoute.replaceChildren();
 
-  visibleItems.forEach((lineItem) => {
-    const owned = effectiveBoardItemCount(lineItem.id);
+  lineItems.forEach((lineItem) => {
+    const isUnlocked = Number(lineItem.level) <= highestUnlockedLevel;
+    const owned = isUnlocked ? effectiveBoardItemCount(lineItem.id) : 0;
     const isTarget = lineItem.id === item.id;
     const routeItem = document.createElement("div");
-    routeItem.className = `order-food-route-item ${owned > 0 ? "has-stock" : ""} ${isTarget ? "is-target" : ""}`;
+    routeItem.className = `order-food-route-item ${owned > 0 ? "has-stock" : ""} ${isTarget ? "is-target" : ""} ${isUnlocked ? "" : "is-locked"}`;
     routeItem.setAttribute("role", "listitem");
-    routeItem.setAttribute(
-      "aria-label",
-      `${lineItem.name}，棋盘可用${owned}${isTarget ? "，食客所需" : ""}`,
-    );
+    routeItem.setAttribute("aria-label", isUnlocked
+      ? `${lineItem.name}，棋盘可用${owned}${isTarget ? "，食客所需" : ""}`
+      : "未解锁的后续食物");
     if (isTarget) routeItem.setAttribute("aria-current", "true");
 
     const art = document.createElement("div");
     art.className = "order-food-art";
+    if (!isUnlocked) {
+      const seal = document.createElement("span");
+      seal.className = "order-food-seal";
+      seal.textContent = "封";
+      seal.setAttribute("aria-hidden", "true");
+      art.append(seal);
+      routeItem.append(art);
+      els.orderFoodRoute.append(routeItem);
+      return;
+    }
+
     const image = document.createElement("img");
     image.src = itemAssetSrc(lineItem);
     image.alt = "";
