@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=codex-axis-v1" />
+    <link rel="stylesheet" href="./styles.css?v=codex-detail-nav-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
@@ -220,8 +220,14 @@
     <dialog id="codexDetailModal" class="modal">
       <div class="modal-inner codex-detail">
         <button class="close" data-close="codexDetailModal">×</button>
+        <button id="codexDetailPrev" class="codex-detail-nav codex-detail-prev" type="button" aria-label="上一道食物">
+          <span aria-hidden="true">‹</span>
+        </button>
+        <button id="codexDetailNext" class="codex-detail-nav codex-detail-next" type="button" aria-label="下一道食物">
+          <span aria-hidden="true">›</span>
+        </button>
         <img id="codexDetailIcon" alt="" />
-        <div class="codex-detail-title"><h2 id="codexDetailName"></h2><span id="codexDetailModern"></span></div>
+        <div class="codex-detail-title" aria-live="polite"><h2 id="codexDetailName"></h2><span id="codexDetailModern"></span></div>
         <p class="codex-short" id="codexDetailShort"></p>
         <section><h3 id="codexDetailNotesTitle">食鉴札记</h3><p id="codexDetailLong"></p></section>
         <section id="codexDetailSourceSection"><h3>出处</h3><p id="codexDetailSource"></p></section>
@@ -391,6 +397,6 @@
 
     <script src="./chapter-story.js?v=board-merge-v2"></script>
     <script src="./new-player-guide.js?v=board-merge-v2"></script>
-    <script src="./app.js?v=codex-axis-v1"></script>
+    <script src="./app.js?v=codex-detail-nav-v1"></script>
   </body>
 </html>

@@ -395,6 +395,8 @@ const els = {
   codexSelectedName: document.querySelector("#codexSelectedName"),
   codexSelectedText: document.querySelector("#codexSelectedText"),
   codexDetailModal: document.querySelector("#codexDetailModal"),
+  codexDetailPrev: document.querySelector("#codexDetailPrev"),
+  codexDetailNext: document.querySelector("#codexDetailNext"),
   codexDetailIcon: document.querySelector("#codexDetailIcon"),
   codexDetailName: document.querySelector("#codexDetailName"),
   codexDetailModern: document.querySelector("#codexDetailModern"),
@@ -1804,6 +1806,13 @@ function bindEvents() {
   els.loadingRetryBtn.addEventListener("click", () => switchPage("inn"));
   els.codexBtn.addEventListener("click", openCodex);
   els.codexSelected?.addEventListener("click", openActiveCodexDetail);
+  els.codexDetailPrev?.addEventListener("click", () => navigateCodexDetail(-1));
+  els.codexDetailNext?.addEventListener("click", () => navigateCodexDetail(1));
+  els.codexDetailModal?.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    navigateCodexDetail(event.key === "ArrowLeft" ? -1 : 1);
+  });
   els.orderDetailCodexBtn.addEventListener("click", openCodexFromOrderDetail);
   els.orderDetailCompleteBtn.addEventListener("click", completeOrderFromDetail);
   els.orderFoodModal?.addEventListener("close", () => {
@@ -6487,9 +6496,40 @@ function openActiveCodexDetail() {
   if (activeCodexItemId) openCodexItemDetail(activeCodexItemId);
 }
 
+function unlockedCodexItems() {
+  return codexFoodLines().flatMap((line) =>
+    line.items.filter((item) => isFoodItemUnlocked(item)),
+  );
+}
+
+function updateCodexDetailNavigation(item) {
+  const items = unlockedCodexItems();
+  const currentIndex = items.findIndex((candidate) => candidate.id === item.id);
+  const canNavigate = currentIndex >= 0 && items.length > 1;
+  els.codexDetailPrev.disabled = !canNavigate;
+  els.codexDetailNext.disabled = !canNavigate;
+  if (!canNavigate) return;
+  const previous = items[(currentIndex - 1 + items.length) % items.length];
+  const next = items[(currentIndex + 1) % items.length];
+  els.codexDetailPrev.setAttribute("aria-label", `上一道：${previous.name}`);
+  els.codexDetailNext.setAttribute("aria-label", `下一道：${next.name}`);
+}
+
+function navigateCodexDetail(offset) {
+  const items = unlockedCodexItems();
+  if (items.length < 2) return;
+  const currentIndex = items.findIndex((item) => item.id === activeCodexItemId);
+  const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+  const nextItem = items[(safeIndex + offset + items.length) % items.length];
+  activeCodexItemId = nextItem.id;
+  renderCodex();
+  openCodexItemDetail(nextItem.id);
+}
+
 function openCodexItemDetail(itemId) {
   const item = byId.get(itemId);
   if (!isFoodItemUnlocked(item)) return;
+  activeCodexItemId = item.id;
   const entry = codexByItemId.get(item.id);
   els.codexDetailIcon.src = itemAssetSrc(item);
   els.codexDetailIcon.alt = item.name;
@@ -6501,7 +6541,8 @@ function openCodexItemDetail(itemId) {
   const sourceNote = entry?.sourceNote?.trim();
   els.codexDetailSourceSection.hidden = !sourceNote;
   els.codexDetailSource.textContent = sourceNote ?? "";
-  els.codexDetailModal.showModal();
+  updateCodexDetailNavigation(item);
+  if (!els.codexDetailModal.open) els.codexDetailModal.showModal();
 }
 
 function openCodexDetail(codexId) {
