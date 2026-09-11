@@ -299,6 +299,7 @@ const state = {
   unlockedCells: [],
   visibleOrders: [],
   unlockedCodex: new Set(),
+  unlockedFoodLevels: {},
   coins: 40,
   stamina: 18,
   staminaMax: 24,
@@ -459,6 +460,12 @@ const els = {
   orderDetailRecipe: document.querySelector("#orderDetailRecipe"),
   orderDetailCodexBtn: document.querySelector("#orderDetailCodexBtn"),
   orderDetailCompleteBtn: document.querySelector("#orderDetailCompleteBtn"),
+  orderFoodModal: document.querySelector("#orderFoodModal"),
+  orderFoodEyebrow: document.querySelector("#orderFoodEyebrow"),
+  orderFoodTitle: document.querySelector("#orderFoodTitle"),
+  orderFoodSummary: document.querySelector("#orderFoodSummary"),
+  orderFoodRoute: document.querySelector("#orderFoodRoute"),
+  orderFoodUnlocked: document.querySelector("#orderFoodUnlocked"),
   bagModal: document.querySelector("#bagModal"),
   bagList: document.querySelector("#bagList"),
   storageModal: document.querySelector("#storageModal"),
@@ -489,6 +496,7 @@ const els = {
 
 const byId = new Map();
 const codexById = new Map();
+const foodLineMaxLevels = new Map();
 let dragging = null;
 let toastTimer = null;
 let suppressNextCellClick = false;
@@ -516,6 +524,7 @@ let storyArchiveCloseTimer = null;
 let storyArchivePageSwapTimer = null;
 let storyArchivePageDoneTimer = null;
 let storyArchivePageTurning = false;
+let activeOrderFoodContext = null;
 const activeGeneratorOutputIndices = new Set();
 
 async function loadJson(name) {
@@ -1152,7 +1161,13 @@ async function boot() {
   state.staminaConfig = stamina;
   state.progressionConfig = progression;
   state.innConfig = inn;
-  state.items.forEach((item) => byId.set(item.id, item));
+  const foodLineIds = new Set(generators.categories.map((category) => category.foodLineId));
+  state.items.forEach((item) => {
+    byId.set(item.id, item);
+    if (!item.generatorType && foodLineIds.has(item.line) && Number.isFinite(Number(item.level))) {
+      foodLineMaxLevels.set(item.line, Math.max(foodLineMaxLevels.get(item.line) ?? 0, Number(item.level)));
+    }
+  });
   registerBonusCoinItems();
   registerOrderProgressPacks();
   codex.entries.forEach((entry) => codexById.set(entry.id, entry));
@@ -1217,6 +1232,62 @@ function normalizeActiveChapterStory(value) {
   };
 }
 
+function normalizeUnlockedFoodLevels(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([line, level]) => foodLineMaxLevels.has(line) && Number.isFinite(Number(level)) && Number(level) > 0)
+      .map(([line, level]) => [line, Math.min(maximumFoodLevelForLine(line), Math.max(1, Math.floor(Number(level))))]),
+  );
+}
+
+function maximumFoodLevelForLine(line) {
+  return foodLineMaxLevels.get(line) ?? 0;
+}
+
+function rememberUnlockedFoodLevel(line, level) {
+  const highestAvailableLevel = maximumFoodLevelForLine(line);
+  if (!highestAvailableLevel) return false;
+  const nextLevel = Math.min(highestAvailableLevel, Math.max(1, Math.floor(Number(level) || 1)));
+  const previousLevel = Number(state.unlockedFoodLevels[line]) || 0;
+  if (nextLevel <= previousLevel) return false;
+  state.unlockedFoodLevels[line] = nextLevel;
+  return true;
+}
+
+function rememberUnlockedFoodItem(itemId) {
+  const item = byId.get(itemId);
+  if (!item || item.generatorType || !foodLineMaxLevels.has(item.line) || !Number.isFinite(Number(item.level))) return false;
+  return rememberUnlockedFoodLevel(item.line, item.level);
+}
+
+function syncUnlockedFoodLevels({ includeCompletedOrders = false } = {}) {
+  let changed = false;
+  [...state.board, ...state.bag].forEach((itemId) => {
+    if (itemId) changed = rememberUnlockedFoodItem(itemId) || changed;
+  });
+  state.unlockedCodex.forEach((codexId) => {
+    const codex = codexById.get(codexId);
+    if (codex?.itemId) changed = rememberUnlockedFoodItem(codex.itemId) || changed;
+  });
+  if (includeCompletedOrders) {
+    state.completedOrderIds.forEach((orderId) => {
+      getOrder(orderId)?.demand?.forEach((demand) => {
+        changed = rememberUnlockedFoodItem(demand.itemId) || changed;
+      });
+    });
+  }
+  const availability = state.economyConfig?.orderPricing?.availability?.maxDemandLevelByGeneratorLevel ?? {};
+  state.generatorConfig.categories.forEach((category) => {
+    const generatorLevel = highestOwnedGeneratorLevel(category.id);
+    const foodLevel = Number(availability[generatorLevel]);
+    if (generatorLevel > 0 && Number.isFinite(foodLevel)) {
+      changed = rememberUnlockedFoodLevel(category.foodLineId, foodLevel) || changed;
+    }
+  });
+  return changed;
+}
+
 function defaultState() {
   const board = Array(BOARD_SIZE).fill(null);
   board[starterGeneratorIndex()] = "gen_mill_01";
@@ -1230,6 +1301,7 @@ function defaultState() {
     unlockedCells: [],
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
     unlockedCodex: ["codex_hubing_01"],
+    unlockedFoodLevels: { hubing: 1 },
     coins: startingCoinBalance(),
     gems: 36,
     stamina: state.staminaConfig.initial.startValue,
@@ -1283,6 +1355,7 @@ function loadState() {
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
+    unlockedFoodLevels: normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
     coins: data.coins ?? startingCoinBalance(),
     gems: data.gems ?? 36,
     stamina: data.stamina ?? state.staminaConfig.initial.startValue,
@@ -1337,7 +1410,8 @@ function loadState() {
   const retroactiveGeneratorRewards = ISOLATED_QA_MODE ? [] : syncGeneratorProgressRewards();
   pruneGeneratorStates();
   syncVisibleOrders();
-  if (hasLegacyOrderIds || hasLegacyStoryFlags || generatorUnlocksChanged || retroactiveGeneratorRewards.length || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
+  if (hasLegacyOrderIds || hasLegacyStoryFlags || generatorUnlocksChanged || foodUnlocksChanged || retroactiveGeneratorRewards.length || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
   if (PROGRESSION_FLOW_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
@@ -1346,6 +1420,7 @@ function loadState() {
 }
 
 function saveState() {
+  syncUnlockedFoodLevels();
   localStorage.setItem(
     SAVE_KEY,
     JSON.stringify({
@@ -1358,6 +1433,7 @@ function saveState() {
       unlockedCells: state.unlockedCells,
       visibleOrders: state.visibleOrders,
       unlockedCodex: [...state.unlockedCodex],
+      unlockedFoodLevels: state.unlockedFoodLevels,
       coins: state.coins,
       gems: state.gems,
       stamina: state.stamina,
@@ -1632,6 +1708,9 @@ function bindEvents() {
   els.codexBtn.addEventListener("click", openCodex);
   els.orderDetailCodexBtn.addEventListener("click", openCodexFromOrderDetail);
   els.orderDetailCompleteBtn.addEventListener("click", completeOrderFromDetail);
+  els.orderFoodModal?.addEventListener("close", () => {
+    activeOrderFoodContext = null;
+  });
   els.repairConfirmBtn.addEventListener("click", finalizeRepairChoice);
   els.repairQaPrev?.addEventListener("click", () => navigateRepairProgressQa(-1));
   els.repairQaNext?.addEventListener("click", () => navigateRepairProgressQa(1));
@@ -1774,6 +1853,7 @@ function render() {
   }
   renderTutorial();
   if (els.orderDetailModal.open && state.currentOrderDetailId) renderOrderDetail();
+  if (els.orderFoodModal?.open && activeOrderFoodContext) renderOrderFoodDetail();
 }
 
 function renderPage() {
@@ -3538,12 +3618,28 @@ function renderOrders() {
     const foods = document.createElement("div");
     foods.className = "need-items";
     demandStates.forEach(({ item, demand }) => {
-      for (let i = 0; i < Math.min(demand.quantity, 3); i++) {
-        const f = document.createElement("img");
-        f.src = itemAssetSrc(item);
-        f.alt = item.name;
-        foods.append(f);
+      const trigger = document.createElement("button");
+      trigger.type = "button";
+      trigger.className = "order-food-trigger";
+      trigger.setAttribute("aria-label", `查看${item.name}合成路线，需要${demand.quantity}份`);
+      trigger.title = `${item.name} · 查看合成路线`;
+      const f = document.createElement("img");
+      f.src = itemAssetSrc(item);
+      f.alt = item.name;
+      trigger.append(f);
+      if (demand.quantity > 1) {
+        const needed = document.createElement("span");
+        needed.className = "order-food-needed";
+        needed.textContent = `×${demand.quantity}`;
+        needed.setAttribute("aria-hidden", "true");
+        trigger.append(needed);
       }
+      trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openOrderFoodDetail(order.id, item.id, demand.quantity);
+      });
+      trigger.addEventListener("keydown", (event) => event.stopPropagation());
+      foods.append(trigger);
     });
 
     const deliver = document.createElement("button");
@@ -3563,7 +3659,9 @@ function renderOrders() {
     card.append(npcImg, reward, foods, tray, deliver);
     card.addEventListener("click", () => openOrderDetail(order.id));
     card.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") openOrderDetail(order.id);
+      if (event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
+      event.preventDefault();
+      openOrderDetail(order.id);
     });
     els.orders.append(card);
   });
@@ -4840,6 +4938,104 @@ function completeOrder(orderId) {
   }
   render();
   saveState();
+}
+
+function effectiveBoardItemCount(itemId) {
+  return state.board.reduce(
+    (total, boardItemId, index) => total + (boardItemId === itemId && !isBoardCellLocked(index) ? 1 : 0),
+    0,
+  );
+}
+
+function foodItemsForLine(line) {
+  return state.items
+    .filter((item) => item.line === line && !item.generatorType && Number.isFinite(Number(item.level)))
+    .sort((left, right) => Number(left.level) - Number(right.level));
+}
+
+function highestUnlockedFoodLevel(item, lineItems) {
+  const targetLevel = Math.max(1, Number(item?.level) || 1);
+  const highestLineLevel = lineItems.reduce(
+    (highest, lineItem) => Math.max(highest, Number(lineItem.level) || 1),
+    targetLevel,
+  );
+  const category = state.generatorConfig.categories.find((entry) => entry.foodLineId === item?.line);
+  const generatorLevel = category ? highestOwnedGeneratorLevel(category.id) : 0;
+  const availability = state.economyConfig?.orderPricing?.availability?.maxDemandLevelByGeneratorLevel ?? {};
+  const progressionLevel = Number(availability[generatorLevel]) || targetLevel;
+  const historicalLevel = Number(state.unlockedFoodLevels[item?.line]) || 0;
+  const currentlyOwnedLevel = [...state.board, ...state.bag]
+    .map((itemId) => byId.get(itemId))
+    .filter((ownedItem) => ownedItem?.line === item?.line && !ownedItem.generatorType)
+    .reduce((highest, ownedItem) => Math.max(highest, Number(ownedItem.level) || 1), targetLevel);
+  return Math.min(highestLineLevel, Math.max(targetLevel, progressionLevel, historicalLevel, currentlyOwnedLevel));
+}
+
+function openOrderFoodDetail(orderId, itemId, quantity) {
+  const order = getOrder(orderId);
+  const item = byId.get(itemId);
+  const demand = order?.demand?.find((entry) => entry.itemId === itemId);
+  if (!order || !item || !demand) return;
+  activeOrderFoodContext = {
+    orderId,
+    itemId,
+    quantity: Math.max(1, Number(quantity) || Number(demand.quantity) || 1),
+  };
+  renderOrderFoodDetail();
+  els.orderFoodModal.showModal();
+}
+
+function renderOrderFoodDetail() {
+  if (!activeOrderFoodContext) return;
+  const { itemId, quantity } = activeOrderFoodContext;
+  const item = byId.get(itemId);
+  if (!item) return;
+  const lineItems = foodItemsForLine(item.line);
+  const highestUnlockedLevel = highestUnlockedFoodLevel(item, lineItems);
+  const visibleItems = lineItems.filter((lineItem) => Number(lineItem.level) <= highestUnlockedLevel);
+  const targetOwned = effectiveBoardItemCount(item.id);
+
+  els.orderFoodEyebrow.textContent = `食客所需 · ${lineLabel(item.line)}`;
+  els.orderFoodTitle.textContent = item.name;
+  els.orderFoodSummary.textContent = `需要 ×${quantity} · 棋盘可用 ${targetOwned}`;
+  els.orderFoodUnlocked.textContent = `已解锁至 Lv${highestUnlockedLevel}`;
+  els.orderFoodRoute.setAttribute("role", "list");
+  els.orderFoodRoute.setAttribute("aria-label", `${lineLabel(item.line)}合成路线`);
+  els.orderFoodRoute.replaceChildren();
+
+  visibleItems.forEach((lineItem) => {
+    const owned = effectiveBoardItemCount(lineItem.id);
+    const isTarget = lineItem.id === item.id;
+    const routeItem = document.createElement("div");
+    routeItem.className = `order-food-route-item ${owned > 0 ? "has-stock" : ""} ${isTarget ? "is-target" : ""}`;
+    routeItem.setAttribute("role", "listitem");
+    routeItem.setAttribute(
+      "aria-label",
+      `${lineItem.name}，Lv${lineItem.level}，棋盘可用${owned}${isTarget ? "，食客所需" : ""}`,
+    );
+    if (isTarget) routeItem.setAttribute("aria-current", "true");
+
+    const art = document.createElement("div");
+    art.className = "order-food-art";
+    const image = document.createElement("img");
+    image.src = itemAssetSrc(lineItem);
+    image.alt = "";
+    art.append(image);
+    if (owned > 0) {
+      const count = document.createElement("span");
+      count.className = "order-food-count";
+      count.textContent = String(owned);
+      count.setAttribute("aria-hidden", "true");
+      art.append(count);
+    }
+
+    const name = document.createElement("strong");
+    name.textContent = lineItem.name;
+    const level = document.createElement("small");
+    level.textContent = `Lv${lineItem.level}`;
+    routeItem.append(art, name, level);
+    els.orderFoodRoute.append(routeItem);
+  });
 }
 
 function openOrderDetail(orderId) {

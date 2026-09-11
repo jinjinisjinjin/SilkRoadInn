@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=board-spacing-v1" />
+    <link rel="stylesheet" href="./styles.css?v=order-food-route-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
@@ -290,6 +290,21 @@
         <div class="modal-actions"><button id="orderDetailCodexBtn">查看食单</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
       </div>
     </dialog>
+    <dialog id="orderFoodModal" class="modal order-food-modal" aria-labelledby="orderFoodTitle">
+      <section class="modal-inner order-food-detail">
+        <button class="close order-food-close" data-close="orderFoodModal" aria-label="关闭食物合成路线">×</button>
+        <header class="order-food-head">
+          <span id="orderFoodEyebrow">食客所需</span>
+          <h2 id="orderFoodTitle">食物合成路线</h2>
+          <p id="orderFoodSummary"></p>
+        </header>
+        <div id="orderFoodRoute" class="order-food-route"></div>
+        <footer class="order-food-foot">
+          <span>两个同级食物可合成下一级</span>
+          <strong id="orderFoodUnlocked"></strong>
+        </footer>
+      </section>
+    </dialog>
     <dialog id="bagModal" class="modal bag-modal" aria-label="行囊">
       <div class="modal-inner bag-modal-inner">
         <button class="close" data-close="bagModal">×</button>
@@ -342,6 +357,6 @@
 
     <script src="./chapter-story.js?v=inn-map-ui-v3"></script>
     <script src="./new-player-guide.js?v=new-player-guide-v4"></script>
-    <script src="./app.js?v=order-ready-food-v1"></script>
+    <script src="./app.js?v=order-food-route-v1"></script>
   </body>
 </html>
