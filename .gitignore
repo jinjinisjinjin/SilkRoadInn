@@ -31,6 +31,11 @@ archive/worktrees/
 # Playwright transient debug logs (not source)
 .playwright-cli/
 /output/playwright/*.png
+/output/
+/formal-longscroll-ready.png
+/formal-longscroll-stage0.png
+/longscroll-state-done.png
+*.bak
 
 # WorkBuddy local workspace data (not source)
 .workbuddy/
@@ -39,6 +44,7 @@ archive/worktrees/
 /art/
 /archive/
 /outputs/
+/design/previews/
 
 # design 默认不纳入，只放行已经核验为当前标准的轻量文档。
 # 新文档必须先由主项目总控核验，再补入本白名单。

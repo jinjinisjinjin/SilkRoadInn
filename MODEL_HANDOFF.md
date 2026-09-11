@@ -15,7 +15,7 @@ git branch --show-current
 git worktree list
 ```
 
-当前应处于 `main`。请保留工作区里的未提交改动；它们是用户已经确认的最新成果，不是临时垃圾，也不要用 `reset`、`checkout`、`clean` 或旧文件覆盖。
+当前应处于 `main`。开始前先看 `git status --short`，不要用 `reset`、`checkout`、`clean` 或旧文件覆盖用户可能刚做的新改动。
 
 阅读顺序：
 
@@ -33,12 +33,12 @@ git worktree list
 | 游戏类型 | 唐代丝绸之路题材的合成经营 Web 游戏原型 |
 | 技术栈 | 纯 HTML、CSS、JavaScript 和 JSON，无框架、无构建步骤 |
 | 当前分支 | `main` |
-| 当前已提交基线 | `83a2c24 fix(audio): trim click and exit shop lead-in` |
+| 当前稳定基线 | `main` 最新提交；接手时用 `git log -1 --oneline` 确认 |
 | 远程 | `https://github.com/jinjinisjinjin/SilkRoadInn.git` |
 | 长期工作区 | 只保留 `/Users/zhuangjin/Documents/Codex/SilkRoadInn` |
 | 正式入口 | `game/playable-v0.1/index.html` |
 
-`83a2c24` 与 `origin/main` 当前一致，但其后还有一批已完成、已验收、尚未提交的本地改动。接手时不要误判为脏文件并丢弃。
+交接完成时 `main` 应与 `origin/main` 一致。若接手时看到新的脏文件，以当时 `git status --short` 为准，先判断它们是否是用户的新工作。
 
 工作区规则：
 
@@ -63,11 +63,15 @@ git worktree list
 | 正式数据 | `game/playable-v0.1/data/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/game/playable-v0.1/data` |
 | 运行时图片和音频 | `game/playable-v0.1/assets/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/game/playable-v0.1/assets` |
 | 22 个修缮场景 | `game/playable-v0.1/repair-scenes/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/game/playable-v0.1/repair-scenes` |
+| 早期棋盘基线 | `game/board-baseline-v1/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/game/board-baseline-v1` |
 | 设计规则 | `design/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/design` |
+| 大体积设计预览 | `design/previews/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/design/previews` |
 | 美术源文件 | `art/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/art` |
-| 本地验收截图 | `output/playwright/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/output/playwright` |
+| 本地验收输出 | `output/` | `/Users/zhuangjin/Documents/Codex/SilkRoadInn/output` |
 
 `game/playable-v0.1/assets/` 才是当前页面直接引用的运行时资源。根目录 `assets/` 和 `art/` 主要是母版、整理稿和美术生产资料，不能只把新图片放在那里而不接入运行目录。
+
+`game/board-baseline-v1/` 是已被 Git 跟踪的早期棋盘基线，体量约 13M，只作历史对照，不是当前入口。`design/previews/` 体量很大，约 1.8G，已被 `.gitignore` 排除；`output/` 是本地验收截图和临时输出，也不作为源代码提交。
 
 ## 4. 正确启动方式
 
@@ -124,11 +128,11 @@ http://localhost:4173/?mode=release
 - 剧情回顾使用原卷轴图标 `game/playable-v0.1/assets/ui/ui_codex_scroll.png`。
 - 食鉴入口是正式静态 DOM，不再由新手引导动态创建；不要恢复 `newPlayerCodexBtn`。
 - 驿站升级不显示解锁弹窗。升级后播放约 2.8 秒暖金光效，只显示“流沙驿升至 LvX”；不要恢复“焕然一新”文字。
-- 四章、22 个修缮节点、章节剧情和剧情回顾已经接通。
+- 四章、22 个修缮节点、章节剧情和剧情回顾已经接通；尚未写入任何纪事时，入口仍可打开，并显示明确的空状态。
 
-## 6. 当前未提交成果
+## 6. 最近已提交成果
 
-接手时的本地工作区包含以下已完成改动：
+`dce68d7` 已包含以下改动：
 
 1. 删除订单自动/免费刷新配置和“开放订单刷新”里程碑承诺，正式规则改为未完成订单持续等待、交付后补位。
 2. 仓位邀请条件从 5 人改为 1 人，按钮文案改为“邀请新用户”。
@@ -139,27 +143,7 @@ http://localhost:4173/?mode=release
 7. 新增并接入食鉴图标 `ui_food_codex_book_v1.png`；原 `ui_codex_scroll.png` 改给剧情回顾使用。
 8. 规则文档和经济校验脚本已同步更新。
 
-主要未提交文件：
-
-```text
-MODEL_HANDOFF.md
-PROJECT_CONTEXT.md
-design/game-rules/丝路食肆_玩法逻辑定稿_v0.1.md
-design/game-rules/丝路食肆_铜币奖励与经济循环_v0.1.md
-game/playable-v0.1/app.js
-game/playable-v0.1/index.html
-game/playable-v0.1/styles.css
-game/playable-v0.1/inn-map-ui.css
-game/playable-v0.1/new-player-guide.js
-game/playable-v0.1/data/codex.json
-game/playable-v0.1/data/economy.json
-game/playable-v0.1/data/orders.json
-game/playable-v0.1/data/progression.json
-game/playable-v0.1/scripts/validate-economy.mjs
-game/playable-v0.1/assets/ui/ui_food_codex_book_v1.png
-```
-
-提交前应再次用 `git status --short` 获取真实清单，以它为准。
+后续提交又整理了交接口径：`PROJECT_CONTEXT.md` 和本文件统一了运行时资产目录、预览启动方式、目录树和仓库清理说明，并为尚无内容的剧情回顾补充了可进入的空状态。接手时仍要重新用 `git status --short` 获取真实清单，以它为准。
 
 ## 7. 明确尚未接入的能力
 
@@ -177,7 +161,13 @@ game/playable-v0.1/assets/ui/ui_food_codex_book_v1.png
 - 不要把“升级后解锁了什么”做成长文字说明。
 - 不要把食鉴入口重新放回隐藏 tabbar 或只在新手引导里生成。
 
-## 8. 常用验收入口
+## 8. 仓库清理状态
+
+- `.gitignore` 已排除本地预览、截图、备份和大体积输出：`design/previews/`、`output/`、`/output/playwright/*.png`、根目录 3 张指定验收 PNG、`*.bak` 等；没有使用会吞掉未来正式素材的 `/*.png` 宽泛规则。
+- 旧版中曾被 Git 跟踪的 `game/playable-v0.1/styles.css.bak`、`output/playwright/` 下 6 张截图、根目录 3 张验收 PNG 已从 Git 索引移除；本地文件可继续留作参考，但之后不再作为源码提交。
+- `.git` 原先约 2.1G、3000 多个松散对象且 `packs: 0`；2026-09-11 已运行 `git gc`，当前约 145M、`packs: 1`。这是本地仓库维护，不改变游戏内容。
+
+## 9. 常用验收入口
 
 | 用途 | URL |
 |---|---|
@@ -193,7 +183,7 @@ game/playable-v0.1/assets/ui/ui_food_codex_book_v1.png
 
 QA 路由使用隔离存档，不应覆盖正式试玩存档。正式验收除功能外，还要查看 390×844 和 320×568 两种手机尺寸，并检查浏览器控制台。
 
-## 9. 提交前检查
+## 10. 提交前检查
 
 ```bash
 cd /Users/zhuangjin/Documents/Codex/SilkRoadInn
@@ -207,7 +197,7 @@ git diff --check
 
 最近一次结果：语法、经济配置、22 节点剧情路由、JSON 解析和 diff 格式均通过；正式页与升级 QA 页控制台均为 0 error、0 warning。食鉴和剧情入口在棋盘/长卷页均已实际点击验证。
 
-## 10. 与用户协作时要保持的习惯
+## 11. 与用户协作时要保持的习惯
 
 - 用户要求的是可直接看的效果时，改完必须打开本地页面实测；不能只看代码后宣称完成。
 - UI 文案尽量短，棋盘和行囊不堆说明文字。

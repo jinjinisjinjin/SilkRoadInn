@@ -3227,9 +3227,9 @@ function storyArchiveChapterForMoment(momentId) {
 function renderStoryArchiveEntry() {
   if (!els.storyArchiveBtn) return;
   const count = unlockedStoryArchiveMoments().length;
-  els.storyArchiveBtn.disabled = count === 0;
-  els.storyArchiveBtn.setAttribute("aria-label", count ? "回顾已解锁剧情" : "剧情尚未解锁");
-  els.storyArchiveBtn.title = count ? "剧情回顾" : "剧情尚未解锁";
+  els.storyArchiveBtn.disabled = false;
+  els.storyArchiveBtn.setAttribute("aria-label", count ? "回顾已解锁剧情" : "查看剧情回顾，尚未有纪事");
+  els.storyArchiveBtn.title = "剧情回顾";
 }
 
 function latestUnlockedStorySegmentId(unlockedIds) {
@@ -3245,7 +3245,14 @@ function renderStoryArchiveRecent(unlockedIds) {
   const segmentId = latestUnlockedStorySegmentId(unlockedIds);
   const segment = segmentId ? player?.segments?.[segmentId] : null;
   const lastStep = segment?.steps?.[segment.steps.length - 1];
-  if (!segmentId || !segment || !lastStep || !els.storyArchiveRecent) return;
+  if (!els.storyArchiveRecent) return;
+  if (!segmentId || !segment || !lastStep) {
+    els.storyArchiveRecent.hidden = true;
+    delete els.storyArchiveRecent.dataset.storyMomentId;
+    delete els.storyArchiveRecent.dataset.storySegmentId;
+    return;
+  }
+  els.storyArchiveRecent.hidden = false;
   const completedMoments = unlockedStoryArchiveMoments(unlockedIds);
   const latestMoment = completedMoments[completedMoments.length - 1];
   const momentEndsHere = latestMoment?.segmentIds[latestMoment.segmentIds.length - 1] === segmentId;
@@ -3264,14 +3271,11 @@ function openStoryArchive(requestedChapter = null) {
   if (!els.storyArchiveModal || !window.SilkRoadChapterStory) return;
   const unlockedIds = unlockedChapterStoryIds();
   const unlockedChapters = [1, 2, 3, 4].filter((chapter) => storyArchiveChapterIsUnlocked(chapter, unlockedIds));
-  if (!unlockedChapters.length) {
-    toast("第一段故事发生后，才会记入驿事。");
-    return;
-  }
+  const availableChapters = unlockedChapters.length ? unlockedChapters : [1];
   const normalizedRequest = Number(requestedChapter);
-  activeStoryArchiveChapter = unlockedChapters.includes(normalizedRequest)
+  activeStoryArchiveChapter = availableChapters.includes(normalizedRequest)
     ? normalizedRequest
-    : unlockedChapters[unlockedChapters.length - 1];
+    : availableChapters[availableChapters.length - 1];
   renderStoryArchive(unlockedIds);
   if (!els.storyArchiveModal.open) {
     resetStoryArchivePageTurn();
@@ -3320,11 +3324,12 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
   const player = window.SilkRoadChapterStory;
   if (!player || !els.storyArchiveChapters || !els.storyArchiveList) return;
   const unlockedMoments = unlockedStoryArchiveMoments(unlockedIds);
-  els.storyArchiveTotal.textContent = `${unlockedMoments.length} 则可回顾`;
+  const archiveIsEmpty = unlockedMoments.length === 0;
+  els.storyArchiveTotal.textContent = archiveIsEmpty ? "尚无纪事" : `${unlockedMoments.length} 则可回顾`;
   renderStoryArchiveRecent(unlockedIds);
   els.storyArchiveChapters.replaceChildren();
   [1, 2, 3, 4].forEach((chapter) => {
-    const unlocked = storyArchiveChapterIsUnlocked(chapter, unlockedIds);
+    const unlocked = storyArchiveChapterIsUnlocked(chapter, unlockedIds) || (archiveIsEmpty && chapter === 1);
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.storyArchiveChapter = String(chapter);
@@ -3370,7 +3375,16 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
     els.storyArchiveList.append(card);
   });
 
-  if (availableMoments.length < chapterMoments.length) {
+  if (!availableMoments.length) {
+    const empty = document.createElement("div");
+    empty.className = "story-archive-empty";
+    const title = document.createElement("strong");
+    const hint = document.createElement("span");
+    title.textContent = "尚未有纪事";
+    hint.textContent = "完成旅程后将在此记录";
+    empty.append(title, hint);
+    els.storyArchiveList.append(empty);
+  } else if (availableMoments.length < chapterMoments.length) {
     const next = document.createElement("div");
     next.className = "story-archive-next";
     next.textContent = "新的纪事将在旅途中写下";
