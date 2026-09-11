@@ -4213,7 +4213,7 @@ function openSelectedPieceDetail() {
     const secondaryOutput = item.generator.pool.find((entry) => entry.itemId !== item.generator.pool[0]?.itemId);
     const outputChanceText = secondaryOutput
       ? `每份有${secondaryOutput.weight}%概率直接产出${byId.get(secondaryOutput.itemId)?.name ?? "较高级奶食"}。`
-      : "本级只产出鲜乳。";
+      : "每份都会产出鲜乳。";
     const productionText = cooldownSeconds > 0
       ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后恢复${batchSize}份库存。`
       : neighborEmptyIndices(state.selectedIndex).length > 0
