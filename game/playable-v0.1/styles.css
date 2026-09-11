@@ -5535,7 +5535,7 @@ button:disabled {
   width: 74px;
   height: 74px;
   filter: drop-shadow(0 4px 3px rgba(61, 34, 18, 0.24));
-  transform: translateY(-1px) scale(0.94);
+  transform: translateY(1px) scale(0.94);
 }
 
 .order-food-art img {

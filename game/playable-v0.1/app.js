@@ -5009,7 +5009,7 @@ function renderOrderFoodDetail() {
     if (!isUnlocked) {
       const lid = document.createElement("img");
       lid.className = "order-food-box-lid";
-      lid.src = "./assets/ui/ui_food_box_lid_locked_v1.png";
+      lid.src = "./assets/ui/ui_food_box_lid_locked_v2.png";
       lid.alt = "";
       art.append(lid);
       routeItem.append(art);
