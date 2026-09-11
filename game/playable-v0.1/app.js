@@ -5007,11 +5007,11 @@ function renderOrderFoodDetail() {
     const art = document.createElement("div");
     art.className = "order-food-art";
     if (!isUnlocked) {
-      const seal = document.createElement("span");
-      seal.className = "order-food-seal";
-      seal.textContent = "封";
-      seal.setAttribute("aria-hidden", "true");
-      art.append(seal);
+      const lid = document.createElement("img");
+      lid.className = "order-food-box-lid";
+      lid.src = "./assets/ui/ui_food_box_lid_locked_v1.png";
+      lid.alt = "";
+      art.append(lid);
       routeItem.append(art);
       els.orderFoodRoute.append(routeItem);
       return;
