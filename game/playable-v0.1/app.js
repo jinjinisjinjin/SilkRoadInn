@@ -25,8 +25,8 @@ const AUDIO_VOLUMES = Object.freeze({
   bgm: 0.24,
 });
 const AUDIO_START_OFFSETS = Object.freeze({
-  click: 0.1,
-  exitShop: 0.05,
+  click: 0.3,
+  exitShop: 0.3,
 });
 const SPECIAL_AUDIO_BUTTONS = [
   "#soundToggleBtn",
@@ -671,6 +671,7 @@ function createGameAudio(src, volume) {
   audio.preload = "auto";
   audio.playsInline = true;
   audio.volume = volume;
+  audio.load();
   return audio;
 }
 
@@ -702,18 +703,41 @@ function playSfx(name, { markSpecific = name !== "click" } = {}) {
   const startOffset = AUDIO_START_OFFSETS[name] ?? 0;
   try {
     audio.pause();
-    if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
-      audio.currentTime = startOffset;
-    } else if (startOffset > 0) {
-      audio.addEventListener("loadedmetadata", () => {
-        try {
-          audio.currentTime = startOffset;
-        } catch { /* the browser may still be finalizing the media timeline */ }
-      }, { once: true });
-    }
-  } catch { /* metadata may still be loading on the first tap */ }
+  } catch { /* the audio element may still be initializing */ }
   audio.volume = AUDIO_VOLUMES[name];
-  audio.play().catch(() => {});
+  const startPlayback = () => {
+    let started = false;
+    const playNow = () => {
+      if (started) return;
+      started = true;
+      audio.play().catch(() => {});
+    };
+    if (startOffset <= 0) {
+      try {
+        audio.currentTime = 0;
+      } catch { /* the browser may still be finalizing the media timeline */ }
+      playNow();
+      return;
+    }
+    const handleSeeked = () => playNow();
+    audio.addEventListener("seeked", handleSeeked, { once: true });
+    try {
+      audio.currentTime = startOffset;
+      if (!audio.seeking && Math.abs(audio.currentTime - startOffset) < 0.01) {
+        audio.removeEventListener("seeked", handleSeeked);
+        playNow();
+      }
+    } catch {
+      audio.removeEventListener("seeked", handleSeeked);
+      playNow();
+    }
+  };
+  if (startOffset > 0 && audio.readyState < HTMLMediaElement.HAVE_METADATA) {
+    audio.addEventListener("loadedmetadata", startPlayback, { once: true });
+    audio.load();
+  } else {
+    startPlayback();
+  }
   if (markSpecific) audioRuntime.lastSpecificAt = performance.now();
 }
 
