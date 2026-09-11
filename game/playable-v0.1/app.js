@@ -3186,22 +3186,7 @@ function buildUpgradeUnlockSummary(level) {
 
 function showUpgradeUnlockSummary() {
   if (!pendingUpgradeUnlock) return;
-  els.upgradeUnlockTitle.textContent = pendingUpgradeUnlock.title;
-  els.upgradeUnlockList.innerHTML = pendingUpgradeUnlock.items
-    .map(
-      (item, index) => `
-        <article>
-          <i>${index + 1}</i>
-          <div>
-            <b>${item.label}</b>
-            <span>${item.text}</span>
-          </div>
-        </article>
-      `,
-    )
-    .join("");
   pendingUpgradeUnlock = null;
-  els.upgradeUnlockModal.showModal();
 }
 
 function canUpgradeInn() {
@@ -5010,6 +4995,11 @@ function unlockCodex(codexId) {
   const item = byId.get(entry.itemId);
   if (!item) return;
   state.unlockedCodex.add(codexId);
+  activeCodexItemId = item.id;
+  els.unlockIcon.src = itemAssetSrc(item);
+  els.unlockName.textContent = entry.name;
+  els.unlockText.textContent = entry.shortText;
+  els.unlockModal.showModal();
 }
 
 function generateItem() {
