@@ -6501,8 +6501,9 @@ function openCodexItemDetail(itemId) {
   els.codexDetailShort.textContent = entry?.shortText ?? `${item.modernName ?? item.name}，已收入《丝路食鉴》。`;
   els.codexDetailNotesTitle.textContent = entry ? "食鉴札记" : "合成记";
   els.codexDetailLong.textContent = entry?.longText ?? recipeHint(item);
-  els.codexDetailSourceSection.hidden = !entry;
-  if (entry) els.codexDetailSource.textContent = `可信度 ${entry.confidence}：${entry.sourceNote}`;
+  const sourceNote = entry?.sourceNote?.trim();
+  els.codexDetailSourceSection.hidden = !sourceNote;
+  els.codexDetailSource.textContent = sourceNote ?? "";
   els.codexDetailModal.showModal();
 }
 
