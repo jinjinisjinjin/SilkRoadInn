@@ -7,12 +7,12 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=currency-panels-v3" />
+    <link rel="stylesheet" href="./styles.css?v=order-tray-items-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v11" />
-    <link rel="stylesheet" href="./inn-map-ui.css?v=inn-map-ui-v6" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=daily-pouch-v1" />
     <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
   </head>
   <body>
@@ -38,6 +38,9 @@
             <span class="resource-pill coin-resource"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="coins">0</b></span>
             <span class="resource-pill plus-resource"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="stamina">0</b><button id="staminaPlusBtn" class="resource-plus" aria-label="补充驼铃">+</button></span>
             <span class="resource-pill plus-resource ruby-resource"><i class="ruby-icon" aria-hidden="true"></i><b id="gems">0</b><button id="gemPlusBtn" class="resource-plus" aria-label="补充红宝石">+</button></span>
+            <button id="dailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="领取今日宝袋" title="领取今日宝袋">
+              <img src="./assets/ui/ui_daily_pomegranate_pouch_v1.png" alt="" />
+            </button>
           </div>
           <div class="order-row">
             <div class="order-side-rail" aria-label="棋盘快捷入口">
@@ -83,6 +86,9 @@
             <span class="inn-resource-pill"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="innCoins">0</b></span>
             <span class="inn-resource-pill"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="innStamina">0</b><button id="innStaminaPlusBtn" class="inn-resource-plus" aria-label="补充驼铃">+</button></span>
             <span class="inn-resource-pill"><i class="ruby-icon" aria-hidden="true"></i><b id="innGems">0</b><button id="innGemPlusBtn" class="inn-resource-plus" aria-label="补充红宝石">+</button></span>
+            <button id="innDailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="领取今日宝袋" title="领取今日宝袋">
+              <img src="./assets/ui/ui_daily_pomegranate_pouch_v1.png" alt="" />
+            </button>
           </div>
           <aside class="inn-chapter-bookmark" aria-label="当前章节">
             <small id="innChapterEyebrow">第一章</small>
@@ -434,6 +440,6 @@
 
     <script src="./chapter-story.js?v=currency-panels-v1"></script>
     <script src="./new-player-guide.js?v=currency-panels-v1"></script>
-    <script src="./app.js?v=currency-panels-v3"></script>
+    <script src="./app.js?v=order-tray-items-v1"></script>
   </body>
 </html>

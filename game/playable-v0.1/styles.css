@@ -196,6 +196,68 @@ button:disabled {
   transform: translate(-50%, -50%) rotate(90deg);
 }
 
+.daily-pouch-entry {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  place-items: center;
+  padding: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 184, 107, 0.72);
+  border-radius: 50%;
+  background: rgba(74, 43, 24, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 217, 0.28),
+    0 2px 6px rgba(49, 27, 16, 0.24);
+  transition: filter 160ms ease, opacity 160ms ease, transform 120ms ease;
+}
+
+.daily-pouch-entry img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.daily-pouch-entry.is-ready {
+  animation: dailyPouchReadyPulse 1.8s ease-in-out infinite;
+}
+
+.daily-pouch-entry.is-ready::after {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #ffe8b0;
+  border-radius: 50%;
+  background: #bd4d36;
+  box-shadow: 0 0 5px rgba(255, 213, 118, 0.82);
+  content: "";
+}
+
+.daily-pouch-entry.is-claimed {
+  opacity: 0.58;
+  filter: saturate(0.62) brightness(0.8);
+}
+
+.daily-pouch-entry:active:not(:disabled) {
+  transform: translateY(1px) scale(0.94);
+}
+
+@keyframes dailyPouchReadyPulse {
+  0%, 100% {
+    box-shadow: inset 0 1px 0 rgba(255, 246, 217, 0.28), 0 2px 6px rgba(49, 27, 16, 0.24);
+  }
+  50% {
+    box-shadow: inset 0 1px 0 rgba(255, 246, 217, 0.36), 0 0 0 2px rgba(224, 176, 81, 0.22), 0 2px 9px rgba(90, 52, 19, 0.32);
+  }
+}
+
 .ruby-icon {
   width: 18px;
   height: 18px;
@@ -2288,6 +2350,16 @@ button:disabled {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
+#app[data-page="board"] .daily-pouch-entry {
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  margin-left: 0;
+  border-color: rgba(244, 207, 134, 0.72);
+  background: rgba(74, 43, 24, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 2px 8px rgba(70, 38, 17, 0.16);
+}
+
 #app[data-page="board"] .ruby-icon {
   width: 18px;
   height: 18px;
@@ -2401,6 +2473,30 @@ button:disabled {
   width: 40px;
   height: 40px;
   pointer-events: none;
+}
+
+#app[data-page="board"] .need-items[data-count="3"] {
+  gap: 4px;
+}
+
+#app[data-page="board"] .need-items[data-count="3"] .order-food-trigger,
+#app[data-page="board"] .need-items[data-count="3"] .order-food-trigger img {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+}
+
+#app[data-page="board"] .need-items[data-count="4"] {
+  left: 8px;
+  right: 8px;
+  gap: 2px;
+}
+
+#app[data-page="board"] .need-items[data-count="4"] .order-food-trigger,
+#app[data-page="board"] .need-items[data-count="4"] .order-food-trigger img {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
 }
 
 #app[data-page="board"] .order-food-needed {

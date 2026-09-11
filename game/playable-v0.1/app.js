@@ -89,6 +89,8 @@ const BONUS_RUBY_MAX_LEVEL = 4;
 const BONUS_RUBY_VALUES = Object.freeze([0, 1, 3, 8, 25]);
 const BONUS_RUBY_SCALE_PERCENT = Object.freeze([0, 50, 70, 70, 70]);
 const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
+const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
+const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
 const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
   generator: 6,
@@ -221,6 +223,7 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/ui_coin_copper.png",
   "./assets/ui/ui_camel_bell_stamina.png",
   "./assets/ui/ui_bag_inventory.png",
+  "./assets/ui/ui_daily_pomegranate_pouch_v1.png",
   "./assets/ui/ui_kitchen_entry.png",
   "./assets/ui/order_gift_coffer_v1.png",
   "./assets/ui/bonus_ruby_lv01.png",
@@ -330,6 +333,7 @@ const state = {
   unlockedStorageSlots: STORAGE_FREE_SLOTS,
   staminaPurchaseDay: "",
   staminaPurchasesToday: 0,
+  dailyPouchClaimDay: "",
   innLevel: 1,
   ownedFurniture: [],
   placedFurniture: [],
@@ -358,6 +362,7 @@ const els = {
   selectedDetailBtn: document.querySelector("#selectedDetailBtn"),
   staminaPlusBtn: document.querySelector("#staminaPlusBtn"),
   gemPlusBtn: document.querySelector("#gemPlusBtn"),
+  dailyPouchBtn: document.querySelector("#dailyPouchBtn"),
   storageBtn: document.querySelector("#storageBtn"),
   stationHudBtn: document.querySelector("#stationHudBtn"),
   repairSideBtn: document.querySelector("#repairSideBtn"),
@@ -379,6 +384,7 @@ const els = {
   innGems: document.querySelector("#innGems"),
   innStaminaPlusBtn: document.querySelector("#innStaminaPlusBtn"),
   innGemPlusBtn: document.querySelector("#innGemPlusBtn"),
+  innDailyPouchBtn: document.querySelector("#innDailyPouchBtn"),
   innScene: document.querySelector("#innScene"),
   innScoreText: document.querySelector("#innScoreText"),
   innUpgradeText: document.querySelector("#innUpgradeText"),
@@ -1413,6 +1419,7 @@ function defaultState() {
     unlockedStorageSlots: STORAGE_FREE_SLOTS,
     staminaPurchaseDay: currentLocalDayKey(),
     staminaPurchasesToday: 0,
+    dailyPouchClaimDay: "",
     innLevel: 1,
     ownedFurniture: [],
     placedFurniture: Array(6).fill(null),
@@ -1476,6 +1483,7 @@ function loadState() {
     staminaPurchasesToday: data.staminaPurchaseDay === currentLocalDayKey()
       ? Math.max(0, Math.floor(Number(data.staminaPurchasesToday) || 0))
       : 0,
+    dailyPouchClaimDay: typeof data.dailyPouchClaimDay === "string" ? data.dailyPouchClaimDay : "",
     innLevel: data.innLevel ?? 1,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
@@ -1555,6 +1563,7 @@ function saveState() {
       unlockedStorageSlots: state.unlockedStorageSlots,
       staminaPurchaseDay: state.staminaPurchaseDay,
       staminaPurchasesToday: state.staminaPurchasesToday,
+      dailyPouchClaimDay: state.dailyPouchClaimDay,
       innLevel: state.innLevel,
       ownedFurniture: state.ownedFurniture,
       placedFurniture: state.placedFurniture,
@@ -1746,6 +1755,7 @@ function ensureStarterGenerator() {
 function tickStamina() {
   tickGenerators();
   tickBonusBubbles();
+  renderDailyPouchButtons();
   if (state.stamina >= state.staminaMax) {
     state.lastTick = Date.now();
     saveState();
@@ -1768,6 +1778,7 @@ function bindEvents() {
   els.selectedDetailBtn?.addEventListener("click", openSelectedPieceDetail);
   els.staminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
+  els.dailyPouchBtn?.addEventListener("click", claimDailyPouch);
   els.storageBtn?.addEventListener("click", openStorage);
   els.stationHudBtn?.addEventListener("click", handleStationButton);
   els.repairSideBtn?.addEventListener("click", handleStationButton);
@@ -1778,6 +1789,7 @@ function bindEvents() {
   els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.innGemPlusBtn?.addEventListener("click", openRubyRecharge);
+  els.innDailyPouchBtn?.addEventListener("click", claimDailyPouch);
   els.storageInviteBtn?.addEventListener("click", explainStorageInvite);
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
   els.staminaPurchaseConfirm?.addEventListener("click", purchaseStamina);
@@ -1947,6 +1959,7 @@ function render() {
   els.coins.textContent = state.coins;
   els.stamina.textContent = state.stamina;
   if (els.gems) els.gems.textContent = state.gems ?? 0;
+  renderDailyPouchButtons();
   if (els.codexProgress) els.codexProgress.textContent = `${state.unlockedCodex.size}/8`;
   els.generateBtn.disabled = !hasEmptyCell();
   renderOrders();
@@ -3386,7 +3399,26 @@ function registerOrderProgressPacks() {
       iconKey: "ui/order_gift_coffer_v1",
       source: "order_progress_gift",
     });
+    byId.set(DAILY_POUCH_ITEM_ID, {
+      ...starterGift,
+      id: DAILY_POUCH_ITEM_ID,
+      name: "西域晨礼宝袋",
+      modernName: "每日领取的葡萄石榴纹锦囊",
+      iconKey: "ui/ui_daily_pomegranate_pouch_v1",
+      source: "daily_reward_pouch",
+    });
   }
+  GIFT_PACKS[DAILY_POUCH_PACK_ID] = {
+    id: DAILY_POUCH_PACK_ID,
+    name: "西域晨礼宝袋",
+    itemId: DAILY_POUCH_ITEM_ID,
+    description: "每日刷新，可开出铜板与驼铃。",
+    dailyReward: true,
+    rewards: [
+      { type: "coins", amount: 8 },
+      { type: "stamina", amount: 10 },
+    ],
+  };
   const entries = state.progressionConfig?.orderProgressPacks ?? [];
   entries.forEach((entry) => {
     GIFT_PACKS[entry.id] = {
@@ -3748,29 +3780,35 @@ function renderOrders() {
 
     const foods = document.createElement("div");
     foods.className = "need-items";
+    const totalFoodCount = demandStates.reduce(
+      (sum, { demand }) => sum + Math.max(1, Math.floor(Number(demand.quantity) || 1)),
+      0,
+    );
+    foods.dataset.count = String(totalFoodCount);
     demandStates.forEach(({ item, demand }) => {
-      const trigger = document.createElement("button");
-      trigger.type = "button";
-      trigger.className = "order-food-trigger";
-      trigger.setAttribute("aria-label", `查看${item.name}合成路线，需要${demand.quantity}份`);
-      trigger.title = `${item.name} · 查看合成路线`;
-      const f = document.createElement("img");
-      f.src = itemAssetSrc(item);
-      f.alt = item.name;
-      trigger.append(f);
-      if (demand.quantity > 1) {
-        const needed = document.createElement("span");
-        needed.className = "order-food-needed";
-        needed.textContent = `×${demand.quantity}`;
-        needed.setAttribute("aria-hidden", "true");
-        trigger.append(needed);
+      const quantity = Math.max(1, Math.floor(Number(demand.quantity) || 1));
+      for (let copyIndex = 0; copyIndex < quantity; copyIndex += 1) {
+        const trigger = document.createElement("button");
+        trigger.type = "button";
+        trigger.className = "order-food-trigger";
+        trigger.setAttribute(
+          "aria-label",
+          quantity > 1
+            ? `查看${item.name}合成路线，第${copyIndex + 1}份，共${quantity}份`
+            : `查看${item.name}合成路线，需要1份`,
+        );
+        trigger.title = `${item.name} · 查看合成路线`;
+        const f = document.createElement("img");
+        f.src = itemAssetSrc(item);
+        f.alt = item.name;
+        trigger.append(f);
+        trigger.addEventListener("click", (event) => {
+          event.stopPropagation();
+          openOrderFoodDetail(order.id, item.id);
+        });
+        trigger.addEventListener("keydown", (event) => event.stopPropagation());
+        foods.append(trigger);
       }
-      trigger.addEventListener("click", (event) => {
-        event.stopPropagation();
-        openOrderFoodDetail(order.id, item.id);
-      });
-      trigger.addEventListener("keydown", (event) => event.stopPropagation());
-      foods.append(trigger);
     });
 
     const deliver = document.createElement("button");
@@ -4057,7 +4095,7 @@ function renderSelected() {
     const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
     els.selectedName.textContent = pack?.name ?? item.name;
     els.selectedText.textContent = pack
-      ? pack.orderProgress || pack.chapterCompletion
+      ? opensGiftPackAtOnce(pack)
         ? `点击一次打开，${giftRewardOutputCount(pack)}份奖励会随机落入空格。`
         : `点击礼盒包，每次掉落1份奖励。还剩${pack.rewards.length - giftState.nextRewardIndex}份。`
       : item.modernName;
@@ -4235,6 +4273,33 @@ function renderBagButton() {
     els.rewardBagBadge.hidden = rewardCount === 0;
     els.rewardBagBadge.textContent = rewardCount > 99 ? "99+" : String(rewardCount);
   }
+}
+
+function hasClaimedDailyPouch() {
+  return state.dailyPouchClaimDay === currentLocalDayKey();
+}
+
+function renderDailyPouchButtons() {
+  const claimed = hasClaimedDailyPouch();
+  [els.dailyPouchBtn, els.innDailyPouchBtn].filter(Boolean).forEach((button) => {
+    button.disabled = claimed;
+    button.classList.toggle("is-ready", !claimed);
+    button.classList.toggle("is-claimed", claimed);
+    const label = claimed ? "今日宝袋已领取" : "领取今日宝袋";
+    button.setAttribute("aria-label", label);
+    button.title = label;
+  });
+}
+
+function claimDailyPouch() {
+  if (hasClaimedDailyPouch()) {
+    toast("今日宝袋已经领取，明日再来吧。");
+    return;
+  }
+  state.dailyPouchClaimDay = currentLocalDayKey();
+  grantGiftPack(DAILY_POUCH_PACK_ID, 1);
+  render();
+  saveState();
 }
 
 function renderInnButton() {
@@ -6161,7 +6226,7 @@ function placeGiftPackOnBoard(packId) {
   state.giftBoxStates[boardIndex] = { packId, nextRewardIndex: 0 };
   state.selectedIndex = boardIndex;
   state.pulseIndex = boardIndex;
-  const opensAtOnce = pack.orderProgress || pack.chapterCompletion;
+  const opensAtOnce = opensGiftPackAtOnce(pack);
   keeper(`${pack.name}已随机落到案板上。${opensAtOnce ? "点击一次即可打开。" : "点击礼盒包，每次取一份奖励。"}`);
   clearPulseSoon();
   render();
@@ -6189,6 +6254,10 @@ function giftRewardOutputCount(pack) {
     if (reward.type === "stamina") return sum;
     return sum + (reward.quantity ?? 1);
   }, 0);
+}
+
+function opensGiftPackAtOnce(pack) {
+  return Boolean(pack?.orderProgress || pack?.chapterCompletion || pack?.dailyReward);
 }
 
 function mappedGiftMaterialId(pack) {
@@ -6275,7 +6344,7 @@ function openGiftBoxOnBoard(index) {
     toast("这个礼盒包数据还没配置。");
     return;
   }
-  if (pack.orderProgress || pack.chapterCompletion) {
+  if (opensGiftPackAtOnce(pack)) {
     openOrderProgressGiftBox(index, pack);
     return;
   }
