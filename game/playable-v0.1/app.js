@@ -3022,7 +3022,7 @@ function renderInnPage() {
   els.innLevelName.replaceChildren(
     ...chapterTitleLines.map((line) => Object.assign(document.createElement("span"), { textContent: line })),
   );
-  els.innChapterProgress.textContent = `修缮 ${completedChapterMilestones}/${chapterMilestones.length}`;
+  els.innChapterProgress.textContent = `修缮 ${completedChapterMilestones}-${chapterMilestones.length}`;
   els.innCoins.textContent = state.coins;
   els.innStamina.textContent = state.stamina;
   els.innGems.textContent = state.gems ?? 0;
