@@ -58,6 +58,29 @@
     paint();
   }
 
+  function focusRepairPart(_index, point) {
+    const targetX = Number(point?.x);
+    const targetY = Number(point?.y);
+    if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return false;
+    scale = minScale * (config.initial.zoom || 1.08);
+    x = innerWidth * 0.5 - targetX * scale;
+    y = innerHeight * 0.52 - targetY * scale;
+    paint();
+    return true;
+  }
+
+  function showSceneOverview() {
+    const padding = Math.min(28, Math.max(10, innerWidth * 0.035));
+    scale = Math.min(
+      (innerWidth - padding * 2) / width,
+      (innerHeight - padding * 2) / height,
+    );
+    x = (innerWidth - width * scale) / 2;
+    y = (innerHeight - height * scale) / 2;
+    paint();
+    return true;
+  }
+
   function pointerPair() {
     const values = [...pointers.values()];
     const dx = values[0].x - values[1].x;
@@ -79,17 +102,23 @@
     spark.addEventListener("animationend", () => spark.remove());
   }
 
-  function restore(index, point) {
+  function restore(index, point, options = {}) {
     if (restored.has(index)) return;
+    const restoring = Boolean(options.restoring);
     restored.add(index);
     overlays
       .querySelector(`.old-overlay[data-index="${index}"]`)
       .classList.add("is-restored");
-    showSpark(point);
+    if (!restoring) showSpark(point);
 
     if (restored.size === config.repairs.length) {
-      completion.classList.remove("is-dismissing");
-      completion.hidden = false;
+      const showCompletion = () => {
+        completion.classList.remove("is-dismissing");
+        completion.hidden = false;
+      };
+      const revealDelay = restoring ? 0 : Math.max(0, Number(options.revealDelayMs) || 0);
+      if (revealDelay) window.setTimeout(showCompletion, revealDelay);
+      else showCompletion();
     }
   }
 
@@ -108,7 +137,11 @@
       });
     });
 
-    if (best) restore(best.index, best.target);
+    if (best) {
+      const point = { x: best.target[0], y: best.target[1] };
+      if (repairEconomy) repairEconomy.request(best.index, point);
+      else restore(best.index, best.target);
+    }
     return Boolean(best);
   }
 
@@ -218,6 +251,18 @@
   });
 
   window.addEventListener("resize", initialFrame);
+  const repairEconomy = window.SilkRoadRepairEconomy?.register({
+    repairId: embeddedRepairId,
+    world,
+    partCount: config.repairs.length,
+    parts: config.repairs,
+    focus: focusRepairPart,
+    overview: showSceneOverview,
+    apply(index, point, options) {
+      return restore(index, [point.x, point.y], options);
+    },
+  });
+
   window.__repairPreview = {
     getState: () => ({
       restored: restored.size,

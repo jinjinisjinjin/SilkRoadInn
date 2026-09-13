@@ -5,11 +5,29 @@
       "level": 1,
       "name": "破旧流沙驿",
       "repairTarget": 60,
-      "upgradeCost": 120,
+      "upgradeCost": 1200,
       "tasks": [
-        { "label": "门面修整", "slots": ["front"], "count": 1 },
-        { "label": "接待布置", "slots": ["floor"], "count": 1 },
-        { "label": "灯火照明", "furnitureIds": ["cinnabar_lantern"], "count": 1 }
+        {
+          "label": "门面修整",
+          "slots": [
+            "front"
+          ],
+          "count": 1
+        },
+        {
+          "label": "接待布置",
+          "slots": [
+            "floor"
+          ],
+          "count": 1
+        },
+        {
+          "label": "灯火照明",
+          "furnitureIds": [
+            "cinnabar_lantern"
+          ],
+          "count": 1
+        }
       ],
       "story": "门前风沙还重，先添桌椅与灯盏，让旅人愿意停脚。",
       "upgradeStory": "旧门帘换下，炉火重新照到门外。流沙驿从破旧驿站，变成能正式迎客的敦煌食肆。",
@@ -24,29 +42,77 @@
       "level": 2,
       "name": "翻新敦煌食肆",
       "repairTarget": 160,
-      "upgradeCost": 420,
+      "upgradeCost": 4200,
       "tasks": [
-        { "label": "后厨分区", "slots": ["kitchen"], "count": 1 },
-        { "label": "香料陈设", "slots": ["wall"], "count": 1 },
-        { "label": "接待升级", "slots": ["floor", "front"], "count": 3 }
+        {
+          "label": "后厨分区",
+          "slots": [
+            "kitchen"
+          ],
+          "count": 1
+        },
+        {
+          "label": "香料陈设",
+          "slots": [
+            "wall"
+          ],
+          "count": 1
+        },
+        {
+          "label": "接待升级",
+          "slots": [
+            "floor",
+            "front"
+          ],
+          "count": 3
+        }
       ],
       "story": "后厨渐渐有了章法，可以分出奶食、香料与肉食小案。",
       "upgradeStory": "商旅不再只是买饼就走，开始在流沙驿里围桌歇脚。",
-      "unlocks": ["六类生成器持续并存", "跨品类混合订单扩充", "楼馆与双院修缮", "远路商旅订单"]
+      "unlocks": [
+        "六类生成器持续并存",
+        "跨品类混合订单扩充",
+        "楼馆与双院修缮",
+        "远路商旅订单"
+      ]
     },
     {
       "level": 3,
       "name": "丝路名店",
       "repairTarget": 320,
-      "upgradeCost": 1200,
+      "upgradeCost": 12000,
       "tasks": [
-        { "label": "壁画陈设", "furnitureIds": ["mural_corner"], "count": 1 },
-        { "label": "雅间装点", "slots": ["wall", "front"], "count": 3 },
-        { "label": "宴客陈设", "slots": ["floor", "kitchen"], "count": 3 }
+        {
+          "label": "壁画陈设",
+          "furnitureIds": [
+            "mural_corner"
+          ],
+          "count": 1
+        },
+        {
+          "label": "雅间装点",
+          "slots": [
+            "wall",
+            "front"
+          ],
+          "count": 3
+        },
+        {
+          "label": "宴客陈设",
+          "slots": [
+            "floor",
+            "kitchen"
+          ],
+          "count": 3
+        }
       ],
       "story": "厢房、酒水、壁画角逐渐齐备，远路客人开始专程寻来。",
       "upgradeStory": "流沙驿的名声顺着驼铃传向更远的商路。",
-      "unlocks": ["典藏图鉴", "高阶宴席订单", "Lv4预告"]
+      "unlocks": [
+        "典藏图鉴",
+        "高阶宴席订单",
+        "Lv4预告"
+      ]
     },
     {
       "level": 4,
@@ -63,7 +129,7 @@
     {
       "id": "simple_table",
       "name": "榆木小案",
-      "cost": 35,
+      "cost": 350,
       "repairValue": 15,
       "unlockLevel": 1,
       "slot": "floor",
@@ -72,7 +138,7 @@
     {
       "id": "ochre_curtain",
       "name": "赭黄门帘",
-      "cost": 45,
+      "cost": 450,
       "repairValue": 18,
       "unlockLevel": 1,
       "slot": "front",
@@ -81,7 +147,7 @@
     {
       "id": "cinnabar_lantern",
       "name": "朱砂小灯",
-      "cost": 60,
+      "cost": 600,
       "repairValue": 24,
       "unlockLevel": 1,
       "slot": "front",
@@ -90,7 +156,7 @@
     {
       "id": "stone_mill",
       "name": "石磨角落",
-      "cost": 90,
+      "cost": 900,
       "repairValue": 35,
       "unlockLevel": 2,
       "slot": "kitchen",
@@ -99,7 +165,7 @@
     {
       "id": "spice_shelf",
       "name": "香料木架",
-      "cost": 110,
+      "cost": 1100,
       "repairValue": 42,
       "unlockLevel": 2,
       "slot": "wall",
@@ -108,7 +174,7 @@
     {
       "id": "mural_corner",
       "name": "忍冬纹壁角",
-      "cost": 180,
+      "cost": 1800,
       "repairValue": 70,
       "unlockLevel": 3,
       "slot": "wall",

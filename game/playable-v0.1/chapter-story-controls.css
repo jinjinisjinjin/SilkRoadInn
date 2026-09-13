@@ -61,3 +61,56 @@
   font-size: 30px;
   line-height: 1;
 }
+
+/* Keep the story's last line and advance control inside the visible phone viewport. */
+.chapter-story-modal {
+  position: fixed;
+  inset: var(--chapter-story-viewport-top, 0px) 0 auto;
+  height: min(100vh, var(--chapter-story-viewport-height, 100vh));
+  max-height: min(100vh, var(--chapter-story-viewport-height, 100vh));
+  margin: 0 auto;
+}
+
+@supports (height: 100svh) {
+  .chapter-story-modal {
+    height: min(100svh, var(--chapter-story-viewport-height, 100svh));
+    max-height: min(100svh, var(--chapter-story-viewport-height, 100svh));
+  }
+}
+
+.chapter-story-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: calc(100% - 116px - env(safe-area-inset-top));
+}
+
+.chapter-story-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.chapter-story-copy > p {
+  flex: 1 1 76px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chapter-story-footer {
+  flex: none;
+}
+
+.chapter-story-reward {
+  max-height: calc(100% - 96px - env(safe-area-inset-top));
+  overflow-y: auto;
+}
+
+@media (max-height: 700px) {
+  .chapter-story-copy > p {
+    flex-basis: 62px;
+  }
+}

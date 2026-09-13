@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>驼铃恢复倒计时 · 三种设计</title>
+  <style>
+    :root { color-scheme: light; font-family: "Songti SC", "Noto Serif CJK SC", serif; color: #442d1e; background: #efe2c6; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px 16px 48px; }
+    main { max-width: 850px; margin: auto; }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    .intro { margin: 0 0 24px; color: #785a40; line-height: 1.65; }
+    .card { margin: 0 0 22px; padding: 16px; border: 1px solid #c8a671; border-radius: 18px; background: #f9efd8; box-shadow: 0 8px 25px #58371d1c; }
+    .card h2 { display: flex; align-items: baseline; gap: 12px; margin: 0 0 13px; font-size: 19px; }
+    .card h2 small { font-weight: 400; font-size: 13px; color: #7e6245; }
+    .scene { position: relative; height: 190px; overflow: hidden; border: 5px solid #7a5235; border-radius: 15px; background: linear-gradient(#3b29182b,#5e38124d), url("../assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png") center 44% / 580px auto; }
+    .hud { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: flex-start; gap: 6px; white-space: nowrap; }
+    .pill { display: flex; align-items: center; height: 48px; border: 2px solid #af8c5d; border-radius: 26px; background: #533c2b; box-shadow: inset 0 1px #f3daac44, 0 3px 8px #29180f7c; color: #fff3d2; }
+    .coin { padding: 0 12px; font-size: 22px; font-weight: bold; }
+    .coin::before { content: "◇"; display: inline-grid; place-items: center; width: 30px; height: 30px; margin-right: 7px; border: 3px double #b48c55; border-radius: 50%; color: #f2cd86; font-size: 18px; }
+    .stamina { position: relative; gap: 7px; padding: 0 5px 0 8px; font-size: 21px; font-weight: bold; }
+    .bell { width: 31px; height: 31px; object-fit: contain; }
+    .plus { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 2px solid #c9dfcb; border-radius: 50%; background: #67977d; color: #fff; font: bold 29px/1 Arial, sans-serif; }
+    .gem { padding: 0 10px; font-size: 21px; font-weight: bold; }
+    .gem::before { content: "◆"; color: #bb6d70; font-size: 27px; margin-right: 8px; text-shadow: 0 1px #e7b3b3; }
+    .option-a .stamina { padding-right: 5px; }
+    .option-a .timer { position: absolute; top: 48px; left: 8px; padding: 4px 9px; border-radius: 0 0 10px 10px; background: #684b31; border: 1px solid #bd9a60; border-top: 0; color: #f5d69a; font: 600 12px/1.2 Arial, sans-serif; }
+    .option-b .stamina { height: 60px; min-width: 148px; padding-bottom: 13px; }
+    .option-b .timer { position: absolute; left: 13px; bottom: 5px; right: 10px; display: flex; justify-content: space-between; align-items: center; gap: 4px; color: #f2d295; font: 600 11px/1 Arial, sans-serif; }
+    .option-b .track { position: absolute; left: 12px; right: 12px; bottom: 18px; height: 3px; border-radius: 4px; background: #a4825e; }
+    .option-b .track::before { content: ""; display: block; width: 15%; height: 100%; border-radius: inherit; background: #f1c672; }
+    .option-c .stamina { min-width: 151px; gap: 5px; }
+    .option-c .ring { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: conic-gradient(#efca79 15%, #765839 15%); }
+    .option-c .ring img { width: 31px; height: 31px; border-radius: 50%; background: #513927; }
+    .option-c .time { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; margin-left: 1px; font: 600 11px/1 Arial, sans-serif; color: #d5ae75; }
+    .option-c .time strong { color: #ffe1a4; font-size: 14px; }
+    .note { margin: 12px 2px 0; font-size: 14px; line-height: 1.6; color: #73583e; }
+    .rules { margin-top: 20px; padding: 14px 18px; border-left: 3px solid #aa7748; background: #fff7e6; line-height: 1.7; font-size: 14px; }
+    @media (max-width: 520px) { body { padding: 18px 10px 36px; } .card { padding: 11px; } .scene { height: 165px; } .hud { left: 10px; transform: none; gap: 4px; } .gem { display: none; } .coin { font-size: 17px; padding: 0 8px; } .pill { height: 43px; } .stamina { font-size: 18px; } .plus { width: 30px; height: 30px; } .option-a .timer { top: 43px; } .option-b .stamina { height: 57px; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>驼铃恢复倒计时</h1>
+  <p class="intro">三种候选样式，仅供选择；尚未接入游戏。以“22 / 100、距离下一点恢复还有 01:42”为例。</p>
+  <section class="card option-a">
+    <h2>A · 下挂时签 <small>推荐：清楚，也保留原按钮尺寸</small></h2>
+    <div class="scene"><div class="hud"><div class="pill coin">99990</div><div class="pill stamina"><img class="bell" src="../assets/ui/ui_camel_bell_stamina.png" alt="" /><span>22</span><span class="plus">+</span><span class="timer">+1 · 01:42</span></div><div class="pill gem">36</div></div></div>
+    <p class="note">计时牌挂在驼铃下方，数字一眼可见；不改变资源栏原有高度。</p>
+  </section>
+  <section class="card option-b">
+    <h2>B · 细线进度 <small>时间与进度一起表达</small></h2>
+    <div class="scene"><div class="hud"><div class="pill coin">99990</div><div class="pill stamina"><img class="bell" src="../assets/ui/ui_camel_bell_stamina.png" alt="" /><span>22</span><span class="plus">+</span><span class="track"></span><span class="timer"><span>下次 +1</span><span>01:42</span></span></div><div class="pill gem">36</div></div></div>
+    <p class="note">驼铃按钮略增高，底部细线随两分钟流逝填满；适合强调“正在恢复”。</p>
+  </section>
+  <section class="card option-c">
+    <h2>C · 铃边环计 <small>最紧凑，信息都在按钮内</small></h2>
+    <div class="scene"><div class="hud"><div class="pill coin">99990</div><div class="pill stamina"><span class="ring"><img src="../assets/ui/ui_camel_bell_stamina.png" alt="" /></span><span>22</span><span class="time"><span>下次 +1</span><strong>01:42</strong></span><span class="plus">+</span></div><div class="pill gem">36</div></div></div>
+    <p class="note">铃铛外圈走完一圈恢复一点，时间写在数量右侧；资源栏会稍宽。</p>
+  </section>
+  <p class="rules">三案统一规则：未满 100 时显示“下一点”的 02:00 倒计时；恢复 1 点后重新从 02:00 开始；满 100 时隐藏倒计时，显示“已满”。</p>
+</main>
+</body>
+</html>

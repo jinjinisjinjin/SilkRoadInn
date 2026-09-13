@@ -29,7 +29,7 @@
             "orders": [
               "order_001_guard_lubing"
             ],
-            "coins": 120
+            "coins": 1200
           }
         },
         {
@@ -47,7 +47,7 @@
             "orders": [
               "order_011_dunhuang_woman_lubing"
             ],
-            "coins": 175
+            "coins": 1600
           }
         },
         {
@@ -65,7 +65,7 @@
             "orders": [
               "order_005_monk_humabing"
             ],
-            "coins": 180
+            "coins": 2000
           }
         }
       ]
@@ -90,7 +90,7 @@
             "orders": [
               "order_014_musician_youhubing"
             ],
-            "coins": 80
+            "coins": 2100
           }
         },
         {
@@ -108,7 +108,7 @@
             "orders": [
               "order_004_changan_lubing"
             ],
-            "coins": 95
+            "coins": 2300
           }
         },
         {
@@ -126,7 +126,7 @@
             "orders": [
               "order_006_camel_worker_youhubing"
             ],
-            "coins": 110
+            "coins": 2500
           }
         },
         {
@@ -144,7 +144,7 @@
             "orders": [
               "order_007_persian_attendant_congchi"
             ],
-            "coins": 130
+            "coins": 2800
           }
         },
         {
@@ -162,7 +162,7 @@
             "orders": [
               "order_008_uighur_yangrou"
             ],
-            "coins": 150
+            "coins": 3100
           }
         },
         {
@@ -181,7 +181,7 @@
             "orders": [
               "order_009_mystery_suibing"
             ],
-            "coins": 170
+            "coins": 3500
           }
         }
       ]
@@ -206,7 +206,7 @@
             "orders": [
               "order_010_caravan_gulouzi"
             ],
-            "coins": 190
+            "coins": 3900
           }
         },
         {
@@ -224,7 +224,7 @@
             "orders": [
               "order_015_monk_rumi"
             ],
-            "coins": 215
+            "coins": 4300
           }
         },
         {
@@ -242,7 +242,7 @@
             "orders": [
               "order_016_uighur_milk"
             ],
-            "coins": 245
+            "coins": 4800
           }
         },
         {
@@ -260,7 +260,7 @@
             "orders": [
               "order_017_temple_laojiang"
             ],
-            "coins": 275
+            "coins": 5300
           }
         },
         {
@@ -278,7 +278,7 @@
             "orders": [
               "order_018_traveler_lubing_rumi"
             ],
-            "coins": 310
+            "coins": 5900
           }
         },
         {
@@ -297,7 +297,7 @@
             "orders": [
               "order_019_sogdian_huma_laojiang"
             ],
-            "coins": 350
+            "coins": 6600
           }
         }
       ]
@@ -322,7 +322,7 @@
             "orders": [
               "order_lv4_south_shed_stocking"
             ],
-            "coins": 460
+            "coins": 7400
           }
         },
         {
@@ -340,7 +340,7 @@
             "orders": [
               "order_lv4_central_market_feast"
             ],
-            "coins": 520
+            "coins": 8300
           }
         },
         {
@@ -360,7 +360,7 @@
             "orders": [
               "order_lv4_south_street_trade"
             ],
-            "coins": 590
+            "coins": 9300
           }
         },
         {
@@ -378,7 +378,7 @@
             "orders": [
               "order_021_lanes_continuation"
             ],
-            "coins": 670
+            "coins": 10400
           }
         },
         {
@@ -396,7 +396,7 @@
             "orders": [
               "order_022_shed_continuation"
             ],
-            "coins": 760
+            "coins": 11600
           }
         },
         {
@@ -414,7 +414,7 @@
             "orders": [
               "order_023_court_continuation"
             ],
-            "coins": 860
+            "coins": 12900
           }
         },
         {
@@ -432,7 +432,7 @@
             "orders": [
               "order_024_lantern_continuation"
             ],
-            "coins": 980
+            "coins": 14300
           }
         }
       ]

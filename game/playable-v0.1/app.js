@@ -1,4 +1,5 @@
 const DATA_PATH = "./data/";
+const STAMINA_RECOVERY_MINUTES = 2;
 const AUDIO_PATH = "./assets/audio/";
 const AUDIO_MUTED_KEY = "silkroad_tavern_audio_muted_v1";
 const AUDIO_BGM_ENABLED_KEY = "silkroad_tavern_audio_bgm_enabled_v1";
@@ -40,6 +41,10 @@ const SPECIAL_AUDIO_BUTTONS = [
 const QA_MODE = new URLSearchParams(location.search).get("qa");
 const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
+const GENERATOR_CHAIN_QA_MODE = QA_MODE === "generator-chain-v1";
+const GENERATOR_CHAIN_QA_CATEGORY = new URLSearchParams(location.search).get("category") || "mill";
+const GENERATOR_CHAIN_QA_RESET = GENERATOR_CHAIN_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const ORDER_GIFT_QA_MODE = QA_MODE === "order-gift-generator-v1";
 const RUBY_DISPLAY_QA_MODE = QA_MODE === "ruby-display-v1";
 const STAMINA_POUCH_QA_MODE = QA_MODE === "stamina-pouch-v1";
@@ -56,6 +61,9 @@ const CHAPTER_STORY_QA_MODE = QA_MODE === "chapter-story-v1";
 const STORY_ARCHIVE_QA_MODE = QA_MODE === "story-archive-v1";
 const NEW_PLAYER_GUIDE_QA_MODE = QA_MODE === "new-player-guide-v1";
 const UPGRADE_REVEAL_QA_MODE = QA_MODE === "upgrade-reveal-v1";
+const LONGSCROLL_CAST_QA_MODE = QA_MODE === "longscroll-cast-v1";
+const LONGSCROLL_CAST_QA_UNLOCK = LONGSCROLL_CAST_QA_MODE
+  && new URLSearchParams(location.search).get("unlock") === "1";
 const FOOD_CODEX_PREVIEW = new URLSearchParams(location.search).get("preview") === "food-codex-matrix-v1";
 const STORY_ARCHIVE_QA_AUTOPEN = STORY_ARCHIVE_QA_MODE
   && new URLSearchParams(location.search).get("open") === "1";
@@ -70,6 +78,8 @@ const CHAPTER_STORY_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.s
 const STORY_ARCHIVE_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const STORY_ARCHIVE_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
 const UPGRADE_REVEAL_QA_LEVEL = Math.max(2, Math.min(4, Math.trunc(Number(new URLSearchParams(location.search).get("level"))) || 2));
+const LONGSCROLL_CAST_QA_SCENE_MAX = 22;
+const LONGSCROLL_CAST_QA_SCENE = Math.max(1, Math.min(LONGSCROLL_CAST_QA_SCENE_MAX, Math.trunc(Number(new URLSearchParams(location.search).get("scene"))) || 1));
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
 const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
@@ -87,9 +97,11 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE;
+const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE;
 const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
+  : LONGSCROLL_CAST_QA_MODE
+  ? `silkroad_tavern_proto_v02_qa_longscroll_cast_v1_scene${LONGSCROLL_CAST_QA_SCENE}`
   : NEW_PLAYER_GUIDE_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_new_player_guide_v1"
   : STORY_ARCHIVE_QA_MODE
@@ -104,6 +116,8 @@ const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
       ? "silkroad_tavern_proto_v02_qa_generator_system_v2"
     : GENERATOR_MATERIAL_QA_MODE
       ? "silkroad_tavern_proto_v02_qa_generator_materials_v03"
+    : GENERATOR_CHAIN_QA_MODE
+      ? `silkroad_tavern_proto_v02_qa_generator_chain_v1_${GENERATOR_CHAIN_QA_CATEGORY}`
     : ORDER_GIFT_QA_MODE
       ? `silkroad_tavern_proto_v02_qa_order_gift_generator_v1_ch${ORDER_GIFT_QA_CHAPTER}`
       : RUBY_DISPLAY_QA_MODE
@@ -117,7 +131,12 @@ const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
             : GLOBAL_LOADING_QA_MODE
               ? "silkroad_tavern_proto_v02_qa_global_loading_v1"
               : "silkroad_tavern_proto_v02";
-const NPC_STANDEE_VERSION = "standee-size-02";
+const NPC_STANDEE_VERSION = "foreground-cutout-03";
+const REPAIR_PROTOCOL_VERSION = 1;
+const REPAIR_PART_COUNT = 9;
+const REPAIR_PART_COST_WEIGHTS = Object.freeze([71, 79, 89, 101, 109, 121, 131, 139, 160]);
+const COIN_ECONOMY_VERSION = 2;
+const COIN_DENOMINATION_MULTIPLIER = 10;
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
 const BOARD_SIZE = BOARD_COLUMNS * BOARD_ROWS;
@@ -132,7 +151,7 @@ const BONUS_BUBBLE_DURATION_MS = 40000;
 const BONUS_BUBBLE_PREFIX = "bonus_bubble_";
 const BONUS_COIN_PREFIX = "bonus_coin_";
 const BONUS_COIN_MAX_LEVEL = 4;
-const BONUS_COIN_VALUES = Object.freeze([0, 1, 3, 8, 25]);
+const BONUS_COIN_VALUES = Object.freeze([0, 10, 30, 80, 250]);
 const BONUS_RUBY_PREFIX = "bonus_ruby_";
 const BONUS_RUBY_MAX_LEVEL = 4;
 const BONUS_RUBY_VALUES = Object.freeze([0, 1, 3, 8, 25]);
@@ -151,11 +170,11 @@ const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
 const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
 const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
 const DAILY_POUCH_REWARD_POOL = Object.freeze([
-  { id: "traveler", name: "行旅小礼", weight: 45, coins: 8, stamina: 2 },
-  { id: "market", name: "市集馈赠", weight: 30, coins: 14, stamina: 8 },
-  { id: "caravan", name: "驼队余响", weight: 16, coins: 10, stamina: 30 },
-  { id: "harvest", name: "绿洲丰收", weight: 7, coins: 24, stamina: 30 },
-  { id: "silkroad", name: "丝路厚礼", weight: 2, coins: 25, stamina: 100 },
+  { id: "traveler", name: "行旅小礼", weight: 45, coins: 80, stamina: 2 },
+  { id: "market", name: "市集馈赠", weight: 30, coins: 140, stamina: 8 },
+  { id: "caravan", name: "驼队余响", weight: 16, coins: 100, stamina: 30 },
+  { id: "harvest", name: "绿洲丰收", weight: 7, coins: 240, stamina: 30 },
+  { id: "silkroad", name: "丝路厚礼", weight: 2, coins: 250, stamina: 100 },
 ]);
 const SELL_CHAIN_LEVELS = Object.freeze({
   food: 8,
@@ -250,15 +269,41 @@ const CHAPTER_TITLE_LINES = {
   4: ["灯火", "连城"],
 };
 const BUILD_MODE = new URLSearchParams(location.search).get("mode") === "release" ? "release" : "dev";
+const LONGSCROLL_KEEPER_STANDEE = "./assets/npc_standee/keeper.png";
+const LONGSCROLL_REPAIR_MARKER_ASSET = "./assets/generator-materials-v03/generator_material_fruit_01.png";
+const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
+  keeper: LONGSCROLL_KEEPER_STANDEE,
+  npc_dunhuang_woman: "./assets/npc_standee/npc_dunhuang_woman_full_v1.png",
+  npc_farmer: "./assets/npc_standee/npc_farmer_full_v1.png",
+  npc_temple_donor: "./assets/npc_standee/npc_temple_donor_full_v1.png",
+  npc_sogdian_merchant: "./assets/npc_standee/npc_sogdian_merchant_full_v1.png",
+  npc_pilgrim_monk: "./assets/npc_standee/npc_pilgrim_monk_full_v1.png",
+  npc_uighur_herder: "./assets/npc_standee/npc_uighur_herder_full_v1.png",
+  npc_shazhou_guard: "./assets/npc_standee/npc_shazhou_guard_full_v1.png",
+  npc_changan_envoy: "./assets/npc_standee/npc_changan_envoy_full_v1.png",
+  npc_changan_maid: "./assets/npc_standee/npc_changan_maid_full_v1.png",
+  npc_caravan_leader: "./assets/npc_standee/npc_caravan_leader_full_v1.png",
+});
 const INN_PACKAGE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
   "./assets/keeper_story_portrait_v2.png",
+  LONGSCROLL_REPAIR_MARKER_ASSET,
+  LONGSCROLL_KEEPER_STANDEE,
+  "./assets/npc_standee/npc_dunhuang_woman_full_v1.png",
+  "./assets/npc_standee/npc_farmer_full_v1.png",
+  "./assets/npc_standee/npc_temple_donor_full_v1.png",
   "./assets/npc_standee/npc_dunhuang_woman.png",
   "./assets/npc_standee/npc_farmer.png",
   "./assets/npc_standee/npc_temple_donor.png",
   "./assets/npc_standee/npc_caravan_leader.png",
+  "./assets/npc_standee/npc_sogdian_merchant.png",
+  "./assets/npc_standee/npc_pilgrim_monk.png",
+  "./assets/npc_standee/npc_uighur_herder.png",
+  "./assets/npc_standee/npc_shazhou_guard.png",
+  "./assets/npc_standee/npc_changan_envoy.png",
+  "./assets/npc_standee/npc_changan_maid.png",
   "./assets/npc_repair_portrait/npc_dunhuang_woman_v1.png",
   "./assets/npc_repair_portrait/npc_farmer_v1.png",
   "./assets/npc_repair_portrait/npc_temple_donor_v1.png",
@@ -282,7 +327,7 @@ const STARTUP_DATA_NAMES = Object.freeze([
   "economy",
 ]);
 const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
-  "./assets/ui/loading_poster_character_v1.webp",
+  "./assets/ui/loading_poster_character_v2.jpg",
   ...INN_PACKAGE_ASSETS,
   "./assets/kitchen-bg.png",
   "./assets/order_tray_approved_front.png",
@@ -301,6 +346,8 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/bonus_ruby_lv04.png",
 ])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
+const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp?v=feather-20260803`;
+const longscrollMaskSrc = (regionId) => `${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`;
 const LONGSCROLL_REGION_BOUNDS = {
   1: [405, 487, 317, 269], 2: [488, 327, 300, 207], 3: [738, 339, 320, 230], 4: [298, 274, 258, 232],
   5: [233, 472, 243, 190], 6: [665, 539, 281, 320], 7: [550, 26, 361, 334], 8: [386, 42, 281, 239],
@@ -310,6 +357,125 @@ const LONGSCROLL_REGION_BOUNDS = {
   21: [7, 982, 353, 272], 22: [197, 1089, 226, 165], 23: [0, 968, 66, 219], 24: [314, 1144, 356, 110],
   25: [504, 943, 529, 311], 26: [710, 743, 544, 351], 27: [1011, 1009, 243, 245],
 };
+const LONGSCROLL_LOCATION_CAST = Object.freeze({
+  // 第一章 · 流沙驿初明
+  tutorial_complete: {
+    regionId: 2,
+    keeper: { x: 585, y: 650, width: 35, flip: false, delay: 0 },
+    npc: { x: 630, y: 650, width: 40, flip: true, delay: 90 },
+  },
+  kitchen_repair: {
+    regionId: 4,
+    keeper: { x: 430, y: 462, width: 34, flip: false, delay: 0 },
+    npc: { x: 477, y: 462, width: 38, flip: true, delay: 90 },
+  },
+  codex_first_phase: {
+    regionId: 11,
+    keeper: { x: 1018, y: 776, width: 36, flip: false, delay: 0 },
+    npc: { x: 1063, y: 775, width: 49, flip: true, delay: 90 },
+  },
+
+  // 第二章 · 西市烟火
+  lv2_front_feast: {
+    regionId: 3,
+    keeper: { x: 843, y: 493, width: 35, flip: false, delay: 0 },
+    npc: { x: 890, y: 493, width: 54, flip: true, delay: 90 },
+  },
+  lv2_west_market: {
+    regionId: 5,
+    keeper: { x: 326, y: 652, width: 34, flip: false, delay: 0 },
+    npc: { x: 372, y: 650, width: 52, flip: true, delay: 90 },
+  },
+  lv2_flower_rack: {
+    regionId: 6,
+    keeper: { x: 744, y: 790, width: 35, flip: false, delay: 0 },
+    npc: { x: 790, y: 790, width: 40, flip: true, delay: 90 },
+  },
+  lv2_north_shop: {
+    regionId: 15,
+    keeper: { x: 145, y: 712, width: 34, flip: false, delay: 0 },
+    npc: { x: 192, y: 710, width: 52, flip: true, delay: 90 },
+  },
+  lv2_south_shop: {
+    regionId: 16,
+    keeper: { x: 207, y: 940, width: 35, flip: false, delay: 0 },
+    npc: { x: 254, y: 939, width: 54, flip: true, delay: 90 },
+  },
+  lv2_well: {
+    regionId: 17,
+    keeper: { x: 578, y: 890, width: 35, flip: false, delay: 0 },
+    npc: { x: 625, y: 890, width: 54, flip: true, delay: 90 },
+  },
+
+  // 第三章 · 楼馆通途
+  lv3_upper_hall: {
+    regionId: 7,
+    keeper: { x: 692, y: 475, width: 34, flip: false, delay: 0 },
+    npc: { x: 732, y: 475, width: 52, flip: true, delay: 90 },
+  },
+  lv3_north_court: {
+    regionId: 8,
+    keeper: { x: 460, y: 273, width: 33, flip: false, delay: 0 },
+    npc: { x: 505, y: 272, width: 51, flip: true, delay: 90 },
+  },
+  lv3_west_gate: {
+    regionId: 9,
+    keeper: { x: 270, y: 400, width: 33, flip: false, delay: 0 },
+    npc: { x: 315, y: 399, width: 51, flip: true, delay: 90 },
+  },
+  lv3_east_court: {
+    regionId: 10,
+    keeper: { x: 1040, y: 350, width: 35, flip: false, delay: 0 },
+    npc: { x: 1085, y: 349, width: 52, flip: true, delay: 90 },
+  },
+  lv3_garden: {
+    regionId: 12,
+    keeper: { x: 170, y: 527, width: 34, flip: false, delay: 0 },
+    npc: { x: 215, y: 526, width: 46, flip: true, delay: 90 },
+  },
+  lv3_watchtower: {
+    regionId: 13,
+    keeper: { x: 240, y: 250, width: 33, flip: false, delay: 0 },
+    npc: { x: 285, y: 249, width: 45, flip: true, delay: 90 },
+  },
+
+  // 第四章 · 灯火连城
+  lv4_south_shed: {
+    regionId: 19,
+    keeper: { x: 530, y: 963, width: 35, flip: false, delay: 0 },
+    npc: { x: 578, y: 962, width: 57, flip: true, delay: 90 },
+  },
+  lv4_central_market: {
+    regionId: 20,
+    keeper: { x: 402, y: 1114, width: 35, flip: false, delay: 0 },
+    npc: { x: 450, y: 1113, width: 57, flip: true, delay: 90 },
+  },
+  lv4_south_street: {
+    regionId: 21,
+    keeper: { x: 270, y: 1168, width: 35, flip: false, delay: 0 },
+    npc: { x: 315, y: 1167, width: 54, flip: true, delay: 90 },
+  },
+  lv4_lanes: {
+    regionId: 24,
+    keeper: { x: 465, y: 1108, width: 34, flip: false, delay: 0 },
+    npc: { x: 510, y: 1107, width: 39, flip: true, delay: 90 },
+  },
+  lv4_east_shed: {
+    regionId: 25,
+    keeper: { x: 745, y: 1180, width: 35, flip: false, delay: 0 },
+    npc: { x: 790, y: 1179, width: 57, flip: true, delay: 90 },
+  },
+  lv4_east_court: {
+    regionId: 26,
+    keeper: { x: 1040, y: 961, width: 35, flip: false, delay: 0 },
+    npc: { x: 1085, y: 960, width: 52, flip: true, delay: 90 },
+  },
+  lv4_lantern_city: {
+    regionId: 27,
+    keeper: { x: 1060, y: 1160, width: 35, flip: false, delay: 0 },
+    npc: { x: 1105, y: 1159, width: 57, flip: true, delay: 90 },
+  },
+});
 const GIFT_PACKS = {
   gift_milk_room_parts_01: {
     name: "奶房木件包",
@@ -318,11 +484,11 @@ const GIFT_PACKS = {
     rewards: [
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "coins", amount: 12 },
+      { type: "coins", amount: 120 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "coins", amount: 18 },
+      { type: "coins", amount: 180 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
       { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
@@ -335,11 +501,11 @@ const GIFT_PACKS = {
     rewards: [
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
-      { type: "coins", amount: 18 },
+      { type: "coins", amount: 180 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
-      { type: "coins", amount: 24 },
+      { type: "coins", amount: 240 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
@@ -378,10 +544,10 @@ const state = {
   visibleOrders: [],
   unlockedCodex: new Set(),
   unlockedFoodLevels: {},
-  coins: 40,
+  coins: 400,
   stamina: 18,
-  staminaMax: 24,
-  recoverMinutes: 6,
+  staminaMax: 100,
+  recoverMinutes: 2,
   generationCount: 0,
   completedOrders: 0,
   completedOrderIds: [],
@@ -393,6 +559,7 @@ const state = {
   coinsEarned: 0,
   storyFlags: {},
   renovationChoices: {},
+  repairProgress: {},
   activeRepairId: null,
   activeChapterStory: null,
   repairPromptedFor: [],
@@ -419,6 +586,9 @@ const state = {
 const els = {
   coins: document.querySelector("#coins"),
   stamina: document.querySelector("#stamina"),
+  boardStaminaRing: document.querySelector("#boardStaminaRing"),
+  boardStaminaTimerLabel: document.querySelector("#boardStaminaTimerLabel"),
+  boardStaminaTimerValue: document.querySelector("#boardStaminaTimerValue"),
   gems: document.querySelector("#gems"),
   codexProgress: document.querySelector("#codexProgress"),
   orders: document.querySelector("#orders"),
@@ -456,6 +626,9 @@ const els = {
   innChapterProgress: document.querySelector("#innChapterProgress"),
   innCoins: document.querySelector("#innCoins"),
   innStamina: document.querySelector("#innStamina"),
+  innStaminaRing: document.querySelector("#innStaminaRing"),
+  innStaminaTimerLabel: document.querySelector("#innStaminaTimerLabel"),
+  innStaminaTimerValue: document.querySelector("#innStaminaTimerValue"),
   innGems: document.querySelector("#innGems"),
   innStaminaPlusBtn: document.querySelector("#innStaminaPlusBtn"),
   innGemPlusBtn: document.querySelector("#innGemPlusBtn"),
@@ -549,6 +722,7 @@ const els = {
   repairGuideBtn: document.querySelector("#repairGuideBtn"),
   repairPlayerLayer: document.querySelector("#repairPlayerLayer"),
   repairPlayerFrame: document.querySelector("#repairPlayerFrame"),
+  repairOrientationBtn: document.querySelector("#repairOrientationBtn"),
   innUpgradeReveal: document.querySelector("#innUpgradeReveal"),
   innUpgradeRevealText: document.querySelector("#innUpgradeRevealText"),
   orderDetailModal: document.querySelector("#orderDetailModal"),
@@ -620,7 +794,12 @@ let pageSwitchInProgress = false;
 let repairPulseTimer = null;
 let boardGuideTimer = null;
 let lastInnFocusKey = null;
+let innSceneResizeObserver = null;
+let innViewportFocusFrame = null;
+let lastLongscrollCharacterSceneKey = null;
 let pendingInnFocusPosition = null;
+let openRepairMilestoneId = null;
+let repairReturnCastMilestoneId = null;
 let repairAnchorRect = null;
 let repairModalAnimating = false;
 let repairModalMode = "entry";
@@ -878,7 +1057,10 @@ function handleAudioVisibility() {
 }
 
 async function loadJson(name) {
-  const response = await fetch(`${DATA_PATH}${name}.json`);
+  const response = await fetch(
+    `${DATA_PATH}${name}.json`,
+    name === "stamina" ? { cache: "no-store" } : undefined,
+  );
   if (!response.ok) throw new Error(`无法加载 ${name}.json`);
   return response.json();
 }
@@ -1024,6 +1206,110 @@ function initializeGeneratorMaterialQaScenario() {
   state.selectedIndex = null;
 }
 
+function generatorChainQaCategory() {
+  return state.generatorMaterialConfig.categories.find((category) => category.id === GENERATOR_CHAIN_QA_CATEGORY)
+    ?? state.generatorMaterialConfig.categories[0];
+}
+
+function initializeGeneratorChainQaScenario() {
+  const category = generatorChainQaCategory();
+  state.board = Array(BOARD_SIZE).fill(null);
+  // Four separated pairs make each 2→1 material merge visible before Lv1 appears.
+  [0, 2, 4, 6].forEach((row) => {
+    state.board[boardIndex(row, 2)] = generatorMaterialItemId(category.id, 1);
+    state.board[boardIndex(row, 3)] = generatorMaterialItemId(category.id, 1);
+  });
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.unlockedGeneratorCategories = [category.id];
+  state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
+  state.rewardItems = [];
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.bubbleStates = {};
+  state.generatorStates = {};
+  state.pendingGeneratorRewards = [];
+  state.claimedGeneratorProgressRewards = [];
+  state.generatorLineOrderCounts = emptyGeneratorLineOrderCounts();
+  state.stamina = state.staminaMax;
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
+function renderGeneratorChainQaPanel() {
+  if (!GENERATOR_CHAIN_QA_MODE) return;
+  let panel = document.querySelector("#generatorChainQaPanel");
+  if (!panel) {
+    document.body.classList.add("generator-chain-qa");
+    const toggle = document.createElement("button");
+    toggle.id = "generatorChainQaToggle";
+    toggle.type = "button";
+    toggle.textContent = "合成路线";
+    toggle.addEventListener("click", () => { panel.hidden = !panel.hidden; });
+    panel = document.createElement("aside");
+    panel.id = "generatorChainQaPanel";
+    panel.setAttribute("aria-label", "生成器合成路线试玩工具");
+    panel.innerHTML = `
+      <header><div><small>独立试玩 · 不影响正式存档</small><strong>生成器合成路线</strong></div><button type="button" class="generator-chain-qa-close" aria-label="收起试玩说明">×</button></header>
+      <label>选择生产线 <select class="generator-chain-qa-category"></select></label>
+      <p class="generator-chain-qa-rule">8份初阶材料 → 4份进阶材料 → 2份成型材料 → Lv1生成器。之后每两台同类、同等级生成器升一级，最高Lv6。</p>
+      <p class="generator-chain-qa-status" aria-live="polite"></p>
+      <button type="button" class="generator-chain-qa-copy">清理食材并领取同级副本（测试）</button>
+      <div class="generator-chain-qa-actions"><button type="button" class="generator-chain-qa-start">收起说明，开始合成</button><button type="button" class="generator-chain-qa-reset">重置棋盘</button></div>
+      <small class="generator-chain-qa-note">奶房生成器合成后会立即向周围投放食物。继续升级时，测试按钮会清理本线食材并补一台同级生成器；正式游戏没有此测试按钮，也不会自动清理食材。</small>`;
+    const select = panel.querySelector(".generator-chain-qa-category");
+    state.generatorMaterialConfig.categories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category.id;
+      option.textContent = category.displayName.replace("材料", "");
+      select.append(option);
+    });
+    select.addEventListener("change", () => {
+      location.href = `${location.pathname}?mode=release&qa=generator-chain-v1&category=${encodeURIComponent(select.value)}&reset=1`;
+    });
+    panel.querySelector(".generator-chain-qa-close").addEventListener("click", () => { panel.hidden = true; });
+    panel.querySelector(".generator-chain-qa-start").addEventListener("click", () => { panel.hidden = true; });
+    panel.querySelector(".generator-chain-qa-reset").addEventListener("click", () => {
+      initializeGeneratorChainQaScenario();
+      render();
+      saveState();
+    });
+    panel.querySelector(".generator-chain-qa-copy").addEventListener("click", () => {
+      const categoryId = generatorChainQaCategory().id;
+      const level = highestOwnedGeneratorLevel(categoryId);
+      const itemId = generatorItemId(categoryId, level);
+      const category = state.generatorConfig.categories.find((entry) => entry.id === categoryId);
+      const outputIds = new Set([category?.baseOutputItemId, category?.secondaryOutputItemId].filter(Boolean));
+      state.board.forEach((ownedId, boardIndex) => {
+        if (outputIds.has(ownedId)) state.board[boardIndex] = null;
+      });
+      const index = findMergeFriendlyIndex(itemId);
+      if (!level || level >= state.generatorConfig.levelsPerCategory || index < 0) return;
+      state.board[index] = itemId;
+      state.selectedIndex = state.board.findIndex((ownedId, ownedIndex) => ownedIndex !== index && ownedId === itemId);
+      panel.hidden = true;
+      toast(`测试副本：${byId.get(itemId)?.name ?? "生成器"}，请与同级合成`);
+      render();
+      saveState();
+    });
+    document.body.append(toggle, panel);
+  }
+  const categoryId = generatorChainQaCategory().id;
+  panel.querySelector(".generator-chain-qa-category").value = categoryId;
+  const level = highestOwnedGeneratorLevel(categoryId);
+  const copyButton = panel.querySelector(".generator-chain-qa-copy");
+  copyButton.disabled = !level || level >= state.generatorConfig.levelsPerCategory;
+  const status = panel.querySelector(".generator-chain-qa-status");
+  if (level >= state.generatorConfig.levelsPerCategory) {
+    status.textContent = `已合成 Lv${level}，本线达到最高级。`;
+  } else if (level > 0) {
+    status.textContent = `当前最高 Lv${level}。领取一台同级副本，合成 Lv${level + 1}。`;
+  } else {
+    const counts = [1, 2, 3].map((stage) =>
+      state.board.filter((itemId) => itemId === generatorMaterialItemId(categoryId, stage)).length);
+    status.textContent = `材料现有：初阶 ${counts[0]}、进阶 ${counts[1]}、成型 ${counts[2]}。先把八份材料两两合成。`;
+  }
+}
+
 function initializeOrderGiftQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
   state.bag = Array(STORAGE_FREE_SLOTS).fill(null);
@@ -1135,7 +1421,7 @@ function initializeLv4MarketOrdersQaScenario() {
   state.activeRepairId = null;
   state.repairPromptedFor = [];
   state.generatorStates = {};
-  state.coins = 1000;
+  state.coins = 10000;
   state.staminaMax = 99;
   state.stamina = 99;
   state.innLevel = 4;
@@ -1182,19 +1468,19 @@ function initializeGeneratorOrderQaScenario() {
   state.generatorStates = {};
   state.staminaMax = 99;
   state.stamina = 99;
-  state.coins = 999;
+  state.coins = 9990;
   state.innLevel = stageIndex >= 4 ? 2 : 1;
   state.currentPage = "board";
   state.selectedIndex = null;
 }
 
 const PROGRESSION_FLOW_QA_SPECS = Object.freeze({
-  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 40, chapterOrders: 0 },
-  20: { completedOrders: 20, repairCount: 2, innLevel: 1, generatorLevel: 2, coins: 220, chapterOrders: 8 },
-  60: { completedOrders: 60, repairCount: 6, innLevel: 2, generatorLevel: 3, coins: 300, chapterOrders: 8 },
-  120: { completedOrders: 120, repairCount: 13, innLevel: 3, generatorLevel: 4, coins: 600, chapterOrders: 8 },
-  190: { completedOrders: 190, repairCount: 20, innLevel: 4, generatorLevel: 5, coins: 1200, chapterOrders: 8 },
-  260: { completedOrders: 260, repairCount: 22, innLevel: 4, generatorLevel: 6, coins: 2500, chapterOrders: 12 },
+  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 400, chapterOrders: 0 },
+  20: { completedOrders: 20, repairCount: 2, innLevel: 1, generatorLevel: 2, coins: 2200, chapterOrders: 8 },
+  60: { completedOrders: 60, repairCount: 6, innLevel: 2, generatorLevel: 3, coins: 3000, chapterOrders: 8 },
+  120: { completedOrders: 120, repairCount: 13, innLevel: 3, generatorLevel: 4, coins: 6000, chapterOrders: 8 },
+  190: { completedOrders: 190, repairCount: 20, innLevel: 4, generatorLevel: 5, coins: 12000, chapterOrders: 8 },
+  260: { completedOrders: 260, repairCount: 22, innLevel: 4, generatorLevel: 6, coins: 25000, chapterOrders: 12 },
 });
 
 function initializeProgressionFlowQaScenario() {
@@ -1264,7 +1550,7 @@ function initializeProgressionFlowQaScenario() {
   state.gems = startingGemBalance();
   state.stamina = isFreshStage ? state.staminaConfig.initial.startValue : 99;
   state.staminaMax = isFreshStage ? state.staminaConfig.initial.max : 99;
-  state.recoverMinutes = isFreshStage ? state.staminaConfig.initial.recoverMinutes : 5;
+  state.recoverMinutes = STAMINA_RECOVERY_MINUTES;
   state.generationCount = spec.completedOrders;
   state.completedOrders = spec.completedOrders;
   state.completedOrderIds = spec.generatorLevel === 6
@@ -1294,7 +1580,7 @@ function initializeProgressionFlowQaScenario() {
     .filter((pack) => pack.chapter < spec.innLevel
       || (pack.chapter === spec.innLevel && pack.threshold < spec.chapterOrders))
     .map((pack) => pack.id);
-  state.coinsEarned = Math.max(0, Math.round(spec.completedOrders * 28));
+  state.coinsEarned = Math.max(0, Math.round(spec.completedOrders * 280));
   state.storyFlags = Object.fromEntries(
     completedMilestones.flatMap((milestone) => milestone.rewards?.storyFlags ?? [])
       .map((flag) => [flag, true]),
@@ -1382,9 +1668,122 @@ function initializeRepairProgressQaScenario() {
   );
   state.activeRepairId = null;
   state.repairPromptedFor = [];
-  state.coins = 9999;
+  state.coins = 99990;
   state.innLevel = REPAIR_PROGRESS_QA_CHAPTER;
   state.currentPage = "inn";
+}
+
+function initializeLongscrollCastQaScenario() {
+  initializeLongscrollCastQaScene(LONGSCROLL_CAST_QA_SCENE);
+}
+
+function initializeLongscrollCastQaScene(sceneNumber) {
+  const milestones = state.progressionConfig.milestones;
+  const currentIndex = Math.min(milestones.length - 1, Math.max(0, sceneNumber - 1));
+  const currentMilestone = milestones[currentIndex];
+  const currentChapter = currentMilestone?.chapter ?? 1;
+  const completedMilestones = milestones.slice(0, Math.max(0, currentIndex));
+  state.renovationChoices = Object.fromEntries(
+    completedMilestones.map((milestone) => [milestone.id, "completed"]),
+  );
+  state.storyFlags = {};
+  for (let chapter = 1; chapter <= currentChapter; chapter += 1) {
+    const openingId = chapter === 1 ? "opening" : `chapter${chapter}-opening`;
+    state.storyFlags[chapterStoryFlag(openingId)] = true;
+    state.storyFlags[`chapter${chapter}StoryOpeningSeen`] = true;
+  }
+  completedMilestones.forEach((milestone) => {
+    state.storyFlags[chapterStoryFlag(`before:${milestone.id}`)] = true;
+    state.storyFlags[chapterStoryFlag(`after:${milestone.id}`)] = true;
+  });
+  state.claimedChapterRewards = Array.from(
+    { length: Math.max(0, currentChapter - 1) },
+    (_, index) => index + 1,
+  );
+  state.activeRepairId = null;
+  state.repairProgress = {};
+  state.activeChapterStory = null;
+  state.repairPromptedFor = [];
+  state.completedOrders = Math.max(999, state.completedOrders);
+  state.coins = 99990;
+  state.innLevel = currentChapter;
+  state.currentPage = "inn";
+  state.tutorialStep = 5;
+}
+
+function renderLongscrollCastQaNav() {
+  if (!LONGSCROLL_CAST_QA_MODE) return;
+  let nav = document.querySelector(".longscroll-cast-qa-nav");
+  if (!nav) {
+    nav = document.createElement("nav");
+    nav.className = "longscroll-cast-qa-nav";
+    nav.setAttribute("aria-label", "主线人物场景预览");
+    nav.innerHTML = `
+      <button type="button" data-cast-step="-1" aria-label="上一个地点">‹</button>
+      <small data-cast-label></small>
+      <button type="button" data-cast-step="1" aria-label="下一个地点">›</button>`;
+    els.innPage.append(nav);
+    nav.querySelectorAll("[data-cast-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const activeScene = Math.max(1, Math.min(
+          LONGSCROLL_CAST_QA_SCENE_MAX,
+          Number(new URLSearchParams(location.search).get("scene")) || 1,
+        ));
+        const sceneNumber = Math.max(1, Math.min(
+          LONGSCROLL_CAST_QA_SCENE_MAX,
+          activeScene + Number(button.dataset.castStep),
+        ));
+        const url = new URL(location.href);
+        url.searchParams.set("scene", String(sceneNumber));
+        history.replaceState(null, "", url);
+        initializeLongscrollCastQaScene(sceneNumber);
+        lastInnFocusKey = null;
+        lastLongscrollCharacterSceneKey = null;
+        render();
+        renderLongscrollCastQaNav();
+        focusLongscrollCastQaScene(sceneNumber);
+      });
+    });
+  }
+  const activeScene = Math.max(1, Math.min(
+    LONGSCROLL_CAST_QA_SCENE_MAX,
+    Number(new URLSearchParams(location.search).get("scene")) || 1,
+  ));
+  const milestone = state.progressionConfig.milestones[activeScene - 1];
+  const label = nav.querySelector("[data-cast-label]");
+  if (label) label.textContent = `${activeScene}/${LONGSCROLL_CAST_QA_SCENE_MAX} · ${milestone?.sceneName ?? milestone?.name ?? "主线地点"}`;
+  nav.querySelectorAll("[data-cast-step]").forEach((button) => {
+    const step = Number(button.dataset.castStep);
+    button.disabled = (step < 0 && activeScene === 1)
+      || (step > 0 && activeScene === LONGSCROLL_CAST_QA_SCENE_MAX);
+  });
+}
+
+function focusLongscrollCastQaScene(sceneNumber, { instant = false } = {}) {
+  if (!LONGSCROLL_CAST_QA_MODE || state.currentPage !== "inn") return;
+  const milestones = getMilestoneViews();
+  const sceneIndex = Math.min(milestones.length - 1, Math.max(0, sceneNumber - 1));
+  const milestone = milestones[sceneIndex];
+  const cast = milestone ? LONGSCROLL_LOCATION_CAST[milestone.id] : null;
+  if (!cast) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const map = els.innScene.querySelector(".longscroll-map");
+    const characters = [...els.innScene.querySelectorAll(".longscroll-character")];
+    if (!map || !characters.length) return;
+    const mapRect = map.getBoundingClientRect();
+    const sceneRect = els.innScene.getBoundingClientRect();
+    const bounds = characters.map((character) => character.getBoundingClientRect());
+    const focusX = (Math.min(...bounds.map((rect) => rect.left)) + Math.max(...bounds.map((rect) => rect.right))) / 2;
+    const focusY = (Math.min(...bounds.map((rect) => rect.top)) + Math.max(...bounds.map((rect) => rect.bottom))) / 2;
+    const scaleX = mapRect.width / map.offsetWidth || 1;
+    const scaleY = mapRect.height / map.offsetHeight || 1;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    els.innScene.scrollTo({
+      left: Math.max(0, els.innScene.scrollLeft + (focusX - (sceneRect.left + sceneRect.width / 2)) / scaleX),
+      top: Math.max(0, els.innScene.scrollTop + (focusY - (sceneRect.top + sceneRect.height * 0.48)) / scaleY),
+      behavior: instant || reducedMotion ? "auto" : "smooth",
+    });
+  }));
 }
 
 function openRepairProgressQaScenario() {
@@ -1420,7 +1819,7 @@ function configureRepairProgressQaState(milestone, mode) {
   state.claimedChapterRewards = Array.from({ length: Math.max(0, chapter - 1) }, (_, index) => index + 1);
   state.activeRepairId = null;
   state.repairPromptedFor = [];
-  state.coins = 9999;
+  state.coins = 99990;
   state.innLevel = chapter;
   state.currentPage = "inn";
 
@@ -1480,15 +1879,20 @@ async function loadStartupGroup(tasks, startPercent, endPercent, status) {
 
 function currentInnStartupAssets() {
   const milestones = getMilestoneViews();
-  const completedStage = milestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
+  const completedRegionIds = milestones
+    .filter((milestone) => selectedRenovationChoice(milestone))
+    .flatMap((milestone) => milestone.longscrollRegionIds);
   const next = nextRepairMilestone();
-  const assets = [];
-  if (completedStage) {
-    assets.push(`${LONGSCROLL_ROOT}/states-webp/${String(completedStage).padStart(2, "0")}_done_state_v0.1.webp?v=feather-20260803`);
+  const assets = [LONGSCROLL_REPAIRED_SOURCE];
+  if (next) {
+    [...completedRegionIds, ...next.longscrollRegionIds]
+      .forEach((regionId) => assets.push(longscrollMaskSrc(regionId)));
   }
-  (next?.longscrollRegionIds ?? []).forEach((regionId) => {
-    assets.push(`${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`);
-  });
+  const locationCast = next ? LONGSCROLL_LOCATION_CAST[next.id] : null;
+  if (locationCast) {
+    assets.push(LONGSCROLL_KEEPER_STANDEE);
+    if (next.npcId) assets.push(longscrollStandeeSrc(next.npcId));
+  }
   state.visibleOrders.forEach((orderId) => {
     const order = getOrder(orderId);
     if (order?.npcId) assets.push(`./assets/npc_standee/${order.npcId}.png?v=${NPC_STANDEE_VERSION}`);
@@ -1536,7 +1940,7 @@ function showStartupFailure(error) {
 async function boot() {
   console.log('🐫 丝路食肆 v0.3-drag 启动中…');
   if (GLOBAL_LOADING_QA_HOLD) {
-    updateStartupLoading(56, "正在展开流沙驿长卷");
+    updateStartupLoading(56, "正在进入");
     return;
   }
 
@@ -1588,17 +1992,19 @@ async function boot() {
     startupAssets.map((url) => () => preloadImage(url)),
     60,
     96,
-    "正在展开流沙驿长卷",
+    "正在进入",
   );
   innPackageLoaded = true;
   updateStartupLoading(98, "正在点亮驿站灯火");
   render();
+  renderLongscrollCastQaNav();
   bindEvents();
   applyBuildMode();
   await waitForStartupPaint();
   await finishStartupLoading();
   if (state.currentPage === "board") tickGenerators();
   if (UPGRADE_REVEAL_QA_MODE) setTimeout(() => playInnUpgradeReveal(UPGRADE_REVEAL_QA_LEVEL), 80);
+  if (LONGSCROLL_CAST_QA_UNLOCK) setTimeout(maybePromptRepairGuide, 80);
   if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
   if (STORY_ARCHIVE_QA_AUTOPEN) {
     setTimeout(() => openStoryArchive(STORY_ARCHIVE_QA_CHAPTER), 80);
@@ -1609,16 +2015,18 @@ async function boot() {
   } else if (!ISOLATED_QA_MODE && state.activeChapterStory) {
     setTimeout(resumeActiveChapterStory, 80);
   } else if (!ISOLATED_QA_MODE && !state.storyFlags.chapter1StoryOpeningSeen && state.completedOrders === 0 && Object.keys(state.renovationChoices).length === 0) {
-    setTimeout(() => playChapterStory("opening"), 80);
+    setTimeout(() => playChapterStory("opening", maybePromptRepairGuide), 80);
   } else if (!ISOLATED_QA_MODE && pendingChapterOpeningId()) {
-    setTimeout(() => playChapterStory(pendingChapterOpeningId()), 80);
+    setTimeout(() => playChapterStory(pendingChapterOpeningId(), maybePromptRepairGuide), 80);
+  } else if (!ISOLATED_QA_MODE) {
+    setTimeout(maybePromptRepairGuide, 120);
   }
   if (FOOD_CODEX_PREVIEW) setTimeout(openCodex, 120);
   setInterval(tickStamina, 1000);
 }
 
 function startingCoinBalance() {
-  return Math.max(0, Number(state.economyConfig?.currency?.startingBalance) || 40);
+  return Math.max(0, Number(state.economyConfig?.currency?.startingBalance) || 400);
 }
 
 function startingGemBalance() {
@@ -1746,6 +2154,81 @@ function syncUnlockedFoodLevels({ includeCompletedOrders = false } = {}) {
   return changed;
 }
 
+function repairPartCosts(milestone) {
+  const total = Math.max(0, Math.floor(Number(milestone?.repairCost) || 0));
+  const configuredCosts = Array.isArray(milestone?.repairParts)
+    ? milestone.repairParts.map((part) => Math.max(0, Math.floor(Number(part?.cost) || 0)))
+    : [];
+  if (configuredCosts.length === REPAIR_PART_COUNT
+    && configuredCosts.reduce((sum, cost) => sum + cost, 0) === total) {
+    return configuredCosts;
+  }
+  const weightTotal = REPAIR_PART_COST_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
+  const costs = REPAIR_PART_COST_WEIGHTS.map((weight) => Math.floor((total * weight) / weightTotal));
+  costs[costs.length - 1] += total - costs.reduce((sum, cost) => sum + cost, 0);
+  return costs;
+}
+
+function normalizeRepairPartIndex(value) {
+  if (Number.isInteger(value) && value >= 0 && value < REPAIR_PART_COUNT) return value;
+  if (typeof value !== "string") return null;
+  const match = value.match(/(\d{1,2})$/);
+  if (!match) return null;
+  const oneBasedIndex = Number(match[1]);
+  return oneBasedIndex >= 1 && oneBasedIndex <= REPAIR_PART_COUNT ? oneBasedIndex - 1 : null;
+}
+
+function normalizeRepairCompletedParts(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map(normalizeRepairPartIndex).filter((index) => index !== null))]
+    .sort((left, right) => left - right);
+}
+
+function firstIncompleteRepairPart(completedParts) {
+  const completed = new Set(normalizeRepairCompletedParts(completedParts));
+  for (let index = 0; index < REPAIR_PART_COUNT; index += 1) {
+    if (!completed.has(index)) return index;
+  }
+  return null;
+}
+
+function normalizeRepairProgress(value, { activeRepairId, renovationChoices, migrateLegacyPrepayment }) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const normalized = {};
+  (state.progressionConfig?.milestones ?? []).forEach((milestone) => {
+    const savedProgress = source[milestone.id] && typeof source[milestone.id] === "object"
+      ? source[milestone.id]
+      : {};
+    const completedMilestone = Boolean(renovationChoices[milestone.id]);
+    const completedParts = completedMilestone
+      ? Array.from({ length: REPAIR_PART_COUNT }, (_, index) => index)
+      : normalizeRepairCompletedParts(savedProgress.completedParts ?? savedProgress.completedPartIds);
+    const partCosts = repairPartCosts(milestone);
+    const remainingCost = partCosts.reduce(
+      (sum, cost, index) => sum + (completedParts.includes(index) ? 0 : cost),
+      0,
+    );
+    const migratedPrepayment = migrateLegacyPrepayment && activeRepairId === milestone.id
+      ? repairCost(milestone)
+      : Number(savedProgress.prepaidRemaining);
+    const prepaidRemaining = completedMilestone
+      ? 0
+      : Math.min(remainingCost, Math.max(0, Math.floor(Number.isFinite(migratedPrepayment) ? migratedPrepayment : 0)));
+    if (completedMilestone
+      || completedParts.length
+      || prepaidRemaining
+      || activeRepairId === milestone.id
+      || Object.prototype.hasOwnProperty.call(source, milestone.id)) {
+      normalized[milestone.id] = {
+        pointId: milestone.playerPointId,
+        completedParts,
+        prepaidRemaining,
+      };
+    }
+  });
+  return normalized;
+}
+
 function defaultState() {
   const board = Array(BOARD_SIZE).fill(null);
   board[starterGeneratorIndex()] = "gen_mill_01";
@@ -1764,7 +2247,7 @@ function defaultState() {
     gems: startingGemBalance(),
     stamina: state.staminaConfig.initial.startValue,
     staminaMax: state.staminaConfig.initial.max,
-    recoverMinutes: state.staminaConfig.initial.recoverMinutes,
+    recoverMinutes: STAMINA_RECOVERY_MINUTES,
     generationCount: 0,
     completedOrders: 0,
     completedOrderIds: [],
@@ -1776,6 +2259,7 @@ function defaultState() {
     coinsEarned: 0,
     storyFlags: {},
     renovationChoices: {},
+    repairProgress: {},
     activeRepairId: null,
     activeChapterStory: null,
     repairPromptedFor: [],
@@ -1796,9 +2280,21 @@ function defaultState() {
 }
 
 function loadState() {
-  if (PROGRESSION_FLOW_QA_RESET) localStorage.removeItem(SAVE_KEY);
+  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) localStorage.removeItem(SAVE_KEY);
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
+  const savedCoinEconomyVersion = Number(data.coinEconomyVersion);
+  const coinEconomyNeedsMigration = Boolean(saved)
+    && (!Number.isFinite(savedCoinEconomyVersion)
+      || savedCoinEconomyVersion < COIN_ECONOMY_VERSION);
+  const coinDenominationScale = coinEconomyNeedsMigration ? COIN_DENOMINATION_MULTIPLIER : 1;
+  const normalizeSavedCopper = (value, fallback) => {
+    if (value === null || value === undefined || value === "") return fallback;
+    const amount = Number(value);
+    return Number.isFinite(amount)
+      ? Math.max(0, Math.round(amount * coinDenominationScale))
+      : fallback;
+  };
   const persistedCompletedOrderIds = Array.isArray(data.completedOrderIds) ? data.completedOrderIds : [];
   const persistedVisibleOrderIds = Array.isArray(data.visibleOrders) ? data.visibleOrders : [];
   const loadedOrderIds = migrateLegacyOrderIds(persistedCompletedOrderIds);
@@ -1807,6 +2303,44 @@ function loadState() {
     .some((orderId) => Boolean(LEGACY_ORDER_ID_MAP[orderId]));
   const hasLegacyStoryFlags = data.storyFlags && typeof data.storyFlags === "object"
     && Object.entries(data.storyFlags).some(([key, enabled]) => enabled && key.startsWith("chapter1Story:"));
+  const loadedRenovationChoices = data.renovationChoices && typeof data.renovationChoices === "object"
+    ? data.renovationChoices
+    : {};
+  const persistedActiveRepairId = typeof data.activeRepairId === "string" ? data.activeRepairId : null;
+  const activeRepairMilestone = state.progressionConfig?.milestones?.find(
+    (milestone) => milestone.id === persistedActiveRepairId,
+  );
+  const loadedActiveRepairId = activeRepairMilestone && !loadedRenovationChoices[persistedActiveRepairId]
+    ? persistedActiveRepairId
+    : null;
+  const rawRepairProgress = data.repairProgress && typeof data.repairProgress === "object"
+    ? data.repairProgress
+    : {};
+  const persistedRepairProgress = coinEconomyNeedsMigration
+    ? Object.fromEntries(Object.entries(rawRepairProgress).map(([repairId, progress]) => {
+      if (!progress || typeof progress !== "object"
+        || !Object.prototype.hasOwnProperty.call(progress, "prepaidRemaining")) {
+        return [repairId, progress];
+      }
+      return [repairId, {
+        ...progress,
+        prepaidRemaining: normalizeSavedCopper(progress.prepaidRemaining, 0),
+      }];
+    }))
+    : rawRepairProgress;
+  const migrateLegacyRepairPrepayment = Boolean(
+    loadedActiveRepairId
+    && data.repairProtocolVersion !== REPAIR_PROTOCOL_VERSION
+    && !Object.prototype.hasOwnProperty.call(persistedRepairProgress, loadedActiveRepairId),
+  );
+  const loadedRepairProgress = normalizeRepairProgress(persistedRepairProgress, {
+    activeRepairId: loadedActiveRepairId,
+    renovationChoices: loadedRenovationChoices,
+    migrateLegacyPrepayment: migrateLegacyRepairPrepayment,
+  });
+  const repairStateNeedsMigration = data.repairProtocolVersion !== REPAIR_PROTOCOL_VERSION
+    || loadedActiveRepairId !== persistedActiveRepairId
+    || JSON.stringify(loadedRepairProgress) !== JSON.stringify(persistedRepairProgress);
   Object.assign(state, {
     board: normalizeBoard(data.board),
     bag: normalizeStorageSlots(data.bag, data.unlockedStorageSlots),
@@ -1818,11 +2352,11 @@ function loadState() {
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
     unlockedFoodLevels: normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
-    coins: data.coins ?? startingCoinBalance(),
+    coins: normalizeSavedCopper(data.coins, startingCoinBalance()),
     gems: data.gems ?? startingGemBalance(),
     stamina: data.stamina ?? state.staminaConfig.initial.startValue,
     staminaMax: Math.max(data.staminaMax ?? state.staminaConfig.initial.max, state.staminaConfig.initial.max),
-    recoverMinutes: data.recoverMinutes ?? state.staminaConfig.initial.recoverMinutes,
+    recoverMinutes: STAMINA_RECOVERY_MINUTES,
     generationCount: data.generationCount ?? 0,
     completedOrders: data.completedOrders ?? 0,
     completedOrderIds: loadedOrderIds,
@@ -1833,10 +2367,11 @@ function loadState() {
     claimedChapterRewards: Array.isArray(data.claimedChapterRewards)
       ? data.claimedChapterRewards.filter((chapter) => Number.isInteger(chapter) && chapter >= 1 && chapter <= 4)
       : [],
-    coinsEarned: data.coinsEarned ?? 0,
+    coinsEarned: normalizeSavedCopper(data.coinsEarned, 0),
     storyFlags: normalizeStoryFlags(data.storyFlags),
-    renovationChoices: data.renovationChoices && typeof data.renovationChoices === "object" ? data.renovationChoices : {},
-    activeRepairId: typeof data.activeRepairId === "string" ? data.activeRepairId : null,
+    renovationChoices: loadedRenovationChoices,
+    repairProgress: loadedRepairProgress,
+    activeRepairId: loadedActiveRepairId,
     activeChapterStory: normalizeActiveChapterStory(data.activeChapterStory),
     repairPromptedFor: Array.isArray(data.repairPromptedFor) ? data.repairPromptedFor : [],
     generatorStates: normalizeGeneratorStates(data.generatorStates),
@@ -1855,7 +2390,9 @@ function loadState() {
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
     currentPage: data.currentPage === "inn" ? "inn" : "board",
     tutorialStep: data.tutorialStep ?? 0,
-    lastTick: data.lastTick ?? Date.now(),
+    lastTick: Number.isFinite(Number(data.lastTick)) && Number(data.lastTick) > 0
+      ? Math.min(Number(data.lastTick), Date.now())
+      : Date.now(),
   });
   if (state.activeChapterStory) {
     const segmentId = state.activeChapterStory.segmentId;
@@ -1865,6 +2402,7 @@ function loadState() {
   }
   if (GENERATOR_QA_MODE && !saved) initializeGeneratorQaScenario();
   if (GENERATOR_MATERIAL_QA_MODE && !saved) initializeGeneratorMaterialQaScenario();
+  if (GENERATOR_CHAIN_QA_MODE && (!saved || GENERATOR_CHAIN_QA_RESET)) initializeGeneratorChainQaScenario();
   if (ORDER_GIFT_QA_MODE && !saved) initializeOrderGiftQaScenario();
   if (RUBY_DISPLAY_QA_MODE) initializeRubyDisplayQaScenario();
   if (STAMINA_POUCH_QA_MODE && (!saved || STAMINA_POUCH_QA_RESET)) initializeStaminaPouchQaScenario();
@@ -1873,19 +2411,20 @@ function loadState() {
   if (PROGRESSION_FLOW_QA_MODE && !saved) initializeProgressionFlowQaScenario();
   if (UPGRADE_REVEAL_QA_MODE) initializeUpgradeRevealQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
+  if (LONGSCROLL_CAST_QA_MODE) initializeLongscrollCastQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   reconcileGiftBoxStates();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
   migrateOccupiedLockedCells();
-  applyOfflineRecovery();
+  const recoveredStamina = applyOfflineRecovery();
   const generatorUnlocksChanged = ensureStarterGenerator();
-  const retroactiveGeneratorRewards = ISOLATED_QA_MODE ? [] : syncGeneratorProgressRewards();
+  const generatorRewardsChanged = !ISOLATED_QA_MODE && syncGeneratorProgressRewards().length > 0;
   pruneGeneratorStates();
   syncVisibleOrders();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
-  if (hasLegacyOrderIds || hasLegacyStoryFlags || generatorUnlocksChanged || foodUnlocksChanged || retroactiveGeneratorRewards.length || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
-  if (PROGRESSION_FLOW_QA_RESET) {
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
     history.replaceState(null, "", url);
@@ -1897,6 +2436,8 @@ function saveState() {
   localStorage.setItem(
     SAVE_KEY,
     JSON.stringify({
+      repairProtocolVersion: REPAIR_PROTOCOL_VERSION,
+      coinEconomyVersion: COIN_ECONOMY_VERSION,
       board: state.board,
       bag: state.bag,
       rewardItems: state.rewardItems,
@@ -1923,6 +2464,7 @@ function saveState() {
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
       renovationChoices: state.renovationChoices,
+      repairProgress: state.repairProgress,
       activeRepairId: state.activeRepairId,
       activeChapterStory: state.activeChapterStory,
       repairPromptedFor: state.repairPromptedFor,
@@ -1944,12 +2486,50 @@ function saveState() {
 }
 
 function applyOfflineRecovery() {
-  if (state.stamina >= state.staminaMax) return;
+  return recoverStaminaAt(Date.now());
+}
+
+function staminaRecoveryIntervalMs() {
+  return STAMINA_RECOVERY_MINUTES * 60 * 1000;
+}
+
+function recoverStaminaAt(now) {
+  if (state.stamina >= state.staminaMax) return 0;
+  if (!Number.isFinite(state.lastTick) || state.lastTick > now) {
+    state.lastTick = now;
+    return 0;
+  }
+  const recovered = Math.min(
+    state.staminaMax - state.stamina,
+    Math.floor((now - state.lastTick) / staminaRecoveryIntervalMs()),
+  );
+  if (recovered <= 0) return 0;
+  state.stamina += recovered;
+  state.lastTick = state.stamina >= state.staminaMax
+    ? now
+    : state.lastTick + recovered * staminaRecoveryIntervalMs();
+  return recovered;
+}
+
+function renderStaminaCountdown() {
+  const full = state.stamina >= state.staminaMax;
   const elapsed = Date.now() - state.lastTick;
-  const recovered = Math.floor(elapsed / (state.recoverMinutes * 60 * 1000));
-  if (recovered > 0) {
-    state.stamina = Math.min(state.staminaMax, state.stamina + recovered);
-    state.lastTick += recovered * state.recoverMinutes * 60 * 1000;
+  const progress = full ? 100 : Math.min(100, Math.max(0,
+    elapsed / staminaRecoveryIntervalMs() * 100,
+  ));
+  const seconds = Math.max(0, Math.ceil(
+    (staminaRecoveryIntervalMs() - elapsed) / 1000,
+  ));
+  const time = full
+    ? ""
+    : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  for (const [ring, label, value] of [
+    [els.boardStaminaRing, els.boardStaminaTimerLabel, els.boardStaminaTimerValue],
+    [els.innStaminaRing, els.innStaminaTimerLabel, els.innStaminaTimerValue],
+  ]) {
+    ring?.style.setProperty("--stamina-progress", `${progress}%`);
+    if (label) label.textContent = full ? "已满" : "下次 +1";
+    if (value) value.textContent = time;
   }
 }
 
@@ -1991,7 +2571,7 @@ function shouldUnlockGeneratorCategory(unlock) {
 }
 
 function ownsGeneratorCategory(categoryId) {
-  return [...state.board, ...state.bag, ...state.pendingGeneratorRewards]
+  return [...state.board, ...state.bag]
     .some((itemId) => generatorCategoryForItem(itemId) === categoryId);
 }
 
@@ -2049,16 +2629,16 @@ function syncGeneratorProgressRewards({ announce = false } = {}) {
         || Boolean(category.masteryOrderId && state.completedOrderIds.includes(category.masteryOrderId));
       if (claimed.has(rewardId) || lineOrders < milestone.lineOrders || !masteryComplete) return;
       const rewardLevel = Number(milestone.rewardGeneratorLevel) || Math.max(1, milestone.targetLevel - 1);
-      const delivery = deliverGeneratorPieceReward(category.id, rewardLevel);
-      if (delivery === "invalid") return;
+      const itemId = generatorItemId(category.id, rewardLevel);
+      if (!grantRewardItem(itemId)) return;
       claimed.add(rewardId);
-      delivered.push({ category, rewardLevel, delivery });
+      delivered.push({ category, rewardLevel });
     });
   });
   state.claimedGeneratorProgressRewards = [...claimed];
   if (announce && delivered.length) {
     const names = delivered.map(({ category, rewardLevel }) => `${category.displayName} Lv${rewardLevel}`);
-    toast(`同系订单奖励：${names.join("、")}`);
+    toast(`同系订单达标：${names.join("、")}副本已收入行囊`);
   }
   return delivered;
 }
@@ -2069,23 +2649,16 @@ function syncGeneratorCategoryUnlocks({ announce = false } = {}) {
   GENERATOR_CATEGORY_UNLOCKS.forEach((entry) => {
     if (!shouldUnlockGeneratorCategory(entry)) return;
     const wasUnlocked = unlocked.has(entry.categoryId);
-    if (!wasUnlocked) unlocked.add(entry.categoryId);
-    const delivery = deliverGeneratorReward(entry.categoryId);
-    if (!wasUnlocked || delivery !== "owned") newlyUnlocked.push({ ...entry, delivery });
+    if (wasUnlocked) return;
+    unlocked.add(entry.categoryId);
+    newlyUnlocked.push(entry);
   });
   state.unlockedGeneratorCategories = validGeneratorCategoryIds().filter((categoryId) => unlocked.has(categoryId));
   if (announce) {
-    newlyUnlocked.forEach(({ categoryId, delivery }) => {
+    newlyUnlocked.forEach(({ categoryId }) => {
       const category = state.generatorConfig.categories.find((entry) => entry.id === categoryId);
       if (!category) return;
-      const suffix = delivery === "board"
-        ? "已放入棋盘。"
-        : delivery === "bag"
-          ? "棋盘已满，已放入柜中暂存。"
-          : delivery === "pending"
-            ? "棋盘与柜子已满，已加入待领取队列。"
-            : "已开放。";
-      toast(`${category.displayName}${suffix}`);
+      toast(`${category.displayName}材料已经开放，合成材料可做出Lv1生成器。`);
     });
   }
   return newlyUnlocked.length > 0;
@@ -2118,30 +2691,35 @@ function ensureStarterGenerator() {
     deliverGeneratorReward("mill");
     changed = true;
   }
-  return flushPendingGeneratorRewards() || changed;
+  return changed;
 }
 
 function tickStamina() {
   tickGenerators();
   tickBonusBubbles();
   renderDailyPouchButtons();
-  if (state.stamina >= state.staminaMax) {
-    state.lastTick = Date.now();
-    saveState();
-    return;
-  }
-  const now = Date.now();
-  if (now - state.lastTick >= state.recoverMinutes * 60 * 1000) {
-    state.stamina += 1;
-    state.lastTick = now;
+  const recovered = recoverStaminaAt(Date.now());
+  if (recovered > 0) {
     toast("远处又传来驼铃声。");
     render();
     saveState();
+  } else {
+    renderStaminaCountdown();
   }
 }
 
 function bindEvents() {
   preventBrowserSmartZoom();
+  let lastInnSceneSize = [els.innScene.clientWidth, els.innScene.clientHeight];
+  innSceneResizeObserver = new ResizeObserver(() => {
+    const nextSize = [els.innScene.clientWidth, els.innScene.clientHeight];
+    if (!nextSize[0] || !nextSize[1]) return;
+    const changed = Math.abs(nextSize[0] - lastInnSceneSize[0]) > 1
+      || Math.abs(nextSize[1] - lastInnSceneSize[1]) > 90;
+    lastInnSceneSize = nextSize;
+    if (changed) scheduleInnViewportRefocus();
+  });
+  innSceneResizeObserver.observe(els.innScene);
   els.generateBtn.addEventListener("click", generateItem);
   els.sellBtn.addEventListener("click", sellSelected);
   els.selectedDetailBtn?.addEventListener("click", openSelectedPieceDetail);
@@ -2217,6 +2795,8 @@ function bindEvents() {
     if (card) previewRepairProgressMilestone(card.dataset.milestoneId);
   });
   window.addEventListener("message", handleRepairPlayerMessage);
+  els.repairPlayerFrame?.addEventListener("load", handleRepairPlayerLoad);
+  els.repairOrientationBtn?.addEventListener("click", toggleRepairOrientation);
   els.repairModal.addEventListener("cancel", (event) => {
     event.preventDefault();
     closeRepairModalToAnchor();
@@ -2332,16 +2912,18 @@ function cancelInnPackageRelease() {
 }
 
 function render() {
-  if (flushPendingGeneratorRewards()) saveState();
   renderPage();
   els.coins.textContent = state.coins;
   els.stamina.textContent = state.stamina;
+  els.innStamina.textContent = state.stamina;
+  renderStaminaCountdown();
   if (els.gems) els.gems.textContent = state.gems ?? 0;
   renderDailyPouchButtons();
   if (els.codexProgress) els.codexProgress.textContent = `${state.unlockedCodex.size}/8`;
   els.generateBtn.disabled = !hasEmptyCell();
   renderOrders();
   renderBoard();
+  renderGeneratorChainQaPanel();
   renderSelected();
   renderBagButton();
   renderInnButton();
@@ -2380,6 +2962,7 @@ async function switchPage(page) {
       if (!packageReady) return;
       cancelInnPackageRelease();
       lastInnFocusKey = null;
+      lastLongscrollCharacterSceneKey = null;
     } else if (page === "board") {
       clearBoardReturnGuide();
       scheduleInnPackageRelease();
@@ -2391,6 +2974,7 @@ async function switchPage(page) {
       if (page === "board") tickGenerators();
       saveState();
     });
+    if (page === "inn") setTimeout(maybePromptRepairGuide, 0);
   } finally {
     pageSwitchInProgress = false;
   }
@@ -2421,6 +3005,7 @@ function destroyInnTemporaryNodes() {
   els.innScene.innerHTML = "";
   els.furnitureShop.innerHTML = "";
   document.querySelector(".inn-task-list")?.remove();
+  lastLongscrollCharacterSceneKey = null;
 }
 
 function renderInnPage() {
@@ -2482,17 +3067,19 @@ function renderInnScene(level, repairValue) {
       .flatMap((milestone) => milestone.longscrollRegionIds),
   );
   const currentRegionIds = next?.longscrollRegionIds ?? [];
-  const completedStage = milestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
+  const characterMilestone = longscrollCharacterMilestone(next, milestones);
+  const characterLayer = renderLongscrollCharacters(characterMilestone);
+  const repairMarker = next ? renderLongscrollRepairMarker(next) : "";
   els.innScene.innerHTML = `
     <div class="longscroll-map" aria-label="流沙驿长卷">
       <img class="longscroll-base" src="${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png" alt="未修缮的流沙驿" />
-      ${completedStage ? `<img class="longscroll-region" src="${LONGSCROLL_ROOT}/states-webp/${String(completedStage).padStart(2, "0")}_done_state_v0.1.webp?v=feather-20260803" alt="" />` : ""}
+      ${renderLongscrollRepairedLayer(completedRegionIds, !next)}
+      ${characterLayer}
+      ${repairMarker}
       ${currentRegionIds
         .map((regionId) => {
-          const isRepairAnchor = regionId === currentRegionIds[0];
           const [left, top, width, height] = LONGSCROLL_REGION_BOUNDS[regionId];
-          return `${renderLongscrollMask("longscroll-current-glow", regionId)}
-            ${isRepairAnchor ? `<button class="longscroll-current-region" type="button" data-current-repair="${next.id}" data-region-id="${regionId}" aria-label="修缮${next.sceneName ?? next.name}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>` : ""}`;
+          return `<button class="longscroll-current-region" type="button" data-current-repair="${next.id}" data-region-id="${regionId}" aria-label="修缮${next.sceneName ?? next.name}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>`;
         })
         .join("")}
     </div>
@@ -2500,25 +3087,133 @@ function renderInnScene(level, repairValue) {
   els.innScene.querySelectorAll("[data-current-repair]").forEach((button) => {
     button.addEventListener("click", () => handleRepairNodeClick(button.dataset.currentRepair, button));
   });
-  scheduleCurrentInnFocus(next, currentRegionIds);
+  const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[next?.id]
+    ? characterMilestone
+    : next;
+  scheduleCurrentInnFocus(focusMilestone, focusMilestone?.longscrollRegionIds ?? currentRegionIds);
+}
+
+function renderLongscrollRepairedLayer(regionIds, allComplete) {
+  if (!regionIds.size) return "";
+  if (allComplete) return `<img class="longscroll-region" src="${LONGSCROLL_REPAIRED_SOURCE}" alt="" />`;
+  // The old numbered stage images do not match the milestone order; reveal the final art through completed point masks.
+  const masks = [...regionIds].map((regionId) =>
+    `<image href="${longscrollMaskSrc(regionId)}" x="0" y="0" width="1254" height="1254" />`,
+  ).join("");
+  return `<svg class="longscroll-region" viewBox="0 0 1254 1254" aria-hidden="true">
+    <defs><mask id="longscroll-completed-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha" x="0" y="0" width="1254" height="1254">${masks}</mask></defs>
+    <image href="${LONGSCROLL_REPAIRED_SOURCE}" x="0" y="0" width="1254" height="1254" mask="url(#longscroll-completed-mask)" />
+  </svg>`;
+}
+
+function renderLongscrollRepairMarker(milestone) {
+  const bounds = LONGSCROLL_REGION_BOUNDS[milestone.longscrollRegionIds?.[0]];
+  if (!bounds) return "";
+  const [left, top, width, height] = bounds;
+  const x = Math.round(Math.min(1218, Math.max(36, left + width * 0.72)));
+  const y = Math.round(Math.min(1246, Math.max(54, top + height * 0.9)));
+  const variant = milestone.longscrollRegionIds.length > 1
+    ? "variant-road"
+    : ["kitchen", "wall"].includes(milestone.scenePosition)
+      ? "variant-building"
+      : "";
+  return `<span class="longscroll-repair-marker ${variant}" data-repair-marker="${milestone.id}" style="--repair-marker-x:${x}px;--repair-marker-y:${y}px" aria-hidden="true">
+    <span class="longscroll-repair-stakes"></span>
+    <img src="${LONGSCROLL_REPAIR_MARKER_ASSET}" alt="" draggable="false" />
+    <span class="longscroll-repair-cloth"></span>
+  </span>`;
+}
+
+function longscrollStandeeSrc(npcId) {
+  if (LONGSCROLL_FULL_BODY_STANDEES[npcId]) return LONGSCROLL_FULL_BODY_STANDEES[npcId];
+  return `./assets/npc_standee/${npcId}.png?v=${NPC_STANDEE_VERSION}`;
+}
+
+function renderLongscrollCharacter(actor, role, npcId, entering, waiting = false) {
+  const classes = [
+    "longscroll-character",
+    `longscroll-character-${role}`,
+    actor.flip ? "is-flipped" : "",
+    entering ? "is-entering" : "",
+  ].filter(Boolean).join(" ");
+  return `
+    <figure class="${classes}" data-npc-id="${npcId}" style="--character-x:${actor.x}px;--character-y:${actor.y}px;--character-width:${actor.width}px;--character-delay:${actor.delay}ms">
+      <span class="longscroll-character-body"><img src="${longscrollStandeeSrc(npcId)}" alt="" draggable="false" /></span>
+      ${waiting ? '<span class="longscroll-character-prompt" aria-hidden="true">…</span>' : ""}
+    </figure>`;
+}
+
+function longscrollCharacterMilestone(preferred = nextRepairMilestone(), milestones = getMilestoneViews()) {
+  const returning = repairReturnCastMilestoneId
+    ? milestones.find((milestone) => milestone.id === repairReturnCastMilestoneId)
+    : null;
+  if (returning && LONGSCROLL_LOCATION_CAST[returning.id]) return returning;
+  if (preferred && LONGSCROLL_LOCATION_CAST[preferred.id]) return preferred;
+  return [...milestones].reverse().find(
+    (milestone) => selectedRenovationChoice(milestone) && LONGSCROLL_LOCATION_CAST[milestone.id],
+  ) ?? null;
+}
+
+function renderLongscrollCharacters(milestone = longscrollCharacterMilestone()) {
+  const cast = milestone ? LONGSCROLL_LOCATION_CAST[milestone.id] : null;
+  const npcId = milestone?.npcId;
+  if (!cast || !npcId) {
+    lastLongscrollCharacterSceneKey = null;
+    return '<div class="longscroll-character-layer" aria-hidden="true"></div>';
+  }
+  const entering = lastLongscrollCharacterSceneKey !== milestone.id;
+  lastLongscrollCharacterSceneKey = milestone.id;
+  const waiting = !selectedRenovationChoice(milestone)
+    && state.activeRepairId !== milestone.id
+    && !chapterStorySeen(`before:${milestone.id}`);
+  return `<div class="longscroll-character-layer" data-character-scene="${milestone.id}" data-region-id="${cast.regionId}" aria-hidden="true">
+    ${renderLongscrollCharacter(cast.keeper, "keeper", "keeper", entering)}
+    ${renderLongscrollCharacter(cast.npc, "npc", npcId, entering, waiting)}
+  </div>`;
+}
+
+function refreshLongscrollCharacters() {
+  if (state.currentPage !== "inn") return;
+  const layer = els.innScene.querySelector(".longscroll-character-layer");
+  if (!layer) return;
+  layer.outerHTML = renderLongscrollCharacters();
 }
 
 function renderLongscrollMask(className, regionId) {
   const id = `${className}-${regionId}`;
-  const thresholdId = `${id}-threshold`;
+  const outlineId = `${id}-outline`;
+  const sweepId = `${id}-sweep`;
   const maskUrl = `${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`;
-  return `<svg class="${className}" aria-hidden="true" viewBox="0 0 1254 1254">
-    <filter id="${thresholdId}" color-interpolation-filters="sRGB">
-      <feComponentTransfer>
-        <feFuncR type="discrete" tableValues="0 0 0 0 1" />
-        <feFuncG type="discrete" tableValues="0 0 0 0 1" />
-        <feFuncB type="discrete" tableValues="0 0 0 0 1" />
-      </feComponentTransfer>
-    </filter>
-    <mask id="${id}" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha">
-      <image href="${maskUrl}" width="1254" height="1254" preserveAspectRatio="none" filter="url(#${thresholdId})" />
-    </mask>
-    <rect class="${className}-fill" width="1254" height="1254" mask="url(#${id})" />
+  return `<svg class="${className}" data-region-id="${regionId}" aria-hidden="true" viewBox="0 0 1254 1254">
+    <defs>
+      <mask id="${id}" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha">
+        <image href="${maskUrl}" width="1254" height="1254" preserveAspectRatio="none" />
+      </mask>
+      <filter id="${outlineId}" x="-12" y="-12" width="1278" height="1278" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="wide" />
+        <feComposite in="wide" in2="SourceAlpha" operator="out" result="ring" />
+        <feGaussianBlur in="ring" stdDeviation="1.6" result="softRing" />
+        <feFlood flood-color="#e1ad55" flood-opacity="0.22" result="glowInk" />
+        <feComposite in="glowInk" in2="softRing" operator="in" result="glow" />
+        <feFlood flood-color="#efcd86" flood-opacity="0.72" result="lineInk" />
+        <feComposite in="lineInk" in2="ring" operator="in" result="line" />
+        <feMerge>
+          <feMergeNode in="glow" />
+          <feMergeNode in="line" />
+        </feMerge>
+      </filter>
+      <linearGradient id="${sweepId}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#fff0b3" stop-opacity="0" />
+        <stop offset="0.5" stop-color="#fff0b3" stop-opacity="0.76" />
+        <stop offset="1" stop-color="#fff0b3" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    <g class="longscroll-highlight-outline" filter="url(#${outlineId})">
+      <rect width="1254" height="1254" fill="#fff" mask="url(#${id})" />
+    </g>
+    <g mask="url(#${id})">
+      <rect class="longscroll-highlight-sweep" x="-520" y="-220" width="260" height="1694" rx="130" fill="url(#${sweepId})" />
+    </g>
   </svg>`;
 }
 
@@ -2526,24 +3221,51 @@ function scheduleCurrentInnFocus(nextMilestone, regionIds) {
   if (state.currentPage !== "inn" || !regionIds?.length) return;
   const focusKey = nextMilestone ? nextMilestone.id : `level-${currentInnLevel().level}-complete`;
   if (lastInnFocusKey === focusKey) return;
-  requestAnimationFrame(() => {
-    centerInnSceneOnPosition(regionIds);
-    lastInnFocusKey = focusKey;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (centerInnSceneOnPosition(regionIds)) lastInnFocusKey = focusKey;
+  }));
+}
+
+function scheduleInnViewportRefocus() {
+  if (innViewportFocusFrame !== null) cancelAnimationFrame(innViewportFocusFrame);
+  innViewportFocusFrame = requestAnimationFrame(() => {
+    innViewportFocusFrame = null;
+    if (state.currentPage !== "inn") return;
+    if (LONGSCROLL_CAST_QA_MODE) {
+      const sceneNumber = Number(new URLSearchParams(location.search).get("scene")) || 1;
+      focusLongscrollCastQaScene(sceneNumber, { instant: true });
+      return;
+    }
+    const milestones = getMilestoneViews();
+    const next = nextRepairMilestone();
+    const characterMilestone = longscrollCharacterMilestone(next, milestones);
+    const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[next?.id]
+      ? characterMilestone
+      : next;
+    if (focusMilestone?.longscrollRegionIds?.length) {
+      centerInnSceneOnPosition(focusMilestone.longscrollRegionIds);
+    }
   });
 }
 
 function centerInnSceneOnPosition(regionIds) {
-  const target = els.innScene.querySelector(`.longscroll-current-region[data-region-id="${regionIds?.[0]}"]`);
-  if (!target) return;
+  const bounds = LONGSCROLL_REGION_BOUNDS[regionIds?.[0]];
+  if (!bounds) return false;
   const map = els.innScene.querySelector(".longscroll-map");
-  if (!map) return;
+  if (!map) return false;
+  const [left, top, width, height] = bounds;
   const mapRect = map.getBoundingClientRect();
-  const targetRect = target.getBoundingClientRect();
+  const sceneRect = els.innScene.getBoundingClientRect();
+  const scaleX = mapRect.width / map.offsetWidth || 1;
+  const scaleY = mapRect.height / map.offsetHeight || 1;
+  const focusX = mapRect.left + (left + width / 2) * scaleX;
+  const focusY = mapRect.top + (top + height / 2) * scaleY;
   els.innScene.scrollTo({
-    left: Math.max(0, els.innScene.scrollLeft + targetRect.left - mapRect.left + targetRect.width / 2 - els.innScene.clientWidth / 2),
-    top: Math.max(0, els.innScene.scrollTop + targetRect.top - mapRect.top + targetRect.height / 2 - els.innScene.clientHeight / 2),
+    left: Math.max(0, els.innScene.scrollLeft + (focusX - (sceneRect.left + sceneRect.width / 2)) / scaleX),
+    top: Math.max(0, els.innScene.scrollTop + (focusY - (sceneRect.top + sceneRect.height / 2)) / scaleY),
     behavior: "auto",
   });
+  return true;
 }
 
 function focusPendingInnPosition() {
@@ -2598,8 +3320,7 @@ function renderSceneHotspots(milestones) {
       if (choice) return "";
       const isCurrent = current?.id === milestone.id;
       const ready = isCurrent && milestone.done;
-      const affordable = state.activeRepairId === milestone.id || state.coins >= repairCost(milestone);
-      if (!isCurrent || !ready || !affordable) return "";
+      if (!isCurrent || !ready) return "";
       return `
         <button class="repair-node ready node-${milestone.scenePosition}" data-repair-node="${milestone.id}" aria-label="${milestone.sceneName ?? milestone.name}" title="可修缮"></button>
       `;
@@ -2618,7 +3339,7 @@ function handleLockedRepairClick(milestoneId) {
 function renderMainlineDock() {
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
-  const ready = next && next.done && !selectedRenovationChoice(next) && (state.activeRepairId === next.id || state.coins >= repairCost(next));
+  const ready = next && next.done && !selectedRenovationChoice(next);
   const level = currentInnLevel();
   const completedCount = milestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
   const repairValue = innRepairValue();
@@ -2774,22 +3495,46 @@ function handleRepairNodeClick(milestoneId, anchorElement) {
     return;
   }
   setRepairAnchor(anchorElement);
-  pulseRepairZone(milestone.scenePosition, () => openRepairModal(milestone.id, anchorElement));
+  playLongscrollRepairMarkerEntry(milestone, () => beginRepairMilestone(milestone));
 }
 
-function pulseRepairZone(position, afterPulse) {
-  const room = els.innScene.querySelector(".inn-room");
-  if (!room) {
-    afterPulse?.();
+function beginRepairMilestone(milestone) {
+  if (!milestone?.playerUrl) {
+    toast("该点位的修缮场景尚未接入。");
     return;
   }
+  if (state.activeRepairId && state.activeRepairId !== milestone.id) {
+    const activeMilestone = getMilestoneViews().find((entry) => entry.id === state.activeRepairId);
+    toast(`请先继续修缮：${activeMilestone?.sceneName ?? activeMilestone?.name ?? "当前区域"}。`);
+    return;
+  }
+  state.activeRepairId = milestone.id;
+  ensureRepairProgress(milestone);
+  saveState();
+  launchRepairPlayer(milestone);
+}
+
+function playLongscrollRepairMarkerEntry(milestone, afterAnimation) {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const marker = els.innScene.querySelector(`[data-repair-marker="${milestone.id}"]`);
+  if (reducedMotion || !marker) {
+    afterAnimation?.();
+    return;
+  }
+  if (marker.classList.contains("is-entering-repair")) return;
   clearTimeout(repairPulseTimer);
-  const pulseClass = `repair-focus-${position}`;
-  room.classList.add("repair-focus", pulseClass);
-  repairPulseTimer = setTimeout(() => {
-    room.classList.remove("repair-focus", pulseClass);
-    afterPulse?.();
-  }, 260);
+  marker.classList.add("is-entering-repair");
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(repairPulseTimer);
+    repairPulseTimer = null;
+    marker.classList.remove("is-entering-repair");
+    afterAnimation?.();
+  };
+  marker.addEventListener("animationend", finish, { once: true });
+  repairPulseTimer = setTimeout(finish, 320);
 }
 
 function openRepairModal(milestoneId, anchorElement) {
@@ -2840,7 +3585,7 @@ function openRepairProgressModal(milestone, mode = "entry") {
     `;
   }).join("");
   const followingMilestone = nextRepairMilestone();
-  els.repairNextLine.textContent = mode === "entry"
+  els.repairNextLine.textContent = mode === "entry" || mode === "unlock"
     ? `当前：修缮${milestone.sceneName ?? milestone.name}`
     : nextInChapter
       ? `下一处：修缮${nextInChapter.sceneName ?? nextInChapter.name}`
@@ -2857,8 +3602,8 @@ function openRepairProgressModal(milestone, mode = "entry") {
   els.repairChoices.innerHTML = "";
   els.repairChoices.hidden = true;
   els.repairEntryMeta.hidden = mode === "completion";
-  els.repairCostIcon.hidden = mode === "completion";
-  els.repairConfirmBtn.classList.toggle("progress-continue", mode === "completion");
+  els.repairCostIcon.hidden = mode === "completion" || mode === "unlock";
+  els.repairConfirmBtn.classList.toggle("progress-continue", mode === "completion" || mode === "unlock");
   const qaPosition = renderRepairQaNavigation(milestone);
   if (REPAIR_PROGRESS_QA_MODE) {
     els.repairCostIcon.hidden = true;
@@ -2875,6 +3620,12 @@ function openRepairProgressModal(milestone, mode = "entry") {
     els.repairConfirmBtn.classList.add("ready");
     els.repairConfirmBtn.classList.remove("insufficient", "unselected");
     els.repairConfirmBtn.setAttribute("aria-label", followingMilestone ? "返回长卷查看下一处修缮" : "返回流沙驿");
+  } else if (mode === "unlock") {
+    els.repairCoinProgress.textContent = state.currentPage === "board" ? "前往长卷" : "查看修缮点";
+    els.repairConfirmBtn.disabled = false;
+    els.repairConfirmBtn.classList.add("ready");
+    els.repairConfirmBtn.classList.remove("insufficient", "unselected");
+    els.repairConfirmBtn.setAttribute("aria-label", `前往长卷查看${milestone.sceneName ?? milestone.name}`);
   } else {
     updateRepairCostGate(milestone);
   }
@@ -3010,18 +3761,16 @@ function selectRepairChoice(choiceId) {
 }
 
 function updateRepairCostGate(milestone) {
-  const cost = milestone ? repairCost(milestone) : 0;
   const continuing = milestone && state.activeRepairId === milestone.id;
-  const enough = continuing || state.coins >= cost;
-  els.repairCoinProgress.textContent = continuing ? "继续修缮" : enough ? "进入修缮" : `还差${Math.max(0, cost - state.coins)}铜钱`;
-  els.repairConfirmBtn.disabled = !enough;
-  els.repairConfirmBtn.classList.toggle("ready", enough);
-  els.repairConfirmBtn.classList.toggle("insufficient", !continuing && state.coins < cost);
+  const canEnter = Boolean(milestone);
+  els.repairCoinProgress.textContent = continuing ? "继续修缮" : "进入修缮";
+  els.repairConfirmBtn.disabled = !canEnter;
+  els.repairConfirmBtn.classList.toggle("ready", canEnter);
+  els.repairConfirmBtn.classList.remove("insufficient");
   els.repairConfirmBtn.classList.remove("unselected");
-  if (!continuing && state.coins < cost) triggerBoardReturnGuide();
   els.repairConfirmBtn.setAttribute(
     "aria-label",
-    continuing ? "继续未完成的修缮" : enough ? `消耗${cost}枚铜钱进入修缮` : `铜钱不足，还差${Math.max(0, cost - state.coins)}枚`,
+    continuing ? "继续未完成的修缮" : "进入修缮，逐处支付铜钱",
   );
 }
 
@@ -3032,8 +3781,25 @@ function continueAfterRepairProgress() {
   closeRepairModalToAnchor(() => {
     repairModalMode = "entry";
     if (!next) return;
-    pendingInnFocusPosition = next.scenePosition;
-    centerInnSceneOnPosition(next.scenePosition);
+    pendingInnFocusPosition = next.longscrollRegionIds;
+    centerInnSceneOnPosition(next.longscrollRegionIds);
+  });
+}
+
+function continueAfterRepairUnlock() {
+  const milestone = getMilestoneViews().find((entry) => entry.id === activeRepairMilestoneId);
+  activeRepairMilestoneId = null;
+  activeRepairChoiceId = null;
+  closeRepairModalToAnchor(() => {
+    repairModalMode = "entry";
+    if (!milestone) return;
+    pendingInnFocusPosition = milestone.longscrollRegionIds;
+    if (state.currentPage === "board") {
+      switchPage("inn");
+      return;
+    }
+    lastInnFocusKey = null;
+    requestAnimationFrame(() => centerInnSceneOnPosition(milestone.longscrollRegionIds));
   });
 }
 
@@ -3046,6 +3812,10 @@ function finalizeRepairChoice() {
     continueAfterRepairProgress();
     return;
   }
+  if (repairModalMode === "unlock") {
+    continueAfterRepairUnlock();
+    return;
+  }
   if (!activeRepairMilestoneId) return;
   const milestone = getMilestoneViews().find((entry) => entry.id === activeRepairMilestoneId);
   if (!milestone || (state.activeRepairId && state.activeRepairId !== milestone.id)) return;
@@ -3053,17 +3823,8 @@ function finalizeRepairChoice() {
     toast("该点位的修缮场景尚未接入。");
     return;
   }
-  if (!state.activeRepairId && state.coins < repairCost(milestone)) {
-    triggerBoardReturnGuide();
-    return;
-  }
-  if (!state.activeRepairId) {
-    state.coins -= repairCost(milestone);
-    state.activeRepairId = milestone.id;
-    saveState();
-  }
   closeRepairModalToAnchor(() => {
-    playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone));
+    beginRepairMilestone(milestone);
   });
 }
 
@@ -3116,6 +3877,7 @@ function playChapterStory(segmentId, onComplete, options = {}) {
         markChapterOpeningSeen(segmentId);
         saveState();
         renderStoryArchiveEntry();
+        refreshLongscrollCharacters();
       }
       onComplete?.();
     },
@@ -3141,7 +3903,7 @@ function chapterStoryContinuation(segmentId) {
   if (phase === "after" && milestoneId) {
     return () => {
       const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
-      if (milestone) openRepairProgressModal(milestone, "completion");
+      if (milestone) restoreRepairReturnView(milestone);
     };
   }
   const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
@@ -3486,46 +4248,329 @@ function launchRepairPlayer(milestone) {
     toast("该点位的修缮场景尚未接入。");
     return;
   }
+  state.activeRepairId = milestone.id;
+  setRepairOrientation(false, { native: false });
+  ensureRepairProgress(milestone);
+  openRepairMilestoneId = milestone.id;
+  saveState();
   const playerUrl = new URL(milestone.playerUrl, location.href);
   playerUrl.searchParams.set("embedded", "1");
   playerUrl.searchParams.set("repairId", milestone.playerPointId);
+  playerUrl.searchParams.set("milestoneId", milestone.id);
   els.repairPlayerFrame.src = playerUrl.href;
   els.repairPlayerLayer.hidden = false;
 }
 
-function handleRepairPlayerMessage(event) {
-  if (event.origin !== location.origin || event.source !== els.repairPlayerFrame?.contentWindow) return;
-  if (event.data?.type !== "silkroad:repair-complete") return;
-  const milestone = getMilestoneViews().find((entry) => entry.id === state.activeRepairId);
-  if (!milestone || event.data.repairId !== milestone.playerPointId) return;
-  completeRepairFromPlayer(milestone.id);
+let repairLandscapeMode = false;
+
+function updateRepairOrientationControl() {
+  if (!els.repairOrientationBtn) return;
+  els.repairOrientationBtn.setAttribute("aria-pressed", String(repairLandscapeMode));
+  els.repairOrientationBtn.setAttribute(
+    "aria-label",
+    repairLandscapeMode ? "返回竖屏修缮" : "推荐横屏修缮",
+  );
+  const label = els.repairOrientationBtn.querySelector("b");
+  if (label) label.textContent = repairLandscapeMode ? "返回竖屏" : "推荐横屏修缮";
 }
 
-function completeRepairFromPlayer(milestoneId) {
+async function setRepairOrientation(enabled, { native = true } = {}) {
+  repairLandscapeMode = Boolean(enabled);
+  els.repairPlayerLayer?.classList.toggle("is-landscape", repairLandscapeMode);
+  updateRepairOrientationControl();
+
+  if (!native) return;
+  if (repairLandscapeMode) {
+    try {
+      if (!document.fullscreenElement && els.repairPlayerLayer?.requestFullscreen) {
+        await els.repairPlayerLayer.requestFullscreen({ navigationUI: "hide" });
+      }
+      await screen.orientation?.lock?.("landscape");
+    } catch {
+      // The CSS rotation below is the fallback for browsers that cannot lock orientation.
+    }
+    return;
+  }
+
+  try {
+    screen.orientation?.unlock?.();
+    if (document.fullscreenElement === els.repairPlayerLayer) await document.exitFullscreen();
+  } catch {
+    // Portrait restoration is already guaranteed by removing the layout class.
+  }
+}
+
+function toggleRepairOrientation() {
+  setRepairOrientation(!repairLandscapeMode);
+}
+
+function ensureRepairProgress(milestone) {
+  if (!state.repairProgress || typeof state.repairProgress !== "object") state.repairProgress = {};
+  const current = state.repairProgress[milestone.id] && typeof state.repairProgress[milestone.id] === "object"
+    ? state.repairProgress[milestone.id]
+    : {};
+  const completedParts = state.renovationChoices[milestone.id]
+    ? Array.from({ length: REPAIR_PART_COUNT }, (_, index) => index)
+    : normalizeRepairCompletedParts(current.completedParts ?? current.completedPartIds);
+  const partCosts = repairPartCosts(milestone);
+  const remainingCost = partCosts.reduce(
+    (sum, cost, index) => sum + (completedParts.includes(index) ? 0 : cost),
+    0,
+  );
+  const progress = {
+    pointId: milestone.playerPointId,
+    completedParts,
+    prepaidRemaining: state.renovationChoices[milestone.id]
+      ? 0
+      : Math.min(remainingCost, Math.max(0, Math.floor(Number(current.prepaidRemaining) || 0))),
+  };
+  state.repairProgress[milestone.id] = progress;
+  return progress;
+}
+
+function repairPlayerMilestone(message = {}) {
+  const milestoneId = openRepairMilestoneId ?? state.activeRepairId;
   const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
-  if (!milestone || state.activeRepairId !== milestoneId || state.renovationChoices[milestoneId]) return;
+  if (!milestone) return null;
+  if (message.repairId != null && String(message.repairId) !== String(milestone.playerPointId)) return null;
+  return milestone;
+}
+
+function repairPlayerTargetOrigin() {
+  return location.origin === "null" ? "*" : location.origin;
+}
+
+function postRepairPlayerMessage(message) {
+  els.repairPlayerFrame?.contentWindow?.postMessage(message, repairPlayerTargetOrigin());
+}
+
+function sendRepairPlayerInit(milestone) {
+  const progress = ensureRepairProgress(milestone);
+  postRepairPlayerMessage({
+    type: "silkroad:repair-init",
+    protocolVersion: REPAIR_PROTOCOL_VERSION,
+    repairId: milestone.playerPointId,
+    coins: repairPlayerCoinBalance(progress),
+    walletCoins: state.coins,
+    partCosts: repairPartCosts(milestone),
+    completedParts: [...progress.completedParts],
+    nextPartIndex: firstIncompleteRepairPart(progress.completedParts),
+    prepaidRemaining: progress.prepaidRemaining,
+  });
+}
+
+function repairPlayerCoinBalance(progress) {
+  return state.coins + Math.max(0, Number(progress?.prepaidRemaining) || 0);
+}
+
+function handleRepairPlayerLoad() {
+  const milestone = repairPlayerMilestone();
+  if (milestone && !els.repairPlayerLayer?.hidden) sendRepairPlayerInit(milestone);
+}
+
+function handleRepairPlayerMessage(event) {
+  if ((location.origin !== "null" && event.origin !== location.origin)
+    || event.source !== els.repairPlayerFrame?.contentWindow
+    || !event.data
+    || typeof event.data !== "object") return;
+  const message = event.data;
+  const milestone = repairPlayerMilestone(message);
+  if (!milestone) return;
+
+  if (message.type === "silkroad:repair-ready") {
+    if (Number(message.partCount) !== REPAIR_PART_COUNT) {
+      console.warn(`Repair player ${milestone.playerPointId} reported ${message.partCount} parts; expected ${REPAIR_PART_COUNT}.`);
+    }
+    sendRepairPlayerInit(milestone);
+    return;
+  }
+
+  if (message.type === "silkroad:repair-part-request") {
+    handleRepairPartRequest(milestone, message);
+    return;
+  }
+
+  if (message.type === "silkroad:repair-part-applied") {
+    const partIndex = Number.isInteger(message.partIndex) ? message.partIndex : null;
+    const progress = ensureRepairProgress(milestone);
+    if (partIndex === null || !progress.completedParts.includes(partIndex)) {
+      sendRepairPlayerInit(milestone);
+    }
+    return;
+  }
+
+  if (message.type === "silkroad:repair-exit") {
+    closeRepairPlayer(milestone, { completed: Boolean(state.renovationChoices[milestone.id]) });
+    return;
+  }
+
+  if (message.type === "silkroad:repair-complete") {
+    completeRepairFromPlayer(milestone.id);
+  }
+}
+
+function handleRepairPartRequest(milestone, message) {
+  const partIndex = Number.isInteger(message.partIndex) ? message.partIndex : null;
+  const result = commitRepairPart(milestone, partIndex);
+  const progress = ensureRepairProgress(milestone);
+  postRepairPlayerMessage({
+    type: "silkroad:repair-part-result",
+    protocolVersion: REPAIR_PROTOCOL_VERSION,
+    repairId: milestone.playerPointId,
+    partIndex: partIndex ?? message.partIndex,
+    ok: result.ok,
+    coins: repairPlayerCoinBalance(progress),
+    walletCoins: state.coins,
+    prepaidRemaining: progress.prepaidRemaining,
+    cost: result.partCost,
+    charged: result.charged,
+    reason: result.reason,
+    completedParts: result.completedParts,
+    nextPartIndex: firstIncompleteRepairPart(result.completedParts),
+    allComplete: result.allComplete,
+  });
+  if (!result.ok && result.reason) toast(result.reason);
+}
+
+function commitRepairPart(milestone, partIndex) {
+  const partCosts = repairPartCosts(milestone);
+  const progress = ensureRepairProgress(milestone);
+  if (!Number.isInteger(partIndex) || partIndex < 0 || partIndex >= partCosts.length) {
+    return {
+      ok: false,
+      partCost: 0,
+      charged: 0,
+      reason: "未找到这处修缮部位。",
+      completedParts: [...progress.completedParts],
+      allComplete: false,
+    };
+  }
+  const partCost = partCosts[partIndex];
+  if (progress.completedParts.includes(partIndex)) {
+    return {
+      ok: true,
+      partCost,
+      charged: 0,
+      reason: "",
+      completedParts: [...progress.completedParts],
+      allComplete: progress.completedParts.length === REPAIR_PART_COUNT,
+    };
+  }
+
+  const nextPartIndex = firstIncompleteRepairPart(progress.completedParts);
+  if (partIndex !== nextPartIndex) {
+    return {
+      ok: false,
+      partCost,
+      charged: 0,
+      reason: nextPartIndex === null ? "该处修缮已经完成。" : `请先修缮第 ${nextPartIndex + 1} 处。`,
+      completedParts: [...progress.completedParts],
+      allComplete: nextPartIndex === null,
+    };
+  }
+
+  const prepaidUsed = Math.min(progress.prepaidRemaining, partCost);
+  const charged = partCost - prepaidUsed;
+  if (state.coins < charged) {
+    return {
+      ok: false,
+      partCost,
+      charged: 0,
+      reason: `铜钱不足，还差 ${charged - state.coins} 枚。`,
+      completedParts: [...progress.completedParts],
+      allComplete: false,
+    };
+  }
+
+  state.coins -= charged;
+  progress.prepaidRemaining -= prepaidUsed;
+  progress.completedParts.push(partIndex);
+  progress.completedParts.sort((left, right) => left - right);
+  const allComplete = progress.completedParts.length === REPAIR_PART_COUNT;
+  if (allComplete) finalizeRepairMilestoneState(milestone);
+  if (els.coins) els.coins.textContent = state.coins;
+  saveState();
+  return {
+    ok: true,
+    partCost,
+    charged,
+    reason: "",
+    completedParts: [...progress.completedParts],
+    allComplete,
+  };
+}
+
+function finalizeRepairMilestoneState(milestone) {
+  if (state.renovationChoices[milestone.id]) return false;
+  const progress = ensureRepairProgress(milestone);
+  progress.completedParts = Array.from({ length: REPAIR_PART_COUNT }, (_, index) => index);
+  progress.prepaidRemaining = 0;
   state.activeRepairId = null;
-  state.renovationChoices[milestoneId] = "completed";
+  state.renovationChoices[milestone.id] = "completed";
   applyRepairRewards(milestone);
   syncGeneratorCategoryUnlocks({ announce: true });
   if (isChapterRepairComplete(milestone.chapter)) applyChapterCompletionReward(milestone.chapter);
   syncVisibleOrders();
   const nextAfterRepair = nextRepairMilestone();
-  lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
-  pendingInnFocusPosition = nextAfterRepair?.scenePosition ?? null;
+  lastInnFocusKey = null;
+  pendingInnFocusPosition = nextAfterRepair?.longscrollRegionIds ?? null;
   activeRepairMilestoneId = null;
   activeRepairChoiceId = null;
+  return true;
+}
+
+function completeRepairFromPlayer(milestoneId) {
+  const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
+  if (!milestone || openRepairMilestoneId !== milestoneId) return;
+  const progress = ensureRepairProgress(milestone);
+  if (!state.renovationChoices[milestoneId] && progress.completedParts.length !== REPAIR_PART_COUNT) {
+    sendRepairPlayerInit(milestone);
+    return;
+  }
+  if (!state.renovationChoices[milestoneId]) {
+    finalizeRepairMilestoneState(milestone);
+    saveState();
+  }
+  closeRepairPlayer(milestone, { completed: true });
+}
+
+async function closeRepairPlayer(milestone, { completed = false } = {}) {
+  if (completed) repairReturnCastMilestoneId = milestone.id;
+  openRepairMilestoneId = null;
+  await setRepairOrientation(false);
   els.repairPlayerLayer.hidden = true;
   els.repairPlayerFrame.src = "about:blank";
+  if (state.currentPage !== "inn") state.currentPage = "inn";
   render();
-  centerInnSceneOnPosition(milestone.scenePosition);
+  centerInnSceneOnPosition(milestone.longscrollRegionIds);
+  saveState();
+  if (!completed) return;
   playRepairCompleteEffect(milestone.scenePosition);
   showRepairCompleteCue();
-  saveState();
-  const completedMilestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
   setTimeout(() => {
-    playChapterStory(`after:${milestoneId}`, () => openRepairProgressModal(completedMilestone, "completion"));
+    requestAnimationFrame(() => {
+      playChapterStory(`after:${milestone.id}`, () => restoreRepairReturnView(milestone));
+    });
   }, 280);
+}
+
+function restoreRepairReturnView(milestone) {
+  if (state.currentPage !== "inn") state.currentPage = "inn";
+  repairReturnCastMilestoneId = null;
+  lastInnFocusKey = null;
+  render();
+  const next = nextRepairMilestone();
+  const characterMilestone = longscrollCharacterMilestone(next);
+  const focusMilestone = LONGSCROLL_LOCATION_CAST[next?.id] ? next : characterMilestone ?? next ?? milestone;
+  pendingInnFocusPosition = null;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (focusMilestone?.longscrollRegionIds?.length) {
+      centerInnSceneOnPosition(focusMilestone.longscrollRegionIds);
+      lastInnFocusKey = focusMilestone.id;
+    }
+  }));
+  saveState();
+  setTimeout(maybePromptRepairGuide, 0);
 }
 
 function upgradeInn() {
@@ -3586,6 +4631,7 @@ function playInnUpgradeReveal(level) {
     els.innUpgradeReveal.classList.remove("is-playing");
     els.innUpgradeReveal.hidden = true;
     innUpgradeRevealTimer = null;
+    maybePromptRepairGuide();
   }, reducedMotion ? 1200 : 2800);
 }
 
@@ -4283,7 +5329,12 @@ function renderOrders() {
     deliver.textContent = "交付";
     deliver.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (!canComplete) playSfx("click", { markSpecific: false });
+      if (!canComplete) {
+        playSfx("click", { markSpecific: false });
+        const firstMissing = demandStates.find((entry) => entry.missing > 0);
+        toast(firstMissing ? `还缺${firstMissing.item.name}${firstMissing.missing}份。` : "餐食还没有备齐。");
+        return;
+      }
       completeOrder(order.id);
     });
 
@@ -4373,6 +5424,14 @@ function renderBoard() {
       }
       cell.append(img);
       if (isGeneratorPiece(item)) {
+        cell.classList.add("generator-cell");
+        const sparkles = document.createElement("span");
+        sparkles.className = "generator-sparkles";
+        sparkles.setAttribute("aria-hidden", "true");
+        for (let sparkleIndex = 0; sparkleIndex < 6; sparkleIndex += 1) {
+          sparkles.append(Object.assign(document.createElement("i"), { className: "generator-sparkle" }));
+        }
+        cell.append(sparkles);
         const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
         const badge = document.createElement("span");
         badge.className = "generator-badge";
@@ -4621,7 +5680,7 @@ function renderSelected() {
         ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
         : neighborEmptyIndices(state.selectedIndex).length > 0
           ? `本轮剩余${generatorState.remainingOutputs}/${batchSize}份，奶食即将投放`
-          : `本轮剩余${generatorState.remainingOutputs}/${batchSize}份，周边无空格`;
+          : `本轮剩余${generatorState.remainingOutputs}/${batchSize}份；腾出奶房相邻格，或移动奶房后继续`;
     els.selectedName.textContent = /Lv\d+$/.test(item.name) ? item.name : item.name + " · Lv" + (item.level ?? 1);
     els.selectedText.textContent = productionStatus + " · " + generatorUpgradeSummary(item);
     setSellButtonAction(getPieceRemovalAction(item));
@@ -4666,8 +5725,9 @@ function getPieceRemovalAction(item) {
     ? cleanup.generatorSellValuesByQuarter
     : isGeneratorMaterialPiece(item)
       ? cleanup.generatorMaterialSellValuesByQuarter
-      : cleanup.foodSellValuesByQuarter;
-  const value = Math.max(0, Math.min(3, Number(values?.[quarter - 1]) || 0));
+      : cleanup.foodSellValuesByLevel;
+  const valueIndex = isGeneratorPiece(item) || isGeneratorMaterialPiece(item) ? quarter - 1 : level - 1;
+  const value = Math.max(0, Math.floor(Number(values?.[valueIndex]) || 0));
   return {
     mode: value === 0 ? "delete" : "sell",
     value,
@@ -4768,7 +5828,7 @@ function openSelectedPieceDetail() {
       ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后恢复${batchSize}份库存。`
       : neighborEmptyIndices(state.selectedIndex).length > 0
         ? `本轮还剩${generatorState.remainingOutputs}/${batchSize}份，将自动投放到周边空格。`
-        : `本轮还剩${generatorState.remainingOutputs}/${batchSize}份；周围没有空格，腾出后会继续投放。`;
+        : `本轮还剩${generatorState.remainingOutputs}/${batchSize}份；腾出奶房相邻格，或移动奶房后继续投放。`;
     els.pieceDetailText.textContent = productionText + outputChanceText + generatorUpgradeDetail(item);
   } else {
     els.pieceDetailText.textContent = codex?.shortText ?? item.modernName ?? "这枚棋子还没有配置详情。";
@@ -5102,8 +6162,16 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
   const itemId = state.board[index];
   const item = itemId ? byId.get(itemId) : null;
 
-  // Manual generators own this interaction completely: never layer the generic click over it.
+  // A second tap on the same generator should merge, while a single tap still produces food.
   if (item?.type === "manual_generator") {
+    if (prevSelected !== null && prevSelected !== index && !isBoardCellLocked(prevSelected)
+      && state.board[prevSelected] === itemId) {
+      mergeCells(prevSelected, index, itemId);
+      render();
+      saveState();
+      maybePromptRepairGuide();
+      return;
+    }
     activateManualGenerator(index);
     return;
   }
@@ -5276,10 +6344,7 @@ function generatorUpgradeSummary(item) {
   if (status.maxLevel) return "已达最高等级";
   const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
   if (sameLevelCount >= 2) return `可合成Lv${status.targetLevel} · 同级2/2`;
-  if (status.rewardClaimed) return `升Lv${status.targetLevel} · 案板同级${sameLevelCount}/2`;
-  const progress = `同系订单${Math.min(status.lineOrders, status.requiredLineOrders)}/${status.requiredLineOrders}`;
-  if (status.requiresMasteryOrder && !status.masteryComplete) return `升Lv${status.targetLevel} · ${progress} · 大师订单`;
-  return `升Lv${status.targetLevel} · ${progress}`;
+  return `升Lv${status.targetLevel} · 同级${sameLevelCount}/2`;
 }
 
 function generatorUpgradeDetail(item) {
@@ -5288,11 +6353,7 @@ function generatorUpgradeDetail(item) {
   const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
   const mergeRule = `两个同类Lv${item.level}生成器可直接合成Lv${status.targetLevel}，不受驿站等级限制。`;
   if (sameLevelCount >= 2) return `${mergeRule}当前案板已凑齐，拖到同级生成器上即可升级。`;
-  if (status.rewardClaimed) return `${mergeRule}对应进度奖励已经领取，当前案板同级${sameLevelCount}/2。`;
-  const condition = status.requiresMasteryOrder
-    ? `同系订单达到${status.requiredLineOrders}单并完成大师订单`
-    : `同系订单达到${status.requiredLineOrders}单`;
-  return `${mergeRule}${condition}后，会发放一枚${status.categoryName} Lv${status.rewardLevel}。`;
+  return `${mergeRule}Lv1生成器可由同系材料逐级合成；同系订单达标后，也可从奖励行囊领取副本。`;
 }
 function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   const lockedItemId = lockedCellItemId(toIndex);
@@ -5353,6 +6414,9 @@ function mergeCells(fromIndex, toIndex, itemId) {
     state.tutorialStep = 2;
   }
   unlockCodex(byId.get(state.board[toIndex])?.codexId);
+  if (byId.get(state.board[toIndex])?.type === "auto_generator") {
+    queueMicrotask(() => tickGenerators());
+  }
 }
 
 function chainMergeAt(index) {
@@ -5406,7 +6470,7 @@ function activateManualGenerator(index) {
   }
   if (!hasEmptyCell()) {
     render();
-    toast("案板已满，暂时放不下新食材。");
+    toast("案板已满，先合成或收进柜中腾出空格。");
     return;
   }
   if (state.stamina < item.generator.staminaCost) {
@@ -5415,7 +6479,9 @@ function activateManualGenerator(index) {
     return;
   }
 
+  const staminaWasFull = state.stamina >= state.staminaMax;
   state.stamina -= item.generator.staminaCost;
+  if (staminaWasFull && state.stamina < state.staminaMax) state.lastTick = Date.now();
   generatorState.charges -= 1;
   if (generatorState.charges <= 0) {
     generatorState.charges = 0;
@@ -5640,22 +6706,8 @@ function unlockCodex(codexId) {
 }
 
 function generateItem() {
-  const index = firstEmptyIndex();
-  if (index === -1) {
-    toast("案板已满，先合成、出售或收进行囊吧。");
-    return;
-  }
-  if (state.board.some((itemId) => byId.get(itemId)?.generatorType === "mill")) {
-    toast("案板上已有磨坊，直接点击磨坊产出食材。");
-    return;
-  }
-  state.board[index] = "gen_mill_01";
-  state.selectedIndex = index;
-  state.pulseIndex = index;
-  clearPulseSoon();
-  keeper("补回了一座小石磨。点击它才会消耗驼铃产出食材。");
-  render();
-  saveState();
+  toast("新的磨坊需要由同类材料逐级合成。");
+  keeper("收集并合成磨坊材料，才能做出新的小石磨。");
 }
 
 function pickGeneratedItem() {
@@ -5708,6 +6760,7 @@ function completeOrder(orderId) {
   }
   render();
   saveState();
+  maybePromptRepairGuide();
 }
 
 function effectiveBoardItemCount(itemId) {
@@ -5872,19 +6925,17 @@ function completeOrderFromDetail() {
 }
 
 function maybePromptRepairGuide() {
-  if (state.currentPage !== "board") return;
+  if (state.currentPage !== "inn") return;
   const gate = canEnterRepairPage();
   const milestone = gate.milestone;
   if (!gate.ok || !milestone) return;
-  if (state.activeRepairId !== milestone.id && state.coins < repairCost(milestone)) return;
+  if (state.activeRepairId === milestone.id || !els.repairPlayerLayer?.hidden) return;
   if (state.repairPromptedFor.includes(milestone.id)) return;
+  if (state.activeChapterStory || document.querySelector("dialog[open]")) return;
   state.repairPromptedFor.push(milestone.id);
   saveState();
-  els.repairGuideTitle.textContent = milestone.sceneName ?? milestone.name;
-  els.repairGuideAvatar.src = storyAvatarSrc(milestone.npcId);
-  els.repairGuideAvatar.alt = milestone.speaker ?? "旅人";
-  els.repairGuideText.textContent = "积攒足够铜钱后，点底部「流沙驿」进入修缮长卷。";
-  els.repairGuideModal.showModal();
+  repairAnchorRect = null;
+  openRepairProgressModal(milestone, "unlock");
 }
 
 function recipeHint(item) {
@@ -5926,7 +6977,7 @@ function orderUnlockConditionMet(unlock) {
 }
 
 function highestOwnedGeneratorLevel(categoryId) {
-  return [...state.board, ...state.bag, ...state.pendingGeneratorRewards]
+  return [...state.board, ...state.bag]
     .map((itemId) => byId.get(migrateLegacyGeneratorId(itemId)))
     .filter((item) => isGeneratorPiece(item) && item.generatorType === categoryId)
     .reduce((highest, item) => Math.max(highest, Number(item.level) || 1), 0);
@@ -6258,25 +7309,8 @@ function chooseRenovation(milestoneId, choiceId) {
     toast(milestone.nextText);
     return;
   }
-  if (state.coins < repairCost(milestone)) {
-    triggerBoardReturnGuide();
-    return;
-  }
-  state.coins -= repairCost(milestone);
-  state.renovationChoices[milestoneId] = choiceId;
-  applyRepairRewards(milestone);
-  syncVisibleOrders();
-  const nextAfterRepair = nextRepairMilestone();
-  lastInnFocusKey = nextAfterRepair ? nextAfterRepair.id : `level-${currentInnLevel().level}-complete`;
-  pendingInnFocusPosition = nextAfterRepair?.scenePosition ?? null;
   if (els.repairModal.open) closeRepairModalToAnchor();
-  activeRepairMilestoneId = null;
-  activeRepairChoiceId = null;
-  render();
-  centerInnSceneOnPosition(milestone.scenePosition);
-  playRepairCompleteEffect(milestone.scenePosition);
-  showRepairCompleteCue();
-  saveState();
+  beginRepairMilestone(milestone);
 }
 
 function playRepairCompleteEffect(position) {
@@ -6337,6 +7371,8 @@ function getMilestoneViews() {
       npcId: milestone.npcId,
       conditions: milestone.conditions,
       repairCost: milestone.repairCost,
+      repairParts: milestone.repairParts,
+      renovationChoices: milestone.renovationChoices,
       storyText: milestone.storyText,
       repairValue: milestone.repairValue,
       playerUrl: milestone.playerUrl,
@@ -6435,7 +7471,6 @@ function rewardText(milestone) {
   if (rewards.coins) labels.push(`价值${rewards.coins}铜币的铜币棋子收入行囊`);
   if (rewards.boardColumns && rewards.boardRows) labels.push(`案板 ${rewards.boardColumns}x${rewards.boardRows}`);
   if (rewards.staminaMax) labels.push(`驼铃上限 ${rewards.staminaMax}`);
-  if (rewards.staminaRecoverMinutes) labels.push(`${rewards.staminaRecoverMinutes}分钟恢复1点`);
   if (rewards.unlockOrders?.length) labels.push("开放稀有订单");
   if (rewards.giftPacks?.length) labels.push(rewards.giftPacks.map((entry) => GIFT_PACKS[entry.id]?.name ?? "礼盒包").join("、"));
   if (rewards.showLv2Preview) labels.push("显示Lv2预告");
@@ -6448,7 +7483,6 @@ function applyRepairRewards(milestone) {
     grantCoinRewardToBag(rewards.coins);
   }
   if (rewards.staminaMax) state.staminaMax = Math.max(state.staminaMax, rewards.staminaMax);
-  if (rewards.staminaRecoverMinutes) state.recoverMinutes = rewards.staminaRecoverMinutes;
   if (rewards.unlockOrders?.length) {
     rewards.unlockOrders.forEach((orderId) => {
       if (!state.visibleOrders.includes(orderId)) state.visibleOrders.push(orderId);
@@ -6708,6 +7742,14 @@ function renderBag() {
     slot.addEventListener("click", () => placeGiftPackOnBoard(entry.id));
     grid.append(slot);
   });
+
+  const occupiedSlotCount = rewardEntries.length + giftEntries.length;
+  for (let index = occupiedSlotCount; index < 7; index += 1) {
+    const slot = document.createElement("span");
+    slot.className = "bag-slot bag-slot-empty";
+    slot.setAttribute("aria-hidden", "true");
+    grid.append(slot);
+  }
   els.bagList.append(grid);
 }
 
@@ -7417,7 +8459,7 @@ function debugAddDough() {
 function debugUnlockRenovation() {
   state.completedOrders = Math.max(state.completedOrders, 3);
   state.tutorialStep = Math.max(state.tutorialStep, 4);
-  state.coins = Math.max(state.coins, 260);
+  state.coins = Math.max(state.coins, 2600);
   state.repairPromptedFor = [...new Set([...state.repairPromptedFor, "tutorial_complete"])];
   keeper("调试：已进入修缮预览，可点击当前高亮节点。");
   if (els.bagModal.open) els.bagModal.close();

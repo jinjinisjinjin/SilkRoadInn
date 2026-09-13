@@ -7,17 +7,19 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=stamina-camel-chain-dunhuang-door-v5" />
+    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
-    <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v4" />
+    <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v12" />
-    <link rel="stylesheet" href="./inn-map-ui.css?v=food-codex-icon-v1" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1" />
+    <link rel="stylesheet" href="./longscroll-characters.css?v=repair-site-marker-v4-phone-fit-v1" />
     <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
+    <link rel="stylesheet" href="./generator-chain-qa.css?v=generator-chain-v1" />
   </head>
   <body>
     <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
-      <img class="startup-loading-poster" src="./assets/ui/loading_poster_character_v1.webp" alt="丝路肆食" fetchpriority="high" />
+      <img class="startup-loading-poster" src="./assets/ui/loading_poster_character_v2.jpg" alt="丝路食肆" fetchpriority="high" />
       <div class="startup-loading-footer">
         <div class="startup-loading-line">
           <span id="startupLoadingStatus">正在翻开丝路食鉴</span>
@@ -36,7 +38,12 @@
           <div class="logo">丝路食肆</div>
           <div class="resources">
             <span class="resource-pill coin-resource"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="coins">0</b></span>
-            <span class="resource-pill plus-resource"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="stamina">0</b><button id="staminaPlusBtn" class="resource-plus" aria-label="补充驼铃">+</button></span>
+            <span class="resource-pill plus-resource board-stamina-resource">
+              <span class="board-stamina-ring" id="boardStaminaRing"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /></span>
+              <b id="stamina">0</b>
+              <span class="board-stamina-timer"><span id="boardStaminaTimerLabel">下次 +1</span><strong id="boardStaminaTimerValue">02:00</strong></span>
+              <button id="staminaPlusBtn" class="resource-plus" aria-label="补充驼铃">+</button>
+            </span>
             <span class="resource-pill plus-resource ruby-resource"><i class="ruby-icon" aria-hidden="true"></i><b id="gems">0</b><button id="gemPlusBtn" class="resource-plus" aria-label="补充红宝石">+</button></span>
             <button id="dailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="领取今日宝袋" title="领取今日宝袋">
               <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
@@ -63,7 +70,7 @@
           </div>
         </section>
         <section class="board-wrap">
-          <button id="generateBtn" class="board-tool"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>补磨坊</span></button>
+          <button id="generateBtn" class="board-tool" hidden><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><span>补磨坊</span></button>
           <div class="board" id="board"></div>
         </section>
         <section class="board-bottom-hud" aria-label="棋盘底部操作区">
@@ -90,7 +97,12 @@
         <header class="inn-map-hud">
           <div class="inn-resources" aria-label="驿站资源">
             <span class="inn-resource-pill"><img src="./assets/ui/ui_coin_copper.png" alt="" /><b id="innCoins">0</b></span>
-            <span class="inn-resource-pill"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /><b id="innStamina">0</b><button id="innStaminaPlusBtn" class="inn-resource-plus" aria-label="补充驼铃">+</button></span>
+            <span class="inn-resource-pill inn-stamina-resource">
+              <span class="inn-stamina-ring" id="innStaminaRing"><img src="./assets/ui/ui_camel_bell_stamina.png" alt="" /></span>
+              <b id="innStamina">0</b>
+              <span class="inn-stamina-timer"><span id="innStaminaTimerLabel">下次 +1</span><strong id="innStaminaTimerValue">02:00</strong></span>
+              <button id="innStaminaPlusBtn" class="inn-resource-plus" aria-label="补充驼铃">+</button>
+            </span>
             <span class="inn-resource-pill"><i class="ruby-icon" aria-hidden="true"></i><b id="innGems">0</b><button id="innGemPlusBtn" class="inn-resource-plus" aria-label="补充红宝石">+</button></span>
             <button id="innDailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="领取今日宝袋" title="领取今日宝袋">
               <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
@@ -171,6 +183,10 @@
 
     <section id="repairPlayerLayer" class="repair-player-layer" hidden aria-label="修缮场景">
       <iframe id="repairPlayerFrame" title="修缮场景" allow="fullscreen"></iframe>
+      <button id="repairOrientationBtn" class="repair-orientation-toggle" type="button" aria-pressed="false">
+        <span class="repair-orientation-icon" aria-hidden="true"><i></i></span>
+        <b>推荐横屏修缮</b>
+      </button>
     </section>
 
     <dialog id="storyArchiveModal" class="story-archive-modal" aria-label="剧情回顾">
@@ -429,28 +445,24 @@
         <div class="ruby-current-balance">
           <span>当前持有</span><i class="ruby-icon" aria-hidden="true"></i><b id="rubyRechargeBalance">0</b>
         </div>
-        <p class="currency-panel-intro">红宝石可开启柜中仓位、兑换驼铃；商铺正在筹备。</p>
+        <p class="currency-panel-intro"><i aria-hidden="true"></i>商铺筹备中</p>
         <div class="ruby-recharge-grid" aria-label="红宝石充值档位">
           <button type="button" disabled>
             <span>红宝石小袋</span>
-            <span class="ruby-pack-art one" aria-hidden="true"><i></i></span>
-            <strong>档位待定</strong>
+            <img class="ruby-pack-image" src="./assets/ui/bonus_ruby_lv01.png" alt="" />
             <em>暂未开放</em>
           </button>
           <button type="button" disabled>
             <span>商旅宝匣</span>
-            <span class="ruby-pack-art three" aria-hidden="true"><i></i><i></i><i></i></span>
-            <strong>档位待定</strong>
+            <img class="ruby-pack-image" src="./assets/ui/bonus_ruby_lv02.png" alt="" />
             <em>暂未开放</em>
           </button>
           <button type="button" disabled>
             <span>掌柜宝箱</span>
-            <span class="ruby-pack-art five" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            <strong>档位待定</strong>
+            <img class="ruby-pack-image" src="./assets/ui/bonus_ruby_lv03.png" alt="" />
             <em>暂未开放</em>
           </button>
         </div>
-        <p class="currency-panel-rule">开放后可在这里选择红宝石份额。</p>
       </div>
     </dialog>
     <dialog id="pieceDetailModal" class="modal piece-detail-modal">
@@ -463,8 +475,8 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=currency-panels-v1"></script>
-    <script src="./new-player-guide.js?v=currency-panels-v1"></script>
-    <script src="./app.js?v=stamina-camel-chain-v11"></script>
+    <script src="./chapter-story.js?v=story-viewport-v1"></script>
+    <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
+    <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1"></script>
   </body>
 </html>

@@ -1,0 +1,151 @@
+body.generator-chain-qa #generatorChainQaToggle {
+  position: fixed;
+  z-index: 910;
+  top: max(6px, env(safe-area-inset-top));
+  right: 10px;
+  padding: 7px 12px;
+  border: 1px solid #d9bd81;
+  border-radius: 8px;
+  color: #fff1ce;
+  background: #70442b;
+  box-shadow: 0 2px 8px #29170d99, inset 0 1px #fff5cf55;
+  font: 700 14px/1.2 "STKaiti", "KaiTi", serif;
+}
+
+body.generator-chain-qa #generatorChainQaPanel {
+  position: fixed;
+  z-index: 911;
+  top: max(45px, calc(env(safe-area-inset-top) + 40px));
+  right: 10px;
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 20px));
+  max-height: calc(100dvh - 56px - env(safe-area-inset-bottom));
+  overflow: auto;
+  padding: 16px;
+  border: 3px solid #8c5f3a;
+  border-radius: 12px;
+  color: #493322;
+  background: #f3dfb7;
+  box-shadow: inset 0 0 0 2px #ffecc4, 0 10px 28px #241207ba;
+  font: 15px/1.5 "STKaiti", "KaiTi", serif;
+}
+
+body.generator-chain-qa #generatorChainQaPanel[hidden] {
+  display: none;
+}
+
+#generatorChainQaPanel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+#generatorChainQaPanel header div {
+  display: grid;
+  gap: 2px;
+}
+
+#generatorChainQaPanel header small,
+#generatorChainQaPanel .generator-chain-qa-note {
+  color: #87684a;
+  font-size: 12px;
+}
+
+#generatorChainQaPanel header strong {
+  font-size: 23px;
+  line-height: 1.2;
+}
+
+#generatorChainQaPanel button,
+#generatorChainQaPanel select {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#generatorChainQaPanel .generator-chain-qa-close {
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  border: 1px solid #a4794e;
+  border-radius: 50%;
+  color: #f9e7c5;
+  background: #754a32;
+  font-size: 22px;
+  line-height: 1;
+}
+
+#generatorChainQaPanel label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+}
+
+#generatorChainQaPanel select {
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid #b59061;
+  border-radius: 6px;
+  color: #523720;
+  background: #fff1d1;
+  font-size: 15px;
+}
+
+#generatorChainQaPanel .generator-chain-qa-rule,
+#generatorChainQaPanel .generator-chain-qa-status {
+  margin: 11px 0;
+}
+
+#generatorChainQaPanel .generator-chain-qa-status {
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: #633d22;
+  background: #e5c895;
+  font-weight: 700;
+}
+
+#generatorChainQaPanel .generator-chain-qa-copy,
+#generatorChainQaPanel .generator-chain-qa-start,
+#generatorChainQaPanel .generator-chain-qa-reset {
+  min-height: 40px;
+  border: 1px solid #875331;
+  border-radius: 7px;
+  color: #fff2d0;
+  background: #805033;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+#generatorChainQaPanel .generator-chain-qa-copy {
+  width: 100%;
+  background: #5c8067;
+  border-color: #42634c;
+}
+
+#generatorChainQaPanel .generator-chain-qa-copy:disabled {
+  opacity: .46;
+  cursor: not-allowed;
+}
+
+#generatorChainQaPanel .generator-chain-qa-actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+#generatorChainQaPanel .generator-chain-qa-start {
+  flex: 1;
+}
+
+#generatorChainQaPanel .generator-chain-qa-reset {
+  padding: 0 10px;
+  color: #6b452b;
+  background: #efd8a9;
+}
+
+#generatorChainQaPanel .generator-chain-qa-note {
+  display: block;
+  line-height: 1.4;
+}

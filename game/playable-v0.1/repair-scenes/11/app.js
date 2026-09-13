@@ -1,7 +1,7 @@
 const config = {
   width: 1536,
   height: 1024,
-  focus: [760, 460],
+  focus: [760, 510],
   base: "base.webp",
   overlayRoot: ".",
   repairs: [
@@ -61,10 +61,35 @@ function paint() {
 }
 
 function initialFrame() {
-  scale = minimumScale() * 1.08;
+  scale = minimumScale();
   x = innerWidth / 2 - config.focus[0] * scale;
   y = innerHeight / 2 - config.focus[1] * scale;
+  y = Math.min(y, -Math.min(80, Math.max(0, config.height * scale - innerHeight)));
   paint();
+}
+
+function focusRepairPart(_index, point) {
+  const targetX = Number(point?.x);
+  const targetY = Number(point?.y);
+  if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return false;
+  scale = minimumScale();
+  x = innerWidth * 0.5 - targetX * scale;
+  y = innerHeight * 0.52 - targetY * scale;
+  y = Math.min(y, -Math.min(80, Math.max(0, config.height * scale - innerHeight)));
+  paint();
+  return true;
+}
+
+function showSceneOverview() {
+  const padding = Math.min(28, Math.max(10, innerWidth * 0.035));
+  scale = Math.min(
+    (innerWidth - padding * 2) / config.width,
+    (innerHeight - padding * 2) / config.height,
+  );
+  x = (innerWidth - config.width * scale) / 2;
+  y = (innerHeight - config.height * scale) / 2;
+  paint();
+  return true;
 }
 
 function pointerPair() {
@@ -78,22 +103,30 @@ function pointerPair() {
   };
 }
 
-function restore(index, localPoint) {
+function restore(index, localPoint, options = {}) {
   if (restored.has(index)) return;
+  const restoring = Boolean(options.restoring);
   restored.add(index);
   document.querySelector(`.old-overlay[data-index="${index}"]`).classList.add("is-restored");
 
-  const spark = document.createElement("i");
-  spark.className = "spark";
-  spark.style.left = `${localPoint[0]}px`;
-  spark.style.top = `${localPoint[1]}px`;
-  spark.style.zIndex = 30;
-  world.append(spark);
-  spark.addEventListener("animationend", () => spark.remove());
+  if (!restoring) {
+    const spark = document.createElement("i");
+    spark.className = "spark";
+    spark.style.left = `${localPoint[0]}px`;
+    spark.style.top = `${localPoint[1]}px`;
+    spark.style.zIndex = 30;
+    world.append(spark);
+    spark.addEventListener("animationend", () => spark.remove());
+  }
 
   if (restored.size === config.repairs.length) {
-    completion.classList.remove("is-dismissing");
-    completion.hidden = false;
+    const showCompletion = () => {
+      completion.classList.remove("is-dismissing");
+      completion.hidden = false;
+    };
+    const revealDelay = restoring ? 0 : Math.max(0, Number(options.revealDelayMs) || 0);
+    if (revealDelay) window.setTimeout(showCompletion, revealDelay);
+    else showCompletion();
   }
 }
 
@@ -112,7 +145,11 @@ function hitTest(clientX, clientY) {
     });
   });
 
-  if (best) restore(best.index, best.point);
+  if (best) {
+    const point = { x: best.point[0], y: best.point[1] };
+    if (repairEconomy) repairEconomy.request(best.index, point);
+    else restore(best.index, best.point);
+  }
 }
 
 viewport.addEventListener("pointerdown", (event) => {
@@ -193,6 +230,18 @@ completion.addEventListener("pointerup", (event) => {
       window.parent.postMessage({ type: "silkroad:repair-complete", repairId: embeddedRepairId }, window.location.origin);
     }
   }, 320);
+});
+
+const repairEconomy = window.SilkRoadRepairEconomy?.register({
+  repairId: embeddedRepairId,
+  world,
+  partCount: config.repairs.length,
+  parts: config.repairs,
+  focus: focusRepairPart,
+  overview: showSceneOverview,
+  apply(index, point, options) {
+    return restore(index, [point.x, point.y], options);
+  },
 });
 
 window.addEventListener("resize", initialFrame);

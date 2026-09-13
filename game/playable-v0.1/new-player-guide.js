@@ -14,7 +14,7 @@
   const TARGET_CLASS = "new-player-guide-target";
   const FIRST_ORDER_ID = "order_001_guard_lubing";
   const FIRST_REPAIR_ID = "tutorial_complete";
-  const FIRST_REPAIR_COST = 120;
+  const FIRST_REPAIR_COST = 84;
 
   let layer;
   let copy;
@@ -206,7 +206,7 @@
 
     if (tutorialStep <= 3 && page === "inn") {
       const returnCopy = [
-        "先去后厨续上炉火，备好迎接第一位客人。",
+        "点右下角后厨，去案板取第一份麦面。",
         "回后厨继续备面，合成第一张炉饼。",
         "炉饼已经做好，回后厨交给周甲。",
         "首单已经完成，回后厨打开食鉴，看看刚收录的食物。",
@@ -282,7 +282,7 @@
     if (!repairAffordable) {
       if (!savedGuide.coreTipSeen) {
         showGuide({
-          text: "基础经营已经上手。继续接单，攒够120铜币就能修缮前厅。",
+          text: "基础经营已经上手。继续接单，攒够84铜币就能先修前厅第一处。",
           acknowledge: true,
         });
       } else {

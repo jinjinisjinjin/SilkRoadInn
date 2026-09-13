@@ -98,6 +98,29 @@
     paint();
   }
 
+  function focusRepairPart(_index, point) {
+    const targetX = Number(point?.x);
+    const targetY = Number(point?.y);
+    if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return false;
+    scale = minScale * (config.initialZoom ?? 1);
+    x = innerWidth * 0.5 - targetX * scale;
+    y = innerHeight * 0.52 - targetY * scale;
+    paint();
+    return true;
+  }
+
+  function showSceneOverview() {
+    const padding = Math.min(28, Math.max(10, innerWidth * 0.035));
+    scale = Math.min(
+      (innerWidth - padding * 2) / W,
+      (innerHeight - padding * 2) / H,
+    );
+    x = (innerWidth - W * scale) / 2;
+    y = (innerHeight - H * scale) / 2;
+    paint();
+    return true;
+  }
+
   function pointerPair() {
     const values = [...pointers.values()];
     const dx = values[0].x - values[1].x;
@@ -119,17 +142,21 @@
     spark.addEventListener("animationend", () => spark.remove(), { once: true });
   }
 
-  function repair(index, localX, localY) {
+  function repair(index, localX, localY, options = {}) {
     if (restored.has(index)) return;
+    const restoring = Boolean(options.restoring);
     restored.add(index);
     layers[index].image.classList.add("is-restored");
-    showSpark(localX, localY);
-    navigator.vibrate?.(12);
+    if (!restoring) {
+      showSpark(localX, localY);
+      navigator.vibrate?.(12);
+    }
     if (restored.size === layers.length) {
+      const revealDelay = restoring ? 0 : Math.max(380, Number(options.revealDelayMs) || 0);
       window.setTimeout(() => {
         completion.classList.remove("is-dismissing");
         completion.hidden = false;
-      }, 380);
+      }, revealDelay);
     }
   }
 
@@ -167,7 +194,8 @@
 
     for (let index = layers.length - 1; index >= 0; index -= 1) {
       if (!restored.has(index) && maskHit(layers[index], localX, localY)) {
-        repair(index, localX, localY);
+        if (repairEconomy) repairEconomy.request(index, { x: localX, y: localY });
+        else repair(index, localX, localY);
         return;
       }
     }
@@ -264,6 +292,18 @@
     completion.classList.remove("is-dismissing");
     completion.hidden = true;
     initialFrame();
+  });
+
+  const repairEconomy = window.SilkRoadRepairEconomy?.register({
+    repairId: embeddedRepairId,
+    world,
+    partCount: layers.length,
+    parts: layers.map((layer) => ({ targets: [layer.fallback] })),
+    focus: focusRepairPart,
+    overview: showSceneOverview,
+    apply(index, point, options) {
+      return repair(index, point.x, point.y, options);
+    },
   });
 
   window.__playerPreviewState = {

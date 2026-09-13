@@ -1,0 +1,572 @@
+:root {
+  --repair-ink: #4d2f20;
+  --repair-cloth: #8f4739;
+  --repair-gold: #d6a55c;
+  --repair-paper: #f4dfaa;
+}
+
+.repair-economy-hud {
+  position: fixed;
+  z-index: 140;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  left: max(10px, env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  pointer-events: none;
+}
+
+.repair-economy-back {
+  width: clamp(108px, 26vw, 142px);
+  min-height: 0;
+  aspect-ratio: 1769 / 841;
+  border: 0;
+  color: transparent;
+  background: url("../../../assets/ui/ui_repair_back_wood_v1.png") center / contain no-repeat;
+  box-shadow: none;
+  pointer-events: auto;
+  filter: drop-shadow(0 4px 5px rgba(22, 12, 7, 0.42));
+}
+
+.repair-economy-back {
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.repair-economy-back:active {
+  filter: brightness(0.9) drop-shadow(0 2px 3px rgba(22, 12, 7, 0.38));
+  transform: translateY(1px) scale(0.98);
+}
+
+.repair-economy-back > span,
+.repair-economy-back > b {
+  opacity: 0;
+}
+
+.repair-economy-feedback {
+  position: fixed;
+  z-index: 160;
+  right: 50%;
+  bottom: max(26px, calc(env(safe-area-inset-bottom) + 16px));
+  max-width: calc(100vw - 40px);
+  padding: 10px 18px;
+  border: 1px solid rgba(237, 206, 147, 0.62);
+  border-radius: 8px;
+  color: #fff0c9;
+  background: rgba(75, 45, 29, 0.94);
+  box-shadow: 0 6px 18px rgba(24, 13, 8, 0.4);
+  font: 700 14px/1.4 "Songti SC", "STSong", serif;
+  text-align: center;
+  transform: translateX(50%);
+  animation: repair-feedback-in 180ms ease-out both;
+  pointer-events: none;
+}
+
+.repair-economy-feedback[hidden] {
+  display: none;
+}
+
+.repair-economy-feedback[data-kind="short"] {
+  color: #ffe0b1;
+  background: rgba(119, 54, 39, 0.95);
+}
+
+.repair-economy-feedback.is-leaving {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.repair-part-marker-layer {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  pointer-events: none;
+}
+
+.repair-scene-cast {
+  position: absolute;
+  z-index: 18;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.repair-scene-figure {
+  position: absolute;
+  left: var(--cast-x);
+  top: var(--cast-y);
+  width: var(--cast-width);
+  margin: 0;
+  transform: translate(-50%, -100%);
+  transform-origin: center bottom;
+  pointer-events: none;
+}
+
+.repair-scene-figure::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 19%;
+  right: 19%;
+  bottom: 0;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(49, 29, 16, 0.35);
+  filter: blur(4px);
+  transform: scaleX(1.15);
+}
+
+#world .repair-scene-figure > img,
+#sceneWorld .repair-scene-figure > img {
+  position: relative;
+  inset: auto;
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  filter: sepia(0.09) saturate(0.82) brightness(0.94) drop-shadow(0 3px 3px rgba(43, 25, 14, 0.3));
+}
+
+.repair-scene-figure.is-flipped > img {
+  transform: scaleX(-1);
+}
+
+.is-repair-camera-focusing {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.22, 0.78, 0.28, 1);
+}
+
+.is-repair-camera-local {
+  transition-duration: 360ms;
+}
+
+.is-repair-camera-zone {
+  transition-duration: 600ms;
+}
+
+.is-repair-camera-overview {
+  transition-duration: 780ms;
+}
+
+.repair-part-marker-layer {
+  transition: opacity 180ms ease;
+}
+
+.repair-part-marker-layer.is-repair-overview {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.repair-part-marker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--repair-aura-size);
+  height: var(--repair-aura-size);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  color: var(--repair-ink);
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.repair-part-marker[hidden] {
+  display: none;
+}
+
+.repair-part-renewal {
+  position: absolute;
+  z-index: 45;
+  width: var(--repair-renewal-size, 190px);
+  height: var(--repair-renewal-size, 190px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 250, 211, 0.88) 0 4%, rgba(255, 220, 127, 0.42) 18%, rgba(225, 164, 68, 0.14) 43%, transparent 70%);
+  box-shadow:
+    0 0 18px rgba(255, 224, 133, 0.68),
+    0 0 46px rgba(222, 159, 65, 0.34);
+  transform: translate(-50%, -50%) scale(0.25);
+  animation: repair-renewal-bloom 1.6s cubic-bezier(0.2, 0.76, 0.28, 1) forwards;
+  pointer-events: none;
+}
+
+.repair-part-renewal::before,
+.repair-part-renewal::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border: 2px solid rgba(255, 232, 164, 0.7);
+  border-radius: 50%;
+  box-shadow: inset 0 0 18px rgba(255, 244, 199, 0.36);
+}
+
+.repair-part-renewal::after {
+  inset: 25%;
+  border-style: dotted;
+  border-width: 3px;
+  opacity: 0.72;
+  transform: rotate(24deg);
+}
+
+.repair-part-aura {
+  position: absolute;
+  inset: 9%;
+  border-radius: 45% 52% 46% 54%;
+  background:
+    radial-gradient(circle at 46% 48%, rgba(255, 228, 151, 0.34) 0 14%, rgba(224, 175, 86, 0.17) 36%, transparent 68%);
+  filter: blur(2px);
+  animation: repair-part-breathe 2.2s ease-in-out infinite;
+}
+
+.repair-part-aura::before,
+.repair-part-aura::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 226, 151, 0.76);
+  box-shadow: 0 0 9px rgba(229, 169, 75, 0.72);
+}
+
+.repair-part-aura::before {
+  top: 23%;
+  left: 18%;
+  width: 5px;
+  height: 5px;
+}
+
+.repair-part-aura::after {
+  right: 17%;
+  bottom: 25%;
+  width: 4px;
+  height: 4px;
+}
+
+.repair-part-price {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 118px;
+  min-height: 59px;
+  margin: 0;
+  padding: 8px 15px 15px 13px;
+  border: 0;
+  border-radius: 0;
+  color: #4b3425;
+  background:
+    radial-gradient(ellipse at 23% 3%, rgba(255, 249, 220, 0.64), transparent 44%),
+    radial-gradient(ellipse at 86% 82%, rgba(109, 69, 34, 0.12), transparent 42%),
+    repeating-linear-gradient(6deg, rgba(91, 59, 30, 0.035) 0 0.7px, transparent 0.9px 4px),
+    repeating-linear-gradient(94deg, rgba(255, 251, 226, 0.1) 0 1px, transparent 1px 7px),
+    linear-gradient(166deg, #f1deb1, #e3c58b 58%, #d6af70);
+  box-shadow:
+    inset 0 0 3px rgba(85, 50, 23, 0.34),
+    inset 0 0 12px rgba(92, 54, 25, 0.24),
+    inset 0 1px rgba(255, 250, 222, 0.55);
+  clip-path: polygon(
+    2% 6%, 10% 2%, 21% 4%, 33% 1%, 45% 3%, 57% 1%, 69% 4%, 82% 2%, 91% 5%, 98% 3%,
+    99% 19%, 97% 33%, 100% 48%, 98% 63%, 100% 77%, 96% 88%,
+    61% 88%, 56% 90%, 50% 100%, 44% 90%, 39% 88%, 4% 90%,
+    2% 77%, 3% 63%, 1% 48%, 3% 33%, 1% 19%
+  );
+  filter:
+    drop-shadow(0 -2px 2px rgba(48, 30, 16, 0.26))
+    drop-shadow(2px 0 2px rgba(48, 30, 16, 0.22))
+    drop-shadow(0 2px 2px rgba(48, 30, 16, 0.24))
+    drop-shadow(-2px 0 2px rgba(48, 30, 16, 0.22))
+    drop-shadow(0 4px 4px rgba(38, 23, 12, 0.18));
+  font-family: "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
+  cursor: pointer;
+  transform:
+    translate(var(--repair-price-shift-x, 0), var(--repair-price-shift-y, 0))
+    scale(var(--repair-price-scale, 1));
+  transform-origin: center;
+  animation: repair-part-tag-float 2.9s cubic-bezier(0.42, 0, 0.3, 1) infinite;
+  will-change: top;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.repair-part-price::before {
+  content: "";
+  position: absolute;
+  inset: 3px 5px 10px;
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 0 0, transparent 0 8px, rgba(70, 67, 57, 0.17) 8.5px 9.5px, transparent 10px 12px, rgba(70, 67, 57, 0.08) 12.5px 13.2px, transparent 14px) left top / 25px 25px no-repeat,
+    radial-gradient(circle at 100% 0, transparent 0 8px, rgba(70, 67, 57, 0.14) 8.5px 9.5px, transparent 10px 12px, rgba(70, 67, 57, 0.07) 12.5px 13.2px, transparent 14px) right top / 25px 25px no-repeat,
+    radial-gradient(circle at 0 100%, transparent 0 8px, rgba(70, 67, 57, 0.13) 8.5px 9.5px, transparent 10px 12px, rgba(70, 67, 57, 0.06) 12.5px 13.2px, transparent 14px) left bottom / 25px 25px no-repeat,
+    radial-gradient(circle at 100% 100%, transparent 0 8px, rgba(70, 67, 57, 0.16) 8.5px 9.5px, transparent 10px 12px, rgba(70, 67, 57, 0.08) 12.5px 13.2px, transparent 14px) right bottom / 25px 25px no-repeat;
+  pointer-events: none;
+}
+
+.repair-part-price::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(92, 57, 27, 0.13), transparent 7%, transparent 93%, rgba(92, 57, 27, 0.15)),
+    linear-gradient(180deg, rgba(92, 57, 27, 0.08), transparent 16%, transparent 72%, rgba(92, 57, 27, 0.14));
+  pointer-events: none;
+}
+
+.repair-part-price-line {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 21px minmax(2.2ch, auto) 8px minmax(2.2ch, auto);
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  min-height: 24px;
+}
+
+.repair-part-price-line::after {
+  content: "修";
+  position: absolute;
+  right: -13px;
+  bottom: -12px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  color: rgba(151, 43, 32, 0.88);
+  background:
+    radial-gradient(circle at 7% 24%, rgba(151, 43, 32, 0.7) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 92% 71%, rgba(151, 43, 32, 0.58) 0 0.7px, transparent 1.1px),
+    radial-gradient(circle at 73% 6%, rgba(151, 43, 32, 0.5) 0 0.6px, transparent 1px),
+    radial-gradient(circle at 24% 95%, rgba(151, 43, 32, 0.52) 0 0.7px, transparent 1.1px),
+    linear-gradient(90deg, rgba(151, 43, 32, 0.88) 0 21%, transparent 22% 29%, rgba(151, 43, 32, 0.78) 30% 69%, transparent 70% 76%, rgba(151, 43, 32, 0.86) 77%) left top / 100% 2.4px no-repeat,
+    linear-gradient(90deg, rgba(151, 43, 32, 0.76) 0 13%, transparent 14% 20%, rgba(151, 43, 32, 0.9) 21% 74%, transparent 75% 82%, rgba(151, 43, 32, 0.7) 83%) left bottom / 100% 2.2px no-repeat,
+    linear-gradient(180deg, rgba(151, 43, 32, 0.84) 0 28%, transparent 29% 35%, rgba(151, 43, 32, 0.76) 36% 78%, transparent 79% 85%, rgba(151, 43, 32, 0.82) 86%) left top / 2.3px 100% no-repeat,
+    linear-gradient(180deg, rgba(151, 43, 32, 0.74) 0 17%, transparent 18% 26%, rgba(151, 43, 32, 0.9) 27% 67%, transparent 68% 75%, rgba(151, 43, 32, 0.72) 76%) right top / 2.4px 100% no-repeat;
+  box-shadow: none;
+  clip-path: polygon(4% 3%, 37% 0, 63% 4%, 96% 1%, 100% 35%, 96% 62%, 99% 96%, 64% 100%, 35% 96%, 2% 100%, 0 64%, 4% 34%);
+  font: 900 12px/1 "STFangsong", "STKaiti", "Kaiti SC", serif;
+  -webkit-text-stroke: 0.34px rgba(151, 43, 32, 0.82);
+  mix-blend-mode: multiply;
+  opacity: 0.84;
+  text-shadow:
+    0.45px 0 rgba(151, 43, 32, 0.64),
+    -0.25px 0.4px rgba(126, 31, 25, 0.4);
+  transform: rotate(-8deg) scaleX(0.92) scaleY(1.08);
+  pointer-events: none;
+}
+
+.repair-part-price-line img {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  z-index: 1;
+  width: 21px !important;
+  height: 21px !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 1px 1px rgba(74, 49, 24, 0.32));
+}
+
+.repair-part-price-line b {
+  position: relative;
+  z-index: 1;
+  min-width: 2.2ch;
+  font: 900 20px/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  text-align: right;
+  -webkit-text-stroke: 0.22px currentColor;
+  text-shadow:
+    0.35px 0 currentColor,
+    0 0.35px currentColor,
+    0 1px rgba(255, 250, 229, 0.58);
+}
+
+.repair-part-price-line [data-repair-current] {
+  color: #493326;
+  font-weight: 900;
+}
+
+.repair-part-price-line [data-repair-cost] {
+  color: #aa3d2f;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.repair-part-price-divider {
+  color: #594031;
+  font: 900 19px/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
+  -webkit-text-stroke: 0.16px currentColor;
+  text-align: center;
+}
+
+.repair-part-shortage {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  margin-top: 1px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(159, 71, 52, 0.24);
+  color: #a33e31;
+  font: normal 900 10px/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
+  letter-spacing: 0.16em;
+  text-align: center;
+  text-shadow: 0 1px rgba(255, 246, 218, 0.62);
+}
+
+.repair-part-shortage[hidden] {
+  display: none;
+}
+
+.repair-part-marker.is-short .repair-part-price {
+  color: #713126;
+  background:
+    radial-gradient(ellipse at 23% 3%, rgba(255, 246, 218, 0.58), transparent 44%),
+    radial-gradient(ellipse at 86% 82%, rgba(147, 54, 39, 0.13), transparent 42%),
+    repeating-linear-gradient(6deg, rgba(128, 55, 39, 0.035) 0 0.7px, transparent 0.9px 4px),
+    linear-gradient(166deg, #f0d8aa, #dfb97f 58%, #ce9e68);
+  box-shadow:
+    inset 0 0 3px rgba(126, 42, 31, 0.36),
+    inset 0 0 13px rgba(132, 48, 35, 0.25),
+    inset 0 1px rgba(255, 246, 216, 0.52);
+  filter:
+    drop-shadow(0 -2px 2px rgba(111, 35, 27, 0.28))
+    drop-shadow(2px 0 2px rgba(111, 35, 27, 0.25))
+    drop-shadow(0 2px 2px rgba(111, 35, 27, 0.27))
+    drop-shadow(-2px 0 2px rgba(111, 35, 27, 0.25))
+    drop-shadow(0 4px 4px rgba(42, 24, 13, 0.2));
+}
+
+.repair-part-marker.is-short [data-repair-current] {
+  color: #963d31;
+}
+
+.repair-part-marker.is-short .repair-part-price::after {
+  background:
+    linear-gradient(90deg, rgba(133, 46, 34, 0.16), transparent 8%, transparent 92%, rgba(133, 46, 34, 0.17)),
+    linear-gradient(180deg, rgba(133, 46, 34, 0.08), transparent 16%, transparent 72%, rgba(133, 46, 34, 0.15));
+}
+
+.repair-part-marker.is-short .repair-part-price-line::after {
+  bottom: -25px;
+  color: rgba(151, 39, 30, 0.94);
+  opacity: 0.94;
+}
+
+.repair-part-marker.is-awaiting .repair-part-price {
+  opacity: 0.76;
+}
+
+.repair-part-marker.is-pending .repair-part-price {
+  pointer-events: none;
+}
+
+.repair-part-marker.is-pending .repair-part-price {
+  animation:
+    repair-part-tag-float 2.9s cubic-bezier(0.42, 0, 0.3, 1) infinite,
+    repair-part-wait 620ms ease-in-out infinite alternate;
+}
+
+.repair-part-marker.is-denied {
+  animation: repair-part-denied 360ms ease-out;
+}
+
+.repair-part-price:focus-visible {
+  outline: 3px solid rgba(163, 65, 48, 0.76);
+  outline-offset: 3px;
+}
+
+@keyframes repair-part-breathe {
+  0%, 100% { opacity: 0.58; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+@keyframes repair-part-tag-float {
+  0%, 100% { top: -3px; }
+  47% { top: 3px; }
+  58% { top: 2px; }
+}
+
+@keyframes repair-renewal-bloom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(-12deg);
+  }
+  24% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.02) rotate(3deg);
+  }
+  58% {
+    opacity: 0.78;
+    transform: translate(-50%, -50%) scale(1.12) rotate(9deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.26) rotate(14deg);
+  }
+}
+
+@keyframes repair-part-wait {
+  to { opacity: 0.76; }
+}
+
+@keyframes repair-part-denied {
+  0%, 100% { margin-left: 0; }
+  30% { margin-left: -10px; }
+  62% { margin-left: 9px; }
+}
+
+@keyframes repair-feedback-in {
+  from { opacity: 0; transform: translate(50%, 8px); }
+  to { opacity: 1; transform: translate(50%, 0); }
+}
+
+@media (max-width: 520px) {
+  .repair-economy-hud {
+    top: max(7px, env(safe-area-inset-top));
+    right: max(7px, env(safe-area-inset-right));
+    left: max(7px, env(safe-area-inset-left));
+  }
+
+  .repair-economy-back {
+    width: clamp(106px, 26vw, 124px);
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-repair-camera-focusing,
+  .repair-part-aura,
+  .repair-part-price,
+  .repair-part-marker.is-pending .repair-part-price,
+  .repair-part-marker.is-denied,
+  .repair-part-renewal,
+  .repair-economy-feedback {
+    animation: none;
+  }
+
+  .is-repair-camera-focusing {
+    transition: none;
+  }
+}

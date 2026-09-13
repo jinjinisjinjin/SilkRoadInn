@@ -4,11 +4,11 @@
   "initial": {
     "max": 100,
     "startValue": 18,
-    "recoverMinutes": 6
+    "recoverMinutes": 2
   },
   "afterKitchenRepair": {
     "max": 100,
-    "recoverMinutes": 5
+    "recoverMinutes": 2
   },
   "costs": {
     "generateItem": 1

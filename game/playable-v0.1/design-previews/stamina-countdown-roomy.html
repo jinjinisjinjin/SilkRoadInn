@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>驼铃倒计时 · 宽松版预览</title>
+  <style>
+    :root { font-family: "Songti SC", "STSong", serif; color: #503622; background: #f1e5ca; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 14px 40px; }
+    main { max-width: 930px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 27px; }
+    .lead { margin: 0 0 24px; color: #795d42; line-height: 1.6; }
+    h2 { margin: 0 0 11px; font-size: 19px; }
+    section { margin: 0 0 24px; }
+    .scene { position: relative; width: 100%; height: 260px; overflow: hidden; border: 6px solid #60432b; border-radius: 17px; background: linear-gradient(#3a221140, #3a221150), url("../assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png") center / cover; box-shadow: 0 8px 22px #63401b33; }
+    .chapter { position: absolute; top: 19px; left: 17px; width: 72px; height: 135px; padding: 15px 10px; background: #85483b; border: 2px solid #b78162; clip-path: polygon(0 0,100% 0,100% 86%,50% 100%,0 86%); color: #ffefca; text-align: center; font-weight: bold; }
+    .chapter small { display: block; margin-bottom: 8px; font-size: 11px; }
+    .chapter b { font-size: 21px; line-height: 1.3; }
+    .hud { position: absolute; top: 28px; left: 104px; display: flex; align-items: flex-start; gap: 8px; white-space: nowrap; }
+    .pill { display: flex; align-items: center; height: 54px; border: 2px solid #b19263; border-radius: 28px; background: linear-gradient(#684b32,#443020); box-shadow: inset 0 1px #ffdfab65, 0 4px 9px #32201577; color: #fff2d1; font-size: 21px; font-weight: bold; }
+    .coin, .gem { gap: 8px; padding: 0 12px; }
+    .coin img { width: 32px; height: 32px; object-fit: contain; }
+    .gem i { display: block; width: 25px; height: 25px; transform: rotate(45deg); border-radius: 5px; background: #b35b5d; border: 2px solid #deaaaa; }
+    .small-plus { display: grid; place-items: center; width: 33px; height: 33px; border-radius: 50%; background: #67977d; border: 2px solid #cce2cd; font: bold 27px Arial,sans-serif; }
+    .stamina { gap: 11px; padding: 0 8px 0 7px; min-width: 254px; }
+    .ring { display: grid; flex: 0 0 auto; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: conic-gradient(#f2ca74 15%,#7b5a37 15%); box-shadow: 0 0 0 2px #aa8758; }
+    .ring img { width: 36px; height: 36px; border-radius: 50%; background: #513821; object-fit: contain; }
+    .quantity { min-width: 27px; font-size: 23px; }
+    .timer { display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 89px; height: 37px; margin-left: 3px; padding-left: 12px; border-left: 1px solid #c19b624f; text-align: left; }
+    .timer span { color: #dfbd7c; font: 600 12px/1 sans-serif; }
+    .timer strong { color: #ffe4a9; font: 700 19px/1 sans-serif; letter-spacing: .04em; }
+    .stamina .small-plus { width: 39px; height: 39px; margin-left: auto; font-size: 30px; }
+    .icon-button { display: grid; place-items: center; width: 51px; height: 51px; border: 2px solid #ac8b61; border-radius: 50%; background: #5b412b; box-shadow: 0 3px 7px #32201577; color: #fff0c7; font-size: 26px; }
+    .icon-button img { width: 43px; height: 43px; object-fit: contain; }
+    .hint { margin: 10px 1px 0; color: #715239; font-size: 14px; line-height: 1.6; }
+    .phone-wrap { width: min(390px,100%); }
+    .phone .scene { height: 420px; border-width: 3px; border-radius: 13px; background-size: auto 570px; }
+    .phone .chapter { top: 27px; left: 6px; width: 73px; height: 123px; padding-top: 12px; }
+    .phone .hud { top: 35px; left: 85px; gap: 3px; }
+    .phone .pill { height: 32px; border-width: 1px; border-radius: 16px; font-size: 13px; }
+    .phone .coin, .phone .gem { gap: 2px; padding: 0 3px; }
+    .phone .coin img { width: 20px; height: 20px; }
+    .phone .gem i { width: 15px; height: 15px; border-radius: 3px; border-width: 1px; }
+    .phone .small-plus, .phone .stamina .small-plus { width: 18px; height: 18px; border-width: 1px; font-size: 17px; }
+    .phone .stamina { position: relative; min-width: 0; gap: 3px; padding: 0 4px; }
+    .phone .ring { width: 23px; height: 23px; box-shadow: none; }
+    .phone .ring img { width: 18px; height: 18px; }
+    .phone .quantity { min-width: 16px; font-size: 14px; }
+    .phone .timer { position: absolute; top: 31px; left: -3px; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; width: 120px; height: 32px; margin: 0; padding: 0 8px; border: 1px solid #be9d6a; border-radius: 0 0 11px 11px; background: #674a30; box-shadow: 0 4px 8px #30201066; }
+    .phone .timer span { font-size: 11px; }
+    .phone .timer strong { font-size: 15px; }
+    .phone .icon-button { width: 28px; height: 28px; border-width: 1px; font-size: 16px; }
+    .phone .icon-button img { width: 26px; height: 26px; }
+    .rule { padding: 13px 16px; border-left: 4px solid #a5774b; background: #fff6e3; font-size: 14px; line-height: 1.7; }
+    @media (max-width: 520px) { body { padding: 17px 10px 28px; } h1 { font-size: 24px; } .desktop { display: none; } }
+    @media (max-width: 360px) {
+      .phone .hud { left: 74px; gap: 2px; }
+      .phone .coin { font-size: 12px; }
+      .phone .coin img { width: 18px; height: 18px; }
+      .phone .gem { font-size: 12px; }
+      .phone .stamina { padding-inline: 3px; }
+      .phone .ring { width: 21px; height: 21px; }
+      .phone .stamina .small-plus { width: 17px; height: 17px; }
+      .phone .icon-button { width: 26px; height: 26px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>铃边环计 · 宽松版</h1>
+  <p class="lead">保留你选的铃铛环形进度。时间与数量分区排版，文字更大，按钮之间留出呼吸感。这里只展示 UI，计时尚未接入游戏。</p>
+  <section class="desktop">
+    <h2>宽屏：舒展横排</h2>
+    <div class="scene">
+      <div class="chapter"><small>第一章</small><b>流沙驿<br>初明</b></div>
+      <div class="hud">
+        <span class="pill coin"><img src="../assets/ui/ui_coin_copper.png" alt=""><b>99990</b></span>
+        <span class="pill stamina"><span class="ring"><img src="../assets/ui/ui_camel_bell_stamina.png" alt=""></span><b class="quantity">22</b><span class="timer"><span>下次恢复 +1</span><strong>01:42</strong></span><span class="small-plus">+</span></span>
+        <span class="pill gem"><i></i><b>36</b><span class="small-plus">+</span></span>
+        <span class="icon-button"><img src="../assets/ui/ui_daily_pomegranate_pouch_v2.png" alt=""></span>
+        <span class="icon-button">♪</span>
+      </div>
+    </div>
+    <p class="hint">铃铛、数量、倒计时、加号各有自己的空间；计时不再贴着数字。</p>
+  </section>
+  <section class="phone">
+    <h2>窄屏：计时签下挂</h2>
+    <div class="phone-wrap"><div class="scene">
+      <div class="chapter"><small>第一章</small><b>流沙驿<br>初明</b></div>
+      <div class="hud">
+        <span class="pill coin"><img src="../assets/ui/ui_coin_copper.png" alt=""><b>99990</b></span>
+        <span class="pill stamina"><span class="ring"><img src="../assets/ui/ui_camel_bell_stamina.png" alt=""></span><b class="quantity">22</b><span class="timer"><span>下次 +1</span><strong>01:42</strong></span><span class="small-plus">+</span></span>
+        <span class="pill gem"><i></i><b>36</b><span class="small-plus">+</span></span>
+        <span class="icon-button"><img src="../assets/ui/ui_daily_pomegranate_pouch_v2.png" alt=""></span>
+        <span class="icon-button">♪</span>
+      </div>
+    </div></div>
+    <p class="hint">手机顶栏必须同时容纳五项资源，因此铃铛环仍在原位置，把时间挪到下方的小签里，避免整条资源栏被撑出屏幕。</p>
+  </section>
+  <p class="rule">拟定状态：未满 100 时显示“下次 +1”的两分钟倒计时；满 100 时计时签显示“已满”。恢复速度已改为每 2 分钟 1 点，但这份预览里的 01:42 还是静态示意。</p>
+</main>
+</body>
+</html>

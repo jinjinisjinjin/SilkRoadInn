@@ -693,6 +693,13 @@
   let reviewMode = false;
   let ui;
 
+  function syncStoryViewport() {
+    const viewport = window.visualViewport;
+    if (!viewport || !ui) return;
+    ui.modal.style.setProperty("--chapter-story-viewport-height", `${Math.round(viewport.height)}px`);
+    ui.modal.style.setProperty("--chapter-story-viewport-top", `${Math.round(viewport.offsetTop)}px`);
+  }
+
   function elements() {
     if (ui) return ui;
     ui = {
@@ -732,6 +739,9 @@
       event.preventDefault();
       finish({ completed: !reviewMode });
     });
+    window.visualViewport?.addEventListener("resize", syncStoryViewport);
+    window.visualViewport?.addEventListener("scroll", syncStoryViewport);
+    window.addEventListener("resize", syncStoryViewport);
     return ui;
   }
 
@@ -895,6 +905,7 @@
       return false;
     }
     const view = elements();
+    syncStoryViewport();
     active = segment;
     activeId = id;
     index = Math.max(0, Math.min(segment.steps.length - 1, Number(options.startIndex) || 0));

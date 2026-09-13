@@ -17,6 +17,8 @@
 
   const worldWidth = config.width || 1672;
   const worldHeight = config.height || 941;
+  const overlayRootValue = config.overlayRoot || ".";
+  const overlayRoot = overlayRootValue.endsWith("/") ? overlayRootValue : `${overlayRootValue}/`;
   world.style.width = `${worldWidth}px`;
   world.style.height = `${worldHeight}px`;
   baseImage.src = config.base;
@@ -28,7 +30,7 @@
   const overlays = config.repairs.map((repair, index) => {
     const image = document.createElement("img");
     image.className = "old-overlay";
-    image.src = `${config.overlayRoot}${repair.file}`;
+    image.src = `${overlayRoot}${repair.file}`;
     image.alt = "";
     image.draggable = false;
     image.style.setProperty("--layer-index", String(index + 1));
@@ -85,6 +87,35 @@
     render();
   }
 
+  function focusRepairPart(_index, point) {
+    const targetX = Number(point?.x);
+    const targetY = Number(point?.y);
+    if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return false;
+    scale = Math.min(
+      minScale * (config.initialZoom || 1.08),
+      minScale * (config.maxZoom || 3.2),
+    );
+    x = viewport.clientWidth * 0.5 - targetX * scale;
+    y = viewport.clientHeight * 0.52 - targetY * scale;
+    clampCamera();
+    render();
+    return true;
+  }
+
+  function showSceneOverview() {
+    const viewportWidth = viewport.clientWidth;
+    const viewportHeight = viewport.clientHeight;
+    const padding = Math.min(28, Math.max(10, viewportWidth * 0.035));
+    scale = Math.min(
+      (viewportWidth - padding * 2) / worldWidth,
+      (viewportHeight - padding * 2) / worldHeight,
+    );
+    x = (viewportWidth - worldWidth * scale) / 2;
+    y = (viewportHeight - worldHeight * scale) / 2;
+    render();
+    return true;
+  }
+
   function screenToWorld(clientX, clientY) {
     const rect = viewport.getBoundingClientRect();
     return {
@@ -123,7 +154,7 @@
     requestAnimationFrame(() => completion.classList.add("is-visible"));
   }
 
-  function restoreRepair(repairIndex, point) {
+  function restoreRepair(repairIndex, point, options = {}) {
     if (
       repairIndex < 0 ||
       repairIndex >= overlays.length ||
@@ -132,13 +163,15 @@
       return false;
     }
 
+    const restoring = Boolean(options.restoring);
     repaired.add(repairIndex);
     overlays[repairIndex].classList.add("is-restored");
     const fallback = config.repairs[repairIndex].targets[0];
-    addSpark(point || { x: fallback[0], y: fallback[1] });
+    if (!restoring) addSpark(point || { x: fallback[0], y: fallback[1] });
 
     if (repaired.size === overlays.length) {
-      window.setTimeout(showCompletion, 520);
+      const revealDelay = restoring ? 0 : Math.max(520, Number(options.revealDelayMs) || 0);
+      window.setTimeout(showCompletion, revealDelay);
     }
     return true;
   }
@@ -249,7 +282,8 @@
     if (canTap) {
       const point = screenToWorld(event.clientX, event.clientY);
       const repairIndex = findRepairAt(point);
-      restoreRepair(repairIndex, point);
+      if (repairEconomy) repairEconomy.request(repairIndex, point);
+      else restoreRepair(repairIndex, point);
     }
 
     if (pointers.size === 0) {
@@ -298,6 +332,18 @@
   window.addEventListener("resize", setInitialCamera);
   window.addEventListener("keydown", (event) => {
     if (event.key.toLowerCase() === "r") reset(true);
+  });
+
+  const repairEconomy = window.SilkRoadRepairEconomy?.register({
+    repairId: embeddedRepairId || config.id || config.repairId,
+    world,
+    partCount: config.repairs.length,
+    parts: config.repairs,
+    focus: focusRepairPart,
+    overview: showSceneOverview,
+    apply(repairIndex, point, options) {
+      return restoreRepair(repairIndex, point, options);
+    },
   });
 
   window.__repairPreview = {
