@@ -140,6 +140,10 @@ const REPAIR_PROTOCOL_VERSION = 1;
 const REPAIR_PART_COUNT = 9;
 const REPAIR_PART_COST_WEIGHTS = Object.freeze([71, 79, 89, 101, 109, 121, 131, 139, 160]);
 const COIN_ECONOMY_VERSION = 2;
+const OPENING_STAMINA_VERSION = 2;
+const LEGACY_OPENING_STAMINA = 18;
+const OPENING_COPPER_VERSION = 2;
+const LEGACY_OPENING_COPPER = Object.freeze([40, 400]);
 const COIN_DENOMINATION_MULTIPLIER = 10;
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -488,16 +492,16 @@ const GIFT_PACKS = {
     itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
     description: "前期修缮奖励，主要产出奶房食盒材料。",
     rewards: [
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "coins", amount: 120 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "coins", amount: 180 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "coins", amount: 12 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "coins", amount: 18 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
     ],
   },
   gift_livestock_pen_parts_01: {
@@ -507,11 +511,11 @@ const GIFT_PACKS = {
     rewards: [
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
-      { type: "coins", amount: 180 },
+      { type: "coins", amount: 18 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
-      { type: "coins", amount: 240 },
+      { type: "coins", amount: 24 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
@@ -520,13 +524,13 @@ const GIFT_PACKS = {
 };
 const LOCKED_CELL_ITEM_ROWS = [
   ["hubing_08_gulouzi", "meat_06_suzhi_yanglei", "fruit_05_guopu_pan", "dairy_04_ganlao", "spice_04_jiaochi_jiang", "drink_05_mijiang", "fruit_06_mijian_guo"],
-  ["boxmat_milk_room_01", "hubing_04_youhubing", "dairy_03_laojiang", "meat_04_jiaochi_yangrou", "spice_03_hujiao_li", "fruit_04_wuhuaguo", "boxmat_livestock_pen_01"],
-  ["meat_02_roumi_xian", "hubing_02_lubing", "hubing_01_dough", "boxmat_milk_room_01", "dairy_01_milk", "dairy_02_rumi", "spice_02_ziran_mo"],
+  ["material_dairy_01", "hubing_04_youhubing", "dairy_03_laojiang", "meat_04_jiaochi_yangrou", "spice_03_hujiao_li", "fruit_04_wuhuaguo", "boxmat_livestock_pen_01"],
+  ["meat_02_roumi_xian", "hubing_02_lubing", "hubing_01_dough", "material_dairy_01", "dairy_01_milk", "dairy_02_rumi", "spice_02_ziran_mo"],
   ["fruit_03_yezao", "fruit_01_putao", null, null, null, "hubing_02_lubing", "drink_04_shiliujiang"],
   ["hubing_04_youhubing", "boxmat_livestock_pen_01", null, null, null, "dairy_02_rumi", "drink_03_sanlejiang"],
   ["meat_03_roupu", "drink_01_putaozhi", null, null, null, "meat_02_roumi_xian", "dairy_04_ganlao"],
   ["spice_04_jiaochi_jiang", "spice_02_ziran_mo", "fruit_02_gan_putao", "hubing_03_humabing", "dairy_03_laojiang", "drink_02_putaojiang", "hubing_03_humabing"],
-  ["boxmat_milk_room_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
+  ["material_dairy_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
   ["spice_06_hexiang_jiangzhan", "meat_05_yangrou_geng", "gen_dairy_02", "dairy_05_suyou", "hubing_05_congchihubing", "hubing_04_youhubing", "dairy_07_tihusu"],
 ];
 
@@ -550,8 +554,8 @@ const state = {
   visibleOrders: [],
   unlockedCodex: new Set(),
   unlockedFoodLevels: {},
-  coins: 400,
-  stamina: 18,
+  coins: 0,
+  stamina: 100,
   staminaMax: 100,
   recoverMinutes: 2,
   generationCount: 0,
@@ -1503,7 +1507,7 @@ function initializeGeneratorOrderQaScenario() {
 }
 
 const PROGRESSION_FLOW_QA_SPECS = Object.freeze({
-  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 400, chapterOrders: 0 },
+  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 0, chapterOrders: 0 },
   20: { completedOrders: 20, repairCount: 2, innLevel: 1, generatorLevel: 2, coins: 2200, chapterOrders: 8 },
   60: { completedOrders: 60, repairCount: 6, innLevel: 2, generatorLevel: 3, coins: 3000, chapterOrders: 8 },
   120: { completedOrders: 120, repairCount: 13, innLevel: 3, generatorLevel: 4, coins: 6000, chapterOrders: 8 },
@@ -2081,7 +2085,8 @@ async function boot() {
 }
 
 function startingCoinBalance() {
-  return Math.max(0, Number(state.economyConfig?.currency?.startingBalance) || 400);
+  const configured = Number(state.economyConfig?.currency?.startingBalance);
+  return Number.isFinite(configured) ? Math.max(0, Math.floor(configured)) : 0;
 }
 
 function startingGemBalance() {
@@ -2339,6 +2344,20 @@ function loadState() {
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const savedCoinEconomyVersion = Number(data.coinEconomyVersion);
+  const openingStaminaNeedsMigration = Boolean(saved)
+    && !ISOLATED_QA_MODE
+    && Number(data.openingStaminaVersion || 0) < OPENING_STAMINA_VERSION;
+  const openingCopperNeedsMigration = Boolean(saved)
+    && !ISOLATED_QA_MODE
+    && Number(data.openingCopperVersion || 0) < OPENING_COPPER_VERSION
+    && Number(data.coinEconomyVersion) === COIN_ECONOMY_VERSION
+    && LEGACY_OPENING_COPPER.includes(Number(data.coins))
+    && Number(data.coinsEarned || 0) === 0
+    && Number(data.completedOrders || 0) === 0
+    && !data.dailyPouchClaimDay
+    && !(Array.isArray(data.ownedFurniture) && data.ownedFurniture.length)
+    && !(Array.isArray(data.placedFurniture) && data.placedFurniture.some(Boolean))
+    && Object.keys(data.renovationChoices ?? {}).length === 0;
   const coinEconomyNeedsMigration = Boolean(saved)
     && (!Number.isFinite(savedCoinEconomyVersion)
       || savedCoinEconomyVersion < COIN_ECONOMY_VERSION);
@@ -2407,9 +2426,17 @@ function loadState() {
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
     unlockedFoodLevels: normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
-    coins: normalizeSavedCopper(data.coins, startingCoinBalance()),
+    coins: openingCopperNeedsMigration
+      ? startingCoinBalance()
+      : normalizeSavedCopper(data.coins, startingCoinBalance()),
     gems: data.gems ?? startingGemBalance(),
-    stamina: data.stamina ?? state.staminaConfig.initial.startValue,
+    stamina: openingStaminaNeedsMigration
+      ? Math.min(
+        Math.max(data.staminaMax ?? state.staminaConfig.initial.max, state.staminaConfig.initial.max),
+        Math.max(0, Number(data.stamina ?? LEGACY_OPENING_STAMINA) || 0)
+          + Math.max(0, state.staminaConfig.initial.startValue - LEGACY_OPENING_STAMINA),
+      )
+      : data.stamina ?? state.staminaConfig.initial.startValue,
     staminaMax: Math.max(data.staminaMax ?? state.staminaConfig.initial.max, state.staminaConfig.initial.max),
     recoverMinutes: STAMINA_RECOVERY_MINUTES,
     generationCount: data.generationCount ?? 0,
@@ -2478,7 +2505,7 @@ function loadState() {
   pruneGeneratorStates();
   syncVisibleOrders();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
   if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
@@ -2493,6 +2520,8 @@ function saveState() {
     JSON.stringify({
       repairProtocolVersion: REPAIR_PROTOCOL_VERSION,
       coinEconomyVersion: COIN_ECONOMY_VERSION,
+      openingStaminaVersion: OPENING_STAMINA_VERSION,
+      openingCopperVersion: OPENING_COPPER_VERSION,
       board: state.board,
       bag: state.bag,
       rewardItems: state.rewardItems,
@@ -3123,9 +3152,12 @@ function renderInnPage() {
   els.innUpgradeBtn.hidden = level.level >= 4 || !canUpgrade.ok;
   els.innUpgradeBtn.textContent = "扩建";
   els.innUpgradeBtn.title = canUpgrade.ok ? `扩建流沙驿，消耗${level.upgradeCost}铜币` : canUpgrade.reason;
-  els.innStoryLine.textContent = nextMilestone
-    ? `${nextMilestone.sceneName ?? nextMilestone.name}：${nextMilestone.nextText}`
-    : level.story;
+  const repairGate = canEnterRepairPage();
+  els.innStoryLine.textContent = nextMilestone?.chapter > state.innLevel
+    ? `完成 Lv${state.innLevel} 扩建后开放下一章修缮。`
+    : nextMilestone
+      ? `${nextMilestone.sceneName ?? nextMilestone.name}：${repairGate.ok ? nextMilestone.nextText : repairGate.reason}`
+      : level.story;
   renderInnScene(level, repairValue);
   renderMainlineDock();
 }
@@ -3146,16 +3178,17 @@ function renderInnTasks(level) {
 function renderInnScene(level, repairValue) {
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
+  const availableNext = next && next.chapter <= state.innLevel ? next : null;
   const showingFreshRepair = Boolean(repairReturnCastMilestoneId);
   const completedRegionIds = new Set(
     milestones
       .filter((milestone) => selectedRenovationChoice(milestone))
       .flatMap((milestone) => milestone.longscrollRegionIds),
   );
-  const currentRegionIds = showingFreshRepair ? [] : next?.longscrollRegionIds ?? [];
-  const characterMilestone = longscrollCharacterMilestone(next, milestones);
+  const currentRegionIds = showingFreshRepair ? [] : availableNext?.longscrollRegionIds ?? [];
+  const characterMilestone = longscrollCharacterMilestone(availableNext, milestones);
   const characterLayer = renderLongscrollCharacters(characterMilestone);
-  const repairHalo = !showingFreshRepair && next ? renderLongscrollRepairHalo(next) : "";
+  const repairHalo = !showingFreshRepair && availableNext ? renderLongscrollRepairHalo(availableNext) : "";
   els.innScene.innerHTML = `
     <div class="longscroll-map ${showingFreshRepair ? "is-repair-returning" : ""}" aria-label="流沙驿长卷">
       <img class="longscroll-base" src="${LONGSCROLL_BASE_SOURCE}" alt="未修缮的流沙驿" />
@@ -3165,7 +3198,7 @@ function renderInnScene(level, repairValue) {
       ${currentRegionIds
         .map((regionId) => {
           const [left, top, width, height] = LONGSCROLL_REGION_BOUNDS[regionId];
-          return `<button class="longscroll-current-region" type="button" tabindex="-1" aria-hidden="true" data-current-repair="${next.id}" data-region-id="${regionId}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>`;
+          return `<button class="longscroll-current-region" type="button" tabindex="-1" aria-hidden="true" data-current-repair="${availableNext.id}" data-region-id="${regionId}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>`;
         })
         .join("")}
       ${renderLongscrollHistoricalMarkers(milestones)}
@@ -3177,9 +3210,9 @@ function renderInnScene(level, repairValue) {
   els.innScene.querySelectorAll("[data-historical-note-id]").forEach((button) => {
     button.addEventListener("click", () => openHistoricalNote(button.dataset.historicalNoteId));
   });
-  const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[next?.id]
+  const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[availableNext?.id]
     ? characterMilestone
-    : next;
+    : availableNext;
   scheduleCurrentInnFocus(focusMilestone, focusMilestone?.longscrollRegionIds ?? currentRegionIds);
 }
 
@@ -3270,7 +3303,9 @@ function refreshLongscrollCharacters() {
   if (state.currentPage !== "inn") return;
   const layer = els.innScene.querySelector(".longscroll-character-layer");
   if (!layer) return;
-  layer.outerHTML = renderLongscrollCharacters();
+  const next = nextRepairMilestone();
+  const availableNext = next && next.chapter <= state.innLevel ? next : null;
+  layer.outerHTML = renderLongscrollCharacters(longscrollCharacterMilestone(availableNext));
 }
 
 function renderLongscrollMask(className, regionId) {
@@ -3433,7 +3468,9 @@ function handleLockedRepairClick(milestoneId) {
 function renderMainlineDock() {
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
-  const ready = next && next.done && !selectedRenovationChoice(next);
+  const awaitingExpansion = Boolean(next && next.chapter > state.innLevel);
+  const repairGate = canEnterRepairPage();
+  const ready = next && !awaitingExpansion && next.done && repairGate.ok && !selectedRenovationChoice(next);
   const level = currentInnLevel();
   const completedCount = milestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
   const repairValue = innRepairValue();
@@ -3446,15 +3483,15 @@ function renderMainlineDock() {
     </div>
     ${renderOrderProgressGiftRail()}
     <div class="mainline-current">
-      <b>${next ? next.sceneName ?? next.name : "Lv1 修缮完成"}</b>
-      <span>${next ? next.nextText : "可以准备进入下一阶段。"}</span>
-      ${next && !next.done ? `<small>${next.id === "tutorial_complete" ? "先完成一单，再用赚到的铜钱修缮。" : "修完上一处，就能继续修缮这里。"}</small>` : ""}
+      <b>${awaitingExpansion ? "先扩建流沙驿" : next ? next.sceneName ?? next.name : "Lv1 修缮完成"}</b>
+      <span>${awaitingExpansion ? `完成 Lv${state.innLevel} 扩建后开放下一章修缮。` : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
+      ${next && !next.done && !awaitingExpansion ? `<small>${next.id === "tutorial_complete" ? "先完成一单，再用赚到的铜钱修缮。" : "修完上一处，就能继续修缮这里。"}</small>` : ""}
     </div>
     <div class="mainline-rail">
       ${milestones
         .map((milestone, index) => {
           const choice = selectedRenovationChoice(milestone);
-          const isCurrent = next?.id === milestone.id;
+          const isCurrent = !awaitingExpansion && next?.id === milestone.id;
           return `<i class="${choice ? "done" : isCurrent ? "current" : "locked"}" title="${milestone.sceneName ?? milestone.name}">${index + 1}</i>`;
         })
         .join("")}
@@ -3470,8 +3507,8 @@ function renderMainlineDock() {
       </label>
     </div>
     ${
-      next
-        ? `<button class="mainline-action ${ready ? "ready" : ""}" data-mainline="${next.id}" ${ready ? "" : "disabled"}>${ready ? state.activeRepairId === next.id ? "继续修缮" : "进入修缮" : "等待主线达成"}</button>`
+      next && !awaitingExpansion
+        ? `<button class="mainline-action ${ready ? "ready" : ""}" data-mainline="${next.id}" ${ready ? "" : "disabled"}>${ready ? state.activeRepairId === next.id ? "继续修缮" : "进入修缮" : "等待主线或铜钱"}</button>`
         : `<button class="mainline-action ready" data-upgrade-focus="true">查看扩建条件</button>`
     }
   `;
@@ -4955,6 +4992,13 @@ function canUpgradeInn() {
 function canEnterRepairPage() {
   const current = nextRepairMilestone();
   if (!current) return { ok: true, reason: "Lv1 修缮已完成，可以查看流沙驿。", milestone: null };
+  if (current.chapter > state.innLevel) {
+    return {
+      ok: false,
+      reason: `先扩建流沙驿至 Lv${current.chapter}，才能修缮下一章。`,
+      milestone: current,
+    };
+  }
   if (!current.done && state.activeRepairId !== current.id) {
     return {
       ok: false,
@@ -5016,7 +5060,7 @@ function activeStoryChapter() {
   if (LV4_MARKET_ORDERS_QA_MODE) return 4;
   if (STORY_ARCHIVE_QA_MODE) return STORY_ARCHIVE_QA_CHAPTER;
   const next = nextRepairMilestone();
-  if (next?.chapter) return next.chapter;
+  if (next?.chapter) return Math.min(next.chapter, state.innLevel);
   return getMilestoneViews().reduce((chapter, milestone) => (state.renovationChoices[milestone.id] ? Math.max(chapter, milestone.chapter ?? 1) : chapter), 1);
 }
 
@@ -7747,9 +7791,6 @@ function getMilestoneChecks(conditions) {
   if (conditions.completedOrders) {
     checks.push(progressCheck("完成订单", state.completedOrders, conditions.completedOrders));
   }
-  if (conditions.coinsEarned) {
-    checks.push(progressCheck("累计获得铜币", state.coinsEarned, conditions.coinsEarned));
-  }
   if (conditions.codexUnlocked) {
     checks.push(progressCheck("解锁食鉴", state.unlockedCodex.size, conditions.codexUnlocked));
   }
@@ -7795,7 +7836,6 @@ function nextStepText(name, current, target) {
   const left = Math.max(0, target - current);
   if (left === 0) return `${name}已达成`;
   if (name === "完成订单") return `再完成${left}单订单`;
-  if (name === "累计获得铜币") return `再赚${left}枚铜币`;
   if (name === "解锁食鉴") return `再收录${left}道食物`;
   return `${name}还差${left}`;
 }
@@ -8837,7 +8877,6 @@ function debugPrepareLv1Upgrade() {
 function satisfyMilestoneConditions(milestone) {
   const conditions = milestone.conditions ?? {};
   if (conditions.completedOrders) state.completedOrders = Math.max(state.completedOrders, conditions.completedOrders);
-  if (conditions.coinsEarned) state.coinsEarned = Math.max(state.coinsEarned, conditions.coinsEarned);
   if (conditions.codexUnlocked) unlockCodexCount(conditions.codexUnlocked);
   if (conditions.completedOrderIds?.length) {
     state.completedOrderIds = [...new Set([...state.completedOrderIds, ...conditions.completedOrderIds])];
