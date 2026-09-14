@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v12" />
+    <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v1" />
     <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
     <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1" />
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
@@ -278,6 +279,21 @@
       </section>
     </dialog>
 
+    <dialog id="historicalNoteModal" class="historical-note-modal" aria-labelledby="historicalNoteTitle">
+      <article class="historical-note-sheet">
+        <button class="historical-note-close" type="button" data-close="historicalNoteModal" aria-label="关闭札记">×</button>
+        <span id="historicalNoteKind" class="historical-note-kind"></span>
+        <h2 id="historicalNoteTitle"></h2>
+        <p id="historicalNoteLead" class="historical-note-lead"></p>
+        <div class="historical-note-facets">
+          <section><h3>史料所见</h3><p id="historicalNoteEvidence"></p></section>
+          <section><h3>参考复原</h3><p id="historicalNoteReconstruction"></p></section>
+          <section><h3>游戏虚构</h3><p id="historicalNoteFiction"></p></section>
+        </div>
+        <footer class="historical-note-sources"><strong>延伸阅读 · 可核对的出处</strong><div id="historicalNoteSources"></div></footer>
+      </article>
+    </dialog>
+
     <dialog id="chapterStoryModal" class="chapter-story-modal" aria-label="章节剧情">
       <section class="chapter-story-stage">
         <header class="chapter-story-topbar">
@@ -408,6 +424,7 @@
       <div class="modal-inner order-detail">
         <button class="close" data-close="orderDetailModal">×</button>
         <div class="order-detail-head"><img id="orderDetailAvatar" class="order-detail-avatar" alt="" /><div><h2 id="orderDetailNpc"></h2><p id="orderDetailDialogue"></p></div></div>
+        <p id="historicalOrderTeaser" class="historical-order-teaser" hidden></p>
         <section class="order-detail-demand"><div id="orderDetailDemandList" class="order-detail-demand-list"></div></section>
         <section class="order-recipe-box"><h3>合成提示</h3><p id="orderDetailRecipe"></p></section>
         <div class="modal-actions"><button id="orderDetailCodexBtn">查看食鉴</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
@@ -527,6 +544,7 @@
     </dialog>
 
     <script src="./chapter-story.js?v=story-viewport-v1"></script>
+    <script src="./historical-notes.js?v=historical-notes-v1"></script>
     <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
     <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9"></script>
   </body>

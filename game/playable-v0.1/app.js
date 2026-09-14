@@ -351,6 +351,8 @@ const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_BASE_SOURCE = `${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png`;
 const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp?v=feather-20260803`;
 const FINAL_REPAIR_MILESTONE_ID = "lv4_lantern_city";
+const HISTORICAL_NOTES = window.SilkRoadHistoricalNotes ?? [];
+const historicalNotesById = new Map(HISTORICAL_NOTES.map((note) => [note.id, note]));
 const longscrollMaskSrc = (regionId) => `${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`;
 const LONGSCROLL_REGION_BOUNDS = {
   1: [405, 487, 317, 269], 2: [488, 327, 300, 207], 3: [738, 339, 320, 230], 4: [298, 274, 258, 232],
@@ -693,6 +695,15 @@ const els = {
   storyArchiveChapterTitle: document.querySelector("#storyArchiveChapterTitle"),
   storyArchiveChapterCount: document.querySelector("#storyArchiveChapterCount"),
   storyArchiveList: document.querySelector("#storyArchiveList"),
+  historicalNoteModal: document.querySelector("#historicalNoteModal"),
+  historicalNoteKind: document.querySelector("#historicalNoteKind"),
+  historicalNoteTitle: document.querySelector("#historicalNoteTitle"),
+  historicalNoteLead: document.querySelector("#historicalNoteLead"),
+  historicalNoteEvidence: document.querySelector("#historicalNoteEvidence"),
+  historicalNoteReconstruction: document.querySelector("#historicalNoteReconstruction"),
+  historicalNoteFiction: document.querySelector("#historicalNoteFiction"),
+  historicalNoteSources: document.querySelector("#historicalNoteSources"),
+  historicalOrderTeaser: document.querySelector("#historicalOrderTeaser"),
   repairModal: document.querySelector("#repairModal"),
   repairQaNav: document.querySelector("#repairQaNav"),
   repairQaPrev: document.querySelector("#repairQaPrev"),
@@ -831,6 +842,7 @@ let storyArchiveCloseTimer = null;
 let storyArchivePageSwapTimer = null;
 let storyArchivePageDoneTimer = null;
 let storyArchivePageTurning = false;
+let historicalNoteReturnChapter = null;
 let activeOrderFoodContext = null;
 let activeCodexItemId = null;
 const activeGeneratorOutputIndices = new Set();
@@ -2795,6 +2807,11 @@ function bindEvents() {
     event.preventDefault();
     closeStoryArchive();
   });
+  els.historicalNoteModal?.addEventListener("close", () => {
+    const returnChapter = historicalNoteReturnChapter;
+    historicalNoteReturnChapter = null;
+    if (returnChapter !== null) openStoryArchive(returnChapter);
+  });
   els.innFinaleContinue?.addEventListener("click", closeInnFinale);
   els.innFinaleShowLetter?.addEventListener("click", openInnFinaleLetter);
   els.innFinaleViewPanorama?.addEventListener("click", showInnFinalePanorama);
@@ -3150,15 +3167,33 @@ function renderInnScene(level, repairValue) {
           return `<button class="longscroll-current-region" type="button" tabindex="-1" aria-hidden="true" data-current-repair="${next.id}" data-region-id="${regionId}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>`;
         })
         .join("")}
+      ${renderLongscrollHistoricalMarkers(milestones)}
     </div>
   `;
   els.innScene.querySelectorAll("[data-current-repair]").forEach((button) => {
     button.addEventListener("click", () => handleRepairNodeClick(button.dataset.currentRepair, button));
   });
+  els.innScene.querySelectorAll("[data-historical-note-id]").forEach((button) => {
+    button.addEventListener("click", () => openHistoricalNote(button.dataset.historicalNoteId));
+  });
   const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[next?.id]
     ? characterMilestone
     : next;
   scheduleCurrentInnFocus(focusMilestone, focusMilestone?.longscrollRegionIds ?? currentRegionIds);
+}
+
+function renderLongscrollHistoricalMarkers(milestones) {
+  return HISTORICAL_NOTES.filter((note) => note.repairId && historicalNoteUnlocked(note))
+    .map((note) => {
+      const milestone = milestones.find((entry) => entry.id === note.repairId);
+      const bounds = LONGSCROLL_REGION_BOUNDS[milestone?.longscrollRegionIds?.[0]];
+      if (!bounds) return "";
+      const [left, top, width, height] = bounds;
+      const x = Math.round(left + width * 0.62);
+      const y = Math.round(top + height * 0.32);
+      return `<button class="longscroll-note-marker" type="button" data-historical-note-id="${note.id}" aria-label="阅读${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px">${note.markerLabel}</button>`;
+    })
+    .join("");
 }
 
 function renderLongscrollRepairedLayer(regionIds, allComplete) {
@@ -4025,6 +4060,55 @@ function storyArchiveMoments(chapter) {
   return window.SilkRoadChapterStory?.archiveMoments?.[chapter] ?? [];
 }
 
+function historicalNoteUnlocked(note) {
+  if (!note) return false;
+  if (note.repairId) return isRepairCompleted(note.repairId);
+  if (note.orderId) return state.completedOrderIds.includes(note.orderId);
+  return false;
+}
+
+function unlockedHistoricalNotes(chapter = null) {
+  return HISTORICAL_NOTES.filter((note) => historicalNoteUnlocked(note) && (chapter === null || note.chapter === chapter));
+}
+
+function historicalNoteForOrder(orderId) {
+  return HISTORICAL_NOTES.find((note) => note.orderId === orderId) ?? null;
+}
+
+function historicalNoteForRepair(repairId) {
+  return HISTORICAL_NOTES.find((note) => note.repairId === repairId) ?? null;
+}
+
+function renderHistoricalNote(note) {
+  els.historicalNoteKind.textContent = note.kind;
+  els.historicalNoteTitle.textContent = note.title;
+  els.historicalNoteLead.textContent = note.teaser;
+  els.historicalNoteEvidence.textContent = note.evidence;
+  els.historicalNoteReconstruction.textContent = note.reconstruction;
+  els.historicalNoteFiction.textContent = note.fiction;
+  els.historicalNoteSources.replaceChildren(...note.sources.map((source) => {
+    const link = document.createElement("a");
+    link.href = source.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = `${source.label} ↗`;
+    return link;
+  }));
+}
+
+function openHistoricalNote(noteId, { returnToArchive = false } = {}) {
+  const note = historicalNotesById.get(noteId);
+  if (!note || !historicalNoteUnlocked(note) || !els.historicalNoteModal) return;
+  const returnChapter = returnToArchive ? activeStoryArchiveChapter : null;
+  const show = () => {
+    renderHistoricalNote(note);
+    historicalNoteReturnChapter = returnChapter;
+    els.historicalNoteModal.showModal();
+  };
+  if (returnToArchive && els.storyArchiveModal?.open) closeStoryArchive(show);
+  else show();
+}
+
 function storyArchiveMomentIsUnlocked(moment, unlockedIds = unlockedChapterStoryIds()) {
   return moment.segmentIds.every((segmentId) => unlockedIds.has(segmentId));
 }
@@ -4036,7 +4120,8 @@ function unlockedStoryArchiveMoments(unlockedIds = unlockedChapterStoryIds()) {
 }
 
 function storyArchiveChapterIsUnlocked(chapter, unlockedIds = unlockedChapterStoryIds()) {
-  return storyArchiveMoments(chapter).some((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds));
+  return storyArchiveMoments(chapter).some((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds))
+    || unlockedHistoricalNotes(chapter).length > 0;
 }
 
 function storyArchiveChapterForSegment(segmentId) {
@@ -4149,8 +4234,11 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
   const player = window.SilkRoadChapterStory;
   if (!player || !els.storyArchiveChapters || !els.storyArchiveList) return;
   const unlockedMoments = unlockedStoryArchiveMoments(unlockedIds);
-  const archiveIsEmpty = unlockedMoments.length === 0;
-  els.storyArchiveTotal.textContent = archiveIsEmpty ? "尚无纪事" : `${unlockedMoments.length} 则可回顾`;
+  const unlockedNotes = unlockedHistoricalNotes();
+  const archiveIsEmpty = unlockedMoments.length === 0 && unlockedNotes.length === 0;
+  els.storyArchiveTotal.textContent = archiveIsEmpty
+    ? "尚无纪事"
+    : `${unlockedMoments.length} 则剧情 · ${unlockedNotes.length} 则旁注`;
   renderStoryArchiveRecent(unlockedIds);
   els.storyArchiveChapters.replaceChildren();
   [1, 2, 3, 4].forEach((chapter) => {
@@ -4167,9 +4255,10 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
 
   const chapterMoments = storyArchiveMoments(activeStoryArchiveChapter);
   const availableMoments = chapterMoments.filter((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds));
+  const chapterNotes = unlockedHistoricalNotes(activeStoryArchiveChapter);
   els.storyArchiveChapterEyebrow.textContent = `第${activeStoryArchiveChapter}章`;
   els.storyArchiveChapterTitle.textContent = chapterName(activeStoryArchiveChapter);
-  els.storyArchiveChapterCount.textContent = `已记 ${availableMoments.length} 则`;
+  els.storyArchiveChapterCount.textContent = `剧情 ${availableMoments.length} · 旁注 ${chapterNotes.length}`;
   els.storyArchiveList.replaceChildren();
 
   availableMoments.forEach((archiveMoment, momentIndex) => {
@@ -4200,7 +4289,7 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
     els.storyArchiveList.append(card);
   });
 
-  if (!availableMoments.length) {
+  if (!availableMoments.length && !chapterNotes.length) {
     const empty = document.createElement("div");
     empty.className = "story-archive-empty";
     const title = document.createElement("strong");
@@ -4214,6 +4303,36 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
     next.className = "story-archive-next";
     next.textContent = "新的纪事将在旅途中写下";
     els.storyArchiveList.append(next);
+  }
+  if (chapterNotes.length) {
+    const heading = document.createElement("h4");
+    heading.className = "story-archive-notes-heading";
+    heading.textContent = "史实旁注 · 想知道更多时再翻开";
+    els.storyArchiveList.append(heading);
+    chapterNotes.forEach((note) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "story-archive-card story-archive-note-card";
+      card.dataset.historicalNoteId = note.id;
+      card.setAttribute("aria-label", `阅读${note.kind}：${note.title}`);
+      const glyph = document.createElement("span");
+      glyph.className = "historical-note-glyph";
+      glyph.textContent = "✦";
+      glyph.setAttribute("aria-hidden", "true");
+      const copy = document.createElement("span");
+      const kind = document.createElement("small");
+      kind.textContent = note.kind;
+      const title = document.createElement("strong");
+      title.textContent = note.title;
+      const teaser = document.createElement("em");
+      teaser.textContent = note.teaser;
+      copy.append(kind, title, teaser);
+      const arrow = document.createElement("i");
+      arrow.textContent = "›";
+      arrow.setAttribute("aria-hidden", "true");
+      card.append(glyph, copy, arrow);
+      els.storyArchiveList.append(card);
+    });
   }
   els.storyArchiveList.scrollTop = 0;
 }
@@ -4260,9 +4379,10 @@ function selectStoryArchiveChapter(event) {
 }
 
 function selectStoryArchiveSegment(event) {
-  const card = event.target.closest("button[data-story-segment-id], button[data-story-moment-id]");
+  const card = event.target.closest("button[data-story-segment-id], button[data-story-moment-id], button[data-historical-note-id]");
   if (!card) return;
-  if (card.dataset.storyMomentId) replayChapterStoryMoment(card.dataset.storyMomentId);
+  if (card.dataset.historicalNoteId) openHistoricalNote(card.dataset.historicalNoteId, { returnToArchive: true });
+  else if (card.dataset.storyMomentId) replayChapterStoryMoment(card.dataset.storyMomentId);
   else replayChapterStory(card.dataset.storySegmentId);
 }
 
@@ -4641,6 +4761,9 @@ function shouldShowInnFinale() {
 function finishRepairAfterStory(milestone) {
   if (milestone.id === FINAL_REPAIR_MILESTONE_ID && shouldShowInnFinale() && showInnFinale({ milestone })) return;
   restoreRepairReturnView(milestone);
+  if (historicalNoteForRepair(milestone.id)) {
+    toast("驿站札记已解锁。轻触长卷上的札记，随时可以重读。");
+  }
 }
 
 function showInnFinale({ milestone = null, force = false } = {}) {
@@ -6945,6 +7068,9 @@ function completeOrder(orderId) {
   }
   render();
   saveState();
+  if (firstClear && historicalNoteForOrder(orderId)) {
+    toast("已收录一则路上见闻，可在剧情回顾中阅读。");
+  }
   maybePromptRepairGuide();
 }
 
@@ -7074,6 +7200,11 @@ function renderOrderDetail() {
   els.orderDetailAvatar.alt = order.npcName;
   els.orderDetailNpc.textContent = order.npcName;
   els.orderDetailDialogue.textContent = order.dialogue;
+  const historicalNote = historicalNoteForOrder(order.id);
+  els.historicalOrderTeaser.hidden = !historicalNote || historicalNoteUnlocked(historicalNote);
+  if (historicalNote && !els.historicalOrderTeaser.hidden) {
+    els.historicalOrderTeaser.textContent = "首次交付这位旅人的订单后，可在剧情回顾里读一则「路上见闻」。";
+  }
   els.orderDetailDemandList.innerHTML = demandStates
     .map(
       ({ demand, item, owned, missing }) => `

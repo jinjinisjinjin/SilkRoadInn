@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.3.0",
   "scripts": {
-    "build": "node scripts/build-production.mjs"
+    "build": "node scripts/build-production.mjs",
+    "validate:history": "node scripts/validate-historical-notes.mjs"
   },
   "devDependencies": {
     "sharp": "^0.34.5"

@@ -1,0 +1,173 @@
+.longscroll-note-marker {
+  position: absolute;
+  z-index: 7;
+  left: var(--note-x);
+  top: var(--note-y);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 7px 13px 7px 10px;
+  border: 2px solid #9b6936;
+  border-radius: 7px;
+  color: #4a2e1f;
+  background: linear-gradient(145deg, #fff0c3, #dcb572);
+  box-shadow: 0 5px 10px rgba(51, 30, 17, 0.32), inset 0 1px rgba(255, 250, 223, 0.8);
+  font: 800 19px/1.1 "Songti SC", "STSong", serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.longscroll-note-marker::before {
+  content: "✦";
+  color: #9a4b34;
+  font: 20px/1 serif;
+}
+
+.longscroll-note-marker:focus-visible,
+.historical-note-modal a:focus-visible,
+.historical-note-modal button:focus-visible {
+  outline: 3px solid #f3c974;
+  outline-offset: 3px;
+}
+
+.story-archive-notes-heading {
+  margin: 17px 2px 9px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(112, 70, 35, 0.34);
+  color: #70442e;
+  font: 900 15px/1.2 "Songti SC", "STSong", serif;
+}
+
+.story-archive-note-card {
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
+  min-height: 70px;
+}
+
+.story-archive-note-card .historical-note-glyph {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff0ca;
+  background: #8c5138;
+  font-size: 21px;
+}
+
+.historical-order-teaser {
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border-left: 3px solid #a76742;
+  color: #69462f;
+  background: rgba(251, 235, 199, 0.74);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.historical-note-modal {
+  width: min(calc(100vw - 28px), 480px);
+  max-width: none;
+  max-height: min(84dvh, 720px);
+  padding: 0;
+  border: 2px solid #a87542;
+  border-radius: 12px;
+  color: #422a20;
+  background: #f4e5bf;
+  box-shadow: 0 18px 44px rgba(30, 20, 15, 0.54);
+}
+
+.historical-note-modal::backdrop {
+  background: rgba(29, 19, 13, 0.65);
+}
+
+.historical-note-sheet {
+  position: relative;
+  max-height: min(84dvh, 720px);
+  padding: 22px 22px 26px;
+  overflow-y: auto;
+  background: linear-gradient(135deg, rgba(255, 251, 226, 0.85), rgba(232, 203, 149, 0.9));
+}
+
+.historical-note-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  font-size: 23px;
+}
+
+.historical-note-kind {
+  display: block;
+  margin-right: 45px;
+  color: #8c4c34;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.historical-note-sheet h2 {
+  margin: 7px 45px 12px 0;
+  color: #3f281d;
+  font: 900 26px/1.25 "Songti SC", "STSong", serif;
+}
+
+.historical-note-lead {
+  margin: 0 0 18px;
+  color: #6a4731;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.historical-note-facets {
+  display: grid;
+  gap: 10px;
+}
+
+.historical-note-facets section {
+  padding: 11px 13px;
+  border: 1px solid rgba(140, 94, 53, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 248, 224, 0.72);
+}
+
+.historical-note-facets h3 {
+  margin: 0 0 5px;
+  color: #8a4833;
+  font: 900 15px/1.2 "Songti SC", "STSong", serif;
+}
+
+.historical-note-facets p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.historical-note-sources {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(112, 70, 35, 0.35);
+}
+
+.historical-note-sources strong,
+.historical-note-sources a {
+  display: block;
+}
+
+.historical-note-sources strong {
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.historical-note-sources a {
+  width: fit-content;
+  margin-top: 5px;
+  color: #74432f;
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
