@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v12" />
-    <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v2" />
+    <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v4" />
     <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
     <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1" />
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
@@ -289,28 +289,25 @@
           <p id="historicalNoteLead" class="historical-note-lead"></p>
         </header>
         <div class="historical-note-body">
-          <section class="historical-note-clue" aria-labelledby="historicalNoteClueTitle">
-            <span id="historicalNoteClueLabel" class="historical-note-clue-label"></span>
-            <h3 id="historicalNoteClueTitle"></h3>
-            <p id="historicalNoteEvidence"></p>
-          </section>
           <section class="historical-note-inquiry" aria-labelledby="historicalNoteQuestion">
-            <span class="historical-note-inquiry-label">掌柜来判断 · 可随时重选</span>
+            <span id="historicalNoteClueLabel" class="historical-note-clue-label"></span>
+            <span class="historical-note-inquiry-label">驿路小猜谜 · 点选后揭晓</span>
             <h3 id="historicalNoteQuestion"></h3>
             <div id="historicalNoteChoices" class="historical-note-choices" role="group" aria-labelledby="historicalNoteQuestion"></div>
             <div id="historicalNoteFeedback" class="historical-note-feedback" role="status" aria-live="polite" hidden>
               <strong id="historicalNoteFeedbackLabel"></strong>
+              <h4 id="historicalNoteClueTitle"></h4>
+              <p id="historicalNoteEvidence"></p>
               <p id="historicalNoteFeedbackText"></p>
+              <figure id="historicalNoteVisual" class="historical-note-visual" hidden>
+                <img id="historicalNoteImage" alt="" loading="lazy" />
+                <figcaption><span id="historicalNoteImageCaption"></span><a id="historicalNoteImageCredit" target="_blank" rel="noopener noreferrer"></a><a id="historicalNoteImageLicense" target="_blank" rel="noopener noreferrer"></a></figcaption>
+              </figure>
               <p id="historicalNoteTakeaway" class="historical-note-takeaway"></p>
             </div>
           </section>
-          <details class="historical-note-boundary">
-            <summary>这段故事如何取材</summary>
-            <p><strong>参考复原</strong><span id="historicalNoteReconstruction"></span></p>
-            <p><strong>游戏虚构</strong><span id="historicalNoteFiction"></span></p>
-          </details>
         </div>
-        <footer class="historical-note-sources"><strong>延伸阅读 · 可核对的出处</strong><div id="historicalNoteSources"></div></footer>
+        <footer id="historicalNoteSourcesPanel" class="historical-note-sources" hidden><strong>想继续探索？看看史料出处</strong><div id="historicalNoteSources"></div></footer>
       </article>
     </dialog>
 
@@ -564,8 +561,8 @@
     </dialog>
 
     <script src="./chapter-story.js?v=story-viewport-v1"></script>
-    <script src="./historical-notes.js?v=historical-notes-v2"></script>
+    <script src="./historical-notes.js?v=historical-notes-v4"></script>
     <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
-    <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9"></script>
+    <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v2"></script>
   </body>
 </html>

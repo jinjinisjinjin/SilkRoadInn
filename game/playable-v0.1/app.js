@@ -705,6 +705,11 @@ const els = {
   historicalNoteGlyph: document.querySelector("#historicalNoteGlyph"),
   historicalNoteTitle: document.querySelector("#historicalNoteTitle"),
   historicalNoteLead: document.querySelector("#historicalNoteLead"),
+  historicalNoteVisual: document.querySelector("#historicalNoteVisual"),
+  historicalNoteImage: document.querySelector("#historicalNoteImage"),
+  historicalNoteImageCaption: document.querySelector("#historicalNoteImageCaption"),
+  historicalNoteImageCredit: document.querySelector("#historicalNoteImageCredit"),
+  historicalNoteImageLicense: document.querySelector("#historicalNoteImageLicense"),
   historicalNoteClueLabel: document.querySelector("#historicalNoteClueLabel"),
   historicalNoteClueTitle: document.querySelector("#historicalNoteClueTitle"),
   historicalNoteEvidence: document.querySelector("#historicalNoteEvidence"),
@@ -714,9 +719,7 @@ const els = {
   historicalNoteFeedbackLabel: document.querySelector("#historicalNoteFeedbackLabel"),
   historicalNoteFeedbackText: document.querySelector("#historicalNoteFeedbackText"),
   historicalNoteTakeaway: document.querySelector("#historicalNoteTakeaway"),
-  historicalNoteBoundary: document.querySelector(".historical-note-boundary"),
-  historicalNoteReconstruction: document.querySelector("#historicalNoteReconstruction"),
-  historicalNoteFiction: document.querySelector("#historicalNoteFiction"),
+  historicalNoteSourcesPanel: document.querySelector("#historicalNoteSourcesPanel"),
   historicalNoteSources: document.querySelector("#historicalNoteSources"),
   historicalOrderTeaser: document.querySelector("#historicalOrderTeaser"),
   repairModal: document.querySelector("#repairModal"),
@@ -4134,6 +4137,18 @@ function renderHistoricalNote(note) {
   els.historicalNoteGlyph.textContent = note.glyph;
   els.historicalNoteTitle.textContent = note.title;
   els.historicalNoteLead.textContent = note.teaser;
+  els.historicalNoteVisual.hidden = !note.image;
+  if (note.image) {
+    els.historicalNoteImage.src = note.image.src;
+    els.historicalNoteImage.alt = note.image.alt;
+    els.historicalNoteImageCaption.textContent = note.image.caption;
+    els.historicalNoteImageCredit.href = note.image.creditUrl;
+    els.historicalNoteImageCredit.textContent = note.image.creditLabel;
+    els.historicalNoteImageLicense.href = note.image.licenseUrl;
+    els.historicalNoteImageLicense.textContent = note.image.licenseLabel;
+  } else {
+    els.historicalNoteImage.removeAttribute("src");
+  }
   els.historicalNoteClueLabel.textContent = note.clueLabel;
   els.historicalNoteClueTitle.textContent = note.clueTitle;
   els.historicalNoteEvidence.textContent = note.evidence;
@@ -4148,9 +4163,7 @@ function renderHistoricalNote(note) {
     return button;
   }));
   els.historicalNoteFeedback.hidden = true;
-  els.historicalNoteBoundary.open = false;
-  els.historicalNoteReconstruction.textContent = note.reconstruction;
-  els.historicalNoteFiction.textContent = note.fiction;
+  els.historicalNoteSourcesPanel.hidden = true;
   els.historicalNoteSources.replaceChildren(...note.sources.map((source) => {
     const link = document.createElement("a");
     link.href = source.url;
@@ -4163,16 +4176,19 @@ function renderHistoricalNote(note) {
 }
 
 function answerHistoricalNote(note, chosenIndex) {
+  if (!els.historicalNoteFeedback.hidden) return;
   const correct = chosenIndex === note.answerIndex;
   [...els.historicalNoteChoices.children].forEach((button, index) => {
     button.setAttribute("aria-pressed", String(index === chosenIndex));
-    button.dataset.result = index === chosenIndex ? (correct ? "correct" : "reconsider") : "";
+    button.dataset.result = index === note.answerIndex ? "correct" : (index === chosenIndex ? "reconsider" : "");
+    button.disabled = true;
   });
   els.historicalNoteFeedback.dataset.result = correct ? "correct" : "reconsider";
-  els.historicalNoteFeedbackLabel.textContent = correct ? "✓ 判断有据" : "↺ 再看一眼线索";
+  els.historicalNoteFeedbackLabel.textContent = correct ? "✓ 猜对啦！" : "↺ 谜底揭晓";
   els.historicalNoteFeedbackText.textContent = note.feedback;
   els.historicalNoteTakeaway.textContent = note.takeaway;
   els.historicalNoteFeedback.hidden = false;
+  els.historicalNoteSourcesPanel.hidden = false;
   els.historicalNoteFeedback.scrollIntoView({ block: "nearest" });
 }
 
