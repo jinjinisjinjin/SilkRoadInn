@@ -700,10 +700,21 @@ const els = {
   storyArchiveChapterCount: document.querySelector("#storyArchiveChapterCount"),
   storyArchiveList: document.querySelector("#storyArchiveList"),
   historicalNoteModal: document.querySelector("#historicalNoteModal"),
+  historicalNoteSheet: document.querySelector(".historical-note-sheet"),
   historicalNoteKind: document.querySelector("#historicalNoteKind"),
+  historicalNoteGlyph: document.querySelector("#historicalNoteGlyph"),
   historicalNoteTitle: document.querySelector("#historicalNoteTitle"),
   historicalNoteLead: document.querySelector("#historicalNoteLead"),
+  historicalNoteClueLabel: document.querySelector("#historicalNoteClueLabel"),
+  historicalNoteClueTitle: document.querySelector("#historicalNoteClueTitle"),
   historicalNoteEvidence: document.querySelector("#historicalNoteEvidence"),
+  historicalNoteQuestion: document.querySelector("#historicalNoteQuestion"),
+  historicalNoteChoices: document.querySelector("#historicalNoteChoices"),
+  historicalNoteFeedback: document.querySelector("#historicalNoteFeedback"),
+  historicalNoteFeedbackLabel: document.querySelector("#historicalNoteFeedbackLabel"),
+  historicalNoteFeedbackText: document.querySelector("#historicalNoteFeedbackText"),
+  historicalNoteTakeaway: document.querySelector("#historicalNoteTakeaway"),
+  historicalNoteBoundary: document.querySelector(".historical-note-boundary"),
   historicalNoteReconstruction: document.querySelector("#historicalNoteReconstruction"),
   historicalNoteFiction: document.querySelector("#historicalNoteFiction"),
   historicalNoteSources: document.querySelector("#historicalNoteSources"),
@@ -4118,10 +4129,26 @@ function historicalNoteForRepair(repairId) {
 }
 
 function renderHistoricalNote(note) {
+  els.historicalNoteModal.dataset.noteId = note.id;
   els.historicalNoteKind.textContent = note.kind;
+  els.historicalNoteGlyph.textContent = note.glyph;
   els.historicalNoteTitle.textContent = note.title;
   els.historicalNoteLead.textContent = note.teaser;
+  els.historicalNoteClueLabel.textContent = note.clueLabel;
+  els.historicalNoteClueTitle.textContent = note.clueTitle;
   els.historicalNoteEvidence.textContent = note.evidence;
+  els.historicalNoteQuestion.textContent = note.question;
+  els.historicalNoteChoices.replaceChildren(...note.choices.map((choice, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "historical-note-choice";
+    button.textContent = choice;
+    button.setAttribute("aria-pressed", "false");
+    button.addEventListener("click", () => answerHistoricalNote(note, index));
+    return button;
+  }));
+  els.historicalNoteFeedback.hidden = true;
+  els.historicalNoteBoundary.open = false;
   els.historicalNoteReconstruction.textContent = note.reconstruction;
   els.historicalNoteFiction.textContent = note.fiction;
   els.historicalNoteSources.replaceChildren(...note.sources.map((source) => {
@@ -4132,6 +4159,21 @@ function renderHistoricalNote(note) {
     link.textContent = `${source.label} ↗`;
     return link;
   }));
+  els.historicalNoteSheet.scrollTop = 0;
+}
+
+function answerHistoricalNote(note, chosenIndex) {
+  const correct = chosenIndex === note.answerIndex;
+  [...els.historicalNoteChoices.children].forEach((button, index) => {
+    button.setAttribute("aria-pressed", String(index === chosenIndex));
+    button.dataset.result = index === chosenIndex ? (correct ? "correct" : "reconsider") : "";
+  });
+  els.historicalNoteFeedback.dataset.result = correct ? "correct" : "reconsider";
+  els.historicalNoteFeedbackLabel.textContent = correct ? "✓ 判断有据" : "↺ 再看一眼线索";
+  els.historicalNoteFeedbackText.textContent = note.feedback;
+  els.historicalNoteTakeaway.textContent = note.takeaway;
+  els.historicalNoteFeedback.hidden = false;
+  els.historicalNoteFeedback.scrollIntoView({ block: "nearest" });
 }
 
 function openHistoricalNote(noteId, { returnToArchive = false } = {}) {
@@ -4142,6 +4184,9 @@ function openHistoricalNote(noteId, { returnToArchive = false } = {}) {
     renderHistoricalNote(note);
     historicalNoteReturnChapter = returnChapter;
     els.historicalNoteModal.showModal();
+    requestAnimationFrame(() => {
+      if (els.historicalNoteModal.open) els.historicalNoteSheet.scrollTop = 0;
+    });
   };
   if (returnToArchive && els.storyArchiveModal?.open) closeStoryArchive(show);
   else show();
