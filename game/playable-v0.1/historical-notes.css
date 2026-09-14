@@ -25,6 +25,47 @@
   font: 20px/1 serif;
 }
 
+.longscroll-note-marker.is-compact {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0;
+}
+
+.longscroll-note-marker.is-compact::before {
+  content: attr(data-glyph);
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid #b58c61;
+  border-radius: 50%;
+  color: #814a37;
+  background: #f9eed8;
+  box-shadow: 0 4px 10px rgba(51, 30, 17, 0.22);
+  font: 800 21px/1 "Songti SC", "STSong", serif;
+}
+
+.longscroll-note-marker.is-compact:hover::after,
+.longscroll-note-marker.is-compact:focus-visible::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 55px;
+  left: 50%;
+  padding: 5px 8px;
+  border-radius: 5px;
+  color: #fff8e9;
+  background: #6d4733;
+  font: 700 15px/1.2 "Songti SC", "STSong", serif;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
 .longscroll-note-marker:focus-visible,
 .historical-note-modal a:focus-visible,
 .historical-note-modal button:focus-visible,
@@ -221,8 +262,8 @@
   gap: 2px 6px;
   padding: 6px 9px;
   color: #5e4935;
-  font-size: 10px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .historical-note-visual figcaption a {
@@ -378,7 +419,7 @@
 .historical-note-sources strong {
   margin-bottom: 6px;
   color: #553826;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .historical-note-sources a {
@@ -386,8 +427,8 @@
   max-width: 100%;
   margin-top: 5px;
   color: #603d2b;
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 13px;
+  line-height: 1.5;
   overflow-wrap: anywhere;
   text-decoration: underline;
   text-underline-offset: 2px;

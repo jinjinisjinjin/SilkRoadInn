@@ -30,7 +30,7 @@ window.SilkRoadHistoricalNotes = Object.freeze([
     },
     sources: [
       { label: "UNESCO / ICOMOS｜长安—天山廊道事实更正，第16页", url: "https://whc.unesco.org/document/130566" },
-      { label: "UNESCO 世界遗产中心｜廊道旧综述（水利细节以勘误为准）", url: "https://whc.unesco.org/en/list/1442" },
+      { label: "UNESCO｜旧综述（水利见勘误）", url: "https://whc.unesco.org/en/list/1442" },
     ],
   }),
   Object.freeze({

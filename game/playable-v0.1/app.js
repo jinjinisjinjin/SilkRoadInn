@@ -3231,11 +3231,12 @@ function renderInnScene(level, repairValue) {
 }
 
 function renderLongscrollHistoricalMarkers(milestones) {
-  // Keep the longscroll readable after all 22 repairs; older notes remain in the story archive.
-  return HISTORICAL_NOTES.filter((note) => note.repairId && historicalNoteUnlocked(note))
+  // Keep every repaired place revisit-able; older notes use small seals instead of full labels.
+  const unlockedNotes = HISTORICAL_NOTES.filter((note) => note.repairId && historicalNoteUnlocked(note))
     .sort((left, right) => milestones.findIndex((entry) => entry.id === left.repairId)
-      - milestones.findIndex((entry) => entry.id === right.repairId))
-    .slice(-3)
+      - milestones.findIndex((entry) => entry.id === right.repairId));
+  const recentIds = new Set(unlockedNotes.slice(-3).map((note) => note.id));
+  return unlockedNotes
     .map((note) => {
       const milestone = milestones.find((entry) => entry.id === note.repairId);
       const bounds = LONGSCROLL_REGION_BOUNDS[milestone?.longscrollRegionIds?.[0]];
@@ -3243,7 +3244,8 @@ function renderLongscrollHistoricalMarkers(milestones) {
       const [left, top, width, height] = bounds;
       const x = Math.round(left + width * 0.62);
       const y = Math.round(top + height * 0.32);
-      return `<button class="longscroll-note-marker" type="button" data-historical-note-id="${note.id}" aria-label="阅读${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px">${note.markerLabel}</button>`;
+      const compact = !recentIds.has(note.id);
+      return `<button class="longscroll-note-marker${compact ? " is-compact" : ""}" type="button" data-historical-note-id="${note.id}" data-glyph="${note.glyph}" data-label="${note.markerLabel}" aria-label="阅读${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px">${note.markerLabel}</button>`;
     })
     .join("");
 }
@@ -4178,7 +4180,7 @@ function renderHistoricalNote(note) {
     link.href = source.url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = `${source.label} ↗`;
+    link.textContent = source.label;
     return link;
   }));
   els.historicalNoteSheet.scrollTop = 0;
