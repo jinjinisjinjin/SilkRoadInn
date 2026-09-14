@@ -3,7 +3,7 @@
   "staminaName": "驼铃",
   "initial": {
     "max": 100,
-    "startValue": 18,
+    "startValue": 100,
     "recoverMinutes": 2
   },
   "afterKitchenRepair": {
