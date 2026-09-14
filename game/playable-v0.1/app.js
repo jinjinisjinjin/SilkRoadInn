@@ -1671,6 +1671,7 @@ function initializeStoryArchiveQaScenario() {
   state.activeChapterStory = null;
   state.activeRepairId = null;
   state.completedOrders = 1;
+  state.completedOrderIds = ["order_003_sogdian_humabing"];
   state.innLevel = STORY_ARCHIVE_QA_CHAPTER;
   state.currentPage = "inn";
 }
