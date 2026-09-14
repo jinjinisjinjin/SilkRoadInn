@@ -490,16 +490,16 @@ const GIFT_PACKS = {
     itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
     description: "前期修缮奖励，主要产出奶房食盒材料。",
     rewards: [
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
       { type: "coins", amount: 12 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
       { type: "coins", amount: 18 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
-      { type: "item", itemId: "boxmat_milk_room_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
+      { type: "item", itemId: "material_dairy_01", quantity: 1 },
     ],
   },
   gift_livestock_pen_parts_01: {
@@ -522,13 +522,13 @@ const GIFT_PACKS = {
 };
 const LOCKED_CELL_ITEM_ROWS = [
   ["hubing_08_gulouzi", "meat_06_suzhi_yanglei", "fruit_05_guopu_pan", "dairy_04_ganlao", "spice_04_jiaochi_jiang", "drink_05_mijiang", "fruit_06_mijian_guo"],
-  ["boxmat_milk_room_01", "hubing_04_youhubing", "dairy_03_laojiang", "meat_04_jiaochi_yangrou", "spice_03_hujiao_li", "fruit_04_wuhuaguo", "boxmat_livestock_pen_01"],
-  ["meat_02_roumi_xian", "hubing_02_lubing", "hubing_01_dough", "boxmat_milk_room_01", "dairy_01_milk", "dairy_02_rumi", "spice_02_ziran_mo"],
+  ["material_dairy_01", "hubing_04_youhubing", "dairy_03_laojiang", "meat_04_jiaochi_yangrou", "spice_03_hujiao_li", "fruit_04_wuhuaguo", "boxmat_livestock_pen_01"],
+  ["meat_02_roumi_xian", "hubing_02_lubing", "hubing_01_dough", "material_dairy_01", "dairy_01_milk", "dairy_02_rumi", "spice_02_ziran_mo"],
   ["fruit_03_yezao", "fruit_01_putao", null, null, null, "hubing_02_lubing", "drink_04_shiliujiang"],
   ["hubing_04_youhubing", "boxmat_livestock_pen_01", null, null, null, "dairy_02_rumi", "drink_03_sanlejiang"],
   ["meat_03_roupu", "drink_01_putaozhi", null, null, null, "meat_02_roumi_xian", "dairy_04_ganlao"],
   ["spice_04_jiaochi_jiang", "spice_02_ziran_mo", "fruit_02_gan_putao", "hubing_03_humabing", "dairy_03_laojiang", "drink_02_putaojiang", "hubing_03_humabing"],
-  ["boxmat_milk_room_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
+  ["material_dairy_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
   ["spice_06_hexiang_jiangzhan", "meat_05_yangrou_geng", "gen_dairy_02", "dairy_05_suyou", "hubing_05_congchihubing", "hubing_04_youhubing", "dairy_07_tihusu"],
 ];
 
