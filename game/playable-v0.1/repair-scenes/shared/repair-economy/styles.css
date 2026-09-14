@@ -106,6 +106,12 @@
   pointer-events: none;
 }
 
+@media (max-aspect-ratio: 4 / 5) {
+  .repair-scene-figure {
+    left: var(--cast-mobile-x, var(--cast-x));
+  }
+}
+
 .repair-scene-figure::after {
   content: "";
   position: absolute;
@@ -264,7 +270,9 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-width: 118px;
+  box-sizing: border-box;
+  width: 158px;
+  min-width: 158px;
   min-height: 59px;
   margin: 0;
   padding: 8px 15px 15px 13px;
@@ -333,12 +341,13 @@
 .repair-part-price-line {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 21px minmax(2.2ch, auto) 8px minmax(2.2ch, auto);
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   width: 100%;
   min-height: 24px;
+  white-space: nowrap;
 }
 
 .repair-part-price-line::after {
@@ -382,6 +391,7 @@
   z-index: 1;
   width: 21px !important;
   height: 21px !important;
+  flex: 0 0 21px;
   object-fit: contain !important;
   filter: drop-shadow(0 1px 1px rgba(74, 49, 24, 0.32));
 }
@@ -389,8 +399,9 @@
 .repair-part-price-line b {
   position: relative;
   z-index: 1;
-  min-width: 2.2ch;
-  font: 900 20px/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
+  min-width: 0;
+  flex: 0 0 auto;
+  font: 900 calc(20px * var(--repair-price-font-scale, 1))/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
   font-style: italic;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
@@ -409,34 +420,16 @@
 
 .repair-part-price-line [data-repair-cost] {
   color: #aa3d2f;
-  font-size: 24px;
+  font-size: calc(24px * var(--repair-price-font-scale, 1));
   font-weight: 900;
 }
 
 .repair-part-price-divider {
   color: #594031;
-  font: 900 19px/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
+  flex: 0 0 auto;
+  font: 900 calc(19px * var(--repair-price-font-scale, 1))/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
   -webkit-text-stroke: 0.16px currentColor;
   text-align: center;
-}
-
-.repair-part-shortage {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  margin-top: 1px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(159, 71, 52, 0.24);
-  color: #a33e31;
-  font: normal 900 10px/1 "STXingkai", "STKaiti", "Kaiti SC", "KaiTi", serif;
-  letter-spacing: 0.16em;
-  text-align: center;
-  text-shadow: 0 1px rgba(255, 246, 218, 0.62);
-}
-
-.repair-part-shortage[hidden] {
-  display: none;
 }
 
 .repair-part-marker.is-short .repair-part-price {
@@ -469,7 +462,6 @@
 }
 
 .repair-part-marker.is-short .repair-part-price-line::after {
-  bottom: -25px;
   color: rgba(151, 39, 30, 0.94);
   opacity: 0.94;
 }

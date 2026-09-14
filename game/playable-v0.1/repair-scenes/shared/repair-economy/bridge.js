@@ -16,72 +16,109 @@
   const ZONE_CAMERA_MOVE_MS = 620;
   const LOCAL_CAMERA_MOVE_MS = 380;
   const COMPLETION_OVERVIEW_MOVE_MS = 820;
-  const INDOOR_CAST = Object.freeze({
-    // Each x/y is a floor contact point in the scene artwork, never a furniture surface.
+  const REPAIR_SCENE_CAST = Object.freeze({
+    // Each x/y is a floor contact point; widths follow the scene's perspective and furniture scale.
     "02": [
-      { actor: "keeper", x: 650, y: 805, width: 145 },
-      { actor: "npc_dunhuang_woman", x: 880, y: 805, width: 170, flip: true },
+      { actor: "keeper", x: 650, y: 805, width: 157 },
+      { actor: "npc_dunhuang_woman", x: 880, y: 805, width: 184, flip: true },
     ],
     "03": [
-      { actor: "keeper", x: 930, y: 845, width: 132 },
-      { actor: "npc_sogdian_merchant", x: 1080, y: 820, width: 194, flip: true },
+      { actor: "keeper", x: 930, y: 845, width: 153 },
+      { actor: "npc_sogdian_merchant", x: 1080, y: 820, width: 237, flip: true },
     ],
     "04": [
-      { actor: "keeper", x: 665, y: 838, width: 145 },
-      { actor: "npc_farmer", x: 900, y: 852, width: 160, flip: true },
+      { actor: "keeper", x: 665, y: 838, width: 157 },
+      { actor: "npc_farmer", x: 900, y: 852, width: 179, flip: true },
     ],
     "05": [
-      { actor: "keeper", x: 810, y: 820, width: 130 },
-      { actor: "npc_sogdian_merchant", x: 1040, y: 820, width: 192, flip: true },
+      { actor: "keeper", x: 810, y: 820, width: 156 },
+      { actor: "npc_sogdian_merchant", x: 1040, y: 820, width: 243, flip: true },
+    ],
+    "06": [
+      { actor: "keeper", x: 605, y: 848, width: 151, mobileX: 755 },
+      { actor: "npc_dunhuang_woman", x: 790, y: 848, width: 177, flip: true, mobileX: 940 },
     ],
     "07": [
-      { actor: "keeper", x: 660, y: 980, width: 132 },
-      { actor: "npc_pilgrim_monk", x: 840, y: 995, width: 192, flip: true },
+      { actor: "keeper", x: 660, y: 980, width: 145 },
+      { actor: "npc_pilgrim_monk", x: 840, y: 995, width: 224, flip: true },
+    ],
+    "08": [
+      { actor: "keeper", x: 585, y: 925, width: 188, mobileX: 630 },
+      { actor: "npc_pilgrim_monk", x: 790, y: 925, width: 294, flip: true, mobileX: 835 },
     ],
     "09": [
-      { actor: "keeper", x: 650, y: 945, width: 130 },
-      { actor: "npc_changan_envoy", x: 840, y: 950, width: 190, flip: true },
+      { actor: "keeper", x: 650, y: 970, width: 186 },
+      { actor: "npc_changan_envoy", x: 840, y: 975, width: 287, flip: true },
     ],
     "10": [
-      { actor: "keeper", x: 650, y: 880, width: 128 },
-      { actor: "npc_changan_maid", x: 850, y: 970, width: 218, flip: true },
+      { actor: "keeper", x: 650, y: 880, width: 141 },
+      { actor: "npc_changan_maid", x: 850, y: 970, width: 240, flip: true },
     ],
     "11": [
-      { actor: "keeper", x: 637, y: 873, width: 150 },
-      { actor: "npc_temple_donor", x: 889, y: 879, width: 198, flip: true },
+      { actor: "keeper", x: 637, y: 873, width: 158 },
+      { actor: "npc_temple_donor", x: 889, y: 879, width: 208, flip: true },
+    ],
+    "12": [
+      { actor: "keeper", x: 575, y: 916, width: 145 },
+      { actor: "npc_temple_donor", x: 785, y: 916, width: 192, flip: true },
+    ],
+    "13-14": [
+      { actor: "keeper", x: 525, y: 1000, width: 145, mobileX: 575 },
+      { actor: "npc_temple_donor", x: 740, y: 1000, width: 193, flip: true, mobileX: 790 },
     ],
     "15": [
-      { actor: "keeper", x: 700, y: 810, width: 130 },
-      { actor: "npc_pilgrim_monk", x: 900, y: 815, width: 192, flip: true },
+      { actor: "keeper", x: 700, y: 810, width: 156 },
+      { actor: "npc_pilgrim_monk", x: 900, y: 815, width: 244, flip: true },
     ],
     "16": [
-      { actor: "keeper", x: 745, y: 815, width: 128 },
-      { actor: "npc_uighur_herder", x: 930, y: 820, width: 190, flip: true },
+      { actor: "keeper", x: 745, y: 815, width: 154 },
+      { actor: "npc_uighur_herder", x: 930, y: 820, width: 240, flip: true },
+    ],
+    "17-18": [
+      { actor: "keeper", x: 800, y: 690, width: 139 },
+      { actor: "npc_shazhou_guard", x: 1010, y: 690, width: 219, flip: true },
     ],
     "19": [
-      { actor: "keeper", x: 700, y: 835, width: 130 },
-      { actor: "npc_caravan_leader", x: 945, y: 845, width: 190, flip: true },
+      { actor: "keeper", x: 700, y: 835, width: 156 },
+      { actor: "npc_caravan_leader", x: 945, y: 845, width: 250, flip: true },
     ],
     "20": [
-      { actor: "keeper", x: 720, y: 875, width: 128 },
-      { actor: "npc_caravan_leader", x: 930, y: 875, width: 188, flip: true },
+      { actor: "keeper", x: 720, y: 875, width: 154 },
+      { actor: "npc_caravan_leader", x: 930, y: 875, width: 248, flip: true },
+    ],
+    "21-23": [
+      { actor: "keeper", x: 660, y: 827, width: 155, mobileX: 175 },
+      { actor: "npc_sogdian_merchant", x: 880, y: 827, width: 241, flip: true, mobileX: 385 },
+    ],
+    "24": [
+      { actor: "keeper", x: 705, y: 810, width: 153, mobileX: 555 },
+      { actor: "npc_dunhuang_woman", x: 910, y: 810, width: 179, flip: true, mobileX: 760 },
     ],
     "25": [
-      { actor: "keeper", x: 710, y: 805, width: 130 },
-      { actor: "npc_caravan_leader", x: 900, y: 815, width: 190, flip: true },
+      { actor: "keeper", x: 710, y: 805, width: 156 },
+      { actor: "npc_caravan_leader", x: 900, y: 815, width: 250, flip: true },
+    ],
+    "26": [
+      { actor: "keeper", x: 585, y: 815, width: 154 },
+      { actor: "npc_changan_maid", x: 785, y: 815, width: 245, flip: true },
+    ],
+    "27": [
+      { actor: "keeper", x: 1080, y: 815, width: 155 },
+      { actor: "npc_caravan_leader", x: 1300, y: 815, width: 249, flip: true },
     ],
   });
 
-  function mountIndoorCast(world, repairId) {
-    const actors = INDOOR_CAST[repairId];
+  function mountRepairSceneCast(world, repairId) {
+    const actors = REPAIR_SCENE_CAST[repairId];
     if (!actors) return;
     const layer = document.createElement("div");
     layer.className = "repair-scene-cast";
     layer.setAttribute("aria-hidden", "true");
-    actors.forEach(({ actor, x, y, width, flip }) => {
+    actors.forEach(({ actor, x, y, width, flip, mobileX }) => {
       const figure = document.createElement("figure");
       figure.className = `repair-scene-figure${flip ? " is-flipped" : ""}`;
       figure.style.setProperty("--cast-x", `${x}px`);
+      if (mobileX !== undefined) figure.style.setProperty("--cast-mobile-x", `${mobileX}px`);
       figure.style.setProperty("--cast-y", `${y}px`);
       figure.style.setProperty("--cast-width", `${width}px`);
       const image = document.createElement("img");
@@ -189,7 +226,6 @@
           <img src="${COIN_ICON}" alt="" /><b data-repair-current>—</b>
           <span class="repair-part-price-divider" aria-hidden="true">/</span><b data-repair-cost>—</b>
         </span>
-        <em class="repair-part-shortage" hidden>铜币不足</em>
       </button>
     `;
     return marker;
@@ -227,7 +263,7 @@
     const ui = createHud();
     const markerHost = document.createElement("div");
     world.removeAttribute("aria-hidden");
-    mountIndoorCast(world, repairId);
+    mountRepairSceneCast(world, repairId);
     markerHost.className = typeof options.overview === "function"
       ? "repair-part-marker-layer is-repair-overview"
       : "repair-part-marker-layer";
@@ -521,6 +557,20 @@
       return parts.findIndex((_, index) => !applied.has(index));
     }
 
+    function fitPriceLine(price) {
+      const line = price.querySelector(".repair-part-price-line");
+      const items = [...line.children];
+      const gap = Number.parseFloat(getComputedStyle(line).columnGap) || 0;
+      const contentWidth = () => items.reduce((width, item) => width + item.offsetWidth, 0)
+        + gap * (items.length - 1);
+      let scale = 1;
+      price.style.setProperty("--repair-price-font-scale", String(scale));
+      while (contentWidth() > line.clientWidth - 1 && scale > 0.68) {
+        scale = Math.max(0.68, Math.round((scale - 0.04) * 100) / 100);
+        price.style.setProperty("--repair-price-font-scale", String(scale));
+      }
+    }
+
     function renderMarker(index, activeIndex = nextIncompleteIndex()) {
       const marker = markers[index];
       if (!marker) return;
@@ -534,7 +584,7 @@
       const price = marker.querySelector(".repair-part-price");
       price.querySelector("[data-repair-current]").textContent = initialized ? String(availableCoins()) : "—";
       price.querySelector("[data-repair-cost]").textContent = initialized ? String(cost) : "—";
-      price.querySelector(".repair-part-shortage").hidden = !isShort;
+      fitPriceLine(price);
       price.setAttribute(
         "aria-label",
         initialized
