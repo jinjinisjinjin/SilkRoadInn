@@ -1,0 +1,11 @@
+{
+  "name": "silkroadinn-playable",
+  "private": true,
+  "version": "0.3.0",
+  "scripts": {
+    "build": "node scripts/build-production.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
+  }
+}
