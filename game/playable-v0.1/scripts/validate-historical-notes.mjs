@@ -13,8 +13,19 @@ const milestones = JSON.parse(readFileSync(resolve(root, "data/progression.json"
 const orderById = new Map(orders.map((order) => [order.id, order]));
 const milestoneById = new Map(milestones.map((milestone) => [milestone.id, milestone]));
 
-assert.equal(notes.length, 3, "The pilot should contain exactly three notes.");
+const repairNotes = notes.filter((note) => note.repairId);
+const travelerNotes = notes.filter((note) => note.orderId);
+assert.equal(milestones.length, 22, "The current progression should contain 22 repair milestones.");
+assert.equal(repairNotes.length, milestones.length, "Each repair milestone needs one historical question.");
+assert.deepEqual(
+  Array.from(repairNotes, (note) => note.repairId).sort(),
+  Array.from(milestones, (milestone) => milestone.id).sort(),
+  "Historical questions must cover every repair milestone exactly once.",
+);
+assert.equal(travelerNotes.length, 1, "Keep the existing traveler-order bonus question separate from the 22 repairs.");
 assert.equal(new Set(notes.map((note) => note.id)).size, notes.length, "Note IDs must be unique.");
+assert.equal(new Set(notes.map((note) => note.orderId || note.repairId)).size, notes.length,
+  "Each historical note needs a distinct unlock trigger.");
 
 for (const note of notes) {
   assert.ok(note.id && note.kind && note.title && note.teaser, `Missing heading in ${note.id}.`);
@@ -45,4 +56,4 @@ for (const note of notes) {
   }
 }
 
-console.log(`Historical note validation passed: ${notes.length} notes with valid triggers, labels, and sources.`);
+console.log(`Historical note validation passed: ${repairNotes.length}/22 repairs and ${travelerNotes.length} traveler bonus, all with valid triggers, labels, and sources.`);

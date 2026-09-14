@@ -3231,7 +3231,11 @@ function renderInnScene(level, repairValue) {
 }
 
 function renderLongscrollHistoricalMarkers(milestones) {
+  // Keep the longscroll readable after all 22 repairs; older notes remain in the story archive.
   return HISTORICAL_NOTES.filter((note) => note.repairId && historicalNoteUnlocked(note))
+    .sort((left, right) => milestones.findIndex((entry) => entry.id === left.repairId)
+      - milestones.findIndex((entry) => entry.id === right.repairId))
+    .slice(-3)
     .map((note) => {
       const milestone = milestones.find((entry) => entry.id === note.repairId);
       const bounds = LONGSCROLL_REGION_BOUNDS[milestone?.longscrollRegionIds?.[0]];
@@ -4120,7 +4124,11 @@ function historicalNoteUnlocked(note) {
 }
 
 function unlockedHistoricalNotes(chapter = null) {
-  return HISTORICAL_NOTES.filter((note) => historicalNoteUnlocked(note) && (chapter === null || note.chapter === chapter));
+  const repairOrder = new Map((state.progressionConfig?.milestones ?? []).map((milestone, index) => [milestone.id, index]));
+  return HISTORICAL_NOTES.filter((note) => historicalNoteUnlocked(note) && (chapter === null || note.chapter === chapter))
+    .sort((left, right) => (left.chapter - right.chapter)
+      || ((left.orderId ? -1 : (repairOrder.get(left.repairId) ?? 999))
+        - (right.orderId ? -1 : (repairOrder.get(right.repairId) ?? 999))));
 }
 
 function historicalNoteForOrder(orderId) {
@@ -4133,6 +4141,7 @@ function historicalNoteForRepair(repairId) {
 
 function renderHistoricalNote(note) {
   els.historicalNoteModal.dataset.noteId = note.id;
+  els.historicalNoteModal.dataset.chapter = String(note.chapter);
   els.historicalNoteKind.textContent = note.kind;
   els.historicalNoteGlyph.textContent = note.glyph;
   els.historicalNoteTitle.textContent = note.title;
@@ -4416,7 +4425,7 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
       card.setAttribute("aria-label", `阅读${note.kind}：${note.title}`);
       const glyph = document.createElement("span");
       glyph.className = "historical-note-glyph";
-      glyph.textContent = "✦";
+      glyph.textContent = note.glyph;
       glyph.setAttribute("aria-hidden", "true");
       const copy = document.createElement("span");
       const kind = document.createElement("small");
@@ -4861,7 +4870,7 @@ function finishRepairAfterStory(milestone) {
   if (milestone.id === FINAL_REPAIR_MILESTONE_ID && shouldShowInnFinale() && showInnFinale({ milestone })) return;
   restoreRepairReturnView(milestone);
   if (historicalNoteForRepair(milestone.id)) {
-    toast("驿站札记已解锁。轻触长卷上的札记，随时可以重读。");
+    toast("驿站札记已解锁。可在长卷或剧情回顾中阅读。");
   }
 }
 
