@@ -711,9 +711,6 @@ const els = {
   repairCompletionRewards: document.querySelector(".repair-completion-rewards"),
   repairCompletionTitle: document.querySelector("#repairCompletionTitle"),
   repairGiftQuantity: document.querySelector("#repairGiftQuantity"),
-  repairStaminaQuantity: document.querySelector("#repairStaminaQuantity"),
-  repairRubyIcon: document.querySelector("#repairRubyIcon"),
-  repairRubyQuantity: document.querySelector("#repairRubyQuantity"),
   repairEntryMeta: document.querySelector("#repairEntryMeta"),
   repairRewardLabel: document.querySelector("#repairRewardLabel"),
   repairCost: document.querySelector("#repairCost"),
@@ -3415,7 +3412,7 @@ function renderMainlineDock() {
     <div class="mainline-current">
       <b>${next ? next.sceneName ?? next.name : "Lv1 修缮完成"}</b>
       <span>${next ? next.nextText : "可以准备进入下一阶段。"}</span>
-      ${next && !next.done ? `<small>回后厨完成订单，推进后才会开放这里。</small>` : ""}
+      ${next && !next.done ? `<small>${next.id === "tutorial_complete" ? "先完成一单，再用赚到的铜钱修缮。" : "修完上一处，就能继续修缮这里。"}</small>` : ""}
     </div>
     <div class="mainline-rail">
       ${milestones
@@ -3550,7 +3547,7 @@ function handleRepairNodeClick(milestoneId, anchorElement) {
     toast("这处已经修缮好了。");
     return;
   }
-  if (!milestone.done) {
+  if (!milestone.done && state.activeRepairId !== milestone.id) {
     keeper(milestone.nextText);
     toast(milestone.nextText);
     return;
@@ -3562,6 +3559,11 @@ function handleRepairNodeClick(milestoneId, anchorElement) {
 function beginRepairMilestone(milestone) {
   if (!milestone?.playerUrl) {
     toast("该点位的修缮场景尚未接入。");
+    return;
+  }
+  const gate = canEnterRepairPage();
+  if (!gate.ok || gate.milestone?.id !== milestone.id) {
+    toast(gate.reason || "请先完成当前主线修缮。");
     return;
   }
   if (state.activeRepairId && state.activeRepairId !== milestone.id) {
@@ -3653,13 +3655,15 @@ function openRepairProgressModal(milestone, mode = "entry") {
       : followingMilestone
         ? `下一章：${chapterName(followingMilestone.chapter)}`
         : "四卷修缮已经全部完成";
-  els.repairCompletionTitle.textContent = `Lv${chapter} 通关奖励`;
+  els.repairCompletionTitle.textContent = `Lv${chapter} 通关礼盒`;
   renderRepairCompletionRewards(chapterReward);
-  const rubyLevel = Math.max(1, Math.min(4, chapterReward?.rubyIconLevel ?? chapter));
-  els.repairRubyIcon.src = `./assets/ui/bonus_ruby_lv${String(rubyLevel).padStart(2, "0")}.png`;
   els.repairModal.classList.toggle("chapter-complete", chapterComplete);
-  els.repairRewardLabel.textContent = rewardText(milestone);
-  els.repairCost.textContent = repairCost(milestone);
+  const completedParts = normalizeRepairCompletedParts(state.repairProgress?.[milestone.id]?.completedParts);
+  const remainingCost = repairPartCosts(milestone).reduce(
+    (sum, cost, index) => sum + (completedParts.includes(index) ? 0 : cost), 0,
+  );
+  els.repairRewardLabel.textContent = completedParts.length ? "剩余修缮费用（逐处支付）" : "修缮总费用（逐处支付）";
+  els.repairCost.textContent = remainingCost;
   els.repairChoices.innerHTML = "";
   els.repairChoices.hidden = true;
   els.repairEntryMeta.hidden = mode === "completion";
@@ -3717,8 +3721,6 @@ function chapterCompletionReward(chapter) {
 function renderRepairCompletionRewards(chapterReward) {
   const rewards = [
     [els.repairGiftQuantity, chapterReward?.giftPack?.id ? 1 : 0],
-    [els.repairStaminaQuantity, chapterReward?.stamina],
-    [els.repairRubyQuantity, chapterReward?.rubies],
   ];
   let visibleCount = 0;
 
@@ -4829,10 +4831,21 @@ function canUpgradeInn() {
 function canEnterRepairPage() {
   const current = nextRepairMilestone();
   if (!current) return { ok: true, reason: "Lv1 修缮已完成，可以查看流沙驿。", milestone: null };
-  if (!current.done) {
+  if (!current.done && state.activeRepairId !== current.id) {
     return {
       ok: false,
-      reason: "完成订单积攒铜钱，推进主线即可修缮驿站。",
+      reason: current.nextText,
+      milestone: current,
+    };
+  }
+  const progress = state.repairProgress?.[current.id];
+  const nextPartIndex = firstIncompleteRepairPart(progress?.completedParts ?? []);
+  const nextPartCost = nextPartIndex === null ? 0 : repairPartCosts(current)[nextPartIndex];
+  const availableCoins = state.coins + Math.max(0, Number(progress?.prepaidRemaining) || 0);
+  if (availableCoins < nextPartCost) {
+    return {
+      ok: false,
+      reason: `铜钱不足，还需${nextPartCost - availableCoins}枚才能继续修缮。`,
       milestone: current,
     };
   }
@@ -7699,8 +7712,6 @@ function applyChapterCompletionReward(chapter) {
   const reward = chapterCompletionReward(chapter);
   if (!reward || state.claimedChapterRewards.includes(chapter)) return;
   state.claimedChapterRewards.push(chapter);
-  state.stamina += Number(reward.stamina) || 0;
-  state.gems += Number(reward.rubies) || 0;
   if (reward.giftPack?.id) grantGiftPack(reward.giftPack.id, 1);
 }
 

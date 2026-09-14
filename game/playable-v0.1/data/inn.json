@@ -5,7 +5,7 @@
       "level": 1,
       "name": "破旧流沙驿",
       "repairTarget": 60,
-      "upgradeCost": 1200,
+      "upgradeCost": 120,
       "tasks": [
         {
           "label": "门面修整",
@@ -42,7 +42,7 @@
       "level": 2,
       "name": "翻新敦煌食肆",
       "repairTarget": 160,
-      "upgradeCost": 4200,
+      "upgradeCost": 420,
       "tasks": [
         {
           "label": "后厨分区",
@@ -80,7 +80,7 @@
       "level": 3,
       "name": "丝路名店",
       "repairTarget": 320,
-      "upgradeCost": 12000,
+      "upgradeCost": 1200,
       "tasks": [
         {
           "label": "壁画陈设",
@@ -129,7 +129,7 @@
     {
       "id": "simple_table",
       "name": "榆木小案",
-      "cost": 350,
+      "cost": 35,
       "repairValue": 15,
       "unlockLevel": 1,
       "slot": "floor",
@@ -138,7 +138,7 @@
     {
       "id": "ochre_curtain",
       "name": "赭黄门帘",
-      "cost": 450,
+      "cost": 45,
       "repairValue": 18,
       "unlockLevel": 1,
       "slot": "front",
@@ -147,7 +147,7 @@
     {
       "id": "cinnabar_lantern",
       "name": "朱砂小灯",
-      "cost": 600,
+      "cost": 60,
       "repairValue": 24,
       "unlockLevel": 1,
       "slot": "front",
@@ -156,7 +156,7 @@
     {
       "id": "stone_mill",
       "name": "石磨角落",
-      "cost": 900,
+      "cost": 90,
       "repairValue": 35,
       "unlockLevel": 2,
       "slot": "kitchen",
@@ -165,7 +165,7 @@
     {
       "id": "spice_shelf",
       "name": "香料木架",
-      "cost": 1100,
+      "cost": 110,
       "repairValue": 42,
       "unlockLevel": 2,
       "slot": "wall",
@@ -174,7 +174,7 @@
     {
       "id": "mural_corner",
       "name": "忍冬纹壁角",
-      "cost": 1800,
+      "cost": 180,
       "repairValue": 70,
       "unlockLevel": 3,
       "slot": "wall",

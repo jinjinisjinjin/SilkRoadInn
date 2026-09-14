@@ -58,6 +58,6 @@
     "pointId": "11",
     "legacyPosition": 15,
     "authoritativePosition": 3,
-    "migrationRule": "Point 11 belongs to Chapter 1. Preserve its completion and rewards when already complete; otherwise place it after point 04 and its required order without granting progress."
+    "migrationRule": "Point 11 belongs to Chapter 1. Preserve its completion and rewards when already complete; otherwise place it after point 04 without granting progress."
   }
 }
