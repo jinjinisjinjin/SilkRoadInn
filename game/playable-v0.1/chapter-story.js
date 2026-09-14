@@ -20,8 +20,6 @@
       description: "旧驿重新有了炉火、人声与一面能被看见的食单。",
       items: [
         { src: "./assets/ui/order_gift_coffer_v1.png", label: "初明礼匣", amount: "×1" },
-        { src: "./assets/ui/ui_camel_bell_stamina.png", label: "驼铃", amount: "+10" },
-        { src: "./assets/ui/bonus_ruby_lv01.png", label: "红宝石", amount: "×1", kind: "ruby", level: 1 },
       ],
     },
     chapter2: {
@@ -30,8 +28,6 @@
       description: "前厅、西市、南北铺与井台相继开张，流沙驿终于聚成一处真正的市井。",
       items: [
         { src: "./assets/ui/order_gift_coffer_v1.png", label: "西市烟火礼匣", amount: "×1" },
-        { src: "./assets/ui/ui_camel_bell_stamina.png", label: "驼铃", amount: "+15" },
-        { src: "./assets/ui/bonus_ruby_lv02.png", label: "红宝石", amount: "×3", kind: "ruby", level: 2 },
       ],
     },
     chapter3: {
@@ -40,8 +36,6 @@
       description: "楼馆、双院、庭园与望楼相继修好，流沙驿终于能让远路旅人安心停脚。",
       items: [
         { src: "./assets/ui/order_gift_coffer_v1.png", label: "楼馆通途礼匣", amount: "×1" },
-        { src: "./assets/ui/ui_camel_bell_stamina.png", label: "驼铃", amount: "+20" },
-        { src: "./assets/ui/bonus_ruby_lv03.png", label: "红宝石", amount: "×8", kind: "ruby", level: 3 },
       ],
     },
     chapter4: {
@@ -50,8 +44,6 @@
       description: "货棚、长街、院落与巷灯连成一片，流沙驿成为商路上不会熄灭的一盏灯。",
       items: [
         { src: "./assets/ui/order_gift_coffer_v1.png", label: "灯火连城礼匣", amount: "×1" },
-        { src: "./assets/ui/ui_camel_bell_stamina.png", label: "驼铃", amount: "+30" },
-        { src: "./assets/ui/bonus_ruby_lv04.png", label: "红宝石", amount: "×25", kind: "ruby", level: 4 },
       ],
     },
   };
@@ -860,6 +852,7 @@
     view.rewardTitle.textContent = reward.title;
     view.rewardDescription.textContent = reward.description;
     view.rewardItems.replaceChildren(...reward.items.map(createRewardItem));
+    view.rewardItems.dataset.visibleCount = String(reward.items.length);
     view.collect.textContent = reward.action ?? "收下奖励";
     view.reward.hidden = false;
     view.stage.classList.add("reward-visible");

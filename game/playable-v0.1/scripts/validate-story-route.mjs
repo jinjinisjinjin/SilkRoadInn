@@ -14,6 +14,7 @@ const errors = [];
 
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const progressionByPoint = new Map(progression.milestones.map((milestone) => [milestone.playerPointId, milestone]));
+const pointByMilestoneId = new Map(progression.milestones.map((milestone) => [milestone.id, milestone.playerPointId]));
 const routePoints = nodes.map((node) => node.pointId);
 
 if (!same(routePoints, expectedOrder)) errors.push(`Player order mismatch: ${routePoints.join(", ")}`);
@@ -21,6 +22,11 @@ if (nodes.length !== 22 || new Set(routePoints).size !== 22) errors.push("Route 
 if (!same(nodes.map((node) => node.ordinal), Array.from({ length: 22 }, (_, index) => index + 1))) errors.push("Route ordinals must be 1 through 22.");
 if (route.chapters.length !== 4) errors.push("Route must contain four chapters.");
 if (!same(route.chapters.map((chapter) => chapter.nodes.length), expectedChapterCounts)) errors.push("Chapter node counts must be 3/6/6/7.");
+for (const reward of progression.chapterCompletionRewards ?? []) {
+  if (!reward.giftPack?.id || reward.stamina || reward.rubies) {
+    errors.push(`Chapter ${reward.chapter} must award only its gift box.`);
+  }
+}
 
 for (const [chapterIndex, chapter] of route.chapters.entries()) {
   for (const node of chapter.nodes) {
@@ -33,6 +39,17 @@ for (const [chapterIndex, chapter] of route.chapters.entries()) {
   if (node.milestoneId !== milestone.id) errors.push(`Milestone ID mismatch for ${node.pointId}.`);
   if (node.playerUrl !== milestone.playerUrl) errors.push(`Player URL mismatch for ${node.pointId}.`);
   if (!same(node.longscrollRegionIds, milestone.longscrollRegionIds)) errors.push(`Longscroll regions mismatch for ${node.pointId}.`);
+  if (node.requires?.orders?.length || milestone.conditions?.completedOrderIds?.length) {
+    errors.push(`Point ${node.pointId} must not require a specific order.`);
+  }
+  if ((node.requires?.completedOrders ?? 0) !== (milestone.conditions?.completedOrders ?? 0)) {
+    errors.push(`Completed-order count mismatch for ${node.pointId}.`);
+  }
+  if (!same(node.requires?.repairs ?? [], (milestone.conditions?.completedRepairs ?? []).map((id) => pointByMilestoneId.get(id)))) {
+    errors.push(`Previous-repair requirement mismatch for ${node.pointId}.`);
+  }
+  if (node.requires?.coins !== milestone.repairCost) errors.push(`Repair cost mismatch for ${node.pointId}.`);
+  if (milestone.rewards?.coins) errors.push(`Point ${node.pointId} must not grant extra repair coins.`);
   const relativePlayerPath = node.playerUrl.split("?")[0];
   if (!existsSync(resolve(root, relativePlayerPath))) errors.push(`Missing player page for ${node.pointId}: ${relativePlayerPath}`);
   }
@@ -40,8 +57,12 @@ for (const [chapterIndex, chapter] of route.chapters.entries()) {
 
 const menuNode = nodes.find((node) => node.pointId === "11");
 if (!menuNode || menuNode.ordinal !== 3) errors.push("Point 11 must be the third repair node in Chapter 1.");
-if (!same(menuNode?.requires?.repairs, ["04"]) || !same(menuNode?.requires?.orders, ["order_005_monk_humabing"])) {
-  errors.push("Point 11 must require point 04 and the monk's sesame-bread order.");
+if (!same(menuNode?.requires?.repairs, ["04"]) || menuNode?.requires?.orders?.length) {
+  errors.push("Point 11 must follow point 04 without requiring a specific order.");
+}
+if (nodes[0]?.requires?.completedOrders !== 1) errors.push("The first repair must wait until one order is delivered.");
+if (nodes.slice(1).some((node) => node.requires?.completedOrders)) {
+  errors.push("Later repairs must not require an order count.");
 }
 if (!same(migration.authoritativeOrder, expectedOrder)) errors.push("Migration order must match authoritative order.");
 
@@ -85,7 +106,7 @@ if (migratedMenuDone.storyRoute?.menuOnWall !== "reviewed") errors.push("Complet
 if (!migratedMenuDone.storyRoute?.completedRoutePointIds?.includes("11")) errors.push("Completed point 11 save must retain route completion.");
 if (migratedMenuPending.storyRoute?.menuOnWall !== "gated") errors.push("Incomplete point 11 save must keep menuOnWall gated.");
 if (migratedMenuPending.storyRoute?.completedRoutePointIds?.includes("11")) errors.push("Incomplete point 11 save must not complete or unlock point 11 early.");
-if (migratedMenuPending.storyRoute?.menuOnWallReview?.current?.unlocked) errors.push("Incomplete point 11 save must remain locked until its order requirement is complete.");
+if (!migratedMenuPending.storyRoute?.menuOnWallReview?.current?.unlocked) errors.push("Incomplete point 11 must unlock after point 04 without a specific order.");
 
 if (errors.length) {
   console.error("Story route validation failed:\n- " + errors.join("\n- "));

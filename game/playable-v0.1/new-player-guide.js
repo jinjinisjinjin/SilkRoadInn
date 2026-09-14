@@ -14,7 +14,6 @@
   const TARGET_CLASS = "new-player-guide-target";
   const FIRST_ORDER_ID = "order_001_guard_lubing";
   const FIRST_REPAIR_ID = "tutorial_complete";
-  const FIRST_REPAIR_COST = 84;
 
   let layer;
   let copy;
@@ -278,29 +277,16 @@
       return;
     }
 
-    const repairAffordable = Number(state.coins || 0) >= FIRST_REPAIR_COST || state.activeRepairId === FIRST_REPAIR_ID;
-    if (!repairAffordable) {
-      if (!savedGuide.coreTipSeen) {
-        showGuide({
-          text: "基础经营已经上手。继续接单，攒够84铜币就能先修前厅第一处。",
-          acknowledge: true,
-        });
-      } else {
-        hideGuide();
-      }
-      return;
-    }
-
     if (page === "board") {
       showGuide({
-        text: "修缮用的铜币已经备齐。去流沙驿看看前厅。",
+        text: "去流沙驿看看前厅；铜钱不够时，继续接单就能攒起来。",
         targets: [document.querySelector("#stationHudBtn") || document.querySelector("#repairSideBtn")],
       });
       return;
     }
 
     showGuide({
-      text: "长卷上的亮处就是下一处修缮点，点它修好前厅。",
+      text: "长卷上的亮处就是下一处修缮点，有铜钱就能逐处修好前厅。",
       targets: [repairTarget()],
     });
   }
