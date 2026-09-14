@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>流沙驿 · 掌柜来信封装新方案</title>
+  <style>
+    @font-face { font-family: "InnLetterWenKai"; src: url("../assets/fonts/inn-letter-lxgw-wenkai-subset.woff2?v=2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
+    * { box-sizing: border-box; }
+    :root { --ink:#443228; --muted:#806b54; --paper:#f5edd9; --edge:#bdab86; --red:#864936; }
+    body { margin:0; background:#e7dcc8; color:var(--ink); font-family:"Songti SC","STSong",serif; }
+    header { max-width:1130px; margin:auto; padding:30px 22px 22px; }
+    header small { color:#8e5140; letter-spacing:.25em; font-size:12px; font-weight:700; }
+    h1 { margin:6px 0 10px; font-size:clamp(26px,5vw,39px); line-height:1.25; }
+    header p { max-width:720px; margin:0; color:#6f5945; font-size:15px; line-height:1.75; }
+    header a, .details a { color:#8b4938; text-underline-offset:3px; }
+    .recommend { display:flex; gap:14px; align-items:start; max-width:1086px; margin:0 auto 16px; padding:13px 18px; border-left:4px solid #90523c; background:#f7efdc; line-height:1.6; }
+    .recommend b { white-space:nowrap; color:#874b38; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:15px; max-width:1130px; margin:0 auto; padding:0 22px 26px; }
+    article { min-width:0; border:1px solid #c5b08c; background:#f8f0de; box-shadow:0 10px 26px #6e4c2f1b; }
+    .scene { position:relative; height:390px; overflow:hidden; isolation:isolate; background:#3a2b21; }
+    .scene::before { content:""; position:absolute; inset:-14px; z-index:-2; background:url("../assets/longscroll/states-webp/22_done_state_v0.1.webp") center/cover; filter:blur(6px) brightness(.46) sepia(.23); }
+    .scene::after { content:""; position:absolute; inset:0; z-index:-1; background:radial-gradient(ellipse at center,transparent 15%,#20160faa 100%); }
+    .scene-caption { position:absolute; top:16px; left:16px; z-index:4; color:#f7e9ce; font:700 12px/1.4 "Songti SC",serif; letter-spacing:.13em; text-shadow:0 2px 4px #20140b; }
+    .stage { position:absolute; inset:0; perspective:900px; }
+    .letter,.envelope { position:absolute; top:49%; left:50%; border:1px solid var(--edge); color:var(--ink); background:linear-gradient(95deg,#e3d4b4 0%,#f4ebd7 9%,#f8f1e1 80%,#e0cfa9 100%); box-shadow:0 17px 28px #140b06a1,inset 0 0 18px #8463411f; }
+    .letter::before,.envelope::before { content:""; position:absolute; inset:7px; border-left:1px solid #9c7d5430; border-right:1px solid #9c7d5430; background:repeating-linear-gradient(3deg,transparent 0 7px,#8e75420a 8px 9px,transparent 10px 15px); pointer-events:none; }
+    .letter { z-index:1; width:250px; height:160px; padding:21px 24px 16px; opacity:0; transform:translate(-50%,-46%) scale(.82); transition:width .8s cubic-bezier(.2,.7,.2,1),height .8s cubic-bezier(.2,.7,.2,1),opacity .35s ease .16s,transform .9s cubic-bezier(.2,.7,.2,1); }
+    article.open .letter { width:min(calc(100% - 24px),340px); height:274px; opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .letter-text { position:relative; height:100%; overflow:auto; scrollbar-width:thin; opacity:0; transition:opacity .42s ease; font-family:"InnLetterWenKai","Songti SC",serif; }
+    article.open .letter-text { opacity:1; transition-delay:.7s; }
+    .letter-text h3 { margin:0 0 9px; color:#6d4333; text-align:center; font-size:17px; font-weight:500; }
+    .letter-text p { margin:0 0 8px; font-size:14px; line-height:1.55; text-indent:2em; }
+    .letter-text .sign { margin:0; text-indent:0; text-align:right; color:#88503c; }
+    .envelope { z-index:2; text-align:center; transition:transform .85s cubic-bezier(.2,.7,.2,1),opacity .4s ease .4s; }
+    article.open .envelope { opacity:0; pointer-events:none; }
+    .address { position:absolute; z-index:2; color:#644a38; font:16px/1.4 "InnLetterWenKai","Songti SC",serif; letter-spacing:.07em; }
+    .crease { position:absolute; display:block; pointer-events:none; }
+    .stamp { position:absolute; z-index:3; display:grid; place-items:center; width:25px; height:25px; color:#f5e7c9; border:1px solid #ab6c4e; background:#92503e; transform:rotate(-8deg); font:16px/1 serif; }
+    .a .envelope { width:274px; height:170px; transform:translate(-50%,-50%); }
+    .a .envelope::after { content:""; position:absolute; left:0; right:0; top:0; height:54px; background:linear-gradient(#eee1c7,#d8c49f); border-bottom:1px solid #b4a27e; clip-path:polygon(0 0,100% 0,100% 86%,58% 86%,50% 98%,42% 86%,0 86%); transform-origin:top center; transition:transform .55s ease; }
+    .a .address { top:89px; left:0; right:0; }
+    .a .stamp { top:49px; right:25px; }
+    .a.open .envelope { transform:translate(-50%,calc(-50% + 28px)) scale(.9); }
+    .a.open .envelope::after { transform:rotateX(155deg); }
+    .b .envelope { width:155px; height:232px; transform:translate(-50%,-50%); }
+    .b .envelope::after { content:""; position:absolute; z-index:1; top:-1px; left:-1px; right:-1px; height:48px; background:linear-gradient(#eadcbd,#d8c5a2); border:1px solid #b8a37e; clip-path:polygon(0 0,100% 0,100% 80%,57% 80%,50% 94%,43% 80%,0 80%); transform-origin:top center; transition:transform .5s ease; }
+    .b .address { top:70px; left:50%; writing-mode:vertical-rl; transform:translateX(-50%); white-space:nowrap; }
+    .b .stamp { bottom:27px; left:17px; }
+    .b .letter { width:136px; height:207px; transform:translate(-50%,-50%) scale(.94); }
+    .b .letter::after { content:""; position:absolute; top:0; bottom:0; left:50%; width:1px; background:#8a6d4c2d; opacity:1; transition:opacity .35s ease; }
+    .b.open .letter::after { opacity:0; }
+    .b.open .envelope { transform:translate(-50%,calc(-50% + 78px)) scale(.87); }
+    .b.open .envelope::after { transform:rotateX(157deg); }
+    .c .envelope { width:272px; height:162px; transform:translate(-50%,-50%) rotate(-2deg); }
+    .c .envelope::after { content:""; position:absolute; z-index:1; inset:0; background:linear-gradient(100deg,#e8dcc1,#d9c7a7); clip-path:polygon(0 0,42% 50%,0 100%); opacity:.88; transition:transform .62s ease,opacity .45s ease; }
+    .c .crease { z-index:1; inset:0; background:linear-gradient(260deg,#e7d9bb,#d4c09c); clip-path:polygon(100% 0,58% 50%,100% 100%); opacity:.8; transition:transform .62s ease,opacity .45s ease; }
+    .c .address { top:60px; left:0; right:0; }
+    .c .stamp { top:106px; right:22px; }
+    .c.open .envelope { transform:translate(calc(-50% - 46px),-50%) rotate(-9deg); }
+    .c.open .envelope::after { transform:translateX(-80px) rotate(-8deg); opacity:0; }
+    .c.open .crease { transform:translateX(80px) rotate(8deg); opacity:0; }
+    .scene button { position:absolute; z-index:5; bottom:13px; left:50%; transform:translateX(-50%); min-width:124px; height:38px; padding:0 15px; border:1px solid #c9a477; border-radius:3px; color:#faebca; background:#533b2aef; font:700 14px/1 "Songti SC",serif; cursor:pointer; }
+    .scene button:focus-visible { outline:3px solid #e6b56c; outline-offset:3px; }
+    .details { padding:18px 18px 19px; }
+    .details h2 { margin:0 0 8px; font-size:22px; }
+    .details p { min-height:85px; margin:0; color:#6c5643; font-size:14px; line-height:1.7; }
+    .details .chip { display:inline-block; margin-top:10px; padding:4px 7px; border:1px solid #c5a887; color:#804b3a; font-size:12px; }
+    footer { max-width:1086px; margin:0 auto 35px; padding:17px 20px; border-top:1px solid #c6ae8d; color:#65503d; font-size:13px; line-height:1.75; }
+    footer a { color:#87513e; text-underline-offset:3px; }
+    footer p { margin:0 0 7px; }
+    @media(max-width:980px) { .grid { grid-template-columns:1fr; max-width:530px; } .recommend { margin:0 22px 16px; } .details p { min-height:0; } }
+    @media(max-width:380px) { .scene { height:372px; } .recommend { display:block; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+  <header>
+    <small>流沙驿 · 终章来信</small>
+    <h1>先看纸封，再读整封信</h1>
+    <p>这里保留 A／B／C 的初版对照。B 款已按新纸函方案精修并接入游戏，<a href="./inn-finale-envelope-b-refined.html">查看精修后的完整动画</a>。</p>
+  </header>
+  <div class="recommend"><b>我的建议</b><span>正文继续横排、保留完整两段。竖排留在封题和折痕上：玩家先感到它是一封旧信，展开后又能轻松读完。外封与内信使用同一米色纸面，封皮只因双层叠纸而略暗。</span></div>
+  <main class="grid">
+    <article class="a">
+      <div class="scene">
+        <span class="scene-caption">A · 横开纸函</span>
+        <div class="stage">
+          <div class="letter"><div class="letter-text"><h3>给一路同行的你</h3><p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p><p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p><p class="sign">流沙驿掌柜 敬书</p></div></div>
+          <div class="envelope"><span class="address">同行旅人收 · 流沙驿掌柜寄</span><span class="stamp">驿</span></div>
+        </div>
+        <button type="button" aria-pressed="false">拆信</button>
+      </div>
+      <div class="details"><h2>横开纸函</h2><p>宽纸封原本就横放，掀开上沿后抽出对折的信纸，左右展开到眼前。封与信同色；从封面到正文的方向最一致，最适合手机读信。</p><span class="chip">推荐 · 一气呵成</span></div>
+    </article>
+    <article class="b">
+      <div class="scene">
+        <span class="scene-caption">B · 竖插纸袋</span>
+        <div class="stage">
+          <div class="letter"><div class="letter-text"><h3>给一路同行的你</h3><p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p><p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p><p class="sign">流沙驿掌柜 敬书</p></div></div>
+          <div class="envelope"><span class="address">同行旅人收<br>流沙驿掌柜寄</span><span class="stamp">驿</span></div>
+        </div>
+        <button type="button" aria-pressed="false">拆信</button>
+      </div>
+      <div class="details"><h2>竖插纸袋</h2><p>保留竖形轮廓，信纸从袋口抽出，再沿中缝向左右展开。这里是初版草图；<a href="./inn-finale-envelope-b-refined.html">点击看已接入游戏的精修版</a>。</p><span class="chip">已选 · 精修版可试玩</span></div>
+    </article>
+    <article class="c">
+      <div class="scene">
+        <span class="scene-caption">C · 斜封纸套</span>
+        <div class="stage">
+          <div class="letter"><div class="letter-text"><h3>给一路同行的你</h3><p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p><p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p><p class="sign">流沙驿掌柜 敬书</p></div></div>
+          <div class="envelope"><span class="crease"></span><span class="address">同行旅人收 · 流沙驿掌柜寄</span><span class="stamp">驿</span></div>
+        </div>
+        <button type="button" aria-pressed="false">拆信</button>
+      </div>
+      <div class="details"><h2>斜封纸套</h2><p>两侧纸角斜压住袋口，打开时纸角先松开，内信随后展开。折线比 A 更显眼，但仍用一张素纸的颜色和纤维，不加现代蜡封。</p><span class="chip">折痕最有手作感 · 视觉演绎</span></div>
+    </article>
+  </main>
+  <footer>
+    <p><b>史料依据与界限：</b>巴黎国图藏 Pelliot chinois 5012 是 10 世纪敦煌纸质信封，馆藏记录写明它由纸片三折成窄条；本页没有把它误画成现代尖角信封。中国社科院介绍的唐代封缄研究区分函封、直封、斜封、折封等方法。大英博物馆还记载一件敦煌—于阗书信的封套与印记，说明另有外封实物；其王室身份不适合直接复制到客栈掌柜的私人信上。</p>
+    <p>查阅：<a href="https://portail.biblissima.fr/en/ark%3A/43093/mdata9316e341c6e5441ae7649fe50f3e97224a5a47ba" target="_blank" rel="noopener">BnF / Biblissima P.5012</a> · <a href="https://www.cass.cn/keyandongtai/xueshuhuiyi/201604/t20160401_2948617.shtml" target="_blank" rel="noopener">中国社科院：唐代书信缄封考</a> · <a href="https://www.britishmuseum.org/blog/far-home-travelling-silk-roads" target="_blank" rel="noopener">大英博物馆：于阗王后书信封套</a>。以上三款都是根据这些材料为游戏做的视觉设计，不是实物一比一复原。</p>
+  </footer>
+  <script>
+    document.querySelectorAll('.scene button').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var card = button.closest('article');
+        var opened = card.classList.toggle('open');
+        button.textContent = opened ? '合上信' : '拆信';
+        button.setAttribute('aria-pressed', String(opened));
+      });
+    });
+  </script>
+</body>
+</html>

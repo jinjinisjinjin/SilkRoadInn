@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>流沙驿 · 掌柜来信信封方案</title>
+  <style>
+    @font-face { font-family: "InnLetterWenKai"; src: url("../assets/fonts/inn-letter-lxgw-wenkai-subset.woff2?v=2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
+    :root { color-scheme: light; font-family: "Songti SC", "STSong", serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #4a3021; background: #e9dec8; }
+    header { max-width: 1130px; margin: auto; padding: 30px 22px 18px; }
+    header small { color: #9a5946; font-size: 12px; font-weight: 700; letter-spacing: .2em; }
+    h1 { margin: 4px 0 6px; font-size: clamp(25px, 5vw, 36px); }
+    header p { margin: 0; color: #73533b; font-size: 14px; line-height: 1.6; }
+    .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 960px; margin: 0 auto; padding: 0 22px 32px; }
+    article { overflow: hidden; border: 1px solid #c5a87e; border-radius: 8px; background: #f8efd9; box-shadow: 0 8px 22px rgba(75, 45, 25, .11); }
+    .scene { position: relative; display: grid; place-items: center; height: 360px; overflow: hidden; isolation: isolate; background: #4d382b; }
+    .scene::before { content: ""; position: absolute; z-index: -2; inset: -12px; background: url("../assets/longscroll/states-webp/22_done_state_v0.1.webp") center / cover; filter: blur(5px) brightness(.57) saturate(.8); }
+    .scene::after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(transparent 48%, rgba(32, 19, 14, .57)); }
+    .scene-label { position: absolute; top: 18px; left: 18px; color: #fff1d4; font-size: 12px; letter-spacing: .14em; text-shadow: 0 2px 4px #301d13; }
+    .scene-hint { position: absolute; bottom: 13px; color: #f9e9c8; font-size: 12px; text-shadow: 0 2px 4px #301d13; }
+    .envelope-preview { position: relative; display: grid; place-items: center; width: 288px; height: 250px; padding: 0; border: 0; background: transparent; cursor: pointer; perspective: 600px; }
+    .envelope-preview:focus-visible { outline: 3px solid #f3c27b; outline-offset: 4px; }
+    .copy { padding: 18px 18px 20px; }
+    .copy h2 { margin: 0 0 6px; font-size: 22px; }
+    .copy p { min-height: 64px; margin: 0; color: #71533b; font-size: 14px; line-height: 1.6; }
+    .copy strong { display: block; margin-top: 11px; color: #9e5a44; font-size: 13px; }
+    .tag { display: inline-block; margin-right: 6px; color: #a34b3b; font-size: 12px; vertical-align: 2px; }
+
+    .a-envelope { position: relative; width: 260px; height: 158px; border: 2px solid #b48958; border-radius: 4px; background: linear-gradient(140deg, #f1dfb8, #caa477); box-shadow: 0 17px 24px rgba(17, 9, 5, .4), inset 0 0 18px rgba(134, 75, 35, .19); }
+    .a-paper { position: absolute; z-index: 1; top: 14px; left: 18px; width: 220px; height: 130px; padding-top: 16px; color: #895041; background: #faedd0; border: 1px solid #bb9663; font-size: 15px; text-align: center; transition: transform .75s ease; }
+    .a-pocket { position: absolute; z-index: 2; inset: 0; background: #dcb887; clip-path: polygon(0 13%, 50% 56%, 100% 13%, 100% 100%, 0 100%); }
+    .a-flap { position: absolute; z-index: 3; top: -1px; left: -1px; width: calc(100% + 2px); height: 93px; background: linear-gradient(#f4e2bc, #d2ac78); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transition: transform .55s ease; }
+    .a-seal { position: absolute; z-index: 4; top: 67px; left: 108px; display: grid; place-items: center; width: 44px; height: 44px; border: 2px solid #a75e47; border-radius: 50%; color: #f4dfbc; background: #8d4434; box-shadow: 0 3px 4px rgba(50, 18, 12, .3); font: 700 23px/1 "STKaiti", "KaiTi", serif; transition: opacity .3s ease; }
+    .opened .a-flap { transform: rotateX(165deg); }
+    .opened .a-seal { opacity: 0; }
+    .opened .a-paper { transform: translateY(-68px); }
+
+    .b-wrap { position: relative; width: 226px; height: 210px; transform: rotate(-2deg); transition: transform .6s ease; }
+    .b-paper { position: absolute; inset: 0; border: 2px solid #a47b4e; border-radius: 3px; background: linear-gradient(90deg, #c49c6c, #ecd7ae 16%, #eddbb7 80%, #ba8d60); box-shadow: 0 16px 23px rgba(15, 8, 5, .42), inset 0 0 0 8px rgba(125, 83, 43, .09); }
+    .b-paper::before, .b-paper::after { content: "✧"; position: absolute; color: #39746b; font-size: 23px; }
+    .b-paper::before { top: 8px; left: 10px; } .b-paper::after { right: 10px; bottom: 8px; }
+    .b-title { position: absolute; top: 31px; left: 67px; color: #70432d; font: 700 28px/1.2 "STKaiti", "KaiTi", serif; writing-mode: vertical-rl; letter-spacing: .24em; }
+    .b-cord { position: absolute; z-index: 2; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent 28%, #9f4a3b 29%, #ba6b50 31%, transparent 32%, transparent 70%, #9f4a3b 71%, #ba6b50 73%, transparent 74%); filter: drop-shadow(2px 2px 2px #55321f); transition: opacity .35s ease; }
+    .b-knot { position: absolute; z-index: 3; top: 85px; left: 91px; display: grid; place-items: center; width: 44px; height: 44px; border: 3px solid #a4513f; border-radius: 8px; background: #743b30; transform: rotate(45deg); transition: opacity .35s ease; }
+    .b-knot i { width: 12px; height: 12px; border-radius: 50%; background: #6a9a86; box-shadow: 0 0 0 2px #d2ae73; }
+    .opened .b-wrap { transform: rotate(0) scaleX(1.15); }
+    .opened .b-cord, .opened .b-knot { opacity: 0; }
+
+    .c-tray { position: relative; width: 278px; height: 175px; margin-top: 29px; border: 8px solid #7a4c2d; border-radius: 5px; background: repeating-linear-gradient(6deg, #986436 0 10px, #754829 12px 16px, #aa7442 18px 27px); box-shadow: 0 17px 25px rgba(12, 7, 4, .52), inset 0 0 0 4px #bd8b54; }
+    .c-paper { position: absolute; z-index: 1; top: 27px; left: 27px; width: 208px; height: 132px; border: 2px solid #bc9a68; border-radius: 3px; background: linear-gradient(140deg, #f6e8c9, #dcbf8e); box-shadow: 0 4px 10px rgba(26, 13, 6, .24); transform: rotate(-7deg); transition: transform .65s ease; }
+    .c-paper::before { content: "掌柜来信"; position: absolute; top: 39px; left: 55px; color: #754633; font: 700 22px "STKaiti", "KaiTi", serif; }
+    .c-stud { position: absolute; z-index: 4; top: 54px; left: 110px; width: 32px; height: 32px; border: 3px double #b68750; border-radius: 50%; background: #765339; box-shadow: 0 2px 4px #482715; transition: opacity .3s ease; }
+    .c-lid { position: absolute; z-index: 3; top: -8px; left: -8px; width: calc(100% + 16px); height: 73px; border: 7px solid #8b5a35; border-radius: 5px; background: repeating-linear-gradient(0deg, #a36e3d 0 12px, #744828 14px 18px); box-shadow: 0 5px 7px rgba(38, 21, 11, .35); transform-origin: top center; transition: transform .65s ease; }
+    .opened .c-lid { transform: translateY(-31px) rotate(-8deg); }
+    .opened .c-paper { transform: translateY(-56px) rotate(-2deg); }
+    .opened .c-stud { opacity: 0; }
+
+    .d-preview { perspective: 700px; }
+    .d-inner-letter { position: absolute; display: block; width: min(84vw, 286px); height: 230px; padding: 19px 20px; border: 1px solid #b9a27c; color: #584738; background: linear-gradient(93deg, #e4d6b9 0%, #f4ecd8 9%, #f6efdd 84%, #dfcfad 100%); box-shadow: 0 13px 23px rgba(18, 11, 6, .32), inset 0 0 13px rgba(113, 87, 52, .11); opacity: 0; transform: scaleX(.23); transition: transform .85s cubic-bezier(.2, .7, .2, 1) .18s, opacity .35s ease .22s; }
+    .d-inner-letter::before { content: ""; position: absolute; inset: 7px 8px; border-left: 1px solid rgba(108, 82, 50, .13); border-right: 1px solid rgba(108, 82, 50, .13); pointer-events: none; }
+    .d-letter-writing { display: block; width: 100%; height: 100%; overflow: hidden; writing-mode: vertical-rl; text-align: start; font: 16px/1.7 "InnLetterWenKai", "Songti SC", serif; letter-spacing: .025em; }
+    .d-outer-wrapper { position: absolute; z-index: 2; display: block; width: 76px; height: 236px; border: 1px solid #b4a17f; color: #413c31; background: linear-gradient(90deg, #ddcfaf 0 8%, #f4ecd9 13% 34%, #d5c29e 35%, #f5ecd8 39% 73%, #dfd0ad 75%, #eee2c8 83% 96%, #c7b590); box-shadow: 0 14px 20px rgba(18, 11, 6, .4), inset 0 0 12px rgba(105, 83, 53, .12); transform: rotate(-3deg); transition: transform .55s cubic-bezier(.2, .7, .2, 1), opacity .42s ease .15s; }
+    .d-outer-wrapper::before { content: ""; position: absolute; inset: 0; border-left: 2px solid rgba(132, 105, 70, .15); border-right: 2px solid rgba(132, 105, 70, .2); background: repeating-linear-gradient(3deg, transparent 0 18px, rgba(128, 103, 67, .025) 19px 20px); pointer-events: none; }
+    .d-outer-wrapper::after { content: ""; position: absolute; top: 0; bottom: 0; left: 39px; width: 1px; background: rgba(93, 75, 53, .36); box-shadow: 2px 0 3px rgba(88, 68, 44, .16); pointer-events: none; }
+    .d-inscription { position: absolute; z-index: 1; top: 14px; left: 27px; height: 205px; color: #493e32; writing-mode: vertical-rl; white-space: nowrap; font: 15px/1.1 "InnLetterWenKai", "Songti SC", serif; letter-spacing: .04em; }
+    .opened .d-outer-wrapper { opacity: 0; transform: translateX(-94px) rotateY(-67deg); }
+    .opened .d-inner-letter { opacity: 1; transform: scaleX(1); }
+    .historical-note { display: inline-block; margin-top: 8px; color: #7a614b; font-size: 12px; line-height: 1.5; }
+    .historical-note a { color: #854e3b; text-underline-offset: 2px; }
+    @media (max-width: 610px) { .options { grid-template-columns: 1fr; max-width: 410px; } .copy p { min-height: 0; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header>
+    <small>流沙驿 · 终章来信</small>
+    <h1>信封外观，选一个方向</h1>
+    <p>四种方案都从长卷画面中出现。点击信封，可以看打开时的基本动作。</p>
+  </header>
+  <main class="options">
+    <article>
+      <div class="scene">
+        <span class="scene-label">方案 A · 驿站封缄</span>
+        <button class="envelope-preview" type="button" aria-label="打开或合上驿站封缄信封" aria-pressed="false">
+          <span class="a-envelope"><span class="a-paper">给一路同行的你</span><span class="a-pocket"></span><span class="a-flap"></span><span class="a-seal">驿</span></span>
+        </button>
+        <span class="scene-hint">朱印裂开 · 信纸抽出</span>
+      </div>
+      <div class="copy"><h2><span class="tag">A</span>驿站封缄</h2><p>牛皮信封、折盖和一枚朱红“驿”印。信封从长卷门前浮起，打开后直接接到书信画面。</p><strong>最轻巧，和长卷衔接最顺</strong></div>
+    </article>
+    <article>
+      <div class="scene">
+        <span class="scene-label">方案 B · 皮绳卷札</span>
+        <button class="envelope-preview" type="button" aria-label="打开或合上皮绳卷札" aria-pressed="false">
+          <span class="b-wrap"><span class="b-paper"></span><span class="b-title">流沙驿书</span><span class="b-cord"></span><span class="b-knot"><i></i></span></span>
+        </button>
+        <span class="scene-hint">绳结松开 · 札纸展开</span>
+      </div>
+      <div class="copy"><h2><span class="tag">B</span>皮绳卷札</h2><p>竖向折札、两道赭红皮绳和绿松石小结。更像驿路上的私人手信，打开动作更有仪式感。</p><strong>西域味最浓</strong></div>
+    </article>
+    <article>
+      <div class="scene">
+        <span class="scene-label">方案 C · 木匣递信</span>
+        <button class="envelope-preview" type="button" aria-label="打开或合上木匣递信" aria-pressed="false">
+          <span class="c-tray"><span class="c-paper"></span><span class="c-lid"></span><span class="c-stud"></span></span>
+        </button>
+        <span class="scene-hint">木盖轻启 · 掌柜书信抬起</span>
+      </div>
+      <div class="copy"><h2><span class="tag">C</span>木匣递信</h2><p>旧木托匣和铜扣封缄，像掌柜把珍藏的信亲手递来。画面厚实，但会更强调“郑重收下”。</p><strong>故事感最强</strong></div>
+    </article>
+    <article id="historical-letter">
+      <div class="scene">
+        <span class="scene-label">方案 D · 折纸封题</span>
+        <button class="envelope-preview d-preview" type="button" aria-label="打开或合上折纸封题" aria-pressed="false">
+          <span class="d-inner-letter" aria-hidden="true"><span class="d-letter-writing">初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。如今夜深，驿灯仍为归客亮着。</span></span>
+          <span class="d-outer-wrapper" aria-hidden="true"><span class="d-inscription">同行旅人收　流沙驿掌柜寄</span></span>
+        </button>
+        <span class="scene-hint">折纸封皮松开 · 内信逐层展出</span>
+      </div>
+      <div class="copy"><h2><span class="tag">D</span>折纸封题</h2><p>浅米色素纸折成长条，接缝上以深墨竖写收寄人。打开外层纸封，才露出另一张信笺；没有蜡印、皮绳或木匣。</p><strong>更接近敦煌出土书信</strong><span class="historical-note">形制参照十世纪敦煌纸封 <a href="https://gallica.bnf.fr/ark:/12148/btv1b8300611p" target="_blank" rel="noopener noreferrer">P.5012 实物</a>，是晚唐背景的设计参考，并非一比一复原。</span></div>
+    </article>
+  </main>
+  <script>
+    document.querySelectorAll(".envelope-preview").forEach((button) => {
+      button.addEventListener("click", () => {
+        const opened = button.classList.toggle("opened");
+        button.setAttribute("aria-pressed", String(opened));
+      });
+    });
+  </script>
+</body>
+</html>

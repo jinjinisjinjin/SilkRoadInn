@@ -77,21 +77,14 @@
   pointer-events: auto;
 }
 
-#app[data-page="inn"] .daily-pouch-entry {
-  order: 1;
-  width: 32px;
-  height: 32px;
-  min-height: 32px;
-  padding: 1px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  pointer-events: auto;
+#app[data-page="inn"] .inn-gem-sound-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
 }
 
 #app[data-page="inn"] .sound-toggle {
-  order: 2;
   width: 30px;
   height: 30px;
   min-height: 30px;
@@ -166,6 +159,34 @@
   line-height: 1.2;
 }
 
+#app[data-page="inn"] .inn-chapter-bookmark > .inn-chapter-progress {
+  display: flex;
+  width: 100%;
+  min-height: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+#app[data-page="inn"] .inn-chapter-progress > i {
+  display: block;
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #ead39f;
+  border-radius: 1px;
+  background: rgba(255, 232, 179, 0.1);
+  transform: rotate(45deg);
+}
+
+#app[data-page="inn"] .inn-chapter-progress > i.is-complete {
+  background: #ead39f;
+  box-shadow: 0 0 4px rgba(255, 225, 154, 0.48);
+}
+
+#app[data-page="inn"] .inn-chapter-progress.is-dense { gap: 2px; }
+#app[data-page="inn"] .inn-chapter-progress.is-dense > i { width: 6px; height: 6px; }
+
 #app[data-page="inn"] .inn-upgrade-seal {
   position: absolute;
   right: -13px;
@@ -226,8 +247,8 @@
 #app[data-page="inn"] .inn-codex-entry img,
 #app[data-page="inn"] .inn-story-archive-entry img,
 #app[data-page="inn"] .inn-kitchen-entry img {
-  width: 68px;
-  height: 68px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
   filter: drop-shadow(0 4px 5px rgba(49, 29, 17, 0.34));
 }
@@ -280,12 +301,6 @@
     line-height: 0;
   }
 
-  #app[data-page="inn"] .daily-pouch-entry {
-    width: 29px;
-    height: 29px;
-    min-height: 29px;
-  }
-
   #app[data-page="inn"] .inn-chapter-bookmark {
     left: max(6px, env(safe-area-inset-left));
     right: auto;
@@ -311,7 +326,33 @@
 }
 
 #app[data-page="inn"] .inn-story-archive-entry {
-  bottom: calc(max(24px, env(safe-area-inset-bottom)) + 78px);
+  bottom: calc(max(24px, env(safe-area-inset-bottom)) + 88px);
+}
+
+#app[data-page="inn"] .inn-daily-pouch-entry {
+  position: absolute;
+  left: max(15px, calc(env(safe-area-inset-left) + 15px));
+  bottom: calc(max(24px, env(safe-area-inset-bottom)) + 184px);
+  z-index: 30;
+  width: 52px;
+  height: 52px;
+  min-height: 52px;
+  padding: 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#app[data-page="inn"] .inn-daily-pouch-entry img {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 2px rgba(54, 31, 18, 0.18));
+}
+
+#app[data-page="inn"] .inn-daily-pouch-entry:focus-visible {
+  outline: 2px solid rgba(255, 224, 158, 0.94);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -359,12 +400,6 @@
     min-height: 18px;
   }
 
-  #app[data-page="inn"] .daily-pouch-entry {
-    width: 29px;
-    height: 29px;
-    min-height: 29px;
-  }
-
   #app[data-page="inn"] .sound-toggle {
     width: 26px;
     height: 26px;
@@ -394,12 +429,6 @@
     width: 17px;
     height: 17px;
     min-height: 17px;
-  }
-
-  #app[data-page="inn"] .daily-pouch-entry {
-    width: 26px;
-    height: 26px;
-    min-height: 26px;
   }
 
   #app[data-page="inn"] .sound-toggle {
@@ -461,6 +490,10 @@
   min-width: 34px;
   white-space: nowrap;
   text-align: left;
+}
+
+#app[data-page="inn"] .inn-stamina-timer[hidden] {
+  display: none;
 }
 
 #app[data-page="inn"] .inn-stamina-timer > span {
@@ -566,6 +599,10 @@
   min-width: 32px;
   white-space: nowrap;
   text-align: left;
+}
+
+#app[data-page="board"] .board-stamina-timer[hidden] {
+  display: none;
 }
 
 #app[data-page="board"] .board-stamina-timer > span {

@@ -62,6 +62,10 @@ const STORY_ARCHIVE_QA_MODE = QA_MODE === "story-archive-v1";
 const NEW_PLAYER_GUIDE_QA_MODE = QA_MODE === "new-player-guide-v1";
 const UPGRADE_REVEAL_QA_MODE = QA_MODE === "upgrade-reveal-v1";
 const LONGSCROLL_CAST_QA_MODE = QA_MODE === "longscroll-cast-v1";
+const LONGSCROLL_RENEWAL_QA_MODE = LONGSCROLL_CAST_QA_MODE
+  && new URLSearchParams(location.search).get("renewal") === "1";
+const LONGSCROLL_FINALE_QA_MODE = LONGSCROLL_CAST_QA_MODE
+  && new URLSearchParams(location.search).get("finale") === "1";
 const LONGSCROLL_CAST_QA_UNLOCK = LONGSCROLL_CAST_QA_MODE
   && new URLSearchParams(location.search).get("unlock") === "1";
 const FOOD_CODEX_PREVIEW = new URLSearchParams(location.search).get("preview") === "food-codex-matrix-v1";
@@ -270,7 +274,6 @@ const CHAPTER_TITLE_LINES = {
 };
 const BUILD_MODE = new URLSearchParams(location.search).get("mode") === "release" ? "release" : "dev";
 const LONGSCROLL_KEEPER_STANDEE = "./assets/npc_standee/keeper.png";
-const LONGSCROLL_REPAIR_MARKER_ASSET = "./assets/generator-materials-v03/generator_material_fruit_01.png";
 const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
   keeper: LONGSCROLL_KEEPER_STANDEE,
   npc_dunhuang_woman: "./assets/npc_standee/npc_dunhuang_woman_full_v1.png",
@@ -289,7 +292,6 @@ const INN_PACKAGE_ASSETS = [
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
   "./assets/keeper_story_portrait_v2.png",
-  LONGSCROLL_REPAIR_MARKER_ASSET,
   LONGSCROLL_KEEPER_STANDEE,
   "./assets/npc_standee/npc_dunhuang_woman_full_v1.png",
   "./assets/npc_standee/npc_farmer_full_v1.png",
@@ -346,7 +348,9 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/bonus_ruby_lv04.png",
 ])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
+const LONGSCROLL_BASE_SOURCE = `${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png`;
 const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp?v=feather-20260803`;
+const FINAL_REPAIR_MILESTONE_ID = "lv4_lantern_city";
 const longscrollMaskSrc = (regionId) => `${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`;
 const LONGSCROLL_REGION_BOUNDS = {
   1: [405, 487, 317, 269], 2: [488, 327, 300, 207], 3: [738, 339, 320, 230], 4: [298, 274, 258, 232],
@@ -587,6 +591,7 @@ const els = {
   coins: document.querySelector("#coins"),
   stamina: document.querySelector("#stamina"),
   boardStaminaRing: document.querySelector("#boardStaminaRing"),
+  boardStaminaTimer: document.querySelector(".board-stamina-timer"),
   boardStaminaTimerLabel: document.querySelector("#boardStaminaTimerLabel"),
   boardStaminaTimerValue: document.querySelector("#boardStaminaTimerValue"),
   gems: document.querySelector("#gems"),
@@ -627,6 +632,7 @@ const els = {
   innCoins: document.querySelector("#innCoins"),
   innStamina: document.querySelector("#innStamina"),
   innStaminaRing: document.querySelector("#innStaminaRing"),
+  innStaminaTimer: document.querySelector(".inn-stamina-timer"),
   innStaminaTimerLabel: document.querySelector("#innStaminaTimerLabel"),
   innStaminaTimerValue: document.querySelector("#innStaminaTimerValue"),
   innGems: document.querySelector("#innGems"),
@@ -716,6 +722,15 @@ const els = {
   repairCostIcon: document.querySelector("#repairCostIcon"),
   repairCoinProgress: document.querySelector("#repairCoinProgress"),
   repairGuideModal: document.querySelector("#repairGuideModal"),
+  innFinale: document.querySelector("#innFinale"),
+  innFinaleStage: document.querySelector("#innFinaleStage"),
+  innFinaleTitle: document.querySelector("#innFinaleTitle"),
+  innFinaleScroll: document.querySelector("#innFinaleScroll"),
+  innFinalePanorama: document.querySelector("#innFinalePanorama"),
+  innFinaleShowLetter: document.querySelector("#innFinaleShowLetter"),
+  innFinaleLetter: document.querySelector("#innFinaleLetter"),
+  innFinaleViewPanorama: document.querySelector("#innFinaleViewPanorama"),
+  innFinaleContinue: document.querySelector("#innFinaleContinue"),
   repairGuideTitle: document.querySelector("#repairGuideTitle"),
   repairGuideAvatar: document.querySelector("#repairGuideAvatar"),
   repairGuideText: document.querySelector("#repairGuideText"),
@@ -800,6 +815,10 @@ let lastLongscrollCharacterSceneKey = null;
 let pendingInnFocusPosition = null;
 let openRepairMilestoneId = null;
 let repairReturnCastMilestoneId = null;
+let pendingRepairAfterStoryMilestoneId = null;
+let innFinaleTimers = [];
+let innFinaleCloseMilestone = null;
+let repairRenewalTimer = null;
 let repairAnchorRect = null;
 let repairModalAnimating = false;
 let repairModalMode = "entry";
@@ -1675,6 +1694,10 @@ function initializeRepairProgressQaScenario() {
 
 function initializeLongscrollCastQaScenario() {
   initializeLongscrollCastQaScene(LONGSCROLL_CAST_QA_SCENE);
+  if (LONGSCROLL_FINALE_QA_MODE) {
+    const finalMilestone = state.progressionConfig.milestones.find((entry) => entry.id === FINAL_REPAIR_MILESTONE_ID);
+    if (finalMilestone) state.renovationChoices[finalMilestone.id] = "completed";
+  }
 }
 
 function initializeLongscrollCastQaScene(sceneNumber) {
@@ -1711,6 +1734,20 @@ function initializeLongscrollCastQaScene(sceneNumber) {
   state.tutorialStep = 5;
 }
 
+function previewLongscrollRepairRenewal(sceneNumber) {
+  initializeLongscrollCastQaScene(sceneNumber);
+  const milestone = state.progressionConfig.milestones[sceneNumber - 1];
+  if (!milestone) return;
+  state.renovationChoices[milestone.id] = "completed";
+  repairReturnCastMilestoneId = milestone.id;
+  lastInnFocusKey = null;
+  lastLongscrollCharacterSceneKey = null;
+  render();
+  renderLongscrollCastQaNav();
+  centerInnSceneOnPosition(milestone.longscrollRegionIds);
+  playRepairCompleteEffect(milestone);
+}
+
 function renderLongscrollCastQaNav() {
   if (!LONGSCROLL_CAST_QA_MODE) return;
   let nav = document.querySelector(".longscroll-cast-qa-nav");
@@ -1736,6 +1773,10 @@ function renderLongscrollCastQaNav() {
         const url = new URL(location.href);
         url.searchParams.set("scene", String(sceneNumber));
         history.replaceState(null, "", url);
+        if (LONGSCROLL_RENEWAL_QA_MODE) {
+          previewLongscrollRepairRenewal(sceneNumber);
+          return;
+        }
         initializeLongscrollCastQaScene(sceneNumber);
         lastInnFocusKey = null;
         lastLongscrollCharacterSceneKey = null;
@@ -2005,6 +2046,8 @@ async function boot() {
   if (state.currentPage === "board") tickGenerators();
   if (UPGRADE_REVEAL_QA_MODE) setTimeout(() => playInnUpgradeReveal(UPGRADE_REVEAL_QA_LEVEL), 80);
   if (LONGSCROLL_CAST_QA_UNLOCK) setTimeout(maybePromptRepairGuide, 80);
+  if (LONGSCROLL_RENEWAL_QA_MODE) setTimeout(() => previewLongscrollRepairRenewal(LONGSCROLL_CAST_QA_SCENE), 180);
+  if (LONGSCROLL_FINALE_QA_MODE) setTimeout(() => showInnFinale({ force: true }), 180);
   if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
   if (STORY_ARCHIVE_QA_AUTOPEN) {
     setTimeout(() => openStoryArchive(STORY_ARCHIVE_QA_CHAPTER), 80);
@@ -2018,6 +2061,8 @@ async function boot() {
     setTimeout(() => playChapterStory("opening", maybePromptRepairGuide), 80);
   } else if (!ISOLATED_QA_MODE && pendingChapterOpeningId()) {
     setTimeout(() => playChapterStory(pendingChapterOpeningId(), maybePromptRepairGuide), 80);
+  } else if (!ISOLATED_QA_MODE && shouldShowInnFinale()) {
+    setTimeout(showInnFinale, 120);
   } else if (!ISOLATED_QA_MODE) {
     setTimeout(maybePromptRepairGuide, 120);
   }
@@ -2523,12 +2568,13 @@ function renderStaminaCountdown() {
   const time = full
     ? ""
     : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  for (const [ring, label, value] of [
-    [els.boardStaminaRing, els.boardStaminaTimerLabel, els.boardStaminaTimerValue],
-    [els.innStaminaRing, els.innStaminaTimerLabel, els.innStaminaTimerValue],
+  for (const [ring, timer, label, value] of [
+    [els.boardStaminaRing, els.boardStaminaTimer, els.boardStaminaTimerLabel, els.boardStaminaTimerValue],
+    [els.innStaminaRing, els.innStaminaTimer, els.innStaminaTimerLabel, els.innStaminaTimerValue],
   ]) {
     ring?.style.setProperty("--stamina-progress", `${progress}%`);
-    if (label) label.textContent = full ? "已满" : "下次 +1";
+    if (timer) timer.hidden = full;
+    if (label) label.textContent = full ? "" : "下次 +1";
     if (value) value.textContent = time;
   }
 }
@@ -2752,6 +2798,14 @@ function bindEvents() {
     event.preventDefault();
     closeStoryArchive();
   });
+  els.innFinaleContinue?.addEventListener("click", closeInnFinale);
+  els.innFinaleShowLetter?.addEventListener("click", openInnFinaleLetter);
+  els.innFinaleViewPanorama?.addEventListener("click", showInnFinalePanorama);
+  window.addEventListener("resize", measureInnFinaleCoverScale);
+  els.innFinale?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeInnFinale();
+  });
   els.innUpgradeBtn.addEventListener("click", upgradeInn);
   els.resetBtn.addEventListener("click", resetGame);
   els.debugStaminaBtn.addEventListener("click", debugAddStamina);
@@ -2970,11 +3024,17 @@ async function switchPage(page) {
     if (page !== previousPage) playSfx(page === "inn" ? "enterShop" : "exitShop");
     await playPageDoorTransition(() => {
       state.currentPage = page;
+      if (page === "inn" && pendingRepairAfterStoryMilestoneId) {
+        repairReturnCastMilestoneId = pendingRepairAfterStoryMilestoneId;
+      }
       render();
       if (page === "board") tickGenerators();
       saveState();
     });
-    if (page === "inn") setTimeout(maybePromptRepairGuide, 0);
+    if (page === "inn") {
+      if (pendingRepairAfterStoryMilestoneId) setTimeout(showPendingRepairAfterStory, 900);
+      else setTimeout(maybePromptRepairGuide, 0);
+    }
   } finally {
     pageSwitchInProgress = false;
   }
@@ -3022,7 +3082,17 @@ function renderInnPage() {
   els.innLevelName.replaceChildren(
     ...chapterTitleLines.map((line) => Object.assign(document.createElement("span"), { textContent: line })),
   );
-  els.innChapterProgress.textContent = `修缮 ${completedChapterMilestones}-${chapterMilestones.length}`;
+  els.innChapterProgress.replaceChildren(...chapterMilestones.map((_, index) => {
+    const diamond = document.createElement("i");
+    diamond.classList.toggle("is-complete", index < completedChapterMilestones);
+    diamond.setAttribute("aria-hidden", "true");
+    return diamond;
+  }));
+  els.innChapterProgress.classList.toggle("is-dense", chapterMilestones.length > 4);
+  els.innChapterProgress.setAttribute(
+    "aria-label",
+    `本章已完成${chineseNumbers[completedChapterMilestones] ?? completedChapterMilestones}处，共${chineseNumbers[chapterMilestones.length] ?? chapterMilestones.length}处`,
+  );
   els.innCoins.textContent = state.coins;
   els.innStamina.textContent = state.stamina;
   els.innGems.textContent = state.gems ?? 0;
@@ -3061,25 +3131,26 @@ function renderInnTasks(level) {
 function renderInnScene(level, repairValue) {
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
+  const showingFreshRepair = Boolean(repairReturnCastMilestoneId);
   const completedRegionIds = new Set(
     milestones
       .filter((milestone) => selectedRenovationChoice(milestone))
       .flatMap((milestone) => milestone.longscrollRegionIds),
   );
-  const currentRegionIds = next?.longscrollRegionIds ?? [];
+  const currentRegionIds = showingFreshRepair ? [] : next?.longscrollRegionIds ?? [];
   const characterMilestone = longscrollCharacterMilestone(next, milestones);
   const characterLayer = renderLongscrollCharacters(characterMilestone);
-  const repairMarker = next ? renderLongscrollRepairMarker(next) : "";
+  const repairHalo = !showingFreshRepair && next ? renderLongscrollRepairHalo(next) : "";
   els.innScene.innerHTML = `
-    <div class="longscroll-map" aria-label="流沙驿长卷">
-      <img class="longscroll-base" src="${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png" alt="未修缮的流沙驿" />
+    <div class="longscroll-map ${showingFreshRepair ? "is-repair-returning" : ""}" aria-label="流沙驿长卷">
+      <img class="longscroll-base" src="${LONGSCROLL_BASE_SOURCE}" alt="未修缮的流沙驿" />
       ${renderLongscrollRepairedLayer(completedRegionIds, !next)}
       ${characterLayer}
-      ${repairMarker}
+      ${repairHalo}
       ${currentRegionIds
         .map((regionId) => {
           const [left, top, width, height] = LONGSCROLL_REGION_BOUNDS[regionId];
-          return `<button class="longscroll-current-region" type="button" data-current-repair="${next.id}" data-region-id="${regionId}" aria-label="修缮${next.sceneName ?? next.name}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>`;
+          return `<button class="longscroll-current-region" type="button" tabindex="-1" aria-hidden="true" data-current-repair="${next.id}" data-region-id="${regionId}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"></button>`;
         })
         .join("")}
     </div>
@@ -3106,22 +3177,16 @@ function renderLongscrollRepairedLayer(regionIds, allComplete) {
   </svg>`;
 }
 
-function renderLongscrollRepairMarker(milestone) {
+function renderLongscrollRepairHalo(milestone) {
   const bounds = LONGSCROLL_REGION_BOUNDS[milestone.longscrollRegionIds?.[0]];
   if (!bounds) return "";
   const [left, top, width, height] = bounds;
-  const x = Math.round(Math.min(1218, Math.max(36, left + width * 0.72)));
-  const y = Math.round(Math.min(1246, Math.max(54, top + height * 0.9)));
-  const variant = milestone.longscrollRegionIds.length > 1
-    ? "variant-road"
-    : ["kitchen", "wall"].includes(milestone.scenePosition)
-      ? "variant-building"
-      : "";
-  return `<span class="longscroll-repair-marker ${variant}" data-repair-marker="${milestone.id}" style="--repair-marker-x:${x}px;--repair-marker-y:${y}px" aria-hidden="true">
-    <span class="longscroll-repair-stakes"></span>
-    <img src="${LONGSCROLL_REPAIR_MARKER_ASSET}" alt="" draggable="false" />
-    <span class="longscroll-repair-cloth"></span>
-  </span>`;
+  const cast = LONGSCROLL_LOCATION_CAST[milestone.id];
+  const x = Math.round(cast ? (cast.keeper.x + cast.npc.x) / 2 : left + width / 2);
+  const y = Math.round(cast ? Math.max(cast.keeper.y, cast.npc.y) - 50 : top + height * 0.55);
+  const haloWidth = Math.round(Math.min(260, Math.max(170, width * 0.66)));
+  const haloHeight = Math.round(Math.min(220, Math.max(130, height * 0.7)));
+  return `<button class="longscroll-repair-halo" type="button" data-current-repair="${milestone.id}" data-repair-halo="${milestone.id}" aria-label="修缮${milestone.sceneName ?? milestone.name}" style="--halo-x:${x}px;--halo-y:${y}px;--halo-width:${haloWidth}px;--halo-height:${haloHeight}px"></button>`;
 }
 
 function longscrollStandeeSrc(npcId) {
@@ -3129,7 +3194,7 @@ function longscrollStandeeSrc(npcId) {
   return `./assets/npc_standee/${npcId}.png?v=${NPC_STANDEE_VERSION}`;
 }
 
-function renderLongscrollCharacter(actor, role, npcId, entering, waiting = false) {
+function renderLongscrollCharacter(actor, role, npcId, entering) {
   const classes = [
     "longscroll-character",
     `longscroll-character-${role}`,
@@ -3139,7 +3204,6 @@ function renderLongscrollCharacter(actor, role, npcId, entering, waiting = false
   return `
     <figure class="${classes}" data-npc-id="${npcId}" style="--character-x:${actor.x}px;--character-y:${actor.y}px;--character-width:${actor.width}px;--character-delay:${actor.delay}ms">
       <span class="longscroll-character-body"><img src="${longscrollStandeeSrc(npcId)}" alt="" draggable="false" /></span>
-      ${waiting ? '<span class="longscroll-character-prompt" aria-hidden="true">…</span>' : ""}
     </figure>`;
 }
 
@@ -3163,12 +3227,9 @@ function renderLongscrollCharacters(milestone = longscrollCharacterMilestone()) 
   }
   const entering = lastLongscrollCharacterSceneKey !== milestone.id;
   lastLongscrollCharacterSceneKey = milestone.id;
-  const waiting = !selectedRenovationChoice(milestone)
-    && state.activeRepairId !== milestone.id
-    && !chapterStorySeen(`before:${milestone.id}`);
   return `<div class="longscroll-character-layer" data-character-scene="${milestone.id}" data-region-id="${cast.regionId}" aria-hidden="true">
     ${renderLongscrollCharacter(cast.keeper, "keeper", "keeper", entering)}
-    ${renderLongscrollCharacter(cast.npc, "npc", npcId, entering, waiting)}
+    ${renderLongscrollCharacter(cast.npc, "npc", npcId, entering)}
   </div>`;
 }
 
@@ -3495,7 +3556,7 @@ function handleRepairNodeClick(milestoneId, anchorElement) {
     return;
   }
   setRepairAnchor(anchorElement);
-  playLongscrollRepairMarkerEntry(milestone, () => beginRepairMilestone(milestone));
+  playLongscrollRepairHaloEntry(milestone, () => beginRepairMilestone(milestone));
 }
 
 function beginRepairMilestone(milestone) {
@@ -3514,26 +3575,26 @@ function beginRepairMilestone(milestone) {
   launchRepairPlayer(milestone);
 }
 
-function playLongscrollRepairMarkerEntry(milestone, afterAnimation) {
+function playLongscrollRepairHaloEntry(milestone, afterAnimation) {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const marker = els.innScene.querySelector(`[data-repair-marker="${milestone.id}"]`);
-  if (reducedMotion || !marker) {
+  const halo = els.innScene.querySelector(`[data-repair-halo="${milestone.id}"]`);
+  if (reducedMotion || !halo) {
     afterAnimation?.();
     return;
   }
-  if (marker.classList.contains("is-entering-repair")) return;
+  if (halo.classList.contains("is-entering-repair")) return;
   clearTimeout(repairPulseTimer);
-  marker.classList.add("is-entering-repair");
+  halo.classList.add("is-entering-repair");
   let finished = false;
   const finish = () => {
     if (finished) return;
     finished = true;
     clearTimeout(repairPulseTimer);
     repairPulseTimer = null;
-    marker.classList.remove("is-entering-repair");
+    halo.classList.remove("is-entering-repair");
     afterAnimation?.();
   };
-  marker.addEventListener("animationend", finish, { once: true });
+  halo.addEventListener("animationend", finish, { once: true });
   repairPulseTimer = setTimeout(finish, 320);
 }
 
@@ -3903,7 +3964,7 @@ function chapterStoryContinuation(segmentId) {
   if (phase === "after" && milestoneId) {
     return () => {
       const milestone = getMilestoneViews().find((entry) => entry.id === milestoneId);
-      if (milestone) restoreRepairReturnView(milestone);
+      if (milestone) finishRepairAfterStory(milestone);
     };
   }
   const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
@@ -4535,7 +4596,10 @@ function completeRepairFromPlayer(milestoneId) {
 }
 
 async function closeRepairPlayer(milestone, { completed = false } = {}) {
-  if (completed) repairReturnCastMilestoneId = milestone.id;
+  if (completed) {
+    repairReturnCastMilestoneId = milestone.id;
+    pendingRepairAfterStoryMilestoneId = milestone.id;
+  }
   openRepairMilestoneId = null;
   await setRepairOrientation(false);
   els.repairPlayerLayer.hidden = true;
@@ -4545,13 +4609,121 @@ async function closeRepairPlayer(milestone, { completed = false } = {}) {
   centerInnSceneOnPosition(milestone.longscrollRegionIds);
   saveState();
   if (!completed) return;
-  playRepairCompleteEffect(milestone.scenePosition);
+  const revealHold = playRepairCompleteEffect(milestone);
   showRepairCompleteCue();
   setTimeout(() => {
-    requestAnimationFrame(() => {
-      playChapterStory(`after:${milestone.id}`, () => restoreRepairReturnView(milestone));
-    });
-  }, 280);
+    if (state.currentPage !== "inn") {
+      repairReturnCastMilestoneId = null;
+      return;
+    }
+    showPendingRepairAfterStory();
+  }, revealHold);
+}
+
+function showPendingRepairAfterStory() {
+  if (!pendingRepairAfterStoryMilestoneId || state.currentPage !== "inn") return;
+  const milestone = getMilestoneViews().find((entry) => entry.id === pendingRepairAfterStoryMilestoneId);
+  pendingRepairAfterStoryMilestoneId = null;
+  if (!milestone) return;
+  requestAnimationFrame(() => {
+    playChapterStory(`after:${milestone.id}`, () => finishRepairAfterStory(milestone));
+  });
+}
+
+function shouldShowInnFinale() {
+  return !state.storyFlags.innFinaleLetterSeen
+    && !nextRepairMilestone()
+    && chapterStorySeen(`after:${FINAL_REPAIR_MILESTONE_ID}`);
+}
+
+function finishRepairAfterStory(milestone) {
+  if (milestone.id === FINAL_REPAIR_MILESTONE_ID && shouldShowInnFinale() && showInnFinale({ milestone })) return;
+  restoreRepairReturnView(milestone);
+}
+
+function showInnFinale({ milestone = null, force = false } = {}) {
+  if (!els.innFinale || els.innFinale.open || (!force && !shouldShowInnFinale())) return false;
+  innFinaleTimers.forEach(clearTimeout);
+  innFinaleTimers = [];
+  innFinaleCloseMilestone = milestone;
+  els.innFinale.classList.remove("is-revealed", "is-full-view", "is-ready", "is-envelope-visible", "is-envelope-open", "is-letter-open");
+  els.innFinaleStage.inert = false;
+  els.innFinaleLetter.inert = true;
+  els.innFinaleShowLetter.disabled = true;
+  els.innFinale.showModal();
+  measureInnFinaleCoverScale();
+  els.innFinaleTitle.focus({ preventScroll: true });
+  els.innFinaleScroll.scrollTop = 0;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reducedMotion) {
+    els.innFinale.classList.add("is-revealed", "is-full-view", "is-ready");
+    els.innFinaleShowLetter.disabled = false;
+    innFinaleTimers.push(setTimeout(openInnFinaleLetter, 8000));
+    return true;
+  }
+  innFinaleTimers.push(setTimeout(() => els.innFinale.classList.add("is-revealed"), 300));
+  innFinaleTimers.push(setTimeout(() => els.innFinale.classList.add("is-full-view"), 2900));
+  innFinaleTimers.push(setTimeout(() => {
+    els.innFinale.classList.add("is-ready");
+    els.innFinaleShowLetter.disabled = false;
+  }, 4100));
+  innFinaleTimers.push(setTimeout(openInnFinaleLetter, 11500));
+  return true;
+}
+
+function measureInnFinaleCoverScale() {
+  if (!els.innFinale?.open) return;
+  const { width, height } = els.innFinalePanorama.getBoundingClientRect();
+  if (width > 0 && height > 0) {
+    els.innFinalePanorama.style.setProperty("--finale-cover-scale", String(Math.max(1, height / width)));
+  }
+}
+
+function openInnFinaleLetter() {
+  if (!els.innFinale?.open || !els.innFinale.classList.contains("is-ready") || els.innFinale.classList.contains("is-envelope-visible") || els.innFinale.classList.contains("is-letter-open")) return;
+  innFinaleTimers.forEach(clearTimeout);
+  innFinaleTimers = [];
+  els.innFinaleStage.inert = true;
+  els.innFinaleShowLetter.disabled = true;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    revealInnFinaleLetter();
+    return;
+  }
+  els.innFinale.classList.add("is-envelope-visible");
+  innFinaleTimers.push(setTimeout(() => els.innFinale.classList.add("is-envelope-open"), 950));
+  innFinaleTimers.push(setTimeout(revealInnFinaleLetter, 2850));
+}
+
+function revealInnFinaleLetter() {
+  if (!els.innFinale?.open || els.innFinale.classList.contains("is-letter-open")) return;
+  els.innFinaleLetter.scrollTop = 0;
+  els.innFinaleLetter.inert = false;
+  els.innFinale.classList.add("is-letter-open");
+  els.innFinaleLetter.querySelector("h3")?.focus({ preventScroll: true });
+  innFinaleTimers.push(setTimeout(() => els.innFinale.classList.remove("is-envelope-visible", "is-envelope-open"), 1050));
+}
+
+function showInnFinalePanorama() {
+  if (!els.innFinale?.open) return;
+  innFinaleTimers.forEach(clearTimeout);
+  innFinaleTimers = [];
+  els.innFinaleStage.inert = false;
+  els.innFinaleLetter.inert = true;
+  els.innFinale.classList.remove("is-envelope-visible", "is-envelope-open", "is-letter-open");
+  els.innFinaleShowLetter.disabled = false;
+  els.innFinaleTitle.focus({ preventScroll: true });
+}
+
+function closeInnFinale() {
+  if (!els.innFinale?.open) return;
+  innFinaleTimers.forEach(clearTimeout);
+  innFinaleTimers = [];
+  els.innFinale.close();
+  state.storyFlags.innFinaleLetterSeen = true;
+  saveState();
+  const milestone = innFinaleCloseMilestone;
+  innFinaleCloseMilestone = null;
+  if (milestone) restoreRepairReturnView(milestone);
 }
 
 function restoreRepairReturnView(milestone) {
@@ -7313,26 +7485,44 @@ function chooseRenovation(milestoneId, choiceId) {
   beginRepairMilestone(milestone);
 }
 
-function playRepairCompleteEffect(position) {
-  const room = els.innScene.querySelector(".inn-room");
-  if (!room) return;
-  const effectClass = `repair-complete-${position}`;
-  room.classList.add("repair-complete", effectClass);
-  const burst = document.createElement("div");
-  burst.className = `repair-burst burst-${position}`;
-  burst.innerHTML = `
-    <i class="repair-coin c1"></i>
-    <i class="repair-coin c2"></i>
-    <i class="repair-coin c3"></i>
-    <b class="repair-spark s1"></b>
-    <b class="repair-spark s2"></b>
-    <b class="repair-spark s3"></b>
-    <b class="repair-spark s4"></b>
-  `;
-  room.append(burst);
-  if (navigator.vibrate) navigator.vibrate(18);
-  setTimeout(() => room.classList.remove("repair-complete", effectClass), 1500);
-  setTimeout(() => burst.remove(), 1800);
+function playRepairCompleteEffect(milestone) {
+  const map = els.innScene.querySelector(".longscroll-map");
+  const bounds = (milestone.longscrollRegionIds ?? [])
+    .map((regionId) => LONGSCROLL_REGION_BOUNDS[regionId])
+    .filter(Boolean);
+  if (!map || !bounds.length) return 280;
+  clearTimeout(repairRenewalTimer);
+  map.querySelector(".longscroll-renewal-effect")?.remove();
+
+  const left = Math.min(...bounds.map(([x]) => x));
+  const top = Math.min(...bounds.map(([, y]) => y));
+  const right = Math.max(...bounds.map(([x, , width]) => x + width));
+  const bottom = Math.max(...bounds.map(([, y, , height]) => y + height));
+  const width = right - left;
+  const height = bottom - top;
+  const maskImages = milestone.longscrollRegionIds.map((regionId) =>
+    `<image href="${longscrollMaskSrc(regionId)}" x="0" y="0" width="1254" height="1254" preserveAspectRatio="none" />`,
+  ).join("");
+  const svg = (name, contents) => `<svg class="longscroll-renewal-${name}" viewBox="${left} ${top} ${width} ${height}" aria-hidden="true">
+    <defs><mask id="longscroll-renewal-${name}-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha" x="${left}" y="${top}" width="${width}" height="${height}">${maskImages}</mask></defs>
+    ${contents}
+  </svg>`;
+  const effect = document.createElement("div");
+  effect.className = "longscroll-renewal-effect";
+  effect.dataset.renewalSite = milestone.id;
+  effect.style.cssText = `left:${left}px;top:${top}px;width:${width}px;height:${height}px`;
+  effect.innerHTML = svg("before", `<image href="${LONGSCROLL_BASE_SOURCE}" x="0" y="0" width="1254" height="1254" mask="url(#longscroll-renewal-before-mask)" />`)
+    + svg("glow", `<rect x="${left}" y="${top}" width="${width}" height="${height}" fill="#ffe9b1" mask="url(#longscroll-renewal-glow-mask)" />`);
+  map.append(effect);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reducedMotion) effect.classList.add("is-active");
+  else requestAnimationFrame(() => { if (effect.isConnected) effect.classList.add("is-active"); });
+  repairRenewalTimer = setTimeout(() => {
+    effect.remove();
+    repairRenewalTimer = null;
+  }, reducedMotion ? 400 : 1600);
+  if (navigator.vibrate && !LONGSCROLL_RENEWAL_QA_MODE) navigator.vibrate(18);
+  return reducedMotion ? 900 : 2200;
 }
 
 function showRepairCompleteCue() {

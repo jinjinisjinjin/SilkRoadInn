@@ -1,0 +1,127 @@
+.inn-finale {
+  width: min(100vw, 620px);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  color: #3e2a1d;
+  background: #39291f;
+  box-shadow: 0 0 45px #170e09;
+}
+
+.inn-finale::backdrop { background: rgba(22, 15, 11, .88); }
+.inn-finale-scroll { position: relative; height: 100%; overflow: hidden; }
+.inn-finale-stage { position: absolute; inset: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; isolation: isolate; overflow: hidden; background: linear-gradient(rgba(42, 28, 20, .32), rgba(42, 28, 20, .48)), url("./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png") center / cover; transition: filter .9s ease, transform .9s ease; }
+.inn-finale-stage::before { content: ""; position: absolute; z-index: -1; inset: -12px; background: url("./assets/longscroll/states-webp/22_done_state_v0.1.webp") center / cover; filter: blur(5px) brightness(.72) saturate(.88); opacity: 0; transition: opacity 2.3s ease; }
+.inn-finale.is-revealed .inn-finale-stage::before { opacity: 1; }
+.inn-finale:is(.is-envelope-visible, .is-letter-open) .inn-finale-stage { filter: brightness(.7); transform: scale(.97); pointer-events: none; }
+
+.inn-finale-heading { position: relative; z-index: 2; padding: max(20px, env(safe-area-inset-top)) 18px 12px; color: #f7e9c7; text-align: center; background: linear-gradient(rgba(42, 27, 20, .94), rgba(42, 27, 20, .68) 65%, transparent); }
+.inn-finale-heading span { color: #d2aa70; font: 700 12px/1.4 "Songti SC", "STSong", serif; letter-spacing: .28em; }
+.inn-finale-heading h2 { margin: 6px 0 4px; font: 700 clamp(28px, 7vw, 36px)/1.25 "Songti SC", "STSong", serif; letter-spacing: .12em; }
+.inn-finale-heading h2:focus { outline: none; }
+.inn-finale-heading p { margin: 0; color: #f2dfbd; font: 14px/1.5 "Songti SC", "STSong", serif; }
+
+.inn-finale-panorama { position: relative; z-index: 1; width: 100%; height: 100%; min-height: 0; overflow: hidden; }
+.inn-finale-panorama img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(var(--finale-cover-scale, 1.6)); transition: transform 1.2s cubic-bezier(.2, .7, .2, 1); }
+.inn-finale.is-full-view .inn-finale-panorama img { transform: scale(1); }
+.inn-finale-panorama .inn-finale-before { clip-path: inset(0 0 0 0); transition: clip-path 2.25s cubic-bezier(.5, .02, .2, 1), transform 1.2s cubic-bezier(.2, .7, .2, 1); }
+.inn-finale.is-revealed .inn-finale-before { clip-path: inset(0 0 0 100%); }
+.inn-finale-panorama::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 228, 160, .3) 49%, transparent 63%); transform: translateX(-110%); }
+.inn-finale.is-revealed .inn-finale-panorama::after { opacity: 1; animation: inn-finale-light 2.15s ease-out both; }
+.inn-finale-panorama-caption { position: absolute; right: 14px; bottom: 12px; padding: 4px 9px; color: #fff0d2; background: rgba(52, 32, 20, .72); border-radius: 2px; font: 12px/1.3 "Songti SC", "STSong", serif; letter-spacing: .08em; opacity: 0; transition: opacity .5s ease; }
+.inn-finale.is-full-view .inn-finale-panorama-caption { opacity: 1; }
+.inn-finale-stage-footer { position: relative; z-index: 2; display: flex; min-height: 84px; align-items: center; justify-content: center; padding: 8px 16px max(20px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(39, 25, 19, .88) 45%); box-sizing: border-box; }
+.inn-finale-stage-footer button { min-width: 130px; min-height: 44px; padding: 0 10px; border: 0; border-bottom: 1px solid rgba(240, 215, 169, .7); border-radius: 0; color: #f1dfbd; background: transparent; box-shadow: none; font: 700 14px/1 "Songti SC", "STSong", serif; cursor: pointer; transition: opacity .5s ease, transform .5s ease; }
+.inn-finale-stage-footer button:disabled { opacity: 0; transform: translateY(10px); pointer-events: none; }
+
+.inn-finale {
+  --letter-width: min(450px, calc(100vw - 28px));
+  --letter-height: clamp(345px, 47dvh, 405px);
+  --letter-paper: url("./assets/ui/inn_letter_fiber.svg"),
+    radial-gradient(ellipse at 9% 14%, rgba(156, 95, 38, .10), transparent 33%),
+    radial-gradient(ellipse at 91% 87%, rgba(121, 72, 30, .13), transparent 37%),
+    linear-gradient(100deg, rgba(106, 74, 40, .11), transparent 12% 86%, rgba(106, 74, 40, .13)),
+    linear-gradient(145deg, #f2e4c8, #ebd8b6 56%, #dfc49b);
+}
+.inn-finale-paper-opening { position: absolute; z-index: 4; inset: 0; display: grid; place-items: center; opacity: 0; background: rgba(32, 23, 17, 0); pointer-events: none; transition: opacity .6s ease, background .7s ease; }
+.inn-finale.is-envelope-visible .inn-finale-paper-opening { opacity: 1; background: rgba(32, 23, 17, .55); }
+.inn-finale.is-letter-open .inn-finale-paper-opening { opacity: 0; }
+.inn-finale-paper-scene { position: relative; width: var(--letter-width); height: var(--letter-height); perspective: 900px; }
+.inn-finale-paper-inner, .inn-finale-letter-body { background: url("./assets/ui/inn_letter_vine.svg") left 16px bottom 18px / 145px 124px no-repeat, var(--letter-paper); border: 1px solid #bca17a; box-shadow: 0 20px 36px rgba(20, 11, 5, .45), inset 0 0 24px rgba(120, 75, 29, .14); }
+.inn-finale-paper-inner { position: absolute; z-index: 1; top: 50%; left: 50%; width: 100%; height: 100%; box-sizing: border-box; overflow: hidden; opacity: 0; transform: translate(-50%, -50%) scale(.35, .54); transform-origin: center; }
+.inn-finale-paper-inner::before, .inn-finale-letter-body::before { content: ""; position: absolute; z-index: 1; inset: 8px; border: 1px solid rgba(135, 96, 56, .17); pointer-events: none; }
+.inn-finale-paper-inner::after, .inn-finale-letter-body::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(90deg, transparent, rgba(89, 60, 33, .13), transparent); box-shadow: 3px 0 8px rgba(95, 67, 35, .06); pointer-events: none; }
+.inn-finale-paper-writing { display: flex; flex-direction: column; height: 100%; box-sizing: border-box; padding: 31px 32px 24px; opacity: 0; color: #523b2c; font: 16px/1.75 "InnLetterWenKai", "Songti SC", serif; text-align: left; transition: opacity .35s ease; }
+.inn-finale-paper-writing span { display: block; color: #a25d45; font: 12px/1.4 "Songti SC", serif; letter-spacing: .24em; }
+.inn-finale-paper-writing b { display: block; margin: 8px 0 18px; font-size: 22px; font-weight: 600; }
+.inn-finale-paper-writing p { margin: 0 0 12px; text-indent: 2em; }
+.inn-finale-paper-writing i { display: block; margin-top: auto; color: #8f4d3c; font-style: normal; text-align: right; }
+.inn-finale-paper-outer { position: absolute; z-index: 2; top: 50%; left: 50%; width: 158px; height: 244px; opacity: 0; transform: translate(-50%, calc(-50% + 50px)) rotate(-3deg) scale(.82); filter: drop-shadow(0 17px 14px rgba(13, 7, 3, .47)); transition: transform .8s cubic-bezier(.2, .7, .2, 1), opacity .55s ease; }
+.inn-finale-pocket-back, .inn-finale-pocket-letter, .inn-finale-pocket-front, .inn-finale-pocket-flap { position: absolute; display: block; box-sizing: border-box; }
+.inn-finale-pocket-back { inset: 0; border: 1px solid #b89a70; background: var(--letter-paper); clip-path: polygon(2% 0, 98% 0, 100% 2%, 100% 98%, 98% 100%, 2% 100%, 0 98%, 0 2%); }
+.inn-finale-pocket-letter { z-index: 1; top: 12px; left: 13px; right: 13px; height: 58px; border: 1px solid #c4a881; background: var(--letter-paper); box-shadow: 0 -1px 5px rgba(95, 61, 32, .1); }
+.inn-finale-pocket-letter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 51%; border-left: 1px solid rgba(112, 82, 48, .18); }
+.inn-finale-pocket-front { z-index: 2; inset: 42px 0 0; border: 1px solid #b99b72; background: linear-gradient(90deg, rgba(142, 99, 56, .12), transparent 13% 87%, rgba(142, 99, 56, .14)), var(--letter-paper); box-shadow: inset 0 9px 11px rgba(111, 72, 36, .14), inset 0 0 13px rgba(99, 63, 31, .09); clip-path: polygon(0 0, 18% 1%, 34% 0, 51% 1%, 68% 0, 84% 1%, 100% 0, 100% 99%, 98% 100%, 2% 100%, 0 99%); }
+.inn-finale-pocket-front::before { content: ""; position: absolute; inset: 11px 10px 9px; border-left: 1px solid rgba(135, 92, 53, .16); border-right: 1px solid rgba(135, 92, 53, .16); }
+.inn-finale-pocket-front::after { content: ""; position: absolute; top: 10px; left: 0; width: 100%; border-top: 1px solid rgba(103, 71, 42, .25); transform: rotate(-.5deg); }
+.inn-finale-pocket-flap { z-index: 3; top: 0; left: 1px; right: 1px; height: 35px; border: 1px solid rgba(145, 108, 68, .46); background: var(--letter-paper); clip-path: polygon(0 0, 100% 0, 100% 89%, 81% 91%, 63% 89%, 46% 92%, 25% 88%, 0 90%); transform-origin: center top; box-shadow: 0 4px 5px rgba(80, 49, 21, .15); }
+.inn-finale-paper-inscription { position: absolute; z-index: 4; top: 74px; right: 55px; height: 140px; color: #4e382c; writing-mode: vertical-rl; white-space: nowrap; font: 18px/1.2 "InnLetterWenKai", "Songti SC", serif; letter-spacing: .04em; }
+.inn-finale-pocket-postmark { position: absolute; z-index: 4; bottom: 18px; left: 20px; color: rgba(88, 64, 42, .76); writing-mode: vertical-rl; font: 11px/1.2 "Songti SC", serif; letter-spacing: .1em; }
+.inn-finale-pocket-seal { position: absolute; z-index: 4; right: 19px; bottom: 20px; display: grid; place-items: center; width: 28px; height: 30px; border: 2px solid rgba(151, 52, 42, .67); color: rgba(151, 52, 42, .82); font: 19px/1 "Songti SC", serif; transform: rotate(-8deg); box-shadow: inset 0 0 0 2px rgba(151, 52, 42, .1); }
+.inn-finale.is-envelope-visible .inn-finale-paper-outer { opacity: 1; transform: translate(-50%, -50%) rotate(-3deg); }
+.inn-finale.is-envelope-open .inn-finale-pocket-flap { animation: inn-pocket-open .45s ease-out both; }
+.inn-finale.is-envelope-open .inn-finale-paper-outer { animation: inn-pocket-away 1.35s ease-in-out .5s both; }
+.inn-finale.is-envelope-open .inn-finale-paper-inner { opacity: 1; animation: inn-letter-unfold 1.55s cubic-bezier(.2, .7, .2, 1) both; }
+.inn-finale.is-envelope-open .inn-finale-paper-writing { opacity: 1; transition-delay: 1.12s; }
+
+.inn-finale-letter { position: absolute; z-index: 5; inset: 0; display: flex; flex-direction: column; width: 100%; height: 100%; padding: max(16px, env(safe-area-inset-top)) 14px max(64px, env(safe-area-inset-bottom)); box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; color: #4b3529; background: #39291f; opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+.inn-finale.is-letter-open .inn-finale-letter { opacity: 1; pointer-events: auto; }
+.inn-finale-letter-body { position: relative; display: flex; flex-direction: column; width: var(--letter-width); max-width: 100%; height: var(--letter-height); min-height: 310px; margin: auto; padding: 29px 30px 22px; box-sizing: border-box; font-family: "InnLetterWenKai", "Songti SC", serif; transform: rotate(.22deg); }
+.inn-finale-letter-script { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.inn-finale-letter-kicker { display: block; color: #a25d45; font: 12px/1.4 "Songti SC", serif; letter-spacing: .24em; }
+.inn-finale-letter h3 { margin: 8px 0 18px; color: #593628; font-size: 22px; font-weight: 600; line-height: 1.4; letter-spacing: .06em; }
+.inn-finale-letter h3:focus { outline: none; }
+.inn-finale-letter p { margin: 0 0 12px; color: #4b3529; font-size: 16px; font-weight: 400; line-height: 1.75; letter-spacing: .015em; text-indent: 2em; }
+.inn-finale-letter .inn-finale-signature { margin: auto 0 0; padding-top: 8px; color: #8f4d3c; font-weight: 600; text-align: right; text-indent: 0; }
+.inn-finale-letter .inn-finale-signature::after { content: "驿"; display: inline-grid; place-items: center; width: 21px; height: 23px; margin-left: 9px; border: 1px solid rgba(155, 61, 43, .69); color: #9b3d2b; font: 16px/1 "Songti SC", serif; vertical-align: middle; transform: rotate(-8deg); }
+.inn-finale-actions { position: absolute; z-index: 2; left: 0; right: 0; bottom: -54px; display: flex; gap: 20px; justify-content: center; }
+.inn-finale-actions button { min-height: 38px; padding: 0 11px; border: 0; border-bottom: 1px solid rgba(237, 214, 174, .63); border-radius: 0; color: #f0ddbb; background: transparent; font: 700 14px/1 "Songti SC", "STSong", serif; cursor: pointer; text-shadow: 0 1px 2px #26150e; }
+.inn-finale-actions #innFinaleContinue { border: 1px solid #af8e6b; color: #f4dfb9; background: #754736; box-shadow: inset 0 0 0 2px rgba(234, 203, 150, .12); }
+.inn-finale button:focus-visible { outline: 3px solid #e9ae57; outline-offset: 3px; }
+
+@keyframes inn-finale-light { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+@keyframes inn-pocket-open { to { transform: rotateX(145deg); filter: brightness(.87); } }
+@keyframes inn-pocket-away {
+  0%, 22% { opacity: 1; transform: translate(-50%, -50%) rotate(-3deg); }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% + 92px)) rotate(6deg) scale(.86); }
+}
+@keyframes inn-letter-unfold {
+  0% { transform: translate(-50%, -50%) scale(.35, .54); }
+  35% { transform: translate(-50%, calc(-50% - 64px)) scale(.35, .54); }
+  53% { transform: translate(-50%, calc(-50% - 64px)) scale(.43, .54); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+@media (max-width: 420px) {
+  .inn-finale-letter-body { padding: 24px 22px 18px; }
+  .inn-finale-paper-writing { padding: 25px 23px; }
+  .inn-finale-letter p, .inn-finale-paper-writing p { font-size: 15px; }
+}
+@media (orientation: landscape) and (max-height: 650px) { .inn-finale { width: 100vw; } .inn-finale-stage { grid-template-columns: minmax(180px, 1fr) minmax(0, 1.2fr); grid-template-rows: minmax(0, 1fr) auto; } .inn-finale-heading { grid-column: 1; grid-row: 1; align-self: center; } .inn-finale-heading h2 { font-size: 27px; } .inn-finale-panorama { grid-column: 2; grid-row: 1 / 3; } .inn-finale-stage-footer { grid-column: 1; grid-row: 2; } }
+@media (prefers-reduced-motion: reduce) {
+  .inn-finale-stage, .inn-finale-stage::before, .inn-finale-panorama img, .inn-finale-before, .inn-finale-panorama-caption, .inn-finale-stage-footer button, .inn-finale-paper-opening, .inn-finale-paper-inner, .inn-finale-paper-outer, .inn-finale-letter { transition: none !important; }
+  .inn-finale.is-revealed .inn-finale-panorama::after { animation: none; opacity: 0; }
+  .inn-finale.is-envelope-open .inn-finale-paper-inner { animation: none; transform: translate(-50%, -50%); }
+  .inn-finale.is-envelope-open .inn-finale-paper-outer { animation: none; opacity: 0; }
+  .inn-finale.is-envelope-open .inn-finale-pocket-flap { animation: none; }
+  .inn-finale.is-envelope-open .inn-finale-paper-writing { opacity: 1; }
+}
+@font-face {
+  font-family: "InnLetterWenKai";
+  src: url("./assets/fonts/inn-letter-lxgw-wenkai-subset.woff2?v=2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}

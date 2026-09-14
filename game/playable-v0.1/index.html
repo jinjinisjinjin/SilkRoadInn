@@ -12,8 +12,9 @@
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v12" />
-    <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1" />
-    <link rel="stylesheet" href="./longscroll-characters.css?v=repair-site-marker-v4-phone-fit-v1" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
+    <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1" />
+    <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
     <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
     <link rel="stylesheet" href="./generator-chain-qa.css?v=generator-chain-v1" />
   </head>
@@ -103,18 +104,17 @@
               <span class="inn-stamina-timer"><span id="innStaminaTimerLabel">下次 +1</span><strong id="innStaminaTimerValue">02:00</strong></span>
               <button id="innStaminaPlusBtn" class="inn-resource-plus" aria-label="补充驼铃">+</button>
             </span>
-            <span class="inn-resource-pill"><i class="ruby-icon" aria-hidden="true"></i><b id="innGems">0</b><button id="innGemPlusBtn" class="inn-resource-plus" aria-label="补充红宝石">+</button></span>
-            <button id="innDailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="领取今日宝袋" title="领取今日宝袋">
-              <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
-            </button>
-            <button id="innSoundToggleBtn" class="sound-toggle" type="button" data-sound="none" aria-label="声音设置" title="声音设置" aria-controls="audioSettingsPanel" aria-expanded="false">
-              <span aria-hidden="true">♪</span>
-            </button>
+            <span class="inn-gem-sound-group">
+              <span class="inn-resource-pill"><i class="ruby-icon" aria-hidden="true"></i><b id="innGems">0</b><button id="innGemPlusBtn" class="inn-resource-plus" aria-label="补充红宝石">+</button></span>
+              <button id="innSoundToggleBtn" class="sound-toggle" type="button" data-sound="none" aria-label="声音设置" title="声音设置" aria-controls="audioSettingsPanel" aria-expanded="false">
+                <span aria-hidden="true">♪</span>
+              </button>
+            </span>
           </div>
           <aside class="inn-chapter-bookmark" aria-label="当前章节">
             <small id="innChapterEyebrow">第一章</small>
             <h1 id="innLevelName"><span>流沙驿</span><span>初明</span></h1>
-            <span id="innChapterProgress">修缮 0-3</span>
+            <span id="innChapterProgress" class="inn-chapter-progress" role="img" aria-label="本章修缮进度"></span>
             <button id="innUpgradeBtn" class="inn-upgrade-seal" hidden>扩建</button>
           </aside>
         </header>
@@ -143,6 +143,9 @@
         <button id="storyArchiveBtn" class="inn-story-archive-entry" type="button" aria-label="回顾已解锁剧情" title="剧情回顾">
           <img src="./assets/ui/ui_codex_scroll.png" alt="" />
         </button>
+        <button id="innDailyPouchBtn" class="daily-pouch-entry inn-daily-pouch-entry" type="button" aria-label="领取今日宝袋" title="领取今日宝袋">
+          <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
+        </button>
       </section>
       <section class="audio-settings-panel" id="audioSettingsPanel" aria-label="声音设置" hidden>
         <header>
@@ -170,6 +173,62 @@
         <button id="bagBtn" data-tab="bag"><img src="./assets/ui/ui_bag_inventory.png" alt="" /><span>行囊</span></button>
       </nav>
     </main>
+
+    <dialog id="innFinale" class="inn-finale" aria-labelledby="innFinaleTitle">
+      <div class="inn-finale-scroll" id="innFinaleScroll">
+        <section class="inn-finale-stage" id="innFinaleStage">
+          <div class="inn-finale-heading">
+            <span>流沙驿 · 终章</span>
+            <h2 id="innFinaleTitle" tabindex="-1" autofocus>灯火照归途</h2>
+            <p>辛苦了。流沙驿的门，终于能为赶路的人敞开了。</p>
+          </div>
+          <div class="inn-finale-panorama" id="innFinalePanorama" aria-label="完整修缮后的流沙驿长卷">
+            <img class="inn-finale-after" src="./assets/longscroll/states-webp/22_done_state_v0.1.webp" alt="焕然一新的流沙驿全景" />
+            <img class="inn-finale-before" src="./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png" alt="" />
+            <span class="inn-finale-panorama-caption">流沙驿 · 修缮全景</span>
+          </div>
+          <div class="inn-finale-stage-footer">
+            <button type="button" id="innFinaleShowLetter" disabled>提前读掌柜来信</button>
+          </div>
+        </section>
+        <div class="inn-finale-paper-opening" aria-hidden="true">
+          <div class="inn-finale-paper-scene">
+            <div class="inn-finale-paper-inner">
+              <div class="inn-finale-paper-writing">
+                <span>掌柜来信</span><b>给一路同行的你</b>
+                <p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p>
+                <p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p>
+                <i>流沙驿掌柜 敬书</i>
+              </div>
+            </div>
+            <div class="inn-finale-paper-outer">
+              <span class="inn-finale-pocket-back"></span>
+              <span class="inn-finale-pocket-letter"></span>
+              <span class="inn-finale-pocket-front"></span>
+              <span class="inn-finale-pocket-flap"></span>
+              <span class="inn-finale-paper-inscription">同行旅人　亲启</span>
+              <span class="inn-finale-pocket-postmark">流沙驿掌柜寄</span>
+              <span class="inn-finale-pocket-seal">驿</span>
+            </div>
+          </div>
+        </div>
+        <div class="inn-finale-letter" id="innFinaleLetter" inert>
+          <div class="inn-finale-letter-body">
+            <div class="inn-finale-letter-script">
+              <span class="inn-finale-letter-kicker">掌柜来信</span>
+              <h3 tabindex="-1">给一路同行的你</h3>
+              <p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p>
+              <p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p>
+              <p class="inn-finale-signature">流沙驿掌柜 敬书</p>
+            </div>
+            <div class="inn-finale-actions">
+              <button type="button" id="innFinaleViewPanorama">再看长卷</button>
+              <button type="button" id="innFinaleContinue">收下这封信</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
 
     <div class="loading-overlay" id="loadingOverlay" hidden>
       <div class="loading-card">
@@ -477,6 +536,6 @@
 
     <script src="./chapter-story.js?v=story-viewport-v1"></script>
     <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
-    <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v2"></script>
+    <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9"></script>
   </body>
 </html>

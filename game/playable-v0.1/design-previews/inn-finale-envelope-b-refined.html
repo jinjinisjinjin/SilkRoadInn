@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>掌柜来信 · B款纸函</title>
+  <link rel="stylesheet" href="../inn-finale.css?v=inn-finale-v9">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100dvh; color: #eedbc0; background: #2a1d16; font-family: "Songti SC", "STSong", serif; }
+    .preview-header { padding: 17px 20px 13px; text-align: center; }
+    .preview-header small { display: block; color: #c9a579; letter-spacing: .26em; }
+    .preview-header h1 { margin: 7px 0 3px; font-size: 23px; font-weight: 600; letter-spacing: .12em; }
+    .preview-header p { margin: 0; color: #c8ad91; font-size: 13px; }
+    .preview-wrap { display: grid; place-items: center; padding: 0 12px; }
+    .preview-wrap .inn-finale { position: relative; width: min(100%, 450px); height: min(640px, calc(100dvh - 175px)); min-height: 420px; overflow: hidden; border: 1px solid #6b4d36; box-shadow: 0 15px 35px rgba(0,0,0,.35); }
+    .preview-wrap .inn-finale-stage { background: linear-gradient(rgba(42, 28, 20, .35), rgba(42, 28, 20, .48)), url("../assets/longscroll/states-webp/22_done_state_v0.1.webp") center / cover; }
+    .preview-wrap .inn-finale-stage::before { display: none; }
+    .preview-wrap .inn-finale.is-envelope-visible .inn-finale-stage { filter: brightness(.74) blur(2px); }
+    .preview-controls { display: flex; gap: 14px; justify-content: center; padding: 13px 20px max(15px, env(safe-area-inset-bottom)); }
+    .preview-controls button { min-height: 40px; padding: 0 17px; border: 1px solid #aa8056; border-radius: 2px; color: #f5e6c9; background: #684333; font: 15px "Songti SC", serif; cursor: pointer; }
+    .preview-controls button:first-child { color: #4d3021; background: #e8d3aa; }
+    @media(max-width: 440px) { .preview-header { padding-top: 10px; } .preview-header p { display: none; } .preview-wrap .inn-finale { height: calc(100dvh - 140px); } }
+  </style>
+</head>
+<body>
+  <header class="preview-header">
+    <small>流沙驿 · 终章</small>
+    <h1>掌柜来信 · B款纸函</h1>
+    <p>竖式封题，抽纸而出，再向左右展开。信文横排，保留第一版原文。</p>
+  </header>
+  <main class="preview-wrap">
+    <div class="inn-finale is-envelope-visible" id="preview">
+      <div class="inn-finale-stage"></div>
+      <div class="inn-finale-paper-opening" aria-hidden="true">
+        <div class="inn-finale-paper-scene">
+          <div class="inn-finale-paper-inner">
+            <div class="inn-finale-paper-writing">
+              <span>掌柜来信</span><b>给一路同行的你</b>
+              <p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p>
+              <p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p>
+              <i>流沙驿掌柜 敬书</i>
+            </div>
+          </div>
+          <div class="inn-finale-paper-outer">
+            <span class="inn-finale-pocket-back"></span>
+            <span class="inn-finale-pocket-letter"></span>
+            <span class="inn-finale-pocket-front"></span>
+            <span class="inn-finale-pocket-flap"></span>
+            <span class="inn-finale-paper-inscription">同行旅人　亲启</span>
+            <span class="inn-finale-pocket-postmark">流沙驿掌柜寄</span>
+            <span class="inn-finale-pocket-seal">驿</span>
+          </div>
+        </div>
+      </div>
+      <div class="inn-finale-letter">
+        <div class="inn-finale-letter-body">
+          <div class="inn-finale-letter-script">
+            <span class="inn-finale-letter-kicker">掌柜来信</span>
+            <h3>给一路同行的你</h3>
+            <p>初到流沙驿，我只求灶里留一星火。是你扶正了门，扫净了院，陪我把这条长街慢慢唤醒。</p>
+            <p>如今夜深，驿灯仍为归客亮着。你若再过此地，灶上总有一碗热汤。</p>
+            <p class="inn-finale-signature">流沙驿掌柜 敬书</p>
+          </div>
+          <div class="inn-finale-actions"><button type="button" id="innFinaleViewPanorama">再看长卷</button><button type="button" id="innFinaleContinue">收下这封信</button></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <nav class="preview-controls" aria-label="预览操作">
+    <button type="button" id="openLetter">展开纸函</button>
+    <button type="button" id="resetLetter">重新收起</button>
+  </nav>
+  <script>
+    const preview = document.getElementById("preview");
+    let timers = [];
+    function reset() {
+      timers.forEach(clearTimeout); timers = [];
+      preview.classList.remove("is-envelope-visible", "is-envelope-open", "is-letter-open");
+      void preview.offsetWidth;
+      preview.classList.add("is-envelope-visible");
+    }
+    function open() {
+      reset();
+      timers.push(setTimeout(() => preview.classList.add("is-envelope-open"), 950));
+      timers.push(setTimeout(() => preview.classList.add("is-letter-open"), 2850));
+      timers.push(setTimeout(() => preview.classList.remove("is-envelope-visible", "is-envelope-open"), 3900));
+    }
+    document.getElementById("openLetter").addEventListener("click", open);
+    document.getElementById("resetLetter").addEventListener("click", reset);
+    document.getElementById("innFinaleViewPanorama").addEventListener("click", reset);
+    document.getElementById("innFinaleContinue").addEventListener("click", reset);
+  </script>
+</body>
+</html>
