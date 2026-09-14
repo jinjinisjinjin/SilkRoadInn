@@ -142,8 +142,8 @@ const REPAIR_PART_COST_WEIGHTS = Object.freeze([71, 79, 89, 101, 109, 121, 131, 
 const COIN_ECONOMY_VERSION = 2;
 const OPENING_STAMINA_VERSION = 2;
 const LEGACY_OPENING_STAMINA = 18;
-const OPENING_COPPER_VERSION = 1;
-const LEGACY_OPENING_COPPER = 400;
+const OPENING_COPPER_VERSION = 2;
+const LEGACY_OPENING_COPPER = Object.freeze([40, 400]);
 const COIN_DENOMINATION_MULTIPLIER = 10;
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -552,7 +552,7 @@ const state = {
   visibleOrders: [],
   unlockedCodex: new Set(),
   unlockedFoodLevels: {},
-  coins: 40,
+  coins: 0,
   stamina: 100,
   staminaMax: 100,
   recoverMinutes: 2,
@@ -1495,7 +1495,7 @@ function initializeGeneratorOrderQaScenario() {
 }
 
 const PROGRESSION_FLOW_QA_SPECS = Object.freeze({
-  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 40, chapterOrders: 0 },
+  fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 0, chapterOrders: 0 },
   20: { completedOrders: 20, repairCount: 2, innLevel: 1, generatorLevel: 2, coins: 2200, chapterOrders: 8 },
   60: { completedOrders: 60, repairCount: 6, innLevel: 2, generatorLevel: 3, coins: 3000, chapterOrders: 8 },
   120: { completedOrders: 120, repairCount: 13, innLevel: 3, generatorLevel: 4, coins: 6000, chapterOrders: 8 },
@@ -2073,7 +2073,7 @@ async function boot() {
 
 function startingCoinBalance() {
   const configured = Number(state.economyConfig?.currency?.startingBalance);
-  return Number.isFinite(configured) ? Math.max(0, Math.floor(configured)) : 40;
+  return Number.isFinite(configured) ? Math.max(0, Math.floor(configured)) : 0;
 }
 
 function startingGemBalance() {
@@ -2338,7 +2338,7 @@ function loadState() {
     && !ISOLATED_QA_MODE
     && Number(data.openingCopperVersion || 0) < OPENING_COPPER_VERSION
     && Number(data.coinEconomyVersion) === COIN_ECONOMY_VERSION
-    && Number(data.coins) === LEGACY_OPENING_COPPER
+    && LEGACY_OPENING_COPPER.includes(Number(data.coins))
     && Number(data.coinsEarned || 0) === 0
     && Number(data.completedOrders || 0) === 0
     && !data.dailyPouchClaimDay
@@ -7659,9 +7659,6 @@ function getMilestoneChecks(conditions) {
   if (conditions.completedOrders) {
     checks.push(progressCheck("完成订单", state.completedOrders, conditions.completedOrders));
   }
-  if (conditions.coinsEarned) {
-    checks.push(progressCheck("累计获得铜币", state.coinsEarned, conditions.coinsEarned));
-  }
   if (conditions.codexUnlocked) {
     checks.push(progressCheck("解锁食鉴", state.unlockedCodex.size, conditions.codexUnlocked));
   }
@@ -7707,7 +7704,6 @@ function nextStepText(name, current, target) {
   const left = Math.max(0, target - current);
   if (left === 0) return `${name}已达成`;
   if (name === "完成订单") return `再完成${left}单订单`;
-  if (name === "累计获得铜币") return `再赚${left}枚铜币`;
   if (name === "解锁食鉴") return `再收录${left}道食物`;
   return `${name}还差${left}`;
 }
@@ -8749,7 +8745,6 @@ function debugPrepareLv1Upgrade() {
 function satisfyMilestoneConditions(milestone) {
   const conditions = milestone.conditions ?? {};
   if (conditions.completedOrders) state.completedOrders = Math.max(state.completedOrders, conditions.completedOrders);
-  if (conditions.coinsEarned) state.coinsEarned = Math.max(state.coinsEarned, conditions.coinsEarned);
   if (conditions.codexUnlocked) unlockCodexCount(conditions.codexUnlocked);
   if (conditions.completedOrderIds?.length) {
     state.completedOrderIds = [...new Set([...state.completedOrderIds, ...conditions.completedOrderIds])];

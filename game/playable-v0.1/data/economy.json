@@ -3,7 +3,7 @@
   "currency": {
     "id": "copper_coin",
     "name": "铜钱",
-    "startingBalance": 40
+    "startingBalance": 0
   },
   "premiumCurrency": {
     "id": "ruby",
