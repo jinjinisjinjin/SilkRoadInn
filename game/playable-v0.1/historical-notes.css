@@ -1,130 +1,231 @@
 .longscroll-note-marker {
-  position: fixed;
-  z-index: 86;
-  left: 50%;
-  bottom: max(118px, calc(env(safe-area-inset-bottom) + 118px));
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 6px 10px;
-  border: 1px solid #b58c61;
-  border-radius: 999px;
+  position: absolute;
+  z-index: 8;
+  left: var(--note-x);
+  top: var(--note-y);
+  display: grid;
+  width: 60px;
+  height: 60px;
+  min-height: 0;
+  place-items: end center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   color: #4a2e1f;
-  background: linear-gradient(145deg, #fff5df, #ecd8ac);
-  box-shadow: 0 4px 11px rgba(51, 30, 17, 0.22), inset 0 1px rgba(255, 250, 223, 0.85);
-  font: 700 16px/1.1 "Songti SC", "STSong", serif;
-  white-space: nowrap;
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
-  transform: translateX(-50%);
+  transform: translate(-50%, -100%);
+  isolation: isolate;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.longscroll-note-marker.is-unread {
+  background: radial-gradient(circle at 50% calc(100% - 12px), rgba(255, 224, 128, 0.28) 0 12%, rgba(255, 238, 167, 0.16) 13% 25%, transparent 44%);
+  animation: longscroll-clue-aura 2.1s ease-in-out infinite;
 }
 
 .longscroll-note-marker::before {
-  content: "✦";
-  color: #9a4b34;
-  font: 20px/1 serif;
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: calc(50% + 4px);
+  bottom: var(--clue-width, 18px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background:
+    linear-gradient(90deg, transparent 43%, rgba(255, 252, 218, 1) 44% 56%, transparent 57%),
+    linear-gradient(0deg, transparent 43%, rgba(255, 252, 218, 1) 44% 56%, transparent 57%);
+  box-shadow: 0 0 9px rgba(255, 218, 112, 0.96), 0 0 18px rgba(255, 189, 75, 0.42);
+  opacity: 0;
+  transform: rotate(45deg) scale(0.45);
+  pointer-events: none;
 }
 
 .longscroll-note-marker::after {
   content: "";
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 11px;
-  height: 11px;
-  border: 2px solid #fff1d2;
+  z-index: 2;
+  left: calc(50% - 12px);
+  bottom: calc(var(--clue-width, 18px) - 5px);
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: #c54132;
-  box-shadow: 0 2px 5px rgba(72, 21, 16, 0.36);
+  background:
+    linear-gradient(90deg, transparent 42%, rgba(255, 251, 218, 0.98) 43% 57%, transparent 58%),
+    linear-gradient(0deg, transparent 42%, rgba(255, 251, 218, 0.98) 43% 57%, transparent 58%);
+  box-shadow: 0 0 7px rgba(255, 218, 112, 0.86), 0 0 13px rgba(255, 189, 75, 0.36);
+  opacity: 0;
+  transform: rotate(45deg) scale(0.4);
+  pointer-events: none;
+}
+
+.longscroll-clue-object {
+  display: block;
+  width: var(--clue-width, 36px);
+  height: var(--clue-width, 36px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(45, 27, 15, 0.34));
+  pointer-events: none;
+  transform: rotate(var(--clue-rotate, 0deg));
+  transform-origin: 50% 100%;
+  transition: filter 180ms ease, transform 180ms ease;
+}
+
+.longscroll-clue-caption {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: calc(100% - 5px);
+  display: grid;
+  min-width: 130px;
+  padding: 6px 10px 7px;
+  border: 1px solid rgba(151, 101, 60, 0.78);
+  border-radius: 8px 8px 8px 3px;
+  color: #573422;
+  background: linear-gradient(145deg, rgba(255, 249, 226, 0.97), rgba(232, 209, 157, 0.97));
+  box-shadow: 0 5px 11px rgba(53, 31, 17, 0.25), inset 0 1px rgba(255, 255, 242, 0.88);
+  text-align: left;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-7px, -50%) scale(0.96);
+  transform-origin: 0 50%;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.longscroll-clue-caption::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 8px;
+  height: 8px;
+  border-left: 1px solid #bc8358;
+  border-bottom: 1px solid #bc8358;
+  background: #ead4a5;
+  transform: translate(5px, -50%) rotate(45deg);
+}
+
+.longscroll-clue-caption strong {
+  color: #934b34;
+  font: 900 14px/1.15 "Songti SC", "STSong", serif;
+}
+
+.longscroll-clue-caption small {
+  margin-top: 3px;
+  color: #684a33;
+  font: 700 11px/1.15 "Songti SC", "STSong", serif;
+}
+
+.longscroll-note-marker.is-unread::before {
+  animation: longscroll-clue-glint 1.85s ease-in-out infinite;
+}
+
+.longscroll-note-marker.is-unread::after {
+  animation: longscroll-clue-glint 1.85s 0.48s ease-in-out infinite;
+}
+
+.longscroll-note-marker.is-unread .longscroll-clue-object {
+  animation: longscroll-clue-shimmer 1.85s ease-in-out infinite;
 }
 
 .longscroll-note-marker.is-notice {
-  position: absolute;
-  z-index: 12;
-  left: var(--note-x);
-  top: var(--note-y);
-  bottom: auto;
-  min-height: 42px;
-  border-color: #bc8358;
-  background: linear-gradient(145deg, #fff9e9, #ecd7a6);
-  box-shadow: 0 9px 18px rgba(51, 30, 17, 0.28), inset 0 1px rgba(255, 250, 223, 0.9);
-  transform: translate(-50%, -115%);
-  animation: longscroll-note-notice-float 1.9s ease-in-out infinite;
+  z-index: 9;
 }
 
-.longscroll-note-marker.is-notice::before {
-  content: attr(data-glyph);
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid rgba(154, 75, 52, 0.36);
-  border-radius: 50%;
-  background: rgba(255, 248, 224, 0.75);
-  font: 800 18px/1 "Songti SC", "STSong", serif;
+.longscroll-note-marker:hover .longscroll-clue-caption,
+.longscroll-note-marker:focus-visible .longscroll-clue-caption {
+  opacity: 1;
+  transform: translate(0, -50%) scale(1);
 }
 
-.longscroll-note-marker.is-notice::after {
-  top: auto;
+.longscroll-note-marker.is-caption-left .longscroll-clue-caption {
+  right: calc(100% - 5px);
+  left: auto;
+  text-align: right;
+  transform: translate(7px, -50%) scale(0.96);
+  transform-origin: 100% 50%;
+}
+
+.longscroll-note-marker.is-caption-left .longscroll-clue-caption::after {
   right: auto;
-  bottom: -8px;
-  left: 50%;
-  width: 14px;
-  height: 14px;
-  border: 0;
+  left: 100%;
   border-right: 1px solid #bc8358;
   border-bottom: 1px solid #bc8358;
-  border-radius: 0 0 3px 0;
-  background: #ecd7a6;
-  box-shadow: none;
-  transform: translateX(-50%) rotate(45deg);
+  border-left: 0;
+  transform: translate(-5px, -50%) rotate(-45deg);
 }
 
-.longscroll-note-marker.is-compact {
-  position: absolute;
+.longscroll-note-marker.is-caption-left:hover .longscroll-clue-caption,
+.longscroll-note-marker.is-caption-left:focus-visible .longscroll-clue-caption {
+  transform: translate(0, -50%) scale(1);
+}
+
+.longscroll-note-marker.is-answered {
   z-index: 7;
-  left: var(--note-x);
-  top: var(--note-y);
-  bottom: auto;
-  width: 64px;
-  height: 64px;
-  padding: 0;
-  justify-content: center;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0;
-  transform: translate(-50%, -50%);
 }
 
-.longscroll-note-marker.is-compact::before {
-  content: attr(data-glyph);
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 2px solid #b58c61;
-  border-radius: 50%;
-  color: #814a37;
-  background: #f9eed8;
-  box-shadow: 0 4px 10px rgba(51, 30, 17, 0.22);
-  font: 800 21px/1 "Songti SC", "STSong", serif;
+.longscroll-map.is-clue-camera-armed {
+  --clue-camera-scale: 1.9;
+  transform-origin: var(--clue-camera-x, 50%) var(--clue-camera-y, 50%);
+  transition:
+    transform 2000ms cubic-bezier(0.18, 0.76, 0.16, 1),
+    filter 2000ms cubic-bezier(0.18, 0.76, 0.16, 1);
+  will-change: transform, filter;
 }
 
-.longscroll-note-marker.is-compact:hover::after,
-.longscroll-note-marker.is-compact:focus-visible::after {
-  content: attr(data-label);
-  position: absolute;
-  top: 55px;
-  left: 50%;
-  padding: 5px 8px;
-  border-radius: 5px;
-  color: #fff8e9;
-  background: #6d4733;
-  font: 700 15px/1.2 "Songti SC", "STSong", serif;
-  white-space: nowrap;
-  transform: translateX(-50%);
+.longscroll-map.is-clue-camera-active {
+  transform: scale(var(--clue-camera-scale));
+  filter: brightness(1.035) saturate(1.025);
+}
+
+.inn-scene.is-clue-camera-moving {
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.inn-scene.is-clue-camera-moving .longscroll-map {
+  pointer-events: none;
+}
+
+.longscroll-note-marker.is-zooming {
+  z-index: 18;
+  opacity: 1;
+  cursor: default;
+}
+
+.longscroll-note-marker.is-zooming .longscroll-clue-caption {
+  opacity: 0;
+}
+
+.longscroll-note-marker.is-zooming::before {
+  animation: longscroll-clue-zoom-glint 2000ms cubic-bezier(0.18, 0.78, 0.22, 1) both;
+}
+
+.longscroll-note-marker.is-zooming::after {
+  animation: longscroll-clue-zoom-glint 1820ms 180ms cubic-bezier(0.18, 0.78, 0.22, 1) both;
+}
+
+.longscroll-note-marker.is-zooming .longscroll-clue-object {
+  animation: none;
+  transition:
+    transform 2000ms cubic-bezier(0.18, 0.76, 0.16, 1),
+    filter 2000ms cubic-bezier(0.18, 0.76, 0.16, 1);
+  transform: rotate(var(--clue-rotate, 0deg)) scale(1.45);
+  filter: brightness(1.32) saturate(1.16) drop-shadow(0 6px 10px rgba(45, 27, 15, 0.54)) drop-shadow(0 0 11px rgba(255, 217, 112, 0.92));
+}
+
+.longscroll-note-marker.is-answered .longscroll-clue-object {
+  filter: sepia(0.14) saturate(0.82) drop-shadow(0 2px 2px rgba(45, 27, 15, 0.28));
+}
+
+.longscroll-note-marker:not(.is-zooming):hover .longscroll-clue-object,
+.longscroll-note-marker:not(.is-zooming):focus-visible .longscroll-clue-object {
+  filter: brightness(1.1) saturate(1.08) drop-shadow(0 3px 3px rgba(45, 27, 15, 0.4));
+  transform: translateY(-1px) rotate(var(--clue-rotate, 0deg)) scale(1.08);
 }
 
 .longscroll-note-marker:focus-visible,
@@ -135,14 +236,85 @@
   outline-offset: 3px;
 }
 
-@keyframes longscroll-note-notice-float {
-  0%,
-  100% {
-    transform: translate(-50%, -115%);
+@keyframes longscroll-clue-aura {
+  0%, 100% {
+    opacity: 0.72;
   }
 
-  50% {
-    transform: translate(-50%, -124%);
+  42% {
+    opacity: 1;
+  }
+}
+
+@keyframes longscroll-clue-glint {
+  0%, 18%, 78%, 100% {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.36);
+  }
+
+  34% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.28);
+  }
+
+  52% {
+    opacity: 0.46;
+    transform: rotate(45deg) scale(0.84);
+  }
+}
+
+@keyframes longscroll-clue-shimmer {
+  0%, 18%, 78%, 100% {
+    filter: brightness(1) saturate(1) drop-shadow(0 2px 2px rgba(45, 27, 15, 0.34));
+  }
+
+  34% {
+    filter: brightness(1.32) saturate(1.13) drop-shadow(0 0 7px rgba(255, 220, 132, 0.98));
+  }
+}
+
+@keyframes longscroll-clue-zoom-glint {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.42);
+  }
+
+  42% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.85);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(45deg) scale(2.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .longscroll-map.is-clue-camera-armed,
+  .longscroll-map.is-clue-camera-active {
+    transition: none;
+    transform: none;
+  }
+
+  .longscroll-note-marker.is-unread,
+  .longscroll-note-marker.is-unread::before,
+  .longscroll-note-marker.is-unread::after,
+  .longscroll-note-marker.is-unread .longscroll-clue-object,
+  .longscroll-note-marker.is-zooming::before,
+  .longscroll-note-marker.is-zooming::after,
+  .longscroll-note-marker.is-zooming .longscroll-clue-object {
+    animation: none;
+  }
+
+  .longscroll-note-marker.is-unread::before {
+    opacity: 0.72;
+  }
+}
+
+@media (max-width: 720px) {
+  .longscroll-map.is-clue-camera-armed {
+    --clue-camera-scale: 1.75;
   }
 }
 

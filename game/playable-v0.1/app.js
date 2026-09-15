@@ -359,6 +359,33 @@ const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state
 const FINAL_REPAIR_MILESTONE_ID = "lv4_lantern_city";
 const HISTORICAL_NOTES = window.SilkRoadHistoricalNotes ?? [];
 const historicalNotesById = new Map(HISTORICAL_NOTES.map((note) => [note.id, note]));
+const HISTORICAL_CLUE_DISPLAY_SCALE = 1.5;
+// Each clue is placed by hand on a believable supporting surface in the 1254px scroll.
+// x/y describe the object's bottom-center landing point, not the center of a floating UI badge.
+const HISTORICAL_CLUE_OBJECTS = Object.freeze({
+  first_seat: { label: "驼铃行囊", x: 625, y: 443, width: 22, rotate: -5 },
+  dried_cheese: { label: "干酪布包", x: 365, y: 430, width: 18, rotate: 0 },
+  library_cave: { label: "旧卷匣", x: 1188, y: 790, width: 17, rotate: -2 },
+  marrow_cake: { label: "蜜罐与面勺", x: 862, y: 505, width: 17, rotate: 0 },
+  oasis_routes: { label: "绿洲路牌", x: 410, y: 619, width: 18, rotate: -3 },
+  day_journey: { label: "日程木牌", x: 823, y: 674, width: 15, rotate: -7 },
+  pedlar_figurine: { label: "背货陶俑", x: 120, y: 590, width: 15, rotate: 0 },
+  sea_water: { label: "淡水陶罐", x: 310, y: 900, width: 16, rotate: 0 },
+  well: { label: "井渠木牌", x: 700, y: 850, width: 16, rotate: 0 },
+  sanskrit_sutra: { label: "注音经页", x: 726, y: 240, width: 17, rotate: -6 },
+  travelling_monk: { label: "虎尾画卷", x: 510, y: 130, width: 17, rotate: -4 },
+  beacon_signals: { label: "烽火信号筹", x: 354, y: 211, width: 15, rotate: -8 },
+  guard_shoe: { label: "补丁毛毡鞋", x: 1152, y: 284, width: 15, rotate: -7 },
+  clamp_dye: { label: "夹缬木板", x: 278, y: 442, width: 17, rotate: -3 },
+  beacon_workers: { label: "烽子值守物", x: 155, y: 234, width: 15, rotate: -5 },
+  cargo: { label: "绢匹马价签", x: 615, y: 930, width: 20, rotate: -5 },
+  wine_vessels: { label: "角状酒杯", x: 505, y: 1038, width: 15, rotate: -3 },
+  gift_list: { label: "象牙礼单", x: 126, y: 1129, width: 17, rotate: -6 },
+  imitation_coin: { label: "仿制金币", x: 513, y: 1207, width: 13, rotate: 4 },
+  sogdian_vessel: { label: "仿金属陶壶", x: 895, y: 1124, width: 15, rotate: 0 },
+  glass_bowl: { label: "绿钵残画", x: 1148, y: 852, width: 17, rotate: -5 },
+  lantern_night: { label: "灯下歌筵笺", x: 1226, y: 1063, width: 16.8, rotate: 0 },
+});
 const longscrollMaskSrc = (regionId) => `${LONGSCROLL_ROOT}/masks-alpha/${String(regionId).padStart(2, "0")}_mask_v0.1.png`;
 const LONGSCROLL_REGION_BOUNDS = {
   1: [405, 487, 317, 269], 2: [488, 327, 300, 207], 3: [738, 339, 320, 230], 4: [298, 274, 258, 232],
@@ -845,6 +872,7 @@ let pendingInnFocusPosition = null;
 let openRepairMilestoneId = null;
 let repairReturnCastMilestoneId = null;
 let pendingRepairAfterStoryMilestoneId = null;
+let activeLongscrollClueCamera = null;
 let innFinaleTimers = [];
 let innFinaleCloseMilestone = null;
 let repairRenewalTimer = null;
@@ -1784,14 +1812,7 @@ function previewLongscrollRepairRenewal(sceneNumber) {
   render();
   renderLongscrollCastQaNav();
   centerInnSceneOnPosition(milestone.longscrollRegionIds);
-  const revealHold = playRepairCompleteEffect(milestone);
-  if (LONGSCROLL_NOTE_FLOW_QA_MODE) {
-    setTimeout(() => {
-      if (state.currentPage === "inn") {
-        playChapterStory(`after:${milestone.id}`, () => finishRepairAfterStory(milestone), { force: true });
-      }
-    }, revealHold);
-  }
+  playRepairCompleteEffect(milestone);
 }
 
 function renderLongscrollCastQaNav() {
@@ -2873,6 +2894,7 @@ function bindEvents() {
     closeStoryArchive();
   });
   els.historicalNoteModal?.addEventListener("close", () => {
+    resetLongscrollClueCamera();
     const returnChapter = historicalNoteReturnChapter;
     historicalNoteReturnChapter = null;
     if (returnChapter !== null) openStoryArchive(returnChapter);
@@ -3108,14 +3130,14 @@ async function switchPage(page) {
       state.currentPage = page;
       if (page === "inn" && pendingRepairAfterStoryMilestoneId) {
         repairReturnCastMilestoneId = pendingRepairAfterStoryMilestoneId;
+        pendingRepairAfterStoryMilestoneId = null;
       }
       render();
       if (page === "board") tickGenerators();
       saveState();
     });
     if (page === "inn") {
-      if (pendingRepairAfterStoryMilestoneId) setTimeout(showPendingRepairAfterStory, 900);
-      else setTimeout(maybePromptRepairGuide, 0);
+      setTimeout(maybePromptRepairGuide, 0);
     }
   } finally {
     pageSwitchInProgress = false;
@@ -3144,6 +3166,7 @@ function handleStationButton() {
 }
 
 function destroyInnTemporaryNodes() {
+  resetLongscrollClueCamera();
   els.innScene.innerHTML = "";
   els.furnitureShop.innerHTML = "";
   document.querySelector(".inn-task-list")?.remove();
@@ -3214,6 +3237,7 @@ function renderInnTasks(level) {
 }
 
 function renderInnScene(level, repairValue) {
+  resetLongscrollClueCamera();
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
   const availableNext = next && next.chapter <= state.innLevel ? next : null;
@@ -3249,7 +3273,8 @@ function renderInnScene(level, repairValue) {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openHistoricalNote(button.dataset.historicalNoteId);
+      event.stopImmediatePropagation();
+      openLongscrollClueWithZoom(button);
     });
   });
   const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[availableNext?.id]
@@ -3259,7 +3284,9 @@ function renderInnScene(level, repairValue) {
 }
 
 function renderLongscrollHistoricalMarkers(milestones) {
-  const unlockedNotes = HISTORICAL_NOTES.filter((note) => note.repairId && historicalNoteUnlocked(note))
+  const unlockedNotes = HISTORICAL_NOTES.filter((note) =>
+    note.repairId
+    && historicalNoteUnlocked(note))
     .sort((left, right) => milestones.findIndex((entry) => entry.id === left.repairId)
       - milestones.findIndex((entry) => entry.id === right.repairId));
   const newestUnread = unlockedNotes.filter((note) => !historicalNoteAnswered(note.id)).at(-1);
@@ -3269,13 +3296,144 @@ function renderLongscrollHistoricalMarkers(milestones) {
       const bounds = LONGSCROLL_REGION_BOUNDS[milestone?.longscrollRegionIds?.[0]];
       if (!bounds) return "";
       const [left, top, width, height] = bounds;
-      const x = Math.round(Math.max(150, Math.min(980, left + width * 0.35)));
-      const y = Math.round(Math.max(95, Math.min(1080, top + height * 0.2)));
+      const clueObject = HISTORICAL_CLUE_OBJECTS[note.id];
+      const x = clueObject?.x ?? Math.round(left + width * 0.5);
+      const y = clueObject?.y ?? Math.round(top + height * 0.62);
+      const clueWidth = (clueObject?.width ?? 36) * HISTORICAL_CLUE_DISPLAY_SCALE;
+      const clueRotate = clueObject?.rotate ?? 0;
+      const isUnread = !historicalNoteAnswered(note.id);
       const isNotice = newestUnread?.id === note.id;
-      const label = isNotice ? "有新的一条见闻" : note.markerLabel;
-      return `<button class="longscroll-note-marker ${isNotice ? "is-notice" : "is-compact"}" type="button" data-historical-note-id="${note.id}" data-glyph="${note.glyph}" data-label="${note.markerLabel}" aria-label="阅读${isNotice ? "新见闻：" : ""}${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px">${label}</button>`;
+      const objectLabel = clueObject?.label ?? note.markerLabel;
+      const stateClass = isUnread ? "is-unread" : "is-answered";
+      const captionSideClass = x > 850 ? "is-caption-left" : "is-caption-right";
+      return `<button class="longscroll-note-marker ${stateClass} ${isNotice ? "is-notice" : "is-compact"} ${captionSideClass}" type="button" data-historical-note-id="${note.id}" aria-label="${isUnread ? "发现线索，猜一猜：" : "回看见闻："}${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px;--clue-width:${clueWidth}px;--clue-rotate:${clueRotate}deg">
+        <img class="longscroll-clue-object" src="./assets/history/clues/${note.id}.webp" alt="" />
+        <span class="longscroll-clue-caption"><strong>${isUnread ? "发现线索" : "见闻已收录"}</strong><small>${objectLabel}${isUnread ? " · 点此猜一猜" : " · 点此回看"}</small></span>
+      </button>`;
     })
     .join("");
+}
+
+function focusInnSceneOnPoint(x, y, { behavior = "smooth", verticalRatio = 0.48 } = {}) {
+  const map = els.innScene?.querySelector(".longscroll-map");
+  if (!map || !els.innScene) return false;
+  const mapRect = map.getBoundingClientRect();
+  const sceneRect = els.innScene.getBoundingClientRect();
+  const scaleX = mapRect.width / map.offsetWidth || 1;
+  const scaleY = mapRect.height / map.offsetHeight || 1;
+  const focusX = mapRect.left + x * scaleX;
+  const focusY = mapRect.top + y * scaleY;
+  els.innScene.scrollTo({
+    left: Math.max(0, els.innScene.scrollLeft + (focusX - (sceneRect.left + sceneRect.width / 2)) / scaleX),
+    top: Math.max(0, els.innScene.scrollTop + (focusY - (sceneRect.top + sceneRect.height * verticalRatio)) / scaleY),
+    behavior,
+  });
+  return true;
+}
+
+function resetLongscrollClueCamera() {
+  const activeCamera = activeLongscrollClueCamera;
+  if (!activeCamera) return;
+  activeCamera.cancelled = true;
+  activeCamera.map?.classList.remove("is-clue-camera-active", "is-clue-camera-armed");
+  activeCamera.map?.style.removeProperty("--clue-camera-x");
+  activeCamera.map?.style.removeProperty("--clue-camera-y");
+  activeCamera.scene?.classList.remove("is-clue-camera-moving");
+  if (activeCamera.button?.isConnected) {
+    activeCamera.button.classList.remove("is-zooming");
+    activeCamera.button.disabled = false;
+  }
+  activeLongscrollClueCamera = null;
+}
+
+function waitForLongscrollCameraTransition(map, timeout = 2200) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      map.removeEventListener("transitionend", handleTransitionEnd);
+      window.clearTimeout(fallbackTimer);
+      resolve();
+    };
+    const handleTransitionEnd = (event) => {
+      if (event.target === map && event.propertyName === "transform") finish();
+    };
+    const fallbackTimer = window.setTimeout(finish, timeout);
+    map.addEventListener("transitionend", handleTransitionEnd);
+  });
+}
+
+function waitForInnSceneScrollIdle(scene, timeout = 760) {
+  return new Promise((resolve) => {
+    let settled = false;
+    let idleTimer = null;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      scene.removeEventListener("scroll", handleScroll);
+      window.clearTimeout(idleTimer);
+      window.clearTimeout(fallbackTimer);
+      resolve();
+    };
+    const handleScroll = () => {
+      window.clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(finish, 100);
+    };
+    const fallbackTimer = window.setTimeout(finish, timeout);
+    scene.addEventListener("scroll", handleScroll, { passive: true });
+    idleTimer = window.setTimeout(finish, 140);
+  });
+}
+
+async function openLongscrollClueWithZoom(button) {
+  const noteId = button?.dataset?.historicalNoteId;
+  if (!noteId) return;
+  if (activeLongscrollClueCamera || els.historicalNoteModal?.open) return;
+  const map = button.closest(".longscroll-map");
+  const scene = els.innScene;
+  if (!map || !scene) return;
+  const x = Number.parseFloat(button.style.getPropertyValue("--note-x"));
+  const y = Number.parseFloat(button.style.getPropertyValue("--note-y"));
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    openHistoricalNote(noteId);
+    return;
+  }
+  if (reduceMotion) {
+    focusInnSceneOnPoint(x, y, { behavior: "auto", verticalRatio: 0.5 });
+    openHistoricalNote(noteId);
+    return;
+  }
+
+  const camera = { button, map, scene, cancelled: false };
+  activeLongscrollClueCamera = camera;
+  map.style.setProperty("--clue-camera-x", `${x}px`);
+  map.style.setProperty("--clue-camera-y", `${y}px`);
+  map.classList.add("is-clue-camera-armed");
+  scene.classList.add("is-clue-camera-moving");
+  button.classList.add("is-zooming");
+  button.disabled = true;
+
+  const scrollSettled = waitForInnSceneScrollIdle(scene);
+  const cameraSettled = waitForLongscrollCameraTransition(map);
+  focusInnSceneOnPoint(x, y, { behavior: "smooth", verticalRatio: 0.5 });
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  if (activeLongscrollClueCamera !== camera || camera.cancelled) return;
+  map.classList.add("is-clue-camera-active");
+  await Promise.all([scrollSettled, cameraSettled]);
+  if (
+    activeLongscrollClueCamera !== camera
+    || camera.cancelled
+    || state.currentPage !== "inn"
+    || !map.isConnected
+    || !button.isConnected
+  ) return;
+
+  scene.classList.remove("is-clue-camera-moving");
+  button.classList.remove("is-zooming");
+  button.disabled = false;
+  openHistoricalNote(noteId);
 }
 
 function renderLongscrollRepairedLayer(regionIds, allComplete) {
@@ -3405,6 +3563,7 @@ function scheduleCurrentInnFocus(nextMilestone, regionIds) {
 
 function scheduleInnViewportRefocus() {
   if (innViewportFocusFrame !== null) cancelAnimationFrame(innViewportFocusFrame);
+  if (activeLongscrollClueCamera) return;
   innViewportFocusFrame = requestAnimationFrame(() => {
     innViewportFocusFrame = null;
     if (state.currentPage !== "inn") return;
@@ -3428,21 +3587,8 @@ function scheduleInnViewportRefocus() {
 function centerInnSceneOnPosition(regionIds) {
   const bounds = LONGSCROLL_REGION_BOUNDS[regionIds?.[0]];
   if (!bounds) return false;
-  const map = els.innScene.querySelector(".longscroll-map");
-  if (!map) return false;
   const [left, top, width, height] = bounds;
-  const mapRect = map.getBoundingClientRect();
-  const sceneRect = els.innScene.getBoundingClientRect();
-  const scaleX = mapRect.width / map.offsetWidth || 1;
-  const scaleY = mapRect.height / map.offsetHeight || 1;
-  const focusX = mapRect.left + (left + width / 2) * scaleX;
-  const focusY = mapRect.top + (top + height / 2) * scaleY;
-  els.innScene.scrollTo({
-    left: Math.max(0, els.innScene.scrollLeft + (focusX - (sceneRect.left + sceneRect.width / 2)) / scaleX),
-    top: Math.max(0, els.innScene.scrollTop + (focusY - (sceneRect.top + sceneRect.height / 2)) / scaleY),
-    behavior: "auto",
-  });
-  return true;
+  return focusInnSceneOnPoint(left + width / 2, top + height / 2, { behavior: "auto", verticalRatio: 0.5 });
 }
 
 function focusPendingInnPosition() {
@@ -3692,10 +3838,15 @@ function beginRepairMilestone(milestone) {
     toast(`请先继续修缮：${activeMilestone?.sceneName ?? activeMilestone?.name ?? "当前区域"}。`);
     return;
   }
+  const continuingRepair = state.activeRepairId === milestone.id;
   state.activeRepairId = milestone.id;
   ensureRepairProgress(milestone);
   saveState();
-  playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone));
+  if (continuingRepair) {
+    launchRepairPlayer(milestone);
+    return;
+  }
+  playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone), { force: true });
 }
 
 function playLongscrollRepairHaloEntry(milestone, afterAnimation) {
@@ -4890,7 +5041,7 @@ function completeRepairFromPlayer(milestoneId) {
 async function closeRepairPlayer(milestone, { completed = false } = {}) {
   if (completed) {
     repairReturnCastMilestoneId = milestone.id;
-    pendingRepairAfterStoryMilestoneId = milestone.id;
+    pendingRepairAfterStoryMilestoneId = null;
   }
   openRepairMilestoneId = null;
   await setRepairOrientation(false);
@@ -4907,7 +5058,7 @@ async function closeRepairPlayer(milestone, { completed = false } = {}) {
       repairReturnCastMilestoneId = null;
       return;
     }
-    showPendingRepairAfterStory();
+    restoreRepairReturnView(milestone, { promptNextRepair: false, focusMilestone: milestone });
   }, revealHold);
 }
 
