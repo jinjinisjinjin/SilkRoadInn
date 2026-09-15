@@ -64,6 +64,8 @@ const UPGRADE_REVEAL_QA_MODE = QA_MODE === "upgrade-reveal-v1";
 const LONGSCROLL_CAST_QA_MODE = QA_MODE === "longscroll-cast-v1";
 const LONGSCROLL_RENEWAL_QA_MODE = LONGSCROLL_CAST_QA_MODE
   && new URLSearchParams(location.search).get("renewal") === "1";
+const LONGSCROLL_NOTE_FLOW_QA_MODE = LONGSCROLL_RENEWAL_QA_MODE
+  && new URLSearchParams(location.search).get("noteFlow") === "1";
 const LONGSCROLL_FINALE_QA_MODE = LONGSCROLL_CAST_QA_MODE
   && new URLSearchParams(location.search).get("finale") === "1";
 const LONGSCROLL_CAST_QA_UNLOCK = LONGSCROLL_CAST_QA_MODE
@@ -568,6 +570,7 @@ const state = {
   claimedChapterRewards: [],
   coinsEarned: 0,
   storyFlags: {},
+  answeredHistoricalNoteIds: [],
   renovationChoices: {},
   repairProgress: {},
   activeRepairId: null,
@@ -1690,6 +1693,7 @@ function initializeStoryArchiveQaScenario() {
   state.activeRepairId = null;
   state.completedOrders = 1;
   state.completedOrderIds = ["order_003_sogdian_humabing"];
+  state.answeredHistoricalNoteIds = [];
   state.innLevel = STORY_ARCHIVE_QA_CHAPTER;
   state.currentPage = "inn";
 }
@@ -1755,6 +1759,7 @@ function initializeLongscrollCastQaScene(sceneNumber) {
   state.repairProgress = {};
   state.activeChapterStory = null;
   state.repairPromptedFor = [];
+  state.answeredHistoricalNoteIds = [];
   state.completedOrders = Math.max(999, state.completedOrders);
   state.coins = 99990;
   state.innLevel = currentChapter;
@@ -1767,13 +1772,26 @@ function previewLongscrollRepairRenewal(sceneNumber) {
   const milestone = state.progressionConfig.milestones[sceneNumber - 1];
   if (!milestone) return;
   state.renovationChoices[milestone.id] = "completed";
+  const historicalNote = historicalNoteForRepair(milestone.id);
+  if (LONGSCROLL_NOTE_FLOW_QA_MODE && historicalNote) {
+    state.answeredHistoricalNoteIds = unlockedHistoricalNotes()
+      .map((note) => note.id)
+      .filter((noteId) => noteId !== historicalNote.id);
+  }
   repairReturnCastMilestoneId = milestone.id;
   lastInnFocusKey = null;
   lastLongscrollCharacterSceneKey = null;
   render();
   renderLongscrollCastQaNav();
   centerInnSceneOnPosition(milestone.longscrollRegionIds);
-  playRepairCompleteEffect(milestone);
+  const revealHold = playRepairCompleteEffect(milestone);
+  if (LONGSCROLL_NOTE_FLOW_QA_MODE) {
+    setTimeout(() => {
+      if (state.currentPage === "inn") {
+        playChapterStory(`after:${milestone.id}`, () => finishRepairAfterStory(milestone), { force: true });
+      }
+    }, revealHold);
+  }
 }
 
 function renderLongscrollCastQaNav() {
@@ -2332,6 +2350,7 @@ function defaultState() {
     claimedChapterRewards: [],
     coinsEarned: 0,
     storyFlags: {},
+    answeredHistoricalNoteIds: [],
     renovationChoices: {},
     repairProgress: {},
     activeRepairId: null,
@@ -2465,6 +2484,7 @@ function loadState() {
       : [],
     coinsEarned: normalizeSavedCopper(data.coinsEarned, 0),
     storyFlags: normalizeStoryFlags(data.storyFlags),
+    answeredHistoricalNoteIds: Array.isArray(data.answeredHistoricalNoteIds) ? data.answeredHistoricalNoteIds : [],
     renovationChoices: loadedRenovationChoices,
     repairProgress: loadedRepairProgress,
     activeRepairId: loadedActiveRepairId,
@@ -2561,6 +2581,7 @@ function saveState() {
       claimedChapterRewards: state.claimedChapterRewards,
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
+      answeredHistoricalNoteIds: state.answeredHistoricalNoteIds,
       renovationChoices: state.renovationChoices,
       repairProgress: state.repairProgress,
       activeRepairId: state.activeRepairId,
@@ -2855,6 +2876,9 @@ function bindEvents() {
     const returnChapter = historicalNoteReturnChapter;
     historicalNoteReturnChapter = null;
     if (returnChapter !== null) openStoryArchive(returnChapter);
+    else if (state.currentPage === "inn") {
+      render();
+    }
   });
   els.innFinaleContinue?.addEventListener("click", closeInnFinale);
   els.innFinaleShowLetter?.addEventListener("click", openInnFinaleLetter);
@@ -3231,21 +3255,21 @@ function renderInnScene(level, repairValue) {
 }
 
 function renderLongscrollHistoricalMarkers(milestones) {
-  // Keep every repaired place revisit-able; older notes use small seals instead of full labels.
   const unlockedNotes = HISTORICAL_NOTES.filter((note) => note.repairId && historicalNoteUnlocked(note))
     .sort((left, right) => milestones.findIndex((entry) => entry.id === left.repairId)
       - milestones.findIndex((entry) => entry.id === right.repairId));
-  const recentIds = new Set(unlockedNotes.slice(-3).map((note) => note.id));
+  const newestUnread = unlockedNotes.filter((note) => !historicalNoteAnswered(note.id)).at(-1);
   return unlockedNotes
     .map((note) => {
       const milestone = milestones.find((entry) => entry.id === note.repairId);
       const bounds = LONGSCROLL_REGION_BOUNDS[milestone?.longscrollRegionIds?.[0]];
       if (!bounds) return "";
       const [left, top, width, height] = bounds;
-      const x = Math.round(left + width * 0.62);
-      const y = Math.round(top + height * 0.32);
-      const compact = !recentIds.has(note.id);
-      return `<button class="longscroll-note-marker${compact ? " is-compact" : ""}" type="button" data-historical-note-id="${note.id}" data-glyph="${note.glyph}" data-label="${note.markerLabel}" aria-label="阅读${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px">${note.markerLabel}</button>`;
+      const x = Math.round(Math.max(150, Math.min(980, left + width * 0.35)));
+      const y = Math.round(Math.max(95, Math.min(1080, top + height * 0.2)));
+      const isNotice = newestUnread?.id === note.id;
+      const label = isNotice ? "有新的一条见闻" : note.markerLabel;
+      return `<button class="longscroll-note-marker ${isNotice ? "is-notice" : "is-compact"}" type="button" data-historical-note-id="${note.id}" data-glyph="${note.glyph}" data-label="${note.markerLabel}" aria-label="阅读${isNotice ? "新见闻：" : ""}${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px}">${label}</button>`;
     })
     .join("");
 }
@@ -4125,6 +4149,17 @@ function historicalNoteUnlocked(note) {
   return false;
 }
 
+function historicalNoteAnswered(noteId) {
+  return state.answeredHistoricalNoteIds.includes(noteId);
+}
+
+function unreadHistoricalNotes(chapter = null) {
+  return HISTORICAL_NOTES.filter((note) =>
+    historicalNoteUnlocked(note)
+    && !historicalNoteAnswered(note.id)
+    && (chapter === null || note.chapter === chapter));
+}
+
 function unlockedHistoricalNotes(chapter = null) {
   const repairOrder = new Map((state.progressionConfig?.milestones ?? []).map((milestone, index) => [milestone.id, index]));
   return HISTORICAL_NOTES.filter((note) => historicalNoteUnlocked(note) && (chapter === null || note.chapter === chapter))
@@ -4168,6 +4203,7 @@ function renderHistoricalNote(note) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "historical-note-choice";
+    button.dataset.letter = String.fromCharCode(65 + index);
     button.textContent = choice;
     button.setAttribute("aria-pressed", "false");
     button.addEventListener("click", () => answerHistoricalNote(note, index));
@@ -4175,6 +4211,13 @@ function renderHistoricalNote(note) {
   }));
   els.historicalNoteFeedback.hidden = true;
   els.historicalNoteSourcesPanel.hidden = true;
+  const sourceToggle = document.getElementById("historicalNoteSourceToggle");
+  sourceToggle.setAttribute("aria-expanded", "false");
+  sourceToggle.onclick = () => {
+    els.historicalNoteSourcesPanel.hidden = !els.historicalNoteSourcesPanel.hidden;
+    sourceToggle.setAttribute("aria-expanded", String(!els.historicalNoteSourcesPanel.hidden));
+    if (!els.historicalNoteSourcesPanel.hidden) els.historicalNoteSourcesPanel.scrollIntoView({ block: "nearest" });
+  };
   els.historicalNoteSources.replaceChildren(...note.sources.map((source) => {
     const link = document.createElement("a");
     link.href = source.url;
@@ -4200,6 +4243,12 @@ function answerHistoricalNote(note, chosenIndex) {
   els.historicalNoteTakeaway.textContent = note.takeaway;
   els.historicalNoteFeedback.hidden = false;
   els.historicalNoteSourcesPanel.hidden = false;
+  document.getElementById("historicalNoteSourceToggle").setAttribute("aria-expanded", "true");
+  if (!historicalNoteAnswered(note.id)) {
+    state.answeredHistoricalNoteIds.push(note.id);
+    saveState();
+    renderStoryArchiveEntry();
+  }
   els.historicalNoteFeedback.scrollIntoView({ block: "nearest" });
 }
 
@@ -4247,8 +4296,13 @@ function storyArchiveChapterForMoment(momentId) {
 function renderStoryArchiveEntry() {
   if (!els.storyArchiveBtn) return;
   const count = unlockedStoryArchiveMoments().length;
+  const unreadCount = unreadHistoricalNotes().length;
   els.storyArchiveBtn.disabled = false;
-  els.storyArchiveBtn.setAttribute("aria-label", count ? "回顾已解锁剧情" : "查看剧情回顾，尚未有纪事");
+  els.storyArchiveBtn.dataset.unreadNotes = String(unreadCount);
+  els.storyArchiveBtn.classList.toggle("has-unread-note", unreadCount > 0);
+  els.storyArchiveBtn.setAttribute("aria-label", unreadCount
+    ? `回顾已解锁剧情，${unreadCount}则新见闻未读`
+    : count ? "回顾已解锁剧情" : "查看剧情回顾，尚未有纪事");
   els.storyArchiveBtn.title = "剧情回顾";
 }
 
@@ -4424,7 +4478,9 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
       card.type = "button";
       card.className = "story-archive-card story-archive-note-card";
       card.dataset.historicalNoteId = note.id;
-      card.setAttribute("aria-label", `阅读${note.kind}：${note.title}`);
+      const unread = !historicalNoteAnswered(note.id);
+      card.classList.toggle("is-unread-note", unread);
+      card.setAttribute("aria-label", unread ? `阅读新见闻：${note.title}` : `阅读${note.kind}：${note.title}`);
       const glyph = document.createElement("span");
       glyph.className = "historical-note-glyph";
       glyph.textContent = note.glyph;
@@ -4870,10 +4926,13 @@ function shouldShowInnFinale() {
 
 function finishRepairAfterStory(milestone) {
   if (milestone.id === FINAL_REPAIR_MILESTONE_ID && shouldShowInnFinale() && showInnFinale({ milestone })) return;
-  restoreRepairReturnView(milestone);
-  if (historicalNoteForRepair(milestone.id)) {
-    toast("驿站札记已解锁。可在长卷或剧情回顾中阅读。");
+  const historicalNote = historicalNoteForRepair(milestone.id);
+  if (historicalNote && !historicalNoteAnswered(historicalNote.id)) {
+    restoreRepairReturnView(milestone, { promptNextRepair: false });
+    toast("有新的一条见闻。");
+    return;
   }
+  restoreRepairReturnView(milestone);
 }
 
 function showInnFinale({ milestone = null, force = false } = {}) {
@@ -4961,7 +5020,7 @@ function closeInnFinale() {
   if (milestone) restoreRepairReturnView(milestone);
 }
 
-function restoreRepairReturnView(milestone) {
+function restoreRepairReturnView(milestone, { promptNextRepair = true } = {}) {
   if (state.currentPage !== "inn") state.currentPage = "inn";
   repairReturnCastMilestoneId = null;
   lastInnFocusKey = null;
@@ -4977,7 +5036,7 @@ function restoreRepairReturnView(milestone) {
     }
   }));
   saveState();
-  setTimeout(maybePromptRepairGuide, 0);
+  if (promptNextRepair) setTimeout(maybePromptRepairGuide, 0);
 }
 
 function upgradeInn() {

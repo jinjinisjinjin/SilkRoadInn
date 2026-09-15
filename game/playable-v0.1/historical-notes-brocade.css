@@ -1,0 +1,66 @@
+/* Shared A / 织锦笺 skin for every historical quiz. */
+.historical-note-modal[data-chapter] {
+  --note-accent: #8a6842;
+  width: min(500px, calc(100vw - 20px), calc(94dvh * .69));
+  container-type: inline-size;
+  height: min(750px, 94dvh);
+  max-height: 94dvh;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px;
+  color: #392c1d;
+  background: #f5ead0 url('./assets/ui/history/brocade-frame-final.png') center / 100% 100% no-repeat;
+  box-shadow: 0 22px 65px #170d09aa;
+}
+.historical-note-modal::backdrop { background: #20140fb8; backdrop-filter: blur(2px); }
+.historical-note-sheet { height: 100%; max-height: none; background: transparent; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ab8b55 transparent; padding-bottom: 85px; }
+.historical-note-close { position: sticky; top: 4px; margin: 2px 3px -44px auto; width: 44px; height: 44px; min-height: 44px; border: 0; border-radius: 0; box-shadow: none; background: transparent; color: #48351e; font: 36px/1 'Songti SC',serif; }
+.historical-note-header { min-height: 0; padding: 80px 39px 27px; border: 0; background: transparent; }
+.historical-note-header::after { left: 38px; right: 38px; bottom: 0; border-color: #b3945e80; }
+.historical-note-header::before { content: '❖'; position: absolute; bottom: -9px; left: calc(50% - 14px); z-index: 1; width: 28px; color: #9d7946; background: #f5e9d0; text-align: center; font: 19px/1 serif; }
+.historical-note-kind { padding: 3px 11px; border: 1px solid #b3966880; border-radius: 2px; background: #e7d4aa80; color: #55412a; font: 14px/1.2 'Songti SC',serif; letter-spacing: .08em; }
+.historical-note-header .historical-note-glyph, .historical-note-lead, .historical-note-inquiry-label { display: none; }
+.historical-note-header h2 { margin: 12px 0 13px; color: #322619; font: 700 26px/1.4 'Songti SC','STSong',serif; }
+.historical-note-clue-label { color: #6c563b; font: 14px/1.6 'Songti SC',serif; letter-spacing: 0; text-align: center; }
+.historical-note-body { padding: 25px 38px 0; }
+.historical-note-inquiry { margin: 0; padding: 0; background: transparent; border: 0; border-radius: 0; }
+.historical-note-inquiry h3 { margin: 0 0 23px; font: 400 19px/1.65 'Songti SC','STSong',serif; color: #3f3020; }
+.historical-note-choices { gap: 13px; }
+.historical-note-choice { position: relative; display: flex; align-items: center; gap: 16px; min-height: 61px; padding: 10px 17px; border: 1px solid #bda578; border-radius: 3px; background: linear-gradient(110deg,#fff8e7b8,#f5e8caaa); box-shadow: inset 0 0 0 3px #fff9ea99, inset 0 0 0 4px #b9a07450, 0 3px 4px #80623a22; font: 400 20px/1.4 'Songti SC','STSong',serif; color: #3c2d1d; }
+.historical-note-choice::before { content: attr(data-letter); flex: 0 0 33px; width: 33px; height: 37px; display: grid; place-items: center; background: #a98956; color: #fff5d9; clip-path: polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%); font: 25px/1 Georgia,serif; }
+.historical-note-choice::after { content: '❧'; position: absolute; right: 8px; bottom: 0; font: 36px/1 serif; color: #b4b7a04a; pointer-events: none; }
+.historical-note-choice:hover:not(:disabled) { border-color: #916c39; background: #fff7e0; transform: translateY(-1px); }
+.historical-note-choice[data-result='correct'] { background: linear-gradient(110deg,#f3fbefe8,#d3ead0f2); border-color: #3f7c4a; box-shadow: inset 7px 0 0 #3f7c4a, inset 0 0 0 2px #fbfff2e6, inset 0 0 0 5px #5f9a5f78, 0 3px 8px #315a3336; color: #1f3b25; }
+.historical-note-choice[data-result='correct']::before { content: '✓'; background: #3f7c4a; color: #fff9df; }
+.historical-note-choice[data-result='correct']::after { color: #4e924b75; }
+.historical-note-choice[data-result='reconsider'] { background: linear-gradient(110deg,#fae5dce8,#ecc4b4f2); border-color: #b24734; box-shadow: inset 7px 0 0 #b24734, inset 0 0 0 2px #fff5ece6, inset 0 0 0 5px #c45a4778, 0 3px 8px #73332333; color: #5d261d; }
+.historical-note-choice[data-result='reconsider']::before { content: '↺'; background: #b24734; color: #fff3df; }
+.historical-note-choice[data-result='reconsider']::after { color: #bd513f75; }
+.historical-note-feedback { margin-top: 20px; background: #f8efdde8; border: 1px solid #b89a68; border-radius: 2px; color: #4c3d2a; }
+.historical-note-feedback[data-result='reconsider'] { background: #f8efdde8; color: #4c3d2a; border-color: #b89a68; }
+.historical-note-sources { margin: 20px 38px 0; padding: 14px 0; border-color: #b3945e80; }
+.historical-note-sources a { color: #695132; }
+@media(max-width:420px) {
+ .historical-note-header { padding: 65px 27px 21px; }
+ .historical-note-header h2 { font-size: 23px; }
+ .historical-note-clue-label { font-size: 13px; }
+ .historical-note-body { padding: 21px 27px 0; }
+ .historical-note-inquiry h3 { font-size: 17px; margin-bottom: 18px; }
+ .historical-note-choice { min-height: 54px; padding: 9px 12px; gap: 12px; font-size: 18px; }
+ .historical-note-choice::before { flex-basis: 28px; width: 28px; height: 32px; font-size: 22px; }
+ .historical-note-sources { margin-inline: 27px; }
+}
+@media(max-height:600px) { .historical-note-header { padding-top: 48px; } }
+.historical-note-source-toggle { display: block; width: 100%; padding: 12px 0; margin-top: 13px; border: 0; border-top: 1px solid #b3945e50; border-radius: 0; box-shadow: none; background: transparent; color: #584327; font: 14px 'Songti SC',serif; cursor: pointer; }
+@container (max-width: 410px) {
+ .historical-note-header { padding: 15cqw 8cqw 6cqw; }
+ .historical-note-header h2 { font-size: 5.2cqw; margin: 3cqw 0; }
+ .historical-note-kind { font-size: 3.2cqw; }
+ .historical-note-clue-label { font-size: 3cqw; }
+ .historical-note-body { padding: 6cqw 8cqw 0; }
+ .historical-note-inquiry h3 { font-size: 4.4cqw; margin-bottom: 5cqw; }
+ .historical-note-choice { min-height: 13cqw; font-size: 4.6cqw; padding: 2cqw 3cqw; gap: 3cqw; }
+ .historical-note-choice::before { flex-basis: 7cqw; width: 7cqw; height: 8cqw; font-size: 5.5cqw; }
+ .historical-note-choices { gap: 3cqw; }
+ .historical-note-source-toggle { margin-top: 3cqw; padding: 3cqw 0; font-size: 3.3cqw; }
+}

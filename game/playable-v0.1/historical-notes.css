@@ -1,8 +1,8 @@
 .longscroll-note-marker {
-  position: absolute;
-  z-index: 7;
-  left: var(--note-x);
-  top: var(--note-y);
+  position: fixed;
+  z-index: 86;
+  left: 50%;
+  bottom: max(118px, calc(env(safe-area-inset-bottom) + 118px));
   display: flex;
   align-items: center;
   gap: 8px;
@@ -16,7 +16,7 @@
   font: 700 16px/1.1 "Songti SC", "STSong", serif;
   white-space: nowrap;
   cursor: pointer;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
 }
 
 .longscroll-note-marker::before {
@@ -25,7 +25,25 @@
   font: 20px/1 serif;
 }
 
+.longscroll-note-marker::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #fff1d2;
+  border-radius: 50%;
+  background: #c54132;
+  box-shadow: 0 2px 5px rgba(72, 21, 16, 0.36);
+}
+
 .longscroll-note-marker.is-compact {
+  position: absolute;
+  z-index: 7;
+  left: var(--note-x);
+  top: var(--note-y);
+  bottom: auto;
   width: 64px;
   height: 64px;
   padding: 0;
@@ -35,6 +53,7 @@
   background: transparent;
   box-shadow: none;
   font-size: 0;
+  transform: translate(-50%, -50%);
 }
 
 .longscroll-note-marker.is-compact::before {
