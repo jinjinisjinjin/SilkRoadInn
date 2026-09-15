@@ -38,6 +38,48 @@
   box-shadow: 0 2px 5px rgba(72, 21, 16, 0.36);
 }
 
+.longscroll-note-marker.is-notice {
+  position: absolute;
+  z-index: 12;
+  left: var(--note-x);
+  top: var(--note-y);
+  bottom: auto;
+  min-height: 42px;
+  border-color: #bc8358;
+  background: linear-gradient(145deg, #fff9e9, #ecd7a6);
+  box-shadow: 0 9px 18px rgba(51, 30, 17, 0.28), inset 0 1px rgba(255, 250, 223, 0.9);
+  transform: translate(-50%, -115%);
+  animation: longscroll-note-notice-float 1.9s ease-in-out infinite;
+}
+
+.longscroll-note-marker.is-notice::before {
+  content: attr(data-glyph);
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(154, 75, 52, 0.36);
+  border-radius: 50%;
+  background: rgba(255, 248, 224, 0.75);
+  font: 800 18px/1 "Songti SC", "STSong", serif;
+}
+
+.longscroll-note-marker.is-notice::after {
+  top: auto;
+  right: auto;
+  bottom: -8px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-right: 1px solid #bc8358;
+  border-bottom: 1px solid #bc8358;
+  border-radius: 0 0 3px 0;
+  background: #ecd7a6;
+  box-shadow: none;
+  transform: translateX(-50%) rotate(45deg);
+}
+
 .longscroll-note-marker.is-compact {
   position: absolute;
   z-index: 7;
@@ -91,6 +133,17 @@
 .historical-note-modal summary:focus-visible {
   outline: 3px solid #f3c974;
   outline-offset: 3px;
+}
+
+@keyframes longscroll-note-notice-float {
+  0%,
+  100% {
+    transform: translate(-50%, -115%);
+  }
+
+  50% {
+    transform: translate(-50%, -124%);
+  }
 }
 
 .story-archive-notes-heading {

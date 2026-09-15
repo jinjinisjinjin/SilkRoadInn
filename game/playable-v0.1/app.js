@@ -3269,7 +3269,7 @@ function renderLongscrollHistoricalMarkers(milestones) {
       const y = Math.round(Math.max(95, Math.min(1080, top + height * 0.2)));
       const isNotice = newestUnread?.id === note.id;
       const label = isNotice ? "有新的一条见闻" : note.markerLabel;
-      return `<button class="longscroll-note-marker ${isNotice ? "is-notice" : "is-compact"}" type="button" data-historical-note-id="${note.id}" data-glyph="${note.glyph}" data-label="${note.markerLabel}" aria-label="阅读${isNotice ? "新见闻：" : ""}${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px}">${label}</button>`;
+      return `<button class="longscroll-note-marker ${isNotice ? "is-notice" : "is-compact"}" type="button" data-historical-note-id="${note.id}" data-glyph="${note.glyph}" data-label="${note.markerLabel}" aria-label="阅读${isNotice ? "新见闻：" : ""}${note.markerLabel}" style="--note-x:${x}px;--note-y:${y}px">${label}</button>`;
     })
     .join("");
 }
@@ -3691,7 +3691,7 @@ function beginRepairMilestone(milestone) {
   state.activeRepairId = milestone.id;
   ensureRepairProgress(milestone);
   saveState();
-  launchRepairPlayer(milestone);
+  playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone));
 }
 
 function playLongscrollRepairHaloEntry(milestone, afterAnimation) {
@@ -4898,7 +4898,6 @@ async function closeRepairPlayer(milestone, { completed = false } = {}) {
   saveState();
   if (!completed) return;
   const revealHold = playRepairCompleteEffect(milestone);
-  showRepairCompleteCue();
   setTimeout(() => {
     if (state.currentPage !== "inn") {
       repairReturnCastMilestoneId = null;
@@ -4928,8 +4927,7 @@ function finishRepairAfterStory(milestone) {
   if (milestone.id === FINAL_REPAIR_MILESTONE_ID && shouldShowInnFinale() && showInnFinale({ milestone })) return;
   const historicalNote = historicalNoteForRepair(milestone.id);
   if (historicalNote && !historicalNoteAnswered(historicalNote.id)) {
-    restoreRepairReturnView(milestone, { promptNextRepair: false });
-    toast("有新的一条见闻。");
+    restoreRepairReturnView(milestone, { promptNextRepair: false, focusMilestone: milestone });
     return;
   }
   restoreRepairReturnView(milestone);
@@ -5020,14 +5018,15 @@ function closeInnFinale() {
   if (milestone) restoreRepairReturnView(milestone);
 }
 
-function restoreRepairReturnView(milestone, { promptNextRepair = true } = {}) {
+function restoreRepairReturnView(milestone, { promptNextRepair = true, focusMilestone: preferredFocusMilestone = null } = {}) {
   if (state.currentPage !== "inn") state.currentPage = "inn";
   repairReturnCastMilestoneId = null;
   lastInnFocusKey = null;
   render();
   const next = nextRepairMilestone();
   const characterMilestone = longscrollCharacterMilestone(next);
-  const focusMilestone = LONGSCROLL_LOCATION_CAST[next?.id] ? next : characterMilestone ?? next ?? milestone;
+  const focusMilestone = preferredFocusMilestone
+    ?? (LONGSCROLL_LOCATION_CAST[next?.id] ? next : characterMilestone ?? next ?? milestone);
   pendingInnFocusPosition = null;
   requestAnimationFrame(() => requestAnimationFrame(() => {
     if (focusMilestone?.longscrollRegionIds?.length) {
