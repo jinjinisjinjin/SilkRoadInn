@@ -3246,7 +3246,11 @@ function renderInnScene(level, repairValue) {
     button.addEventListener("click", () => handleRepairNodeClick(button.dataset.currentRepair, button));
   });
   els.innScene.querySelectorAll("[data-historical-note-id]").forEach((button) => {
-    button.addEventListener("click", () => openHistoricalNote(button.dataset.historicalNoteId));
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openHistoricalNote(button.dataset.historicalNoteId);
+    });
   });
   const focusMilestone = repairReturnCastMilestoneId || !LONGSCROLL_LOCATION_CAST[availableNext?.id]
     ? characterMilestone
