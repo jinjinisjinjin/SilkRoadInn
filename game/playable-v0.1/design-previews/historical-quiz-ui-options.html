@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>路上见闻 · 问答界面方案</title>
+  <style>
+    :root{color-scheme:light;--ink:#38251d;--muted:#7a6251;--paper:#f8eed8;--line:#bea077;--red:#914b3d;--green:#526d62}
+    *{box-sizing:border-box}
+    body{margin:0;color:var(--ink);font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;background:radial-gradient(circle at 22% 8%,#4e3829 0,transparent 32%),linear-gradient(145deg,#1f1713,#3a291f 58%,#1b1411);background-attachment:fixed}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background:repeating-linear-gradient(90deg,transparent 0 46px,#d7bd8b 47px,transparent 48px),repeating-linear-gradient(0deg,transparent 0 46px,#d7bd8b 47px,transparent 48px)}
+    main{position:relative;width:min(1180px,calc(100% - 32px));margin:0 auto;padding:42px 0 70px}
+    .intro{color:#fff3d6;text-align:center;margin-bottom:30px}
+    .intro h1{margin:0 0 8px;font-size:30px;letter-spacing:.08em}.intro p{margin:0;color:#d9c5a5;font:15px/1.6 system-ui,sans-serif}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;align-items:start}
+    .option{position:relative}.option-label{display:flex;align-items:center;gap:10px;margin:0 0 10px;color:#f8e8c8;font-family:system-ui,sans-serif}.option-label b{display:grid;width:28px;height:28px;place-items:center;border-radius:50%;color:#432b20;background:#ead4a9}.option-label span{font-size:14px;color:#ceb895}
+    .sheet{overflow:hidden;border:1px solid #d6bf98;border-radius:18px;background:var(--paper);box-shadow:0 20px 42px #0d090780,inset 0 0 0 4px #fff8e8}
+    .top{position:relative;padding:24px 72px 22px 27px;border-bottom:1px solid var(--line);background:linear-gradient(145deg,#fffaf0,#f0dfbd)}
+    .close{position:absolute;right:18px;top:18px;width:42px;height:42px;border:1px solid #cfbd98;border-radius:50%;color:#fff9e8;background:#4c6967;font:31px/36px system-ui;box-shadow:0 2px 0 #7c6549;cursor:pointer}
+    .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--red);font:bold 12px/1.2 system-ui,sans-serif;letter-spacing:.08em}.eyebrow::before{content:"";width:20px;border-top:1px solid currentColor}
+    h2{margin:10px 0 5px;font-size:27px;line-height:1.22}.lead{margin:0;color:var(--muted);font:14px/1.5 system-ui,sans-serif}
+    .content{padding:20px 27px 26px}.meta{color:#97594b;font:12px/1.55 system-ui,sans-serif;letter-spacing:.03em}.question{margin:9px 0 17px;font-size:22px;line-height:1.45;font-weight:700}.choices{display:grid;gap:10px}.choice{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:11px 15px;border:1px solid #b9a68b;border-radius:11px;color:var(--ink);background:#fff9ec;text-align:left;font:17px/1.35 inherit;box-shadow:0 3px 0 #d5c39e;cursor:pointer}.choice i{width:12px;height:12px;border:1px solid #985b48;transform:rotate(45deg)}.choice.selected{border-color:#5e736b;background:#e8eee9;box-shadow:0 3px 0 #aebcb3}.choice.selected i{border-radius:50%;border:4px solid #5e736b;background:#fff;transform:none}
+    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:1px solid #d2bc98;color:#826d59;font:12px/1.4 system-ui,sans-serif}.foot strong{color:#614536}
+    /* A: museum label — the evidence itself replaces the decorative glyph. */
+    .a .top::after{content:"图像线索";position:absolute;right:20px;bottom:18px;color:#986152;font:bold 11px/1 system-ui,sans-serif;letter-spacing:.08em}.a .top{padding-right:104px}.a .close{bottom:auto;top:14px}.a h2{max-width:370px}
+    /* B: docket tabs. */
+    .b .sheet{border-radius:8px 18px 18px 8px}.b .top{border-left:7px solid #8c4c3d}.b .top::before{content:"第廿一札";position:absolute;left:20px;top:0;padding:6px 10px;color:#fff2d3;background:#8c4c3d;font:bold 11px/1 system-ui,sans-serif;transform:translateY(-1px)}.b .eyebrow{margin-top:12px}.b .meta{display:flex;gap:6px;flex-wrap:wrap}.b .meta span{padding:3px 8px;border:1px solid #d4b998;border-radius:999px;background:#f5e4c9}.b .question{border-left:2px solid #9c614d;padding-left:14px}
+    /* C: folded note. */
+    .c .sheet{border-radius:2px 16px 16px 2px}.c .top{background:#754235;color:#fff0d2;border-color:#ba8c63}.c .top h2{color:#fff8e6}.c .top .lead{color:#ecd4b5}.c .top .eyebrow{color:#e7c18b}.c .close{background:#f4e7ca;color:#664337;border-color:#d4b98c}.c .content{background:repeating-linear-gradient(0deg,#f8eed9 0 27px,#eadabb 28px)}.c .meta{display:grid;grid-template-columns:auto 1fr;gap:3px 10px}.c .meta::before{content:"据";grid-row:1/3;display:grid;width:34px;height:34px;place-items:center;border:1px solid #a86553;border-radius:4px;color:#984c42;font-size:18px;transform:rotate(-4deg)}.c .foot{background:#f2e1c2;margin:18px -27px -26px;padding:14px 27px}
+    /* D: compact scholar's card. */
+    .d .sheet{border-radius:18px 18px 6px 6px}.d .top{min-height:108px;padding-bottom:17px}.d .top::after{content:"馆藏绘画 · 器物交流";display:block;margin-top:12px;color:#986152;font:bold 11px/1 system-ui,sans-serif;letter-spacing:.05em}.d .content{padding-top:16px}.d .meta{display:none}.d .question{margin-top:0}.d .choice{min-height:48px;border-radius:5px;box-shadow:none}.d .foot::before{content:"答后显示解释与出处"}.d .foot span{display:none}
+    @media(max-width:820px){main{width:min(520px,calc(100% - 22px));padding-top:24px}.grid{grid-template-columns:1fr}.intro h1{font-size:24px}.option{margin-bottom:12px}}
+    @media(max-width:440px){main{width:100%;padding:18px 10px 48px}.top{padding-left:20px}.content{padding-left:20px;padding-right:20px}.question{font-size:20px}.choice{font-size:16px}.c .foot{margin-left:-20px;margin-right:-20px;padding-left:20px;padding-right:20px}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="intro"><h1>“路上见闻”问答界面 · 四种方案</h1><p>均移除无意义的单字“钵”章；四版差异集中在信息层级、史料感和阅读节奏。</p></header>
+  <section class="grid">
+    <article class="option a"><div class="option-label"><b>A</b><strong>馆签式</strong><span>最清爽，标题与材料说明连成一体</span></div><div class="sheet"><header class="top"><button class="close">×</button><div class="eyebrow">驿站札记 · 图像观察</div><h2>壁画里的一只钵，像什么材料？</h2><p class="lead">看器物的颜色、透明感和表面纹理，再作判断。</p></header><Quiz></Quiz></div></article>
+    <article class="option b"><div class="option-label"><b>B</b><strong>卷宗式</strong><span>分类最清楚，适合形成整套收藏</span></div><div class="sheet"><header class="top"><button class="close">×</button><div class="eyebrow">东院焕新后解锁</div><h2>画中的绿钵，从哪里借来了光泽？</h2><p class="lead">一处绘画细节，也可能保存器物远行的痕迹。</p></header><Quiz pills></Quiz></div></article>
+    <article class="option c"><div class="option-label"><b>C</b><strong>手记式</strong><span>叙事感最强，像旅途中展开的一页札记</span></div><div class="sheet"><header class="top"><button class="close">×</button><div class="eyebrow">路上见闻</div><h2>绿莹莹的钵，真是玉做的吗？</h2><p class="lead">敦煌画家用半透明的绿色，留下了一条远方器物的线索。</p></header><Quiz></Quiz></div></article>
+    <article class="option d"><div class="option-label"><b>D</b><strong>简牍式</strong><span>信息最克制，游戏操作感更轻</span></div><div class="sheet"><header class="top"><button class="close">×</button><div class="eyebrow">驿站札记</div><h2>画中的半透明绿钵，让人想到什么器物？</h2><p class="lead">敦煌藏经洞 · 约公元851—900年</p></header><Quiz></Quiz></div></article>
+  </section>
+</main>
+<template id="quiz"><div class="content"><div class="meta"><span>敦煌藏经洞 · 约公元851—900年</span><span>点选后揭晓，并说明推断边界</span></div><div class="question">猜猜看：画家借鉴了哪种远来器皿？</div><div class="choices"><button class="choice"><i></i>竹编篮</button><button class="choice selected"><i></i>玻璃器</button><button class="choice"><i></i>皮革水囊</button></div><footer class="foot"><strong>答后可查看证据说明</strong><span>来源：馆藏说明与图像解读</span></footer></div></template>
+<script>
+  document.querySelectorAll('Quiz').forEach(node=>node.replaceWith(document.querySelector('#quiz').content.cloneNode(true)));
+  document.querySelectorAll('.choice').forEach(button=>button.addEventListener('click',()=>{const group=button.closest('.choices');group.querySelectorAll('.choice').forEach(item=>item.classList.remove('selected'));button.classList.add('selected')}));
+</script>
+</body>
+</html>
