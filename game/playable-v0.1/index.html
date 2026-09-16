@@ -7,15 +7,15 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1" />
-    <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v1" />
+    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1" />
+    <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v2-no-cost-summary" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v13" />
-    <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v17" />
+    <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v21-reward-compact-v4" />
     <link rel="stylesheet" href="./historical-notes-brocade.css?v=brocade-a-3" />
     <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
-    <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1" />
+    <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1-cast-journey-v1" />
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
     <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
     <link rel="stylesheet" href="./generator-chain-qa.css?v=generator-chain-v1" />
@@ -310,6 +310,10 @@
           </section>
         </div>
         <footer id="historicalNoteSourcesPanel" class="historical-note-sources" hidden><strong>想继续探索？看看史料出处</strong><div id="historicalNoteSources"></div></footer>
+        <section id="historicalNoteReward" class="historical-note-reward" aria-label="见闻奖励" hidden>
+          <div id="historicalNoteRewardBags" class="historical-note-reward-bags"></div>
+          <div id="historicalNoteRewardItems" class="historical-note-reward-items" aria-live="polite"></div>
+        </section>
       </article>
     </dialog>
 
@@ -426,9 +430,8 @@
             </div>
           </div>
         </section>
-        <div id="repairEntryMeta" class="repair-entry-meta"><span id="repairRewardLabel">修缮总费用（逐处支付）</span><b><img src="./assets/ui/ui_coin_copper.png" alt="" /> <span id="repairCost">0</span></b></div>
         <div class="repair-choice-list" id="repairChoices"></div>
-        <button id="repairConfirmBtn" class="repair-cost-gate" disabled><img id="repairCostIcon" src="./assets/ui/ui_coin_copper.png" alt="" /><span id="repairCoinProgress">0/0</span></button>
+        <button id="repairConfirmBtn" class="repair-cost-gate" disabled><span id="repairCoinProgress">0/0</span></button>
       </div>
     </dialog>
     <dialog id="repairGuideModal" class="modal repair-modal">
@@ -562,9 +565,9 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=story-viewport-v1"></script>
+    <script src="./chapter-story.js?v=story-viewport-v2-upper-hall-sample"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
     <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
-    <script src="./app.js?v=generator-chain-v2-repair-sequence-v12-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v12-clue-objects-v18-clue-camera-v2"></script>
+    <script src="./app.js?v=generator-chain-v2-repair-sequence-v13-manual-entry-v1-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v15-reward-auto-reveal-v3-cast-journey-v1-persistent-scroll-v1-clue-objects-v18-clue-camera-v2"></script>
   </body>
 </html>

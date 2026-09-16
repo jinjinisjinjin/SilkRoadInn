@@ -140,7 +140,8 @@ const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
 const NPC_STANDEE_VERSION = "foreground-cutout-03";
 const REPAIR_PROTOCOL_VERSION = 1;
 const REPAIR_PART_COUNT = 9;
-const REPAIR_PART_COST_WEIGHTS = Object.freeze([71, 79, 89, 101, 109, 121, 131, 139, 160]);
+const REPAIR_PART_COST_STEPS = Object.freeze([0, 10, 20, 30, 40, 50, 60, 70, 80]);
+const HISTORICAL_REWARD_SCHEMA_VERSION = 2;
 const COIN_ECONOMY_VERSION = 2;
 const OPENING_STAMINA_VERSION = 2;
 const LEGACY_OPENING_STAMINA = 18;
@@ -295,6 +296,8 @@ const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
 });
 const INN_PACKAGE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
+  "./assets/longscroll/states-webp/22_done_state_v0.1.webp?v=feather-20260803",
+  ...Array.from({ length: 27 }, (_, index) => `./assets/longscroll/masks-alpha/${String(index + 1).padStart(2, "0")}_mask_v0.1.png`),
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
   "./assets/keeper_story_portrait_v2.png",
@@ -598,6 +601,7 @@ const state = {
   coinsEarned: 0,
   storyFlags: {},
   answeredHistoricalNoteIds: [],
+  historicalNoteRewards: {},
   renovationChoices: {},
   repairProgress: {},
   activeRepairId: null,
@@ -749,6 +753,9 @@ const els = {
   historicalNoteFeedbackLabel: document.querySelector("#historicalNoteFeedbackLabel"),
   historicalNoteFeedbackText: document.querySelector("#historicalNoteFeedbackText"),
   historicalNoteTakeaway: document.querySelector("#historicalNoteTakeaway"),
+  historicalNoteReward: document.querySelector("#historicalNoteReward"),
+  historicalNoteRewardBags: document.querySelector("#historicalNoteRewardBags"),
+  historicalNoteRewardItems: document.querySelector("#historicalNoteRewardItems"),
   historicalNoteSourcesPanel: document.querySelector("#historicalNoteSourcesPanel"),
   historicalNoteSources: document.querySelector("#historicalNoteSources"),
   historicalOrderTeaser: document.querySelector("#historicalOrderTeaser"),
@@ -770,12 +777,8 @@ const els = {
   repairCompletionRewards: document.querySelector(".repair-completion-rewards"),
   repairCompletionTitle: document.querySelector("#repairCompletionTitle"),
   repairGiftQuantity: document.querySelector("#repairGiftQuantity"),
-  repairEntryMeta: document.querySelector("#repairEntryMeta"),
-  repairRewardLabel: document.querySelector("#repairRewardLabel"),
-  repairCost: document.querySelector("#repairCost"),
   repairChoices: document.querySelector("#repairChoices"),
   repairConfirmBtn: document.querySelector("#repairConfirmBtn"),
-  repairCostIcon: document.querySelector("#repairCostIcon"),
   repairCoinProgress: document.querySelector("#repairCoinProgress"),
   repairGuideModal: document.querySelector("#repairGuideModal"),
   innFinale: document.querySelector("#innFinale"),
@@ -892,6 +895,8 @@ let storyArchivePageSwapTimer = null;
 let storyArchivePageDoneTimer = null;
 let storyArchivePageTurning = false;
 let historicalNoteReturnChapter = null;
+let historicalNoteTransitioning = false;
+let historicalRewardAnimationRun = 0;
 let activeOrderFoodContext = null;
 let activeCodexItemId = null;
 const activeGeneratorOutputIndices = new Set();
@@ -1722,6 +1727,7 @@ function initializeStoryArchiveQaScenario() {
   state.completedOrders = 1;
   state.completedOrderIds = ["order_003_sogdian_humabing"];
   state.answeredHistoricalNoteIds = [];
+  state.historicalNoteRewards = {};
   state.innLevel = STORY_ARCHIVE_QA_CHAPTER;
   state.currentPage = "inn";
 }
@@ -1788,6 +1794,7 @@ function initializeLongscrollCastQaScene(sceneNumber) {
   state.activeChapterStory = null;
   state.repairPromptedFor = [];
   state.answeredHistoricalNoteIds = [];
+  state.historicalNoteRewards = {};
   state.completedOrders = Math.max(999, state.completedOrders);
   state.coins = 99990;
   state.innLevel = currentChapter;
@@ -2268,18 +2275,18 @@ function syncUnlockedFoodLevels({ includeCompletedOrders = false } = {}) {
 }
 
 function repairPartCosts(milestone) {
-  const total = Math.max(0, Math.floor(Number(milestone?.repairCost) || 0));
   const configuredCosts = Array.isArray(milestone?.repairParts)
     ? milestone.repairParts.map((part) => Math.max(0, Math.floor(Number(part?.cost) || 0)))
     : [];
   if (configuredCosts.length === REPAIR_PART_COUNT
-    && configuredCosts.reduce((sum, cost) => sum + cost, 0) === total) {
+    && configuredCosts.every((cost) => cost >= 100 && cost <= 300)) {
     return configuredCosts;
   }
-  const weightTotal = REPAIR_PART_COST_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
-  const costs = REPAIR_PART_COST_WEIGHTS.map((weight) => Math.floor((total * weight) / weightTotal));
-  costs[costs.length - 1] += total - costs.reduce((sum, cost) => sum + cost, 0);
-  return costs;
+  const milestones = state.progressionConfig?.milestones ?? [];
+  const milestoneIndex = Math.max(0, milestones.findIndex((entry) => entry.id === milestone?.id));
+  const progress = milestones.length > 1 ? milestoneIndex / (milestones.length - 1) : 0;
+  const baseCost = 100 + Math.round((progress * 120) / 10) * 10;
+  return REPAIR_PART_COST_STEPS.map((step) => Math.min(300, baseCost + step));
 }
 
 function normalizeRepairPartIndex(value) {
@@ -2342,6 +2349,39 @@ function normalizeRepairProgress(value, { activeRepairId, renovationChoices, mig
   return normalized;
 }
 
+function normalizeHistoricalNoteRewards(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const validNoteIds = new Set(HISTORICAL_NOTES.map((note) => note.id));
+  return Object.fromEntries(Object.entries(value)
+    .filter(([noteId, reward]) => validNoteIds.has(noteId) && reward && typeof reward === "object")
+    .map(([noteId, reward]) => {
+      const legacyItemIds = Array.isArray(reward.itemIds)
+        ? reward.itemIds.filter((itemId) => typeof itemId === "string")
+        : [];
+      const bags = Array.isArray(reward.bags)
+        ? reward.bags
+          .filter(Array.isArray)
+          .map((bag) => bag.filter((itemId) => typeof itemId === "string").slice(0, 3))
+          .filter((bag) => bag.length > 0)
+          .slice(0, 2)
+        : (legacyItemIds.length ? [legacyItemIds.slice(0, 3)] : []);
+      return [noteId, {
+        schemaVersion: HISTORICAL_REWARD_SCHEMA_VERSION,
+        bags,
+        itemIds: bags.flat(),
+        openedBagIndexes: Array.isArray(reward.openedBagIndexes)
+          ? [...new Set(reward.openedBagIndexes
+            .map((index) => Math.floor(Number(index)))
+            .filter((index) => index >= 0 && index < bags.length))]
+          : [],
+        chosenIndex: Math.max(0, Math.floor(Number(reward.chosenIndex) || 0)),
+        correct: Boolean(reward.correct),
+        claimed: Boolean(reward.claimed),
+      }];
+    })
+    .filter(([, reward]) => reward.itemIds.length > 0));
+}
+
 function defaultState() {
   const board = Array(BOARD_SIZE).fill(null);
   board[starterGeneratorIndex()] = "gen_mill_01";
@@ -2372,6 +2412,7 @@ function defaultState() {
     coinsEarned: 0,
     storyFlags: {},
     answeredHistoricalNoteIds: [],
+    historicalNoteRewards: {},
     renovationChoices: {},
     repairProgress: {},
     activeRepairId: null,
@@ -2506,6 +2547,7 @@ function loadState() {
     coinsEarned: normalizeSavedCopper(data.coinsEarned, 0),
     storyFlags: normalizeStoryFlags(data.storyFlags),
     answeredHistoricalNoteIds: Array.isArray(data.answeredHistoricalNoteIds) ? data.answeredHistoricalNoteIds : [],
+    historicalNoteRewards: normalizeHistoricalNoteRewards(data.historicalNoteRewards),
     renovationChoices: loadedRenovationChoices,
     repairProgress: loadedRepairProgress,
     activeRepairId: loadedActiveRepairId,
@@ -2603,6 +2645,7 @@ function saveState() {
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
       answeredHistoricalNoteIds: state.answeredHistoricalNoteIds,
+      historicalNoteRewards: state.historicalNoteRewards,
       renovationChoices: state.renovationChoices,
       repairProgress: state.repairProgress,
       activeRepairId: state.activeRepairId,
@@ -2894,6 +2937,14 @@ function bindEvents() {
     closeStoryArchive();
   });
   els.historicalNoteModal?.addEventListener("close", () => {
+    historicalRewardAnimationRun += 1;
+    if (historicalNoteTransitioning) return;
+    const note = historicalNotesById.get(els.historicalNoteModal.dataset.noteId);
+    const reward = note ? state.historicalNoteRewards?.[note.id] : null;
+    if (note?.repairId && reward?.claimed && repairReturnCastMilestoneId === note.repairId) {
+      beginHistoricalCastTransitionAfterClose(note);
+      return;
+    }
     resetLongscrollClueCamera();
     const returnChapter = historicalNoteReturnChapter;
     historicalNoteReturnChapter = null;
@@ -3438,14 +3489,27 @@ async function openLongscrollClueWithZoom(button) {
 
 function renderLongscrollRepairedLayer(regionIds, allComplete) {
   if (!regionIds.size) return "";
-  if (allComplete) return `<img class="longscroll-region" src="${LONGSCROLL_REPAIRED_SOURCE}" alt="" />`;
-  // The old numbered stage images do not match the milestone order; reveal the final art through completed point masks.
-  const masks = [...regionIds].map((regionId) =>
-    `<image href="${longscrollMaskSrc(regionId)}" x="0" y="0" width="1254" height="1254" />`,
+  if (allComplete) return `<img class="longscroll-region longscroll-region-persistent" src="${LONGSCROLL_REPAIRED_SOURCE}" alt="" />`;
+  // Keep one persistent repaired layer and soften the hand-cut masks so restored walls,
+  // roofs and ground settle into the old scroll instead of reading as pasted tiles.
+  const sortedRegionIds = [...regionIds].sort((left, right) => left - right);
+  const maskKey = sortedRegionIds.join("-");
+  const maskId = `longscroll-completed-mask-${maskKey}`;
+  const featherId = `longscroll-completed-feather-${maskKey}`;
+  const masks = sortedRegionIds.map((regionId) =>
+    `<image href="${longscrollMaskSrc(regionId)}" x="0" y="0" width="1254" height="1254" preserveAspectRatio="none" />`,
   ).join("");
   return `<svg class="longscroll-region" viewBox="0 0 1254 1254" aria-hidden="true">
-    <defs><mask id="longscroll-completed-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha" x="0" y="0" width="1254" height="1254">${masks}</mask></defs>
-    <image href="${LONGSCROLL_REPAIRED_SOURCE}" x="0" y="0" width="1254" height="1254" mask="url(#longscroll-completed-mask)" />
+    <defs>
+      <filter id="${featherId}" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="6" />
+        <feComponentTransfer><feFuncA type="gamma" amplitude="1.08" exponent="0.92" offset="0" /></feComponentTransfer>
+      </filter>
+      <mask id="${maskId}" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha" x="0" y="0" width="1254" height="1254">
+        <g filter="url(#${featherId})">${masks}</g>
+      </mask>
+    </defs>
+    <image href="${LONGSCROLL_REPAIRED_SOURCE}" x="0" y="0" width="1254" height="1254" preserveAspectRatio="none" mask="url(#${maskId})" />
   </svg>`;
 }
 
@@ -3930,20 +3994,11 @@ function openRepairProgressModal(milestone, mode = "entry") {
   els.repairCompletionTitle.textContent = `Lv${chapter} 通关礼盒`;
   renderRepairCompletionRewards(chapterReward);
   els.repairModal.classList.toggle("chapter-complete", chapterComplete);
-  const completedParts = normalizeRepairCompletedParts(state.repairProgress?.[milestone.id]?.completedParts);
-  const remainingCost = repairPartCosts(milestone).reduce(
-    (sum, cost, index) => sum + (completedParts.includes(index) ? 0 : cost), 0,
-  );
-  els.repairRewardLabel.textContent = completedParts.length ? "剩余修缮费用（逐处支付）" : "修缮总费用（逐处支付）";
-  els.repairCost.textContent = remainingCost;
   els.repairChoices.innerHTML = "";
   els.repairChoices.hidden = true;
-  els.repairEntryMeta.hidden = mode === "completion";
-  els.repairCostIcon.hidden = mode === "completion" || mode === "unlock";
   els.repairConfirmBtn.classList.toggle("progress-continue", mode === "completion" || mode === "unlock");
   const qaPosition = renderRepairQaNavigation(milestone);
   if (REPAIR_PROGRESS_QA_MODE) {
-    els.repairCostIcon.hidden = true;
     els.repairConfirmBtn.classList.add("progress-continue");
     els.repairCoinProgress.textContent = qaPosition.hasNext ? "查看下一处" : "已经看完全部";
     els.repairConfirmBtn.disabled = !qaPosition.hasNext;
@@ -4331,6 +4386,167 @@ function historicalNoteForRepair(repairId) {
   return HISTORICAL_NOTES.find((note) => note.repairId === repairId) ?? null;
 }
 
+function weightedHistoricalReward(options) {
+  const roll = Math.random() * options.reduce((sum, option) => sum + option.weight, 0);
+  let cursor = 0;
+  return options.find((option) => {
+    cursor += option.weight;
+    return roll < cursor;
+  })?.value;
+}
+
+function historicalRewardFoodId(level) {
+  const candidates = state.items.filter((item) =>
+    Number(item.level) === level
+    && typeof item.line === "string"
+    && foodLineMaxLevels.has(item.line)
+    && byId.has(item.id));
+  return candidates[Math.floor(Math.random() * candidates.length)]?.id ?? "hubing_03_humabing";
+}
+
+function createHistoricalNoteReward(note, chosenIndex) {
+  const correct = chosenIndex === note.answerIndex;
+  const addOccasionalThirdItem = (items, options, chance = 0.3) => {
+    if (Math.random() < chance) items.push(weightedHistoricalReward(options));
+    return items;
+  };
+  const coinOptions = [
+    { weight: 75, value: bonusCoinId(1) },
+    { weight: 22, value: bonusCoinId(2) },
+    { weight: 3, value: bonusCoinId(3) },
+  ];
+  const foodOptions = [
+    { weight: 65, value: historicalRewardFoodId(3) },
+    { weight: 18, value: historicalRewardFoodId(4) },
+    { weight: 12, value: bonusCoinId(1) },
+    { weight: 4, value: `${BONUS_RUBY_PREFIX}01` },
+    { weight: 1, value: `${BONUS_RUBY_PREFIX}02` },
+  ];
+  const consolationOptions = [
+    { weight: 68, value: bonusCoinId(1) },
+    { weight: 25, value: historicalRewardFoodId(3) },
+    { weight: 5, value: bonusCoinId(2) },
+    { weight: 2, value: `${BONUS_RUBY_PREFIX}01` },
+  ];
+  const bags = correct
+    ? [
+      addOccasionalThirdItem([bonusCoinId(1), weightedHistoricalReward(coinOptions)], coinOptions),
+      addOccasionalThirdItem([historicalRewardFoodId(3), weightedHistoricalReward(foodOptions)], foodOptions),
+    ]
+    : [addOccasionalThirdItem([bonusCoinId(1), weightedHistoricalReward(consolationOptions)], consolationOptions, 0.2)];
+  const validBags = bags.map((bag) => bag.filter((itemId) => byId.has(itemId)));
+  return {
+    schemaVersion: HISTORICAL_REWARD_SCHEMA_VERSION,
+    bags: validBags,
+    itemIds: validBags.flat(),
+    openedBagIndexes: [],
+    chosenIndex,
+    correct,
+    claimed: false,
+  };
+}
+
+function showHistoricalAnswerFeedback(note, chosenIndex) {
+  const correct = chosenIndex === note.answerIndex;
+  [...els.historicalNoteChoices.children].forEach((button, index) => {
+    button.setAttribute("aria-pressed", String(index === chosenIndex));
+    button.dataset.result = index === note.answerIndex ? "correct" : (index === chosenIndex ? "reconsider" : "");
+    button.disabled = true;
+  });
+  els.historicalNoteFeedback.dataset.result = correct ? "correct" : "reconsider";
+  els.historicalNoteFeedbackLabel.textContent = correct ? "✓ 猜对啦！" : "↺ 谜底揭晓";
+  els.historicalNoteFeedbackText.textContent = note.feedback;
+  els.historicalNoteTakeaway.textContent = note.takeaway;
+  els.historicalNoteFeedback.hidden = false;
+  els.historicalNoteSourcesPanel.hidden = false;
+  document.getElementById("historicalNoteSourceToggle").setAttribute("aria-expanded", "true");
+}
+
+function renderHistoricalNoteReward(note) {
+  const reward = state.historicalNoteRewards?.[note.id];
+  const animationRun = ++historicalRewardAnimationRun;
+  els.historicalNoteReward.hidden = !reward || reward.claimed;
+  els.historicalNoteReward.classList.remove("is-completing");
+  els.historicalNoteRewardBags.replaceChildren();
+  els.historicalNoteRewardItems.replaceChildren();
+  if (!reward || reward.claimed) return;
+
+  const unopenedBags = [];
+  reward.bags.forEach((bag, bagIndex) => {
+    const opened = reward.openedBagIndexes.includes(bagIndex);
+    if (!opened) {
+      const bagNode = document.createElement("span");
+      bagNode.className = "historical-note-falling-bag";
+      bagNode.style.setProperty("--bag-index", String(bagIndex));
+      bagNode.setAttribute("aria-hidden", "true");
+      bagNode.innerHTML = '<img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />';
+      els.historicalNoteRewardBags.append(bagNode);
+      unopenedBags.push({ bagIndex, bagNode });
+    } else {
+      appendHistoricalRewardRow(bag, bagIndex, false);
+    }
+  });
+  unopenedBags.forEach(({ bagIndex, bagNode }, sequenceIndex) => {
+    setTimeout(() => {
+      if (historicalRewardAnimationRun !== animationRun || !bagNode.isConnected) return;
+      revealHistoricalNoteRewardBag(note, bagIndex, bagNode, animationRun);
+    }, 1120 + sequenceIndex * 620);
+  });
+}
+
+function appendHistoricalRewardRow(itemIds, bagIndex, animate = true) {
+  const row = document.createElement("div");
+  row.className = `historical-note-reward-row${animate ? " is-revealing" : ""}`;
+  row.style.setProperty("--reward-row", String(bagIndex));
+  itemIds.forEach((itemId, itemIndex) => {
+    const item = byId.get(itemId);
+    if (!item) return;
+    const card = document.createElement("span");
+    card.className = "historical-note-reward-item";
+    card.style.setProperty("--reward-index", String(itemIndex));
+    card.setAttribute("role", "img");
+    card.setAttribute("aria-label", `${item.name}，${item.level ?? 1}级`);
+    card.innerHTML = `<img src="${itemAssetSrc(item)}" alt="" />`;
+    row.append(card);
+  });
+  els.historicalNoteRewardItems.append(row);
+}
+
+function revealHistoricalNoteRewardBag(note, bagIndex, bagNode, animationRun) {
+  const reward = state.historicalNoteRewards?.[note.id];
+  if (historicalRewardAnimationRun !== animationRun
+    || !reward
+    || reward.claimed
+    || reward.openedBagIndexes.includes(bagIndex)) return;
+  reward.openedBagIndexes.push(bagIndex);
+  reward.openedBagIndexes.sort((left, right) => left - right);
+  bagNode.classList.add("is-opening");
+  setTimeout(() => {
+    if (historicalRewardAnimationRun !== animationRun) return;
+    bagNode.remove();
+    appendHistoricalRewardRow(reward.bags[bagIndex], bagIndex);
+  }, 360);
+  const allOpened = reward.openedBagIndexes.length === reward.bags.length;
+  if (!allOpened) {
+    saveState();
+    return;
+  }
+  reward.itemIds.forEach((itemId) => grantRewardItem(itemId));
+  reward.claimed = true;
+  saveState();
+  renderBagButton();
+  setTimeout(() => {
+    if (historicalRewardAnimationRun === animationRun) {
+      els.historicalNoteReward.classList.add("is-completing");
+    }
+  }, 1850);
+  setTimeout(() => {
+    if (historicalRewardAnimationRun !== animationRun) return;
+    els.historicalNoteReward.hidden = true;
+    els.historicalNoteReward.classList.remove("is-completing");
+  }, 2320);
+}
+
 function renderHistoricalNote(note) {
   els.historicalNoteModal.dataset.noteId = note.id;
   els.historicalNoteModal.dataset.chapter = String(note.chapter);
@@ -4365,6 +4581,7 @@ function renderHistoricalNote(note) {
     return button;
   }));
   els.historicalNoteFeedback.hidden = true;
+  els.historicalNoteReward.hidden = true;
   els.historicalNoteSourcesPanel.hidden = true;
   const sourceToggle = document.getElementById("historicalNoteSourceToggle");
   sourceToggle.setAttribute("aria-expanded", "false");
@@ -4381,29 +4598,24 @@ function renderHistoricalNote(note) {
     link.textContent = source.label;
     return link;
   }));
+  const storedReward = state.historicalNoteRewards?.[note.id];
+  if (storedReward) {
+    showHistoricalAnswerFeedback(note, storedReward.chosenIndex);
+    renderHistoricalNoteReward(note);
+  }
   els.historicalNoteSheet.scrollTop = 0;
 }
 
 function answerHistoricalNote(note, chosenIndex) {
   if (!els.historicalNoteFeedback.hidden) return;
-  const correct = chosenIndex === note.answerIndex;
-  [...els.historicalNoteChoices.children].forEach((button, index) => {
-    button.setAttribute("aria-pressed", String(index === chosenIndex));
-    button.dataset.result = index === note.answerIndex ? "correct" : (index === chosenIndex ? "reconsider" : "");
-    button.disabled = true;
-  });
-  els.historicalNoteFeedback.dataset.result = correct ? "correct" : "reconsider";
-  els.historicalNoteFeedbackLabel.textContent = correct ? "✓ 猜对啦！" : "↺ 谜底揭晓";
-  els.historicalNoteFeedbackText.textContent = note.feedback;
-  els.historicalNoteTakeaway.textContent = note.takeaway;
-  els.historicalNoteFeedback.hidden = false;
-  els.historicalNoteSourcesPanel.hidden = false;
-  document.getElementById("historicalNoteSourceToggle").setAttribute("aria-expanded", "true");
+  showHistoricalAnswerFeedback(note, chosenIndex);
   if (!historicalNoteAnswered(note.id)) {
     state.answeredHistoricalNoteIds.push(note.id);
+    state.historicalNoteRewards[note.id] = createHistoricalNoteReward(note, chosenIndex);
     saveState();
     renderStoryArchiveEntry();
   }
+  renderHistoricalNoteReward(note);
   els.historicalNoteFeedback.scrollIntoView({ block: "nearest" });
 }
 
@@ -4421,6 +4633,86 @@ function openHistoricalNote(noteId, { returnToArchive = false } = {}) {
   };
   if (returnToArchive && els.storyArchiveModal?.open) closeStoryArchive(show);
   else show();
+}
+
+function waitForHistoricalTransition(duration) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+function milestoneCenter(milestone) {
+  const bounds = LONGSCROLL_REGION_BOUNDS[milestone?.longscrollRegionIds?.[0]];
+  if (!bounds) return null;
+  const [left, top, width, height] = bounds;
+  return { x: left + width / 2, y: top + height / 2 };
+}
+
+async function playHistoricalCastTransition(completedMilestone) {
+  const next = nextRepairMilestone();
+  const availableNext = next && next.chapter <= state.innLevel ? next : null;
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const currentMap = els.innScene?.querySelector(".longscroll-map");
+  const currentLayer = currentMap?.querySelector(".longscroll-character-layer");
+  const currentCenter = milestoneCenter(completedMilestone);
+  const nextCenter = milestoneCenter(availableNext);
+  const travelDirection = currentCenter && nextCenter && nextCenter.x < currentCenter.x ? -1 : 1;
+
+  if (!reducedMotion && currentLayer) {
+    currentLayer.style.setProperty("--cast-travel-x", `${travelDirection * 44}px`);
+    currentLayer.style.setProperty("--cast-travel-x-small", `${travelDirection * 11}px`);
+    currentLayer.style.setProperty("--cast-travel-x-medium", `${travelDirection * 21}px`);
+    currentLayer.querySelector(".longscroll-character-npc")?.classList.add("is-departing");
+    currentLayer.querySelector(".longscroll-character-keeper")?.classList.add("is-setting-out");
+    await waitForHistoricalTransition(680);
+  }
+
+  repairReturnCastMilestoneId = null;
+  pendingInnFocusPosition = null;
+  lastInnFocusKey = availableNext?.id ?? completedMilestone.id;
+  if (LONGSCROLL_CAST_QA_MODE && availableNext) {
+    const nextScene = state.progressionConfig.milestones.findIndex((entry) => entry.id === availableNext.id) + 1;
+    const url = new URL(location.href);
+    url.searchParams.set("scene", String(nextScene));
+    history.replaceState(null, "", url);
+  }
+  render();
+  if (LONGSCROLL_CAST_QA_MODE) renderLongscrollCastQaNav();
+
+  if (!availableNext || !nextCenter || reducedMotion) {
+    if (availableNext?.longscrollRegionIds?.length) centerInnSceneOnPosition(availableNext.longscrollRegionIds);
+    saveState();
+    if (availableNext) setTimeout(maybePromptRepairGuide, 0);
+    return;
+  }
+
+  const map = els.innScene.querySelector(".longscroll-map");
+  const arrivingLayer = map?.querySelector(".longscroll-character-layer");
+  map?.classList.add("is-cast-transitioning");
+  arrivingLayer?.classList.add("is-awaiting-arrival");
+  focusInnSceneOnPoint(nextCenter.x, nextCenter.y, { behavior: "smooth", verticalRatio: 0.5 });
+  await waitForHistoricalTransition(1450);
+  arrivingLayer?.classList.remove("is-awaiting-arrival");
+  arrivingLayer?.classList.add("is-arriving-after-journey");
+  await waitForHistoricalTransition(620);
+  map?.classList.remove("is-cast-transitioning");
+  arrivingLayer?.classList.remove("is-arriving-after-journey");
+  saveState();
+  setTimeout(maybePromptRepairGuide, 0);
+}
+
+async function beginHistoricalCastTransitionAfterClose(note) {
+  const completedMilestone = getMilestoneViews().find((entry) => entry.id === note.repairId);
+  if (!completedMilestone || repairReturnCastMilestoneId !== note.repairId) return;
+  historicalNoteTransitioning = true;
+  const map = els.innScene?.querySelector(".longscroll-map");
+  map?.classList.add("is-cast-transition-reset");
+  resetLongscrollClueCamera();
+  historicalNoteReturnChapter = null;
+  try {
+    await waitForHistoricalTransition(520);
+    await playHistoricalCastTransition(completedMilestone);
+  } finally {
+    historicalNoteTransitioning = false;
+  }
 }
 
 function storyArchiveMomentIsUnlocked(moment, unlockedIds = unlockedChapterStoryIds()) {
@@ -5056,6 +5348,12 @@ async function closeRepairPlayer(milestone, { completed = false } = {}) {
   setTimeout(() => {
     if (state.currentPage !== "inn") {
       repairReturnCastMilestoneId = null;
+      return;
+    }
+    const historicalNote = historicalNoteForRepair(milestone.id);
+    if (historicalNote && repairReturnCastMilestoneId === milestone.id) {
+      render();
+      centerInnSceneOnPosition(milestone.longscrollRegionIds);
       return;
     }
     restoreRepairReturnView(milestone, { promptNextRepair: false, focusMilestone: milestone });
@@ -7571,17 +7869,13 @@ function completeOrderFromDetail() {
 }
 
 function maybePromptRepairGuide() {
+  // Availability is shown by the highlighted exterior point. Reaching an unlock
+  // condition must never open a blocking progress dialog on the player's behalf.
   if (state.currentPage !== "inn") return;
   const gate = canEnterRepairPage();
   const milestone = gate.milestone;
   if (!gate.ok || !milestone) return;
   if (state.activeRepairId === milestone.id || !els.repairPlayerLayer?.hidden) return;
-  if (state.repairPromptedFor.includes(milestone.id)) return;
-  if (state.activeChapterStory || document.querySelector("dialog[open]")) return;
-  state.repairPromptedFor.push(milestone.id);
-  saveState();
-  repairAnchorRect = null;
-  openRepairProgressModal(milestone, "unlock");
 }
 
 function recipeHint(item) {
@@ -7978,7 +8272,10 @@ function playRepairCompleteEffect(milestone) {
     `<image href="${longscrollMaskSrc(regionId)}" x="0" y="0" width="1254" height="1254" preserveAspectRatio="none" />`,
   ).join("");
   const svg = (name, contents) => `<svg class="longscroll-renewal-${name}" viewBox="${left} ${top} ${width} ${height}" aria-hidden="true">
-    <defs><mask id="longscroll-renewal-${name}-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha" x="${left}" y="${top}" width="${width}" height="${height}">${maskImages}</mask></defs>
+    <defs>
+      <filter id="longscroll-renewal-${name}-feather" x="-4%" y="-4%" width="108%" height="108%"><feGaussianBlur stdDeviation="6" /></filter>
+      <mask id="longscroll-renewal-${name}-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="alpha" x="${left}" y="${top}" width="${width}" height="${height}"><g filter="url(#longscroll-renewal-${name}-feather)">${maskImages}</g></mask>
+    </defs>
     ${contents}
   </svg>`;
   const effect = document.createElement("div");
@@ -8064,7 +8361,7 @@ function selectedRenovationChoice(milestone) {
 }
 
 function repairCost(milestone) {
-  return milestone.repairCost ?? 0;
+  return repairPartCosts(milestone).reduce((sum, cost) => sum + cost, 0);
 }
 
 function isConditionMet(conditions) {

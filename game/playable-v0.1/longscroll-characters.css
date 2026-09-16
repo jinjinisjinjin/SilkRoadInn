@@ -39,6 +39,30 @@
   animation-delay: var(--character-delay, 0ms);
 }
 
+.longscroll-character-npc.is-departing {
+  animation: longscroll-character-depart 640ms cubic-bezier(0.42, 0, 0.72, 0.34) both;
+}
+
+.longscroll-character-keeper.is-setting-out {
+  animation: longscroll-keeper-set-out 640ms ease-in-out both;
+}
+
+.longscroll-character-layer.is-awaiting-arrival .longscroll-character {
+  opacity: 0;
+  animation: none;
+}
+
+.longscroll-character-layer.is-arriving-after-journey .longscroll-character {
+  animation: longscroll-character-arrive-after-journey 560ms cubic-bezier(0.18, 0.82, 0.24, 1.08) both;
+  animation-delay: var(--character-delay, 0ms);
+}
+
+.longscroll-map.is-cast-transitioning .longscroll-repair-halo,
+.longscroll-map.is-cast-transitioning .longscroll-current-region {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .longscroll-character-body {
   position: relative;
   z-index: 1;
@@ -62,6 +86,23 @@
 @keyframes longscroll-character-enter {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes longscroll-character-depart {
+  0% { opacity: 1; transform: translate(-50%, -100%) translateX(0); }
+  30% { opacity: 1; transform: translate(-50%, -100%) translateX(var(--cast-travel-x-small)) translateY(-3px); }
+  100% { opacity: 0; transform: translate(-50%, -100%) translateX(var(--cast-travel-x)) translateY(2px); }
+}
+
+@keyframes longscroll-keeper-set-out {
+  0%, 100% { transform: translate(-50%, -100%) translateY(0); }
+  35% { transform: translate(-50%, -100%) translateX(var(--cast-travel-x-small)) translateY(-3px); }
+  70% { transform: translate(-50%, -100%) translateX(var(--cast-travel-x-medium)) translateY(0); }
+}
+
+@keyframes longscroll-character-arrive-after-journey {
+  from { opacity: 0; transform: translate(-50%, -100%) translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -100%) translateY(0) scale(1); }
 }
 
 .longscroll-cast-qa-nav {
@@ -128,7 +169,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .longscroll-character.is-entering {
+  .longscroll-character.is-entering,
+  .longscroll-character-npc.is-departing,
+  .longscroll-character-keeper.is-setting-out,
+  .longscroll-character-layer.is-arriving-after-journey .longscroll-character {
     animation: none;
   }
 }

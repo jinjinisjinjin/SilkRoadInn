@@ -3455,6 +3455,10 @@ button:disabled {
   animation: longscrollRegionReveal 420ms ease-out both;
 }
 
+.longscroll-region-persistent {
+  animation: none;
+}
+
 .longscroll-lock,
 .longscroll-current-glow {
   z-index: 3;

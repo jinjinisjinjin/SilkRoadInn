@@ -182,6 +182,12 @@
   filter: brightness(1.035) saturate(1.025);
 }
 
+.longscroll-map.is-cast-transition-reset {
+  transition:
+    transform 500ms cubic-bezier(0.22, 0.72, 0.22, 1),
+    filter 500ms cubic-bezier(0.22, 0.72, 0.22, 1);
+}
+
 .inn-scene.is-clue-camera-moving {
   touch-action: none;
   overscroll-behavior: contain;
@@ -647,6 +653,169 @@
   padding-top: 7px;
   border-top: 1px solid rgba(56, 99, 77, 0.25);
   font-weight: 800;
+}
+
+.historical-note-reward {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(120px, 0.8fr) minmax(150px, 1fr);
+  padding: max(42px, env(safe-area-inset-top)) 20px max(34px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 43%, rgba(255, 229, 145, 0.28), transparent 42%),
+    linear-gradient(rgba(39, 24, 17, 0.22), rgba(39, 24, 17, 0.48));
+  backdrop-filter: blur(1px);
+  transition: opacity 420ms ease, visibility 420ms ease;
+}
+
+.historical-note-reward[hidden] {
+  display: none !important;
+}
+
+.historical-note-reward.is-completing {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.historical-note-reward-bags {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: clamp(22px, 9vw, 54px);
+}
+
+.historical-note-falling-bag {
+  width: clamp(78px, 21vw, 118px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  transform-origin: 50% 20%;
+  animation:
+    historical-reward-drop 760ms calc(var(--bag-index) * 180ms) cubic-bezier(0.2, 0.8, 0.28, 1.08) both,
+    historical-reward-hang 2.1s calc(760ms + var(--bag-index) * 180ms) ease-in-out infinite;
+}
+
+.historical-note-falling-bag img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 12px 10px rgba(26, 15, 10, 0.38)) drop-shadow(0 0 14px rgba(255, 216, 124, 0.45));
+}
+
+.historical-note-falling-bag.is-opening {
+  animation: historical-reward-bag-open 360ms cubic-bezier(0.2, 0.78, 0.3, 1.12) both;
+}
+
+.historical-note-reward-items {
+  display: grid;
+  align-content: start;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.historical-note-reward-row {
+  display: flex;
+  justify-content: center;
+  gap: clamp(8px, 3vw, 15px);
+}
+
+.historical-note-reward-row.is-revealing {
+  animation: historical-reward-row-rise 460ms cubic-bezier(0.18, 0.82, 0.24, 1.08) both;
+}
+
+.historical-note-reward-item {
+  position: relative;
+  display: grid;
+  width: clamp(70px, 18.5vw, 98px);
+  height: clamp(75px, 19.5vw, 104px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  place-items: center;
+  isolation: isolate;
+}
+
+.historical-note-reward-item::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 245, 181, 0.82) 0, rgba(255, 207, 94, 0.3) 42%, transparent 72%);
+  filter: blur(7px);
+  animation: historical-reward-glow 980ms calc(var(--reward-index) * 150ms) ease-out both;
+}
+
+.historical-note-reward-item::after {
+  content: "✦";
+  position: absolute;
+  z-index: 2;
+  top: 2%;
+  right: 4%;
+  color: #fff4b6;
+  font-size: clamp(18px, 5vw, 27px);
+  text-shadow: 0 0 7px #fff3a9, 0 0 15px #f6b74e;
+  animation: historical-reward-spark 820ms calc(260ms + var(--reward-index) * 150ms) ease-out both;
+}
+
+.historical-note-reward-row.is-revealing .historical-note-reward-item {
+  animation: historical-reward-reveal 760ms calc(var(--reward-index) * 150ms) cubic-bezier(0.16, 0.8, 0.2, 1.18) both;
+}
+
+.historical-note-reward-item img {
+  position: relative;
+  z-index: 1;
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 7px rgba(45, 24, 12, 0.42)) drop-shadow(0 0 10px rgba(255, 224, 127, 0.62));
+}
+
+@keyframes historical-reward-reveal {
+  0% { opacity: 0; transform: translateY(24px) scale(0.3) rotate(-12deg); }
+  58% { opacity: 1; transform: translateY(-8px) scale(1.32) rotate(4deg); }
+  78% { transform: translateY(2px) scale(0.92) rotate(-1deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+
+@keyframes historical-reward-glow {
+  0% { opacity: 0; transform: scale(0.2); }
+  55% { opacity: 1; transform: scale(1.4); }
+  100% { opacity: 0.55; transform: scale(1); }
+}
+
+@keyframes historical-reward-spark {
+  0% { opacity: 0; transform: scale(0.15) rotate(-50deg); }
+  50% { opacity: 1; transform: scale(1.45) rotate(8deg); }
+  100% { opacity: 0; transform: scale(0.55) rotate(28deg); }
+}
+
+@keyframes historical-reward-drop {
+  0% { opacity: 0; transform: translateY(-70vh) rotate(-12deg) scale(0.82); }
+  72% { opacity: 1; transform: translateY(12px) rotate(4deg) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+
+@keyframes historical-reward-hang {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-7px) rotate(1.5deg); }
+}
+
+@keyframes historical-reward-bag-open {
+  0% { opacity: 1; transform: scale(1); filter: brightness(1); }
+  55% { opacity: 1; transform: scale(1.18) rotate(-6deg); filter: brightness(1.45); }
+  100% { opacity: 0; transform: scale(0.45) rotate(10deg); filter: brightness(1.7); }
+}
+
+@keyframes historical-reward-row-rise {
+  from { opacity: 0; transform: translateY(-22px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .historical-note-sources {

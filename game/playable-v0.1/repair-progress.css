@@ -564,42 +564,6 @@
     inset 0 0 0 3px rgba(255, 248, 223, 0.28);
 }
 
-.repair-entry-meta {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 0 10px;
-  padding: 7px 9px;
-  border: 1px solid rgba(128, 84, 40, 0.24);
-  border-radius: 4px;
-  color: #6a4930;
-  background:
-    linear-gradient(90deg, rgba(158, 103, 46, 0.08), transparent 22% 78%, rgba(158, 103, 46, 0.08)),
-    rgba(255, 246, 218, 0.34);
-  box-shadow: inset 0 0 0 2px rgba(255, 249, 230, 0.42);
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.repair-entry-meta[hidden] {
-  display: none;
-}
-
-.repair-entry-meta b {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 3px;
-  align-items: center;
-  color: #5b3520;
-  font-size: 14px;
-}
-
-.repair-entry-meta img {
-  width: 18px;
-  height: 18px;
-}
-
 .repair-progress-detail .repair-cost-gate {
   position: relative;
   overflow: hidden;
