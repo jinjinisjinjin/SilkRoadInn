@@ -105,7 +105,6 @@
       eyebrow: "修缮完成 · 3 / 3",
       title: "食单初成",
       scene: "codex repaired-three",
-      reward: rewards.chapter1,
       steps: [
         ["求法僧人", "西行求法僧", portraits.monk, "left", "贫僧见过同一种胡饼，在不同路上有不同做法。把它们记在一起，后来的人便知道，路从未断过。"],
       ],
@@ -215,7 +214,6 @@
       eyebrow: "修缮完成 · 6 / 6",
       title: "井水映灯",
       scene: "chapter-two well completed",
-      reward: rewards.chapter2,
       steps: [
         ["周甲", "沙州驿卒", portraits.guard, "left", "一根井绳，方才换了六双手。你看，这地方已经不只是你一个人在撑。"],
         ["粟特胡商", "西市行商", portraits.merchant, "right", "角落那位老胡商看了半日，临走只问我：“下回来，这井水还会这样清吗？”"],
@@ -332,7 +330,6 @@
       eyebrow: "修缮完成 · 6 / 6",
       title: "望楼见远",
       scene: "chapter-three watchtower completed",
-      reward: rewards.chapter3,
       steps: [
         ["康十一", "远路商队首领", portraits.caravan, "left", "灯亮了。西边尘烟里有人摇铃，他们看见流沙驿了。下回我带整队货来，照这盏灯回。"],
         ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "阿爷写“驿路不止，食火不灭”。从前我只懂守住炉火，如今才知道，也要替远路的人守住方向。"],
@@ -459,7 +456,6 @@
       eyebrow: "修缮完成 · 7 / 7",
       title: "灯火连城",
       scene: "chapter-four lantern-city completed",
-      reward: rewards.chapter4,
       steps: [
         ["粟特胡商", "西市行商", portraits.merchant, "left", "从西市望过来，一盏、十盏、百盏。如今谁再问流沙驿在何处，我只消指向这片灯。"],
         ["孟氏", "敦煌女店客", portraits.woman, "right", "我还记得你推门那日，门缝里只有一点火。如今整条街的人，都在替它添柴。"],

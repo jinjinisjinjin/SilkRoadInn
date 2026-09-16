@@ -490,6 +490,7 @@ button:disabled {
 }
 
 .side-entry {
+  --side-entry-notice-size: 19px;
   position: relative;
   display: grid;
   place-items: center;
@@ -517,8 +518,9 @@ button:disabled {
   right: -5px;
   display: grid;
   place-items: center;
-  min-width: 19px;
-  height: 19px;
+  width: var(--side-entry-notice-size);
+  min-width: var(--side-entry-notice-size);
+  height: var(--side-entry-notice-size);
   padding: 0 4px;
   border: 2px solid rgba(255, 235, 190, 0.92);
   border-radius: 999px;
@@ -544,12 +546,26 @@ button:disabled {
   position: absolute;
   right: 3px;
   top: 3px;
-  width: 13px;
-  height: 13px;
+  width: var(--side-entry-notice-size);
+  height: var(--side-entry-notice-size);
   border: 2px solid rgba(255, 236, 190, 0.88);
   border-radius: 50%;
   background: #9c4636;
   opacity: 0;
+}
+
+.codex-side-entry.tutorial-action::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -5px;
+  right: -5px;
+  width: var(--side-entry-notice-size);
+  height: var(--side-entry-notice-size);
+  border: 2px solid rgba(255, 235, 190, 0.92);
+  border-radius: 50%;
+  background: #9c4636;
+  box-shadow: 0 2px 5px rgba(65, 31, 20, 0.26);
 }
 
 .repair-side-entry.repair-ready i {
@@ -9146,6 +9162,7 @@ body {
   }
 
   #app[data-page="board"] .side-entry {
+    --side-entry-notice-size: 16px;
     width: 31px;
     height: 31px;
     padding: 4px;
@@ -9155,11 +9172,19 @@ body {
   #app[data-page="board"] .reward-bag-badge {
     top: -4px;
     right: -4px;
-    min-width: 16px;
-    height: 16px;
+    width: var(--side-entry-notice-size);
+    min-width: var(--side-entry-notice-size);
+    height: var(--side-entry-notice-size);
     padding-inline: 3px;
     border-width: 1px;
     font-size: 8px;
+  }
+
+  #app[data-page="board"] .repair-side-entry i,
+  #app[data-page="board"] .codex-side-entry.tutorial-action::after {
+    top: -4px;
+    right: -4px;
+    border-width: 1px;
   }
 
   #app[data-page="board"] .orders {

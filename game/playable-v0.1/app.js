@@ -3741,7 +3741,7 @@ function renderMainlineDock() {
     </div>
     ${renderOrderProgressGiftRail()}
     <div class="mainline-current">
-      <b>${awaitingExpansion ? "先扩建流沙驿" : next ? next.sceneName ?? next.name : "Lv1 修缮完成"}</b>
+      <b>${awaitingExpansion ? "先扩建流沙驿" : next ? next.sceneName ?? next.name : "本章修缮完成"}</b>
       <span>${awaitingExpansion ? `完成 Lv${state.innLevel} 扩建后开放下一章修缮。` : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
       ${next && !next.done && !awaitingExpansion ? `<small>${next.id === "tutorial_complete" ? "先完成一单，再用赚到的铜钱修缮。" : "修完上一处，就能继续修缮这里。"}</small>` : ""}
     </div>
@@ -4709,6 +4709,21 @@ async function beginHistoricalCastTransitionAfterClose(note) {
   historicalNoteReturnChapter = null;
   try {
     await waitForHistoricalTransition(520);
+    if (isChapterRepairComplete(completedMilestone.chapter)) {
+      repairReturnCastMilestoneId = null;
+      playChapterStory(`after:${completedMilestone.id}`, () => {
+        if (
+          completedMilestone.id === FINAL_REPAIR_MILESTONE_ID
+          && shouldShowInnFinale()
+          && showInnFinale({ milestone: completedMilestone })
+        ) return;
+        restoreRepairReturnView(completedMilestone, {
+          promptNextRepair: false,
+          focusMilestone: completedMilestone,
+        });
+      });
+      return;
+    }
     await playHistoricalCastTransition(completedMilestone);
   } finally {
     historicalNoteTransitioning = false;
