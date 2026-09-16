@@ -4,6 +4,19 @@
   "assetRoot": "generators/equipment",
   "levelsPerCategory": 6,
   "temporaryOutputRule": "Manual generator upgrades increase charge capacity, shorten rest time, and add a conservative chance to output the matching level-2 food. Dairy uses a level-based hourly batch: 6/10/14/18/22/26 total outputs, delivered into its eight neighboring cells whenever space is available; higher levels keep fresh milk as the main output while increasing the chance of level-2 dairy food.",
+  "warehouse": {
+    "acceptedLevel": 1,
+    "defaultTarget": 8,
+    "defaultOutputLevel": 4,
+    "targetsByCategory": {
+      "mill": 8,
+      "dairy": 8,
+      "meat": 8,
+      "spice": 8,
+      "fruit": 8,
+      "drink": 8
+    }
+  },
   "economy": {
     "staminaCost": 1,
     "chargeMax": 30,

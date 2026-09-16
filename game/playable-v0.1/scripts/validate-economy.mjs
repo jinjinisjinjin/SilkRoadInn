@@ -58,6 +58,14 @@ assert(staminaPurchase?.firstPrice === 10, "The first daily stamina purchase mus
 assert(staminaPurchase?.priceMultiplier === 2, "Daily stamina purchase prices must double");
 
 assert(!("upgradeRequirements" in generators), "Generator merging must not retain hard upgrade gates");
+assert(generators.warehouse?.acceptedLevel === 1, "Generator warehouse must accept only Lv1 generators");
+assert(generators.warehouse?.defaultOutputLevel === 4, "Generator warehouse must output Lv4 generators");
+generators.categories.forEach((category) => {
+  assert(
+    generators.warehouse?.targetsByCategory?.[category.id] === 8,
+    `${category.id} generator warehouse target must be 8`,
+  );
+});
 assert(
   generators.duplicateRewardMilestones.length === generators.levelsPerCategory - 1,
   "Every generator upgrade needs one duplicate reward milestone",

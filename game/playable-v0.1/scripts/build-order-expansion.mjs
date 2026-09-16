@@ -33,9 +33,9 @@ const npcRoster = [
 ];
 const targets = { quick: 16, regular: 65, goal: 26 };
 const bandRules = {
-  quick: { min: 30, max: 80, ideal: 60, minLevel: 1, maxLevel: 3 },
-  regular: { min: 140, max: 250, ideal: 220, minLevel: 2, maxLevel: 5 },
-  goal: { min: 550, max: 1000, ideal: 820, minLevel: 4, maxLevel: 8 },
+  quick: { min: 10, max: 27, ideal: 20, minLevel: 1, maxLevel: 3 },
+  regular: { min: 47, max: 83, ideal: 73, minLevel: 2, maxLevel: 5 },
+  goal: { min: 183, max: 333, ideal: 273, minLevel: 4, maxLevel: 8 },
 };
 
 const itemValue = (item) => economy.orderPricing.levelValuesByLine[item.line][item.level - 1];

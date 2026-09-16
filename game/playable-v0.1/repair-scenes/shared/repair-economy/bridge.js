@@ -8,6 +8,7 @@
     RESULT: "silkroad:repair-part-result",
     APPLIED: "silkroad:repair-part-applied",
     EXIT: "silkroad:repair-exit",
+    SOUND: "silkroad:button-sound",
   });
   const COIN_ICON = "../../assets/ui/ui_coin_copper.png";
   const REPAIR_PART_COST_WEIGHTS = Object.freeze([71, 79, 89, 101, 109, 121, 131, 139, 160]);
@@ -744,6 +745,11 @@
     });
     ui.back.addEventListener("click", () => {
       if (!postToParent({ type: MESSAGE.EXIT, repairId })) history.back();
+    });
+    document.addEventListener("click", (event) => {
+      const button = event.target instanceof Element ? event.target.closest("button") : null;
+      if (!button || button.disabled) return;
+      postToParent({ type: MESSAGE.SOUND, repairId });
     });
     window.addEventListener("message", handleMessage);
     renderAll({ focusRestoring: true });

@@ -192,6 +192,7 @@ const SELL_CHAIN_LEVELS = Object.freeze({
   generator: 6,
   generatorMaterial: 4,
 });
+const STORAGE_GUIDE_VERSION = 1;
 const GENERATOR_MATERIAL_SCALE_PERCENT = Object.freeze({
   material_mill_01: 229,
   material_mill_02: 221,
@@ -610,6 +611,8 @@ const state = {
   generatorStates: {},
   unlockedGeneratorCategories: [],
   pendingGeneratorRewards: [],
+  generatorWarehouse: { selectedCategoryId: "mill", progressByCategory: {}, readyItems: [] },
+  storageGuideVersion: 0,
   unlockedStorageSlots: STORAGE_FREE_SLOTS,
   staminaPurchaseDay: "",
   staminaPurchasesToday: 0,
@@ -817,6 +820,30 @@ const els = {
   storageInviteBtn: document.querySelector("#storageInviteBtn"),
   storageUnlockBtn: document.querySelector("#storageUnlockBtn"),
   storageUnlockPrice: document.querySelector("#storageUnlockPrice"),
+  storageNormalTab: document.querySelector("#storageNormalTab"),
+  storageGeneratorTab: document.querySelector("#storageGeneratorTab"),
+  storageNormalPanel: document.querySelector("#storageNormalPanel"),
+  storageFooter: document.querySelector("#storageFooter"),
+  storageGuide: document.querySelector("#storageGuide"),
+  storageGuideTitle: document.querySelector("#storageGuideTitle"),
+  storageGuideCopy: document.querySelector("#storageGuideCopy"),
+  storageGuideSkip: document.querySelector("#storageGuideSkip"),
+  storageGuideNext: document.querySelector("#storageGuideNext"),
+  generatorWarehousePanel: document.querySelector("#generatorWarehousePanel"),
+  generatorWarehouseCategories: document.querySelector("#generatorWarehouseCategories"),
+  generatorWarehouseName: document.querySelector("#generatorWarehouseName"),
+  generatorWarehouseCount: document.querySelector("#generatorWarehouseCount"),
+  generatorWarehouseProgress: document.querySelector("#generatorWarehouseProgress"),
+  generatorWarehouseRecipe: document.querySelector("#generatorWarehouseRecipe"),
+  generatorWarehouseHint: document.querySelector("#generatorWarehouseHint"),
+  generatorWarehouseWithdraw: document.querySelector("#generatorWarehouseWithdraw"),
+  generatorWarehouseStoredIcon: document.querySelector("#generatorWarehouseStoredIcon"),
+  generatorWarehouseStoredCount: document.querySelector("#generatorWarehouseStoredCount"),
+  generatorWarehouseDeposit: document.querySelector("#generatorWarehouseDeposit"),
+  generatorWarehouseDepositIcon: document.querySelector("#generatorWarehouseDepositIcon"),
+  generatorWarehouseClaim: document.querySelector("#generatorWarehouseClaim"),
+  generatorWarehouseOutputIcon: document.querySelector("#generatorWarehouseOutputIcon"),
+  generatorWarehouseOutputCount: document.querySelector("#generatorWarehouseOutputCount"),
   staminaPurchaseModal: document.querySelector("#staminaPurchaseModal"),
   staminaPurchaseAmount: document.querySelector("#staminaPurchaseAmount"),
   staminaPurchaseCount: document.querySelector("#staminaPurchaseCount"),
@@ -893,6 +920,9 @@ let activeStoryArchiveChapter = 1;
 let storyArchiveCloseTimer = null;
 let storyArchivePageSwapTimer = null;
 let storyArchivePageDoneTimer = null;
+let activeStorageTab = "normal";
+let storageGuideStep = null;
+let generatorWarehouseAnimationTimer = null;
 let storyArchivePageTurning = false;
 let historicalNoteReturnChapter = null;
 let historicalNoteTransitioning = false;
@@ -950,7 +980,7 @@ function initAudio() {
   audioRuntime.bgm.loop = true;
   Object.entries(AUDIO_SOURCES).forEach(([name, src]) => {
     if (name === "bgm") return;
-    const poolSize = name === "click" ? 4 : 2;
+    const poolSize = name === "click" ? 6 : 2;
     const pool = Array.from({ length: poolSize }, () => createGameAudio(src, AUDIO_VOLUMES[name]));
     audioRuntime.pools.set(name, pool);
     audioRuntime.cursors.set(name, 0);
@@ -964,46 +994,49 @@ function playSfx(name, { markSpecific = name !== "click" } = {}) {
   const pool = audioRuntime.pools.get(name);
   if (!pool?.length) return;
   const cursor = audioRuntime.cursors.get(name) ?? 0;
-  const audio = pool[cursor % pool.length];
-  audioRuntime.cursors.set(name, (cursor + 1) % pool.length);
+  const layerCount = name === "click" ? 2 : 1;
+  const audios = Array.from({ length: layerCount }, (_, index) => pool[(cursor + index) % pool.length]);
+  audioRuntime.cursors.set(name, (cursor + layerCount) % pool.length);
   const startOffset = AUDIO_START_OFFSETS[name] ?? 0;
-  try {
-    audio.pause();
-  } catch { /* the audio element may still be initializing */ }
-  audio.volume = AUDIO_VOLUMES[name];
-  const startPlayback = () => {
-    let started = false;
-    const playNow = () => {
-      if (started) return;
-      started = true;
-      audio.play().catch(() => {});
-    };
-    if (startOffset <= 0) {
-      try {
-        audio.currentTime = 0;
-      } catch { /* the browser may still be finalizing the media timeline */ }
-      playNow();
-      return;
-    }
-    const handleSeeked = () => playNow();
-    audio.addEventListener("seeked", handleSeeked, { once: true });
+  audios.forEach((audio) => {
     try {
-      audio.currentTime = startOffset;
-      if (!audio.seeking && Math.abs(audio.currentTime - startOffset) < 0.01) {
+      audio.pause();
+    } catch { /* the audio element may still be initializing */ }
+    audio.volume = AUDIO_VOLUMES[name];
+    const startPlayback = () => {
+      let started = false;
+      const playNow = () => {
+        if (started) return;
+        started = true;
+        audio.play().catch(() => {});
+      };
+      if (startOffset <= 0) {
+        try {
+          audio.currentTime = 0;
+        } catch { /* the browser may still be finalizing the media timeline */ }
+        playNow();
+        return;
+      }
+      const handleSeeked = () => playNow();
+      audio.addEventListener("seeked", handleSeeked, { once: true });
+      try {
+        audio.currentTime = startOffset;
+        if (!audio.seeking && Math.abs(audio.currentTime - startOffset) < 0.01) {
+          audio.removeEventListener("seeked", handleSeeked);
+          playNow();
+        }
+      } catch {
         audio.removeEventListener("seeked", handleSeeked);
         playNow();
       }
-    } catch {
-      audio.removeEventListener("seeked", handleSeeked);
-      playNow();
+    };
+    if (startOffset > 0 && audio.readyState < HTMLMediaElement.HAVE_METADATA) {
+      audio.addEventListener("loadedmetadata", startPlayback, { once: true });
+      audio.load();
+    } else {
+      startPlayback();
     }
-  };
-  if (startOffset > 0 && audio.readyState < HTMLMediaElement.HAVE_METADATA) {
-    audio.addEventListener("loadedmetadata", startPlayback, { once: true });
-    audio.load();
-  } else {
-    startPlayback();
-  }
+  });
   if (markSpecific) audioRuntime.lastSpecificAt = performance.now();
 }
 
@@ -1014,8 +1047,8 @@ function fadeBgmTo(targetVolume, duration = 520) {
   const startedAt = performance.now();
   const initialVolume = bgm.volume;
   const step = (now) => {
-    const progress = Math.min(1, (now - startedAt) / duration);
-    bgm.volume = initialVolume + (targetVolume - initialVolume) * progress;
+    const progress = Math.max(0, Math.min(1, (now - startedAt) / duration));
+    bgm.volume = Math.max(0, Math.min(1, initialVolume + (targetVolume - initialVolume) * progress));
     if (progress < 1) audioRuntime.fadeFrame = requestAnimationFrame(step);
     else audioRuntime.fadeFrame = null;
   };
@@ -1310,6 +1343,7 @@ function initializeGeneratorChainQaScenario() {
   state.bubbleStates = {};
   state.generatorStates = {};
   state.pendingGeneratorRewards = [];
+  state.generatorWarehouse = emptyGeneratorWarehouse();
   state.claimedGeneratorProgressRewards = [];
   state.generatorLineOrderCounts = emptyGeneratorLineOrderCounts();
   state.stamina = state.staminaMax;
@@ -1535,6 +1569,7 @@ function initializeGeneratorOrderQaScenario() {
   state.rewardItems = [];
   state.giftPacks = [];
   state.pendingGeneratorRewards = [];
+  state.generatorWarehouse = emptyGeneratorWarehouse();
   state.unlockedGeneratorCategories = categories;
   state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
   state.visibleOrders = [...GENERATOR_ORDER_QA_VISIBLE_BY_STAGE[GENERATOR_ORDER_QA_STAGE]];
@@ -1675,6 +1710,7 @@ function initializeProgressionFlowQaScenario() {
   state.generatorStates = {};
   state.unlockedGeneratorCategories = unlockedCategories;
   state.pendingGeneratorRewards = [];
+  state.generatorWarehouse = emptyGeneratorWarehouse();
   state.innLevel = spec.innLevel;
   state.ownedFurniture = [];
   state.placedFurniture = Array(6).fill(null);
@@ -2421,6 +2457,8 @@ function defaultState() {
     generatorStates: {},
     unlockedGeneratorCategories: ["mill"],
     pendingGeneratorRewards: [],
+    generatorWarehouse: emptyGeneratorWarehouse(),
+    storageGuideVersion: 0,
     unlockedStorageSlots: STORAGE_FREE_SLOTS,
     staminaPurchaseDay: currentLocalDayKey(),
     staminaPurchasesToday: 0,
@@ -2438,6 +2476,8 @@ function loadState() {
   if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) localStorage.removeItem(SAVE_KEY);
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
+  const legacyStorageHasGenerators = Array.isArray(data.bag)
+    && data.bag.some((itemId) => isGeneratorPiece(byId.get(migrateLegacyGeneratorId(itemId))));
   const savedCoinEconomyVersion = Number(data.coinEconomyVersion);
   const openingStaminaNeedsMigration = Boolean(saved)
     && !ISOLATED_QA_MODE
@@ -2512,7 +2552,8 @@ function loadState() {
     || JSON.stringify(loadedRepairProgress) !== JSON.stringify(persistedRepairProgress);
   Object.assign(state, {
     board: normalizeBoard(data.board),
-    bag: normalizeStorageSlots(data.bag, data.unlockedStorageSlots),
+    bag: normalizeStorageSlots(data.bag, data.unlockedStorageSlots)
+      .map((itemId) => isGeneratorPiece(byId.get(itemId)) ? null : itemId),
     rewardItems: normalizeRewardItems(data.rewardItems),
     giftPacks: normalizeGiftPacks(data.giftPacks),
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
@@ -2556,6 +2597,8 @@ function loadState() {
     generatorStates: normalizeGeneratorStates(data.generatorStates),
     unlockedGeneratorCategories: normalizeUnlockedGeneratorCategories(data.unlockedGeneratorCategories, data),
     pendingGeneratorRewards: normalizePendingGeneratorRewards(data.pendingGeneratorRewards),
+    generatorWarehouse: normalizeGeneratorWarehouse(data.generatorWarehouse, data.bag),
+    storageGuideVersion: Math.max(0, Math.floor(Number(data.storageGuideVersion) || 0)),
     unlockedStorageSlots: normalizeUnlockedStorageSlots(data.unlockedStorageSlots, data.bag),
     staminaPurchaseDay: data.staminaPurchaseDay === currentLocalDayKey()
       ? data.staminaPurchaseDay
@@ -2602,7 +2645,7 @@ function loadState() {
   pruneGeneratorStates();
   syncVisibleOrders();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
   if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
@@ -2654,6 +2697,8 @@ function saveState() {
       generatorStates: state.generatorStates,
       unlockedGeneratorCategories: state.unlockedGeneratorCategories,
       pendingGeneratorRewards: state.pendingGeneratorRewards,
+      generatorWarehouse: state.generatorWarehouse,
+      storageGuideVersion: state.storageGuideVersion,
       unlockedStorageSlots: state.unlockedStorageSlots,
       staminaPurchaseDay: state.staminaPurchaseDay,
       staminaPurchasesToday: state.staminaPurchasesToday,
@@ -2721,6 +2766,82 @@ function validGeneratorCategoryIds() {
   return state.generatorConfig.categories.map((category) => category.id);
 }
 
+function generatorWarehouseConfig() {
+  return state.generatorConfig?.warehouse ?? {};
+}
+
+function generatorWarehouseTarget(categoryId) {
+  const config = generatorWarehouseConfig();
+  return Math.max(1, Math.floor(Number(config.targetsByCategory?.[categoryId] ?? config.defaultTarget) || 8));
+}
+
+function generatorWarehouseAcceptedLevel() {
+  return Math.max(1, Math.floor(Number(generatorWarehouseConfig().acceptedLevel) || 1));
+}
+
+function generatorWarehouseOutputLevel() {
+  return Math.max(2, Math.floor(Number(generatorWarehouseConfig().defaultOutputLevel) || 4));
+}
+
+function emptyGeneratorWarehouse() {
+  return {
+    selectedCategoryId: validGeneratorCategoryIds()[0] ?? "mill",
+    progressByCategory: Object.fromEntries(validGeneratorCategoryIds().map((categoryId) => [categoryId, 0])),
+    readyItems: [],
+  };
+}
+
+function normalizeGeneratorWarehouse(value, legacyBag = []) {
+  const validCategories = new Set(validGeneratorCategoryIds());
+  const raw = value && typeof value === "object" ? value : {};
+  const readyItems = [];
+  const progressByCategory = Object.fromEntries(validGeneratorCategoryIds().map((categoryId) => [
+    categoryId,
+    Math.max(0, Math.floor(Number(raw.progressByCategory?.[categoryId]) || 0)),
+  ]));
+  const migrateStoredGenerator = (rawItemId) => {
+    const itemId = migrateLegacyGeneratorId(rawItemId);
+    const item = byId.get(itemId);
+    if (!isGeneratorPiece(item) || !validCategories.has(item.generatorType)) return;
+    if (Number(item.level) === generatorWarehouseAcceptedLevel()) {
+      progressByCategory[item.generatorType] += 1;
+      return;
+    }
+    readyItems.push(itemId);
+  };
+  if (Array.isArray(raw.readyItems)) raw.readyItems.forEach(migrateStoredGenerator);
+  if (Array.isArray(legacyBag)) legacyBag.forEach(migrateStoredGenerator);
+  validGeneratorCategoryIds().forEach((categoryId) => {
+    const target = generatorWarehouseTarget(categoryId);
+    let progress = progressByCategory[categoryId];
+    while (progress >= target) {
+      readyItems.push(generatorItemId(categoryId, generatorWarehouseOutputLevel()));
+      progress -= target;
+    }
+    progressByCategory[categoryId] = progress;
+  });
+  return {
+    selectedCategoryId: validCategories.has(raw.selectedCategoryId)
+      ? raw.selectedCategoryId
+      : validGeneratorCategoryIds()[0] ?? "mill",
+    progressByCategory,
+    readyItems,
+  };
+}
+
+function generatorWarehouseEntry(categoryId) {
+  const warehouse = state.generatorWarehouse ?? (state.generatorWarehouse = emptyGeneratorWarehouse());
+  if (!Object.prototype.hasOwnProperty.call(warehouse.progressByCategory, categoryId)) {
+    warehouse.progressByCategory[categoryId] = 0;
+  }
+  return {
+    progress: warehouse.progressByCategory[categoryId],
+    target: generatorWarehouseTarget(categoryId),
+    outputItemId: generatorItemId(categoryId, generatorWarehouseOutputLevel()),
+    readyCount: warehouse.readyItems.filter((itemId) => generatorCategoryForItem(itemId) === categoryId).length,
+  };
+}
+
 function generatorCategoryForItem(itemId) {
   const item = byId.get(migrateLegacyGeneratorId(itemId));
   return isGeneratorPiece(item) ? item.generatorType : null;
@@ -2732,10 +2853,18 @@ function normalizeUnlockedGeneratorCategories(value, savedData = {}) {
   if (Array.isArray(value)) {
     value.filter((categoryId) => validIds.has(categoryId)).forEach((categoryId) => categories.add(categoryId));
   }
-  [...(savedData.board ?? []), ...(savedData.bag ?? []), ...(savedData.pendingGeneratorRewards ?? [])]
+  [
+    ...(savedData.board ?? []),
+    ...(savedData.bag ?? []),
+    ...(savedData.pendingGeneratorRewards ?? []),
+    ...(savedData.generatorWarehouse?.readyItems ?? []),
+  ]
     .map(generatorCategoryForItem)
     .filter((categoryId) => validIds.has(categoryId))
     .forEach((categoryId) => categories.add(categoryId));
+  Object.entries(savedData.generatorWarehouse?.progressByCategory ?? {})
+    .filter(([categoryId, progress]) => validIds.has(categoryId) && Number(progress) > 0)
+    .forEach(([categoryId]) => categories.add(categoryId));
   return validGeneratorCategoryIds().filter((categoryId) => categories.has(categoryId));
 }
 
@@ -2755,8 +2884,15 @@ function shouldUnlockGeneratorCategory(unlock) {
 }
 
 function ownsGeneratorCategory(categoryId) {
-  return [...state.board, ...state.bag]
-    .some((itemId) => generatorCategoryForItem(itemId) === categoryId);
+  return [
+    ...state.board,
+    ...state.bag,
+    ...(state.pendingGeneratorRewards ?? []),
+    ...(state.generatorWarehouse?.readyItems ?? []),
+    ...(state.rewardItems ?? []).map((entry) => entry.itemId),
+  ]
+    .some((itemId) => generatorCategoryForItem(itemId) === categoryId)
+    || Number(state.generatorWarehouse?.progressByCategory?.[categoryId]) > 0;
 }
 
 function deliverGeneratorPieceReward(categoryId, level = 1) {
@@ -2769,13 +2905,17 @@ function deliverGeneratorPieceReward(categoryId, level = 1) {
     clearPulseSoon();
     return "board";
   }
-  const bagIndex = firstEmptyBagIndex();
-  if (bagIndex >= 0) {
-    state.bag[bagIndex] = itemId;
-    return "bag";
+  if (Number(level) === generatorWarehouseAcceptedLevel()) {
+    const entry = generatorWarehouseEntry(categoryId);
+    state.generatorWarehouse.progressByCategory[categoryId] = entry.progress + 1;
+    if (state.generatorWarehouse.progressByCategory[categoryId] >= entry.target) {
+      state.generatorWarehouse.progressByCategory[categoryId] -= entry.target;
+      state.generatorWarehouse.readyItems.push(entry.outputItemId);
+    }
+  } else {
+    state.generatorWarehouse.readyItems.push(itemId);
   }
-  state.pendingGeneratorRewards.push(itemId);
-  return "pending";
+  return "warehouse";
 }
 
 function deliverGeneratorReward(categoryId) {
@@ -2859,9 +2999,19 @@ function flushPendingGeneratorRewards() {
       changed = true;
       continue;
     }
-    const bagIndex = firstEmptyBagIndex();
-    if (bagIndex < 0) break;
-    state.bag[bagIndex] = itemId;
+    const item = byId.get(itemId);
+    if (!isGeneratorPiece(item)) break;
+    if (Number(item.level) === generatorWarehouseAcceptedLevel()) {
+      const categoryId = item.generatorType;
+      const entry = generatorWarehouseEntry(categoryId);
+      state.generatorWarehouse.progressByCategory[categoryId] = entry.progress + 1;
+      if (state.generatorWarehouse.progressByCategory[categoryId] >= entry.target) {
+        state.generatorWarehouse.progressByCategory[categoryId] -= entry.target;
+        state.generatorWarehouse.readyItems.push(entry.outputItemId);
+      }
+    } else {
+      state.generatorWarehouse.readyItems.push(itemId);
+    }
     state.pendingGeneratorRewards.shift();
     changed = true;
   }
@@ -2927,6 +3077,15 @@ function bindEvents() {
   els.innSoundToggleBtn?.addEventListener("click", toggleAudioSettings);
   els.storageInviteBtn?.addEventListener("click", explainStorageInvite);
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
+  els.storageNormalTab?.addEventListener("click", () => setStorageTab("normal"));
+  els.storageGeneratorTab?.addEventListener("click", () => setStorageTab("generator"));
+  els.storageGuideSkip?.addEventListener("click", completeStorageGuide);
+  els.storageGuideNext?.addEventListener("click", advanceStorageGuide);
+  els.storageModal?.addEventListener("close", () => hideStorageGuide());
+  els.generatorWarehouseCategories?.addEventListener("click", selectGeneratorWarehouseCategory);
+  els.generatorWarehouseDeposit?.addEventListener("click", depositSelectedGenerator);
+  els.generatorWarehouseWithdraw?.addEventListener("click", withdrawStoredGenerator);
+  els.generatorWarehouseClaim?.addEventListener("click", claimGeneratorWarehouseOutput);
   els.staminaPurchaseConfirm?.addEventListener("click", purchaseStamina);
   els.storyArchiveBtn?.addEventListener("click", () => openStoryArchive());
   els.storyArchiveChapters?.addEventListener("click", selectStoryArchiveChapter);
@@ -5188,6 +5347,11 @@ function handleRepairPlayerMessage(event) {
   const milestone = repairPlayerMilestone(message);
   if (!milestone) return;
 
+  if (message.type === "silkroad:button-sound") {
+    playSfx("click", { markSpecific: false });
+    return;
+  }
+
   if (message.type === "silkroad:repair-ready") {
     if (Number(message.partCount) !== REPAIR_PART_COUNT) {
       console.warn(`Repair player ${milestone.playerPointId} reported ${message.partCount} parts; expected ${REPAIR_PART_COUNT}.`);
@@ -6659,6 +6823,9 @@ function getPieceRemovalAction(item) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
   const cleanup = state.economyConfig?.boardCleanup ?? {};
+  if (isGeneratorPiece(item) && Number(item.level) === generatorWarehouseAcceptedLevel()) {
+    return { mode: "warehouse", value: 0, requiresConfirm: false };
+  }
   if (isGeneratorPiece(item) && cleanup.protectGenerators) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
@@ -6689,7 +6856,7 @@ function getPieceRemovalAction(item) {
 
 function setSellButtonAction(action) {
   const { mode, value = 0 } = action;
-  els.sellBtn.classList.remove("delete", "sell", "unavailable");
+  els.sellBtn.classList.remove("delete", "sell", "warehouse", "unavailable");
   els.sellBtn.classList.add(mode);
   els.sellBtn.dataset.action = mode;
   els.sellBtn.disabled = mode === "unavailable";
@@ -6706,6 +6873,14 @@ function setSellButtonAction(action) {
     els.sellBtn.innerHTML = `
       <span class="selected-action-value"><img src="./assets/ui/ui_coin_copper.png" alt="" /><strong>+${value}</strong></span>
       <b>出售</b>
+    `;
+    return;
+  }
+  if (mode === "warehouse") {
+    els.sellBtn.setAttribute("aria-label", "将选中的一级生成器收入生成器仓库");
+    els.sellBtn.innerHTML = `
+      <span class="selected-action-storage" aria-hidden="true"></span>
+      <b>收纳</b>
     `;
     return;
   }
@@ -8522,6 +8697,10 @@ function sellSelected() {
   if (!itemId) return;
   const item = byId.get(itemId);
   const action = getPieceRemovalAction(item);
+  if (action.mode === "warehouse") {
+    depositGeneratorAtBoardIndex(index, { openWarehouse: true });
+    return;
+  }
   if (action.mode === "unavailable") {
     toast("这枚棋子不能删除或出售。");
     return;
@@ -8551,8 +8730,196 @@ function openBag() {
 }
 
 function openStorage() {
+  const selectedItem = byId.get(state.board[state.selectedIndex]);
+  if (isGeneratorPiece(selectedItem) && Number(selectedItem.level) === generatorWarehouseAcceptedLevel()) {
+    state.generatorWarehouse.selectedCategoryId = selectedItem.generatorType;
+    activeStorageTab = "generator";
+  }
   renderStorage();
-  els.storageModal.showModal();
+  showStorageModal();
+}
+
+function showStorageModal() {
+  if (!els.storageModal.open) els.storageModal.showModal();
+  requestAnimationFrame(maybeShowStorageGuide);
+}
+
+function maybeShowStorageGuide() {
+  if (!els.storageModal?.open || state.storageGuideVersion >= STORAGE_GUIDE_VERSION || !els.storageGuide) return;
+  storageGuideStep = "normal";
+  els.storageGuide.hidden = false;
+  els.storageNormalTab?.parentElement?.classList.add("guide-active");
+  renderStorageGuideStep();
+}
+
+function renderStorageGuideStep() {
+  if (!storageGuideStep || !els.storageGuide) return;
+  const isGeneratorStep = storageGuideStep === "generator";
+  activeStorageTab = isGeneratorStep ? "generator" : "normal";
+  renderStorage();
+  els.storageGuide.dataset.step = storageGuideStep;
+  els.storageGuideTitle.textContent = isGeneratorStep ? "生成器仓库" : "普通储物";
+  els.storageGuideCopy.textContent = isGeneratorStep
+    ? "收纳 Lv1 生成器；同类集满 8 枚，会凝成 1 枚 Lv4。"
+    : "食材与普通道具收在这里，需要时可以取回棋盘。";
+  els.storageGuideNext.textContent = isGeneratorStep ? "知道了" : "下一步";
+  els.storageGuide.querySelectorAll(".storage-guide-progress i").forEach((dot, index) => {
+    dot.classList.toggle("active", index === (isGeneratorStep ? 1 : 0));
+  });
+  els.storageGuide.querySelector(".storage-guide-progress")?.setAttribute(
+    "aria-label",
+    `第${isGeneratorStep ? 2 : 1}步，共2步`,
+  );
+  els.storageNormalTab?.classList.toggle("storage-guide-target", !isGeneratorStep);
+  els.storageGeneratorTab?.classList.toggle("storage-guide-target", isGeneratorStep);
+}
+
+function advanceStorageGuide() {
+  if (storageGuideStep === "normal") {
+    storageGuideStep = "generator";
+    renderStorageGuideStep();
+    return;
+  }
+  completeStorageGuide();
+}
+
+function completeStorageGuide() {
+  state.storageGuideVersion = STORAGE_GUIDE_VERSION;
+  hideStorageGuide();
+  saveState();
+}
+
+function hideStorageGuide() {
+  storageGuideStep = null;
+  if (els.storageGuide) els.storageGuide.hidden = true;
+  els.storageNormalTab?.parentElement?.classList.remove("guide-active");
+  els.storageNormalTab?.classList.remove("storage-guide-target");
+  els.storageGeneratorTab?.classList.remove("storage-guide-target");
+}
+
+function setStorageTab(tab) {
+  activeStorageTab = tab === "generator" ? "generator" : "normal";
+  renderStorage();
+}
+
+function selectGeneratorWarehouseCategory(event) {
+  const button = event.target instanceof Element
+    ? event.target.closest("[data-generator-warehouse-category]")
+    : null;
+  if (!button || button.disabled) return;
+  state.generatorWarehouse.selectedCategoryId = button.dataset.generatorWarehouseCategory;
+  renderGeneratorWarehouse();
+  saveState();
+}
+
+function selectedGeneratorWarehouseCategory() {
+  const categories = validGeneratorCategoryIds();
+  const selected = state.generatorWarehouse?.selectedCategoryId;
+  if (categories.includes(selected)) return selected;
+  const fallback = state.unlockedGeneratorCategories.find((categoryId) => categories.includes(categoryId))
+    ?? categories[0]
+    ?? "mill";
+  state.generatorWarehouse.selectedCategoryId = fallback;
+  return fallback;
+}
+
+function depositGeneratorAtBoardIndex(boardIndex, { openWarehouse = false } = {}) {
+  const itemId = state.board[boardIndex];
+  const item = byId.get(itemId);
+  if (!isGeneratorPiece(item)) {
+    toast("生成器仓库只收纳生成器棋子。");
+    return false;
+  }
+  if (Number(item.level) !== generatorWarehouseAcceptedLevel()) {
+    toast(`生成器仓库目前只接收 Lv${generatorWarehouseAcceptedLevel()} 生成器。`);
+    return false;
+  }
+  const categoryId = item.generatorType;
+  const entry = generatorWarehouseEntry(categoryId);
+  if (!state.unlockedGeneratorCategories.includes(categoryId)) {
+    state.unlockedGeneratorCategories = validGeneratorCategoryIds().filter(
+      (candidateId) => candidateId === categoryId || state.unlockedGeneratorCategories.includes(candidateId),
+    );
+  }
+  delete state.generatorStates[boardGeneratorStateKey(boardIndex)];
+  state.board[boardIndex] = null;
+  state.selectedIndex = null;
+  state.generatorWarehouse.selectedCategoryId = categoryId;
+  state.generatorWarehouse.progressByCategory[categoryId] = entry.progress + 1;
+  let produced = false;
+  if (state.generatorWarehouse.progressByCategory[categoryId] >= entry.target) {
+    state.generatorWarehouse.progressByCategory[categoryId] -= entry.target;
+    state.generatorWarehouse.readyItems.push(entry.outputItemId);
+    produced = true;
+  }
+  activeStorageTab = "generator";
+  playSfx("coin");
+  keeper(produced
+    ? `${item.name}已收入母棋仓库，高阶${byId.get(entry.outputItemId)?.name ?? "生成器"}已经凝成。`
+    : `${item.name}已收入母棋仓库，${entry.progress + 1}/${entry.target}。`);
+  toast(produced ? "进度已满 · 高阶生成器待领取" : `${item.name}收纳成功`);
+  render();
+  if (openWarehouse) showStorageModal();
+  renderStorage();
+  els.generatorWarehousePanel?.classList.add("is-progressing");
+  clearTimeout(generatorWarehouseAnimationTimer);
+  generatorWarehouseAnimationTimer = setTimeout(() => {
+    els.generatorWarehousePanel?.classList.remove("is-progressing");
+  }, 720);
+  saveState();
+  return true;
+}
+
+function depositSelectedGenerator() {
+  if (state.selectedIndex === null || isBoardCellLocked(state.selectedIndex)) {
+    toast("先在棋盘上选中一枚 Lv1 生成器。");
+    return;
+  }
+  depositGeneratorAtBoardIndex(state.selectedIndex);
+}
+
+function withdrawStoredGenerator() {
+  const categoryId = selectedGeneratorWarehouseCategory();
+  const entry = generatorWarehouseEntry(categoryId);
+  if (entry.progress <= 0) return;
+  const boardIndex = firstEmptyIndex();
+  if (boardIndex < 0) {
+    toast("棋盘已满，腾出空格后再取回。");
+    return;
+  }
+  const itemId = generatorItemId(categoryId, generatorWarehouseAcceptedLevel());
+  state.generatorWarehouse.progressByCategory[categoryId] -= 1;
+  state.board[boardIndex] = itemId;
+  state.selectedIndex = boardIndex;
+  state.pulseIndex = boardIndex;
+  clearPulseSoon();
+  toast(`${byId.get(itemId)?.name ?? "生成器"}已放回棋盘`);
+  render();
+  renderStorage();
+  saveState();
+}
+
+function claimGeneratorWarehouseOutput() {
+  const categoryId = selectedGeneratorWarehouseCategory();
+  const readyIndex = state.generatorWarehouse.readyItems.findIndex(
+    (itemId) => generatorCategoryForItem(itemId) === categoryId,
+  );
+  if (readyIndex < 0) return;
+  const boardIndex = firstEmptyIndex();
+  if (boardIndex < 0) {
+    toast("棋盘已满，高阶生成器会继续留在领取槽中。");
+    return;
+  }
+  const [itemId] = state.generatorWarehouse.readyItems.splice(readyIndex, 1);
+  state.board[boardIndex] = itemId;
+  state.selectedIndex = boardIndex;
+  state.pulseIndex = boardIndex;
+  clearPulseSoon();
+  playSfx("coin");
+  toast(`领取${byId.get(itemId)?.name ?? "高阶生成器"}`);
+  render();
+  renderStorage();
+  saveState();
 }
 
 function openRubyRecharge() {
@@ -8629,6 +8996,13 @@ function purchaseNextStorageSlot() {
 
 function renderStorage() {
   if (!els.storageSlotList) return;
+  const generatorTabActive = activeStorageTab === "generator";
+  els.storageNormalTab?.classList.toggle("active", !generatorTabActive);
+  els.storageGeneratorTab?.classList.toggle("active", generatorTabActive);
+  if (els.storageNormalPanel) els.storageNormalPanel.hidden = generatorTabActive;
+  if (els.generatorWarehousePanel) els.generatorWarehousePanel.hidden = !generatorTabActive;
+  if (els.storageFooter) els.storageFooter.hidden = generatorTabActive;
+  if (generatorTabActive) renderGeneratorWarehouse();
   els.storageSlotList.innerHTML = "";
   const nextPrice = nextStorageUnlockPrice();
   if (els.storageUnlockBtn && els.storageUnlockPrice) {
@@ -8664,6 +9038,71 @@ function renderStorage() {
       slot.innerHTML = `<span class="storage-empty-mark"></span>`;
     }
     els.storageSlotList.append(slot);
+  }
+}
+
+function renderGeneratorWarehouse() {
+  if (!els.generatorWarehousePanel || !els.generatorWarehouseCategories) return;
+  const categoryId = selectedGeneratorWarehouseCategory();
+  const categories = state.generatorConfig.categories;
+  els.generatorWarehouseCategories.innerHTML = categories.map((category) => {
+    const entry = generatorWarehouseEntry(category.id);
+    const unlocked = state.unlockedGeneratorCategories.includes(category.id)
+      || ownsGeneratorCategory(category.id);
+    const baseItem = byId.get(generatorItemId(category.id, generatorWarehouseAcceptedLevel()));
+    return `
+      <button class="generator-warehouse-category ${category.id === categoryId ? "active" : ""} ${unlocked ? "" : "locked"}"
+        type="button" data-generator-warehouse-category="${category.id}" ${unlocked ? "" : "disabled"}
+        aria-label="${unlocked ? `查看${category.displayName}，进度${entry.progress}/${entry.target}` : `${category.displayName}尚未解锁`}">
+        <img src="${itemAssetSrc(baseItem)}" alt="" />
+        <span>${unlocked ? `${entry.progress}/${entry.target}` : "未解锁"}</span>
+      </button>`;
+  }).join("");
+
+  const category = categories.find((entry) => entry.id === categoryId) ?? categories[0];
+  if (!category) return;
+  const entry = generatorWarehouseEntry(category.id);
+  const baseItem = byId.get(generatorItemId(category.id, generatorWarehouseAcceptedLevel()));
+  const outputItem = byId.get(entry.outputItemId);
+  const selectedItem = byId.get(state.board[state.selectedIndex]);
+  const canDeposit = isGeneratorPiece(selectedItem)
+    && Number(selectedItem.level) === generatorWarehouseAcceptedLevel()
+    && selectedItem.generatorType === category.id;
+  const unlocked = state.unlockedGeneratorCategories.includes(category.id)
+    || ownsGeneratorCategory(category.id);
+
+  els.generatorWarehouseName.textContent = category.displayName;
+  els.generatorWarehouseCount.textContent = `${entry.progress} / ${entry.target}`;
+  els.generatorWarehouseProgress.style.width = `${Math.min(100, (entry.progress / entry.target) * 100)}%`;
+  els.generatorWarehouseRecipe.innerHTML = `
+    <figure><img src="${itemAssetSrc(baseItem)}" alt="${baseItem?.name ?? "基础生成器"}" /><figcaption>Lv1 ×${entry.target}</figcaption></figure>
+    <i aria-hidden="true">›</i>
+    <figure><img src="${itemAssetSrc(outputItem)}" alt="${outputItem?.name ?? "高阶生成器"}" /><figcaption>Lv${generatorWarehouseOutputLevel()} ×1</figcaption></figure>`;
+  els.generatorWarehouseHint.textContent = `收纳${entry.target}枚${baseItem?.name ?? "Lv1生成器"}，自动凝成1枚${outputItem?.name ?? "高阶生成器"}；各品类进度互不影响。`;
+  els.generatorWarehouseStoredIcon.src = itemAssetSrc(baseItem);
+  els.generatorWarehouseStoredIcon.alt = baseItem?.name ?? "基础生成器";
+  els.generatorWarehouseStoredCount.textContent = `×${entry.progress}`;
+  els.generatorWarehouseWithdraw.disabled = entry.progress <= 0;
+  els.generatorWarehouseWithdraw.setAttribute("aria-label", entry.progress > 0
+    ? `取回1枚${baseItem?.name ?? "基础生成器"}`
+    : "当前没有可取回的基础生成器");
+  els.generatorWarehouseDepositIcon.src = itemAssetSrc(baseItem);
+  els.generatorWarehouseDepositIcon.alt = baseItem?.name ?? "基础生成器";
+  els.generatorWarehouseDeposit.disabled = !unlocked || !canDeposit;
+  els.generatorWarehouseDeposit.setAttribute("aria-label", canDeposit
+    ? `收纳棋盘上选中的${selectedItem.name}`
+    : `先在棋盘选择${baseItem?.name ?? "对应的Lv1生成器"}`);
+  els.generatorWarehouseClaim.hidden = entry.readyCount <= 0;
+  els.generatorWarehousePanel.classList.toggle("has-output", entry.readyCount > 0);
+  if (entry.readyCount > 0) {
+    const firstReadyItemId = state.generatorWarehouse.readyItems.find(
+      (itemId) => generatorCategoryForItem(itemId) === category.id,
+    );
+    const firstReadyItem = byId.get(firstReadyItemId);
+    els.generatorWarehouseOutputIcon.src = itemAssetSrc(firstReadyItem);
+    els.generatorWarehouseOutputIcon.alt = firstReadyItem?.name ?? "高阶生成器";
+    els.generatorWarehouseOutputCount.textContent = `×${entry.readyCount}`;
+    els.generatorWarehouseClaim.setAttribute("aria-label", `领取${firstReadyItem?.name ?? "高阶生成器"}`);
   }
 }
 
@@ -8733,12 +9172,24 @@ function refreshRewardBagAfterPlacement() {
 
 function storeBoardItemToStorage(boardIndex) {
   const itemId = state.board[boardIndex];
-  const bagIndex = firstEmptyBagIndex();
   if (!itemId) {
     toast("先选中一件食物。");
     return;
   }
   const boardItem = byId.get(itemId);
+  if (isGeneratorPiece(boardItem)) {
+    if (Number(boardItem.level) === generatorWarehouseAcceptedLevel()) {
+      depositGeneratorAtBoardIndex(boardIndex, { openWarehouse: true });
+    } else {
+      activeStorageTab = "generator";
+      state.generatorWarehouse.selectedCategoryId = boardItem.generatorType;
+      toast(`生成器仓库只收纳 Lv${generatorWarehouseAcceptedLevel()} 生成器；高阶生成器请留在棋盘。`);
+      renderStorage();
+      showStorageModal();
+    }
+    return;
+  }
+  const bagIndex = firstEmptyBagIndex();
   if (["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina"].includes(boardItem?.type)) {
     toast("气泡、铜币、红宝石和体力棋子需要留在棋盘上继续合成。");
     return;
@@ -8751,7 +9202,6 @@ function storeBoardItemToStorage(boardIndex) {
     toast("柜中暂存已满。");
     return;
   }
-  transferGeneratorState(itemId, boardGeneratorStateKey(boardIndex), bagGeneratorStateKey(bagIndex));
   state.bag[bagIndex] = itemId;
   state.board[boardIndex] = null;
   state.selectedIndex = null;

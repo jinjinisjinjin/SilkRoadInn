@@ -7,11 +7,11 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1-side-notice-v1" />
-    <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v4-manual-only" />
+    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1-notice-dot-v5-generator-warehouse-v5-breathing-tabs-brass-close" />
+    <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
-    <link rel="stylesheet" href="./story-archive.css?v=story-archive-v13" />
+    <link rel="stylesheet" href="./story-archive.css?v=story-archive-v16-notice-dot" />
     <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v21-reward-compact-v4" />
     <link rel="stylesheet" href="./historical-notes-brocade.css?v=brocade-a-3" />
     <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
@@ -497,8 +497,53 @@
       <div class="storage-cabinet">
         <button class="close" data-close="storageModal">×</button>
         <div class="storage-title">柜中仓位</div>
-        <div class="storage-interior"><div class="storage-slot-scroll" id="storageSlotList"></div></div>
-        <div class="storage-footer">
+        <nav class="storage-tabs" aria-label="柜中仓位分类">
+          <button id="storageNormalTab" class="active" type="button" aria-label="普通储物" title="普通储物">
+            <img src="./assets/ui/ui_storage_tab_normal_v2.png" alt="" />
+          </button>
+          <button id="storageGeneratorTab" type="button" aria-label="生成器仓库" title="生成器仓库">
+            <img src="./assets/ui/ui_storage_tab_generator_v2.png" alt="" />
+          </button>
+        </nav>
+        <section id="storageGuide" class="storage-guide" data-step="normal" hidden aria-label="柜中仓位首次引导">
+          <div class="storage-guide-card">
+            <small>柜中仓位 · 初见</small>
+            <strong id="storageGuideTitle">普通储物</strong>
+            <p id="storageGuideCopy">食材与普通道具收在这里，需要时可以取回棋盘。</p>
+            <div class="storage-guide-progress" aria-label="第1步，共2步"><i class="active"></i><i></i></div>
+            <div class="storage-guide-actions">
+              <button id="storageGuideSkip" type="button">跳过</button>
+              <button id="storageGuideNext" type="button">下一步</button>
+            </div>
+          </div>
+        </section>
+        <div id="storageNormalPanel" class="storage-normal-panel">
+          <div class="storage-interior"><div class="storage-slot-scroll" id="storageSlotList"></div></div>
+        </div>
+        <section id="generatorWarehousePanel" class="generator-warehouse-panel" hidden>
+          <div id="generatorWarehouseCategories" class="generator-warehouse-categories" aria-label="生成器品类"></div>
+          <article class="generator-warehouse-detail">
+            <header>
+              <div><small>当前品类</small><strong id="generatorWarehouseName">磨坊食盒</strong></div>
+              <span id="generatorWarehouseCount">0 / 8</span>
+            </header>
+            <div class="generator-warehouse-progress" aria-hidden="true"><i id="generatorWarehouseProgress"></i></div>
+            <div id="generatorWarehouseRecipe" class="generator-warehouse-recipe"></div>
+            <p id="generatorWarehouseHint">将棋盘上的 Lv1 生成器收入柜中，积满后会凝成高阶生成器。</p>
+          </article>
+          <div class="generator-warehouse-actions">
+            <button id="generatorWarehouseWithdraw" class="generator-warehouse-slot stored" type="button">
+              <small>已收纳</small><img id="generatorWarehouseStoredIcon" alt="" /><b id="generatorWarehouseStoredCount">×0</b>
+            </button>
+            <button id="generatorWarehouseDeposit" class="generator-warehouse-slot deposit" type="button">
+              <small>存入所选</small><img id="generatorWarehouseDepositIcon" alt="" /><i aria-hidden="true">↑</i>
+            </button>
+            <button id="generatorWarehouseClaim" class="generator-warehouse-output" type="button" hidden>
+              <small>高阶生成器待领取</small><img id="generatorWarehouseOutputIcon" alt="" /><b id="generatorWarehouseOutputCount">×1</b>
+            </button>
+          </div>
+        </section>
+        <div id="storageFooter" class="storage-footer">
           <button id="storageInviteBtn" class="storage-invite-card" type="button">邀请新用户</button>
           <button id="storageUnlockBtn" class="storage-unlock-card" type="button">
             <i class="ruby-icon" aria-hidden="true"></i><b id="storageUnlockPrice">5</b>
@@ -568,6 +613,6 @@
     <script src="./chapter-story.js?v=story-viewport-v4-closing-dialogue"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
     <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
-    <script src="./app.js?v=generator-chain-v2-repair-sequence-v15-level-reveal-only-v1-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v15-reward-auto-reveal-v3-cast-journey-v1-persistent-scroll-v1-clue-objects-v18-clue-camera-v2"></script>
+    <script src="./app.js?v=generator-chain-v2-repair-sequence-v15-level-reveal-only-v1-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v15-reward-auto-reveal-v3-cast-journey-v1-persistent-scroll-v1-clue-objects-v18-clue-camera-v2-repair-sound-v1-click-volume-v2-generator-warehouse-v2-icon-guide"></script>
   </body>
 </html>

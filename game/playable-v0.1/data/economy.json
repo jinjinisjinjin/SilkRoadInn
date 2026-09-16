@@ -53,72 +53,72 @@
     "firstClearBonusCoins": 0,
     "levelValuesByLine": {
       "hubing": [
+        3,
         10,
-        30,
-        60,
-        100,
-        170,
-        280,
-        460,
-        750
+        20,
+        33,
+        57,
+        93,
+        153,
+        250
       ],
       "dairy": [
+        3,
         10,
-        30,
-        60,
-        100,
-        170,
-        280,
-        460,
-        750
+        20,
+        33,
+        57,
+        93,
+        153,
+        250
       ],
       "fruit": [
+        3,
         10,
-        30,
-        60,
-        100,
-        170,
-        280,
-        460,
-        750
+        20,
+        33,
+        57,
+        93,
+        153,
+        250
       ],
       "drink": [
+        3,
         10,
-        30,
+        20,
+        33,
         60,
         100,
-        180,
-        300,
-        500,
-        810
+        167,
+        270
       ],
       "spice": [
+        3,
         10,
-        30,
+        20,
+        33,
         60,
         100,
-        180,
-        300,
-        500,
-        810
+        167,
+        270
       ],
       "meat": [
+        3,
         10,
-        30,
-        60,
-        100,
-        200,
-        320,
-        530,
-        860
+        20,
+        33,
+        67,
+        107,
+        177,
+        287
       ]
     },
     "bands": [
       {
         "id": "quick",
         "name": "快单",
-        "minCoins": 10,
-        "maxCoins": 80,
+        "minCoins": 3,
+        "maxCoins": 27,
         "preferredOrderTypes": [
           "generatorGuide",
           "quick"
@@ -127,8 +127,8 @@
       {
         "id": "regular",
         "name": "常规单",
-        "minCoins": 90,
-        "maxCoins": 250,
+        "minCoins": 30,
+        "maxCoins": 83,
         "preferredOrderTypes": [
           "regular",
           "mixed"
@@ -137,8 +137,8 @@
       {
         "id": "goal",
         "name": "商旅单",
-        "minCoins": 260,
-        "maxCoins": 1000,
+        "minCoins": 87,
+        "maxCoins": 333,
         "preferredOrderTypes": [
           "repairMain",
           "generatorMastery",

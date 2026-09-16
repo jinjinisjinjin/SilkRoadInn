@@ -62,16 +62,21 @@
   top: 13px;
   right: 13px;
   left: auto;
-  width: 38px;
-  min-height: 38px;
-  border: 2px solid rgba(82, 45, 28, 0.58);
-  border-radius: 10px;
-  background: #974a3b;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border: 1px solid rgba(126, 86, 47, 0.84);
+  border-radius: 50%;
+  color: #70452f;
+  background:
+    radial-gradient(circle at 36% 30%, rgba(255, 249, 216, 0.94), transparent 31%),
+    linear-gradient(145deg, #f3d998, #c89a54);
   box-shadow:
-    0 3px 0 rgba(72, 45, 31, 0.2),
-    0 0 0 2px rgba(232, 198, 129, 0.66),
-    inset 0 0 0 1px rgba(255, 226, 171, 0.28);
-  font-size: 25px;
+    0 2px 4px rgba(54, 31, 17, 0.24),
+    inset 0 0 0 2px rgba(255, 239, 191, 0.38),
+    inset 0 -2px 3px rgba(105, 65, 31, 0.2);
+  font: 500 22px/1 Arial, sans-serif;
+  text-shadow: 0 1px 0 rgba(255, 246, 209, 0.5);
 }
 
 .repair-qa-nav {

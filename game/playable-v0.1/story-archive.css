@@ -30,11 +30,11 @@
 .inn-story-archive-entry.has-unread-note::after {
   content: "";
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 13px;
-  height: 13px;
-  border: 2px solid #fff1d2;
+  top: 10px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #fff1d2;
   border-radius: 50%;
   background: #c54132;
   box-shadow: 0 2px 5px rgba(72, 21, 16, 0.38);
