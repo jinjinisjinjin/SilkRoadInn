@@ -7,7 +7,9 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1-notice-dot-v5-generator-warehouse-v16-market-stall" />
+    <link rel="stylesheet" href="./styles.css?v=storage-progression-v1" />
+    <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v3" />
+    <link rel="stylesheet" href="./weekly-checkin.css?v=weekly-checkin-v1" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
@@ -17,7 +19,7 @@
     <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
     <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1-cast-journey-v1" />
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
-    <link rel="stylesheet" href="./new-player-guide.css?v=new-player-guide-v5" />
+    <link rel="stylesheet" href="./new-player-guide.css?v=keeper-portrait-v2" />
     <link rel="stylesheet" href="./generator-chain-qa.css?v=generator-chain-v1" />
   </head>
   <body>
@@ -49,7 +51,7 @@
             </span>
             <span class="resource-pill plus-resource ruby-resource"><i class="ruby-icon" aria-hidden="true"></i><b id="gems">0</b><button id="gemPlusBtn" class="resource-plus" aria-label="补充红宝石">+</button></span>
             <button id="dailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="打开驿站小铺" title="打开驿站小铺">
-              <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
+              <img src="./assets/ui/shop_entry_stall_v1.png" alt="" />
             </button>
             <button id="soundToggleBtn" class="sound-toggle" type="button" data-sound="none" aria-label="声音设置" title="声音设置" aria-controls="audioSettingsPanel" aria-expanded="false">
               <span aria-hidden="true">♪</span>
@@ -148,8 +150,8 @@
         <button id="storyArchiveBtn" class="inn-story-archive-entry" type="button" aria-label="回顾已解锁剧情" title="剧情回顾">
           <img src="./assets/ui/ui_codex_scroll.png" alt="" />
         </button>
-        <button id="innDailyPouchBtn" class="daily-pouch-entry inn-daily-pouch-entry" type="button" aria-label="打开驿站小铺" title="打开驿站小铺">
-          <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
+        <button id="weeklyCheckinBtn" class="weekly-checkin-entry inn-weekly-checkin-entry" type="button" aria-label="打开七日驿程" title="七日驿程">
+          <img src="./assets/ui/weekly_checkin_travel_pass_v1.png" alt="" />
         </button>
       </section>
       <section class="audio-settings-panel" id="audioSettingsPanel" aria-label="声音设置" hidden>
@@ -513,10 +515,10 @@
             <small>柜中仓位 · 初见</small>
             <strong id="storageGuideTitle">普通储物</strong>
             <p id="storageGuideCopy">食材与普通道具收在这里，需要时可以取回棋盘。</p>
-            <div class="storage-guide-progress" aria-label="第1步，共2步"><i class="active"></i><i></i></div>
+            <div class="storage-guide-progress" aria-label="第1步，共1步"><i class="active"></i></div>
             <div class="storage-guide-actions">
               <button id="storageGuideSkip" type="button">跳过</button>
-              <button id="storageGuideNext" type="button">下一步</button>
+              <button id="storageGuideNext" type="button">知道了</button>
             </div>
           </div>
         </section>
@@ -561,7 +563,7 @@
         <button class="close" data-close="dailyShopModal" aria-label="关闭驿站小铺">×</button>
         <header class="daily-shop-head">
           <div class="daily-shop-sign">
-            <small>西市今日开张</small>
+            <small>丝路好物 · 今日相逢</small>
             <h2 id="dailyShopTitle">驿站小铺</h2>
           </div>
           <div class="daily-shop-balance"><span>现有</span><i class="ruby-icon" aria-hidden="true"></i><b id="dailyShopBalance">0</b></div>
@@ -569,38 +571,55 @@
         <footer class="daily-shop-footer">
           <span>距换货</span><b id="dailyShopRefresh">16:00:00</b><small>购得道具会放入奖励行囊</small>
         </footer>
-        <section id="dailyShopOffers" class="daily-shop-stall" aria-label="驿站小铺货架">
-          <div class="daily-shop-section-title"><span>今日货架</span><small>每件库存 1</small></div>
+        <section id="dailyShopOffers" class="daily-shop-stall" aria-label="驿站小铺货架，可上下滑动" tabindex="0">
+
           <div class="daily-shop-grid">
+          <div class="daily-shop-shelf"><div class="daily-shop-section-title">每日好物</div>
           <article class="daily-shop-card daily-shop-pouch-card" aria-label="每日免费宝袋">
             <strong>西域晨礼宝袋</strong>
-            <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
+            <button type="button" class="daily-shop-detail" data-shop-detail="gift_daily_pomegranate_01" aria-label="查看西域晨礼宝袋详情"><img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" /></button>
             <p>每日免费一份</p>
             <small>每日限领 1</small>
             <button id="dailyShopClaimPouch" type="button">免费领取</button>
           </article>
           <article class="daily-shop-card" data-shop-offer="wealth">
             <strong>聚财陶俑</strong>
-            <img src="./assets/ui/shop_wealth_figurine_v1.png" alt="" />
+            <button type="button" class="daily-shop-detail" data-shop-detail="shop_wealth_figurine_pack" aria-label="查看聚财陶俑详情"><img src="./assets/ui/shop_wealth_figurine_v1.png" alt="" /></button>
             <p>逐枚吐出铜币棋子</p>
             <small data-shop-stock>库存 1</small>
             <button type="button" data-shop-buy><i class="ruby-icon" aria-hidden="true"></i><span>25</span></button>
           </article>
           <article class="daily-shop-card" data-shop-offer="stamina">
             <strong>梭梭树</strong>
-            <img src="./assets/ui/shop_saxaul_tree_v1.png" alt="" />
+            <button type="button" class="daily-shop-detail" data-shop-detail="shop_saxaul_tree_pack" aria-label="查看梭梭树详情"><img src="./assets/ui/shop_saxaul_tree_v1.png" alt="" /></button>
             <p>逐枚补充驼铃体力</p>
             <small data-shop-stock>库存 1</small>
             <button type="button" data-shop-buy><i class="ruby-icon" aria-hidden="true"></i><span>10</span></button>
           </article>
-          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
-          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
-          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
-          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
-          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
-          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          </div>
+          <div id="dailyShopFoodShelves"></div>
           </div>
         </section>
+      </div>
+    </dialog>
+    <dialog id="weeklyCheckinModal" class="modal weekly-checkin-modal" aria-labelledby="weeklyCheckinTitle">
+      <div class="weekly-checkin-inner">
+        <button class="close" data-close="weeklyCheckinModal" aria-label="关闭七日驿程">×</button>
+        <header class="weekly-checkin-head">
+          <span class="weekly-checkin-eyebrow">每日行一步 · 七日得好礼</span>
+          <h2 id="weeklyCheckinTitle">七日驿程</h2>
+          <p>沿着丝路慢慢走，本轮奖励都会收入行囊</p>
+        </header>
+        <div class="weekly-checkin-progress" aria-label="本轮签到进度">
+          <span>本轮驿程</span>
+          <div id="weeklyCheckinTrail" class="weekly-checkin-trail" aria-hidden="true"></div>
+          <b id="weeklyCheckinProgress">0/7</b>
+        </div>
+        <section id="weeklyCheckinGrid" class="weekly-checkin-grid" aria-label="七日签到奖励"></section>
+        <footer class="weekly-checkin-footer">
+          <button id="weeklyCheckinClaim" type="button">领取今日行程礼</button>
+          <small id="weeklyCheckinHint">每日可前行一步，错过也不会中断本轮驿程</small>
+        </footer>
       </div>
     </dialog>
     <dialog id="staminaPurchaseModal" class="modal stamina-purchase-modal" aria-labelledby="staminaPurchaseTitle">
@@ -663,7 +682,7 @@
 
     <script src="./chapter-story.js?v=story-viewport-v4-closing-dialogue"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
-    <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
-    <script src="./app.js?v=generator-chain-v2-repair-sequence-v15-level-reveal-only-v1-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v15-reward-auto-reveal-v3-cast-journey-v1-persistent-scroll-v1-clue-objects-v18-clue-camera-v2-repair-sound-v1-click-volume-v2-generator-warehouse-v8-daily-shop"></script>
+    <script src="./new-player-guide.js?v=keeper-portrait-v2"></script>
+    <script src="./app.js?v=storage-progression-v3-lv5"></script>
   </body>
 </html>
