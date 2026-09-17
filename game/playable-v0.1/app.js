@@ -9572,8 +9572,11 @@ function showStorageModal() {
 }
 
 function maybeShowStorageGuide() {
-  if (!els.storageModal?.open || state.storageGuideVersion >= STORAGE_GUIDE_VERSION || !els.storageGuide) return;
-  storageGuideStep = "normal";
+  if (!els.storageModal?.open
+    || !els.storageGuide
+    || !generatorWarehouseUnlocked()
+    || state.generatorWarehouseGuideSeen) return;
+  storageGuideStep = "generator";
   els.storageGuide.hidden = false;
   els.storageNormalTab?.parentElement?.classList.add("guide-active");
   renderStorageGuideStep();
