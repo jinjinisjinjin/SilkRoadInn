@@ -2215,6 +2215,282 @@ button:disabled {
   }
 }
 
+/* Compact daily shop opened from the existing pouch entry. */
+.daily-shop-modal {
+  width: min(calc(100vw - 20px), 360px);
+  overflow: visible;
+}
+
+.daily-shop-inner {
+  position: relative;
+  max-height: min(90dvh, 670px);
+  overflow: auto;
+  padding: 0 12px 12px;
+  border: 3px solid #6f4328;
+  border-radius: 18px;
+  color: #4d301f;
+  background:
+    repeating-linear-gradient(0deg, rgba(126, 83, 38, 0.025) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, #f7e5bc, #e8c88f);
+  box-shadow: 0 20px 45px rgba(37, 21, 13, 0.46), inset 0 0 0 2px rgba(255, 247, 218, 0.62);
+}
+
+.daily-shop-inner > .close {
+  top: 10px;
+  right: 10px;
+  border-color: rgba(255, 224, 166, 0.62);
+  color: #ffe8b5;
+  background: linear-gradient(180deg, #9d513f, #71352f);
+}
+
+.daily-shop-head {
+  position: relative;
+  margin: 0 -12px 10px;
+  padding: 12px 50px 11px 15px;
+  border-radius: 14px 14px 4px 4px;
+  color: #fff0cf;
+  background:
+    linear-gradient(90deg, rgba(255, 215, 145, 0.12), transparent 40% 70%, rgba(72, 29, 24, 0.12)),
+    linear-gradient(180deg, #aa5943, #823b33);
+  box-shadow: inset 0 -3px 0 rgba(93, 42, 29, 0.2);
+}
+
+.daily-shop-head small {
+  display: block;
+  color: rgba(255, 232, 186, 0.78);
+  font: 800 9px/1.1 "Songti SC", serif;
+  letter-spacing: 0.12em;
+}
+
+.daily-shop-head h2 {
+  margin: 3px 0 0;
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.daily-shop-balance {
+  position: absolute;
+  top: 21px;
+  right: 52px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 27px;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 229, 176, 0.34);
+  border-radius: 999px;
+  color: #fff3d4;
+  background: rgba(67, 29, 25, 0.35);
+  font: 800 13px/1 Georgia, serif;
+}
+
+.daily-shop-balance > span {
+  color: rgba(255, 236, 198, 0.72);
+  font: 700 9px/1 "Songti SC", serif;
+}
+
+.daily-shop-balance .ruby-icon,
+.daily-shop-card button .ruby-icon {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
+.daily-shop-pouch {
+  display: grid;
+  grid-template-columns: 49px minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  padding: 7px 8px;
+  border: 1px solid rgba(139, 89, 43, 0.36);
+  border-radius: 11px;
+  background: rgba(255, 244, 210, 0.68);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.daily-shop-pouch > img {
+  width: 47px;
+  height: 47px;
+  object-fit: contain;
+}
+
+.daily-shop-pouch strong,
+.daily-shop-pouch small {
+  display: block;
+}
+
+.daily-shop-pouch strong {
+  font: 900 13px/1.2 "Songti SC", serif;
+}
+
+.daily-shop-pouch small {
+  margin-top: 3px;
+  color: #866044;
+  font-size: 9px;
+}
+
+.daily-shop-pouch button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #487861;
+  border-radius: 8px;
+  color: #fff7dc;
+  background: linear-gradient(180deg, #6ca27e, #44745b);
+  box-shadow: 0 2px 0 rgba(50, 84, 63, 0.28);
+  font-size: 11px;
+}
+
+.daily-shop-pouch button.claimed,
+.daily-shop-pouch button:disabled {
+  border-color: rgba(118, 89, 60, 0.42);
+  color: #80634b;
+  background: rgba(188, 158, 112, 0.36);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.daily-shop-section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 11px 3px 6px;
+  color: #6f4228;
+}
+
+.daily-shop-section-title span {
+  font: 900 16px/1 "Songti SC", serif;
+}
+
+.daily-shop-section-title small {
+  color: #936c4c;
+  font-size: 9px;
+}
+
+.daily-shop-offers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.daily-shop-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 112px minmax(28px, auto) auto 34px;
+  justify-items: center;
+  min-width: 0;
+  padding: 9px 7px 7px;
+  border: 1px solid rgba(113, 68, 34, 0.58);
+  border-radius: 10px 10px 7px 7px;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 227, 0.86), rgba(245, 222, 176, 0.92));
+  box-shadow: 0 4px 0 rgba(101, 59, 31, 0.22), inset 0 0 0 2px rgba(255, 250, 224, 0.5);
+}
+
+.daily-shop-card > strong {
+  color: #5d3924;
+  font: 900 14px/1.1 "Songti SC", serif;
+}
+
+.daily-shop-card > img {
+  width: 108px;
+  height: 108px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 3px rgba(65, 38, 20, 0.2));
+}
+
+.daily-shop-card > p {
+  margin: 1px 0 4px;
+  color: #805d43;
+  text-align: center;
+  font: 700 10px/1.35 "Songti SC", serif;
+}
+
+.daily-shop-card > small {
+  margin-bottom: 5px;
+  color: #8c6547;
+  font-size: 9px;
+}
+
+.daily-shop-card > button {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid #3e806a;
+  border-radius: 7px;
+  color: #fff6db;
+  background: linear-gradient(180deg, #58b590, #34806b);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 2px 0 rgba(45, 92, 73, 0.24);
+  font: 900 17px/1 Georgia, serif;
+}
+
+.daily-shop-card.sold-out {
+  filter: grayscale(0.42);
+}
+
+.daily-shop-card.sold-out > button,
+.daily-shop-card.sold-out > button:disabled {
+  border-color: rgba(117, 85, 54, 0.4);
+  color: #755d48;
+  background: rgba(178, 145, 99, 0.38);
+  box-shadow: none;
+  font: 800 11px/1 "Songti SC", serif;
+  opacity: 1;
+}
+
+.daily-shop-card.insufficient > button {
+  filter: saturate(0.66);
+}
+
+.daily-shop-footer {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 6px;
+  align-items: center;
+  margin-top: 11px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  color: #7c5135;
+  background: rgba(184, 115, 72, 0.16);
+  font-size: 10px;
+}
+
+.daily-shop-footer b {
+  color: #8a4437;
+  font: 900 12px/1 Georgia, serif;
+}
+
+.daily-shop-footer small {
+  color: #927057;
+  text-align: right;
+  font-size: 8px;
+}
+
+@media (max-height: 700px) {
+  .daily-shop-inner {
+    max-height: 94dvh;
+  }
+
+  .daily-shop-card {
+    grid-template-rows: auto 88px minmax(26px, auto) auto 32px;
+  }
+
+  .daily-shop-card > img {
+    width: 86px;
+    height: 86px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-shop-entry,
+  .daily-shop-card {
+    animation: none;
+  }
+}
+
 .generator-badge.cooldown-clock {
   top: 3px;
   right: 3px;
