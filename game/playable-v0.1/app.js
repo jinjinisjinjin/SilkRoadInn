@@ -1928,9 +1928,9 @@ function initializeNewPlayerGuideQaScenario() {
     state.currentPage = "board";
   } else if (NEW_PLAYER_GUIDE_QA_STAGE === "locked-merge") {
     state.board[boardIndex(4, 3)] = "hubing_01_dough";
-    state.completedOrderIds = ["order_001_guard_lubing"];
-    state.completedOrders = 1;
-    state.tutorialStep = 4;
+    state.completedOrderIds = [];
+    state.completedOrders = 0;
+    state.tutorialStep = 1;
     state.currentPage = "board";
   } else {
     state.tutorialStep = 0;
@@ -7665,7 +7665,7 @@ function renderTutorial() {
   if (state.tutorialStep === 0) {
     keeper("先点案板上的小石磨，消耗驼铃收下一份麦面。");
   } else if (state.tutorialStep === 1) {
-    keeper("再用小石磨收一份麦面，把两个麦面剂拖到一起，揉成炉饼。");
+    keeper("把麦面剂拖到左边锁格里的相同食物上；合成炉饼时，也会解开这格。");
   } else if (state.tutorialStep === 2) {
     keeper("炉饼做好了，交给沙州驿卒试试。");
   } else if (state.tutorialStep === 3) {
@@ -8149,6 +8149,9 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   if (navigator.vibrate) navigator.vibrate(16);
   if (item?.boxMaterial) tryBuildGeneratorFromMaterials(itemId);
   if (item?.mergeTo) unlockCodex(byId.get(item.mergeTo)?.codexId);
+  if (state.tutorialStep <= 1 && output?.id === "hubing_02_lubing") {
+    state.tutorialStep = 2;
+  }
   clearPulseSoon();
 }
 

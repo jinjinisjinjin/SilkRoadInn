@@ -20,6 +20,7 @@
   const FIRST_REPAIR_ID = "tutorial_complete";
   const LOCKED_MERGE_ITEM_ID = "hubing_01_dough";
   const LOCKED_MERGE_ITEM_NAME = "麦面剂";
+  const LOCKED_MERGE_TARGET_INDEX = 16;
 
   let layer;
   let card;
@@ -217,20 +218,19 @@
   }
 
   function lockedMergeTarget(state, savedGuide) {
-    const storedIndex = Number(savedGuide.lockedMergeTargetIndex);
-    if (Number.isInteger(storedIndex)) {
-      const unlocked = Array.isArray(state.unlockedCells) && state.unlockedCells.includes(storedIndex);
-      const storedCell = document.querySelector(`.cell[data-index="${storedIndex}"]`);
-      if (unlocked || (storedCell && !storedCell.classList.contains("locked"))) {
-        updateGuideState({ lockedMergeSeen: true });
-        return null;
-      }
-      if (storedCell?.classList.contains("locked")) return storedCell;
+    const target = document.querySelector(`.cell[data-index="${LOCKED_MERGE_TARGET_INDEX}"]`);
+    const unlocked = Array.isArray(state.unlockedCells)
+      && state.unlockedCells.includes(LOCKED_MERGE_TARGET_INDEX);
+    if (unlocked || (target && !target.classList.contains("locked"))) {
+      updateGuideState({ lockedMergeSeen: true, lockedMergeTargetIndex: LOCKED_MERGE_TARGET_INDEX });
+      return null;
     }
-    const target = [...document.querySelectorAll(".cell.locked")]
-      .find((cell) => cell.getAttribute("aria-label") === LOCKED_MERGE_ITEM_NAME);
-    if (target) updateGuideState({ lockedMergeTargetIndex: Number(target.dataset.index) });
-    return target || null;
+    if (target?.classList.contains("locked")
+      && target.getAttribute("aria-label") === LOCKED_MERGE_ITEM_NAME) {
+      updateGuideState({ lockedMergeTargetIndex: LOCKED_MERGE_TARGET_INDEX });
+      return target;
+    }
+    return null;
   }
 
   function showLockedMergeGuide(state, savedGuide, page) {
@@ -247,15 +247,14 @@
     const source = boardCellFor(LOCKED_MERGE_ITEM_ID, state);
     if (!source) {
       showGuide({
-        text: "锁格里压着一份麦面。先点小石磨，做一份相同的麦面。",
-        targets: [boardCellFor("gen_mill_01", state), target],
+        text: "先解开左边这个锁格。它压着一份麦面剂；点小石磨做出相同食物，再拖到这里。",
+        targets: [target],
       });
       return true;
     }
     showGuide({
-      text: "把麦面拖到锁格里的相同麦面上；两份合成时，这格也会一起解开。",
-      targets: [source, target],
-      drag: true,
+      text: "先解开左边这个锁格：把棋盘上的麦面剂拖到这里，相同食物合成时锁格会一起打开。",
+      targets: [target],
     });
     return true;
   }
@@ -312,16 +311,16 @@
 
     if (tutorialStep === 1 && page === "board") {
       const dough = doughCells(state);
-      if (dough.length < 2) {
+      const lockedTarget = lockedMergeTarget(state, savedGuide);
+      if (!dough.length) {
         showGuide({
-          text: "再点一次小石磨，备齐两份麦面。",
+          text: "点小石磨做一份麦面剂，用它解开左边的锁格。",
           targets: [boardCellFor("gen_mill_01", state)],
         });
-      } else {
+      } else if (lockedTarget) {
         showGuide({
-          text: "按住一份麦面，拖到另一份上，合成炉饼。",
-          targets: dough.slice(0, 2),
-          drag: true,
+          text: "先解开左边这个锁格：把麦面剂拖到锁格里的相同食物上，会合成炉饼并腾出新棋格。",
+          targets: [lockedTarget],
         });
       }
       return;
