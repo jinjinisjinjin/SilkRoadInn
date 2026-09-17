@@ -14,7 +14,20 @@
 .daily-shop-sign h2 { margin:0!important; color:#fff0c4; font:900 clamp(24px,7vw,32px)/1.25 'Songti SC',serif; letter-spacing:5px; text-shadow:0 2px 2px #3b261b; }
 .daily-shop-balance { position:absolute; right:30px; top:-73px; display:flex; align-items:center; gap:5px; padding:6px 10px; border:1px solid #ddc6949c; border-radius:20px; background:#214843dd; color:#fff0cf; font:700 14px/1 Georgia,serif; }
 .daily-shop-balance>span { font:10px/1 'Songti SC',serif; }
-.daily-shop-balance .ruby-icon,.daily-shop-card .ruby-icon { width:12px; height:12px; margin:0; flex:none; }
+.daily-shop-balance .ruby-icon,.daily-shop-card .ruby-icon {
+  width:15px;
+  height:15px;
+  margin:0;
+  flex:none;
+  border-radius:0;
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+  background:
+    linear-gradient(135deg,rgba(255,220,211,.82) 0 26%,transparent 27%),
+    linear-gradient(180deg,#d96b68 0 48%,#b43c4d 49% 100%);
+  box-shadow:none;
+  filter:drop-shadow(0 1px 1px rgba(72,24,28,.34));
+  transform:none;
+}
 .daily-shop-footer { position:absolute; top:28%; left:10%; right:10%; display:flex; justify-content:center; align-items:center; gap:7px; color:#73583e; font-size:10px; }
 .daily-shop-footer b { color:#375e53; font:700 12px/1 Georgia,serif; }
 .daily-shop-footer small { display:none; }
@@ -37,14 +50,21 @@
 /* Only the shelves scroll; canopy and counter remain anchored. */
 .modal.daily-shop-modal { overflow:hidden; width:min(96vw,440px,64dvh); }
 .daily-shop-inner { overflow:hidden; }
+.daily-shop-inner.is-base-only { aspect-ratio:11/12; background-position:top center; background-size:100% auto; }
+.daily-shop-inner.is-base-only .daily-shop-sign { top:20.9%; }
+.daily-shop-inner.is-base-only .daily-shop-footer { top:35%; }
+.daily-shop-inner.is-base-only .daily-shop-stall { top:41.25%; height:49.6%; }
 .daily-shop-head { position:static; }
 .daily-shop-sign { position:absolute; top:15.2%; left:12%; right:12%; text-align:center; }
 .daily-shop-balance { top:12px; right:60px; }
 .daily-shop-footer { top:25.5%; }
 .daily-shop-stall { inset:30% 7.5% 13%; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; scrollbar-width:thin; scrollbar-color:#9d8155 #e7d1a5; background:#eddbb7; border-radius:3px; box-shadow:inset 0 4px 8px #68482429; }
+.daily-shop-stall.is-base-only { bottom:auto; height:238px; overflow-y:hidden; }
 .daily-shop-stall:focus-visible { outline:2px solid #547d69; outline-offset:-2px; }
 .daily-shop-grid { display:block; height:auto; }
 .daily-shop-shelf { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:3px; min-height:238px; padding:27px 6px 25px; background:url('./assets/ui/shop_market_stall_v1.png') center 51% / 118% 300% no-repeat; }
+.daily-shop-shelf[data-item-count="1"] { grid-template-columns:minmax(0,33%); justify-content:center; }
+.daily-shop-shelf[data-item-count="2"] { grid-template-columns:repeat(2,minmax(0,33%)); justify-content:center; column-gap:8px; }
 .daily-shop-shelf[hidden] { display:none; }
 .daily-shop-section-title { position:absolute; display:block; top:9px; left:10px; right:10px; text-align:center; color:#846444; font:11px/1.2 'Songti SC',serif; letter-spacing:2px; }
 .daily-shop-card { padding:0 2px; }
@@ -55,6 +75,7 @@
 .daily-shop-card>button { min-height:36px; margin-top:8px; }
 .daily-shop-card-empty { height:115px; align-self:center; }
 @media(max-width:350px), (max-height:590px) {
+  .daily-shop-stall.is-base-only { height:214px; }
   .daily-shop-shelf { min-height:214px; padding-top:25px; }
   .daily-shop-card>img { height:68px; }
   .daily-shop-card>strong { font-size:10px; }

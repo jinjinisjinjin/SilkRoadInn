@@ -1142,6 +1142,41 @@
   const segmentStoryChapter = new Map(
     storyChapters.flatMap((chapter) => chapter.segmentIds.map((segmentId) => [segmentId, chapter])),
   );
+  const dialogueFootnoteLabels = {
+    "opening:2": ["驿与客舍是一回事吗？", "驿"],
+    "chapter2-opening:0": ["胡麻何时进入饼食？", "麻"],
+    "before:lv2_front_feast:0": ["粟特商人为何常作中间人？", "商"],
+    "before:lv2_south_shop:0": ["河西路上的乳食", "乳"],
+    "after:lv2_south_shop:1": ["酥是唐代才传入的吗？", "酥"],
+    "before:lv3_west_gate:1": ["“波斯人”一定来自波斯吗？", "胡"],
+    "before:lv3_east_court:0": ["宵禁前为何要找到落脚处？", "更"],
+    "before:lv3_east_court:1": ["唐代的胡乐从哪里来？", "乐"],
+    "before:lv3_garden:3": ["过所与保结是什么？", "牒"],
+    "chapter4-opening:3": ["唐代已普遍喝腊八粥了吗？", "粥"],
+    "after:lv4_south_shed:1": ["丝路货物如何走完全程？", "路"],
+    "before:lv4_east_shed:1": ["古代货物怎样留下身份？", "签"],
+    "before:lv4_east_court:3": ["僧人能吃乳糜吗？", "乳"],
+  };
+  const storyArchiveFootnotes = Object.entries(dialogueFootnotes).map(([key, note]) => {
+    const separator = key.lastIndexOf(":");
+    const segmentId = key.slice(0, separator);
+    const stepIndex = Number(key.slice(separator + 1));
+    const storyChapter = segmentStoryChapter.get(segmentId);
+    const [title, glyph] = dialogueFootnoteLabels[key] ?? ["剧情史实旁注", "注"];
+    return Object.freeze({
+      id: `dialogue-footnote-${key.replaceAll(":", "-")}`,
+      key,
+      kind: "史实旁注",
+      title,
+      glyph,
+      chapter: storyChapter?.volume ?? 1,
+      storyChapterNumber: storyChapter?.number ?? 1,
+      segmentId,
+      stepIndex,
+      text: note.text,
+      source: note.source,
+    });
+  });
   const storyArchiveMoments = storyChapters.reduce((result, chapter) => {
     (result[chapter.volume] ??= []).push({
       id: `story-chapter-${String(chapter.number).padStart(2, "0")}`,
@@ -1457,5 +1492,13 @@
     return play(ids[normalizedIndex], { qa: { chapter: normalizedChapter, index: normalizedIndex } });
   }
 
-  global.SilkRoadChapterStory = { play, playChapterQa, segments, chapterSegments, archiveMoments: storyArchiveMoments, storyChapters };
+  global.SilkRoadChapterStory = {
+    play,
+    playChapterQa,
+    segments,
+    chapterSegments,
+    archiveMoments: storyArchiveMoments,
+    archiveFootnotes: storyArchiveFootnotes,
+    storyChapters,
+  };
 })(window);

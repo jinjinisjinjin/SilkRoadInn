@@ -47,6 +47,10 @@ const WEEKLY_CHECKIN_PREVIEW = new URLSearchParams(location.search).get("preview
 const DAILY_SHOP_QA_MODE = QA_MODE === "daily-shop-v1";
 const DAILY_SHOP_QA_RESET = DAILY_SHOP_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
+const DAILY_SHOP_QA_EMPTY = DAILY_SHOP_QA_MODE
+  && new URLSearchParams(location.search).get("catalog") === "empty";
+const DAILY_SHOP_QA_PROPS = DAILY_SHOP_QA_MODE
+  && new URLSearchParams(location.search).get("props") === "1";
 const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const GENERATOR_CHAIN_QA_MODE = QA_MODE === "generator-chain-v1";
@@ -630,6 +634,7 @@ const state = {
   rewardItems: [],
   giftPacks: [],
   giftBoxStates: {},
+  storedGiftBoxStates: {},
   bubbleStates: {},
   unlockedCells: [],
   visibleOrders: [],
@@ -1874,6 +1879,7 @@ function initializeStoryArchiveQaScenario() {
   state.completedOrderIds = ["order_003_sogdian_humabing"];
   state.answeredHistoricalNoteIds = [];
   state.historicalNoteRewards = {};
+  state.shopFoodItemIds = null;
   state.innLevel = VOLUME_START_LEVELS[STORY_ARCHIVE_QA_CHAPTER];
   state.currentPage = "inn";
 }
@@ -2374,18 +2380,20 @@ function syncDailyShopCycle(now = Date.now()) {
   if (changed) {
     state.shopPurchaseCycle = cycle;
     state.shopPurchasedOfferIds = [];
-    state.shopFoodItemIds = null;
+    state.shopFoodItemIds = DAILY_SHOP_QA_EMPTY ? [] : null;
   }
   if (!Array.isArray(state.shopFoodItemIds)) {
     const candidates = [...byId.values()].filter((item) =>
       SHOP_FOOD_PRICES[item.level]
       && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(item.line)
-      && (DAILY_SHOP_QA_MODE || orderDemandLinesUnlocked({ demand: [{ itemId: item.id }] })));
+      && (DAILY_SHOP_QA_MODE || STORY_ARCHIVE_QA_MODE || orderDemandLinesUnlocked({ demand: [{ itemId: item.id }] })));
     for (let i = candidates.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
-    state.shopFoodItemIds = candidates.slice(0, 6).map((item) => item.id);
+    const unlockedLineCount = new Set(candidates.map((item) => item.line)).size;
+    const offerLimit = unlockedLineCount <= 1 ? 3 : 6;
+    state.shopFoodItemIds = candidates.slice(0, offerLimit).map((item) => item.id);
     changed = true;
   }
   return changed;
@@ -2402,6 +2410,10 @@ function renderShopFoodShelves() {
   const host = document.querySelector("#dailyShopFoodShelves");
   if (!host) return;
   const ids = state.shopFoodItemIds ?? [];
+  const stall = host.closest(".daily-shop-stall");
+  const baseOnly = ids.length === 0;
+  stall?.classList.toggle("is-base-only", baseOnly);
+  stall?.closest(".daily-shop-inner")?.classList.toggle("is-base-only", baseOnly);
   const key = JSON.stringify(ids);
   if (host.dataset.catalog === key) return;
   host.dataset.catalog = key;
@@ -2441,6 +2453,9 @@ function renderShopFoodShelves() {
     buy.innerHTML = '<i class="ruby-icon" aria-hidden="true"></i><span></span>';
     card.append(name, detail, level, stock, buy);
     host.lastElementChild.append(card);
+  });
+  host.querySelectorAll(".daily-shop-shelf").forEach((shelf) => {
+    shelf.dataset.itemCount = String(shelf.querySelectorAll(".daily-shop-card").length);
   });
 }
 
@@ -2659,6 +2674,7 @@ function defaultState() {
     rewardItems: [],
     giftPacks: [],
     giftBoxStates: {},
+    storedGiftBoxStates: {},
     bubbleStates: {},
     unlockedCells: [],
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
@@ -2809,13 +2825,15 @@ function loadState() {
   const repairStateNeedsMigration = data.repairProtocolVersion !== REPAIR_PROTOCOL_VERSION
     || loadedActiveRepairId !== persistedActiveRepairId
     || JSON.stringify(loadedRepairProgress) !== JSON.stringify(persistedRepairProgress);
+  const loadedBag = normalizeStorageSlots(data.bag, data.unlockedStorageSlots)
+    .map((itemId) => isGeneratorPiece(byId.get(itemId)) ? null : itemId);
   Object.assign(state, {
     board: normalizeBoard(data.board),
-    bag: normalizeStorageSlots(data.bag, data.unlockedStorageSlots)
-      .map((itemId) => isGeneratorPiece(byId.get(itemId)) ? null : itemId),
+    bag: loadedBag,
     rewardItems: normalizeRewardItems(data.rewardItems),
     giftPacks: normalizeGiftPacks(data.giftPacks),
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
+    storedGiftBoxStates: normalizeStoredGiftBoxStates(data.storedGiftBoxStates, loadedBag),
     bubbleStates: normalizeBubbleStates(data.bubbleStates),
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
@@ -2917,12 +2935,37 @@ function loadState() {
     state.gems = 80;
     state.board = Array(BOARD_SIZE).fill(null);
     state.board[starterGeneratorIndex()] = "gen_mill_01";
-    state.giftPacks = [];
+    state.giftPacks = DAILY_SHOP_QA_PROPS
+      ? [
+        { id: SHOP_WEALTH_PACK_ID, quantity: 1 },
+        { id: SHOP_SAXAUL_PACK_ID, quantity: 1 },
+      ]
+      : [];
     state.giftBoxStates = {};
+    state.storedGiftBoxStates = {};
+    if (DAILY_SHOP_QA_PROPS) {
+      const boardIndices = state.board
+        .map((itemId, index) => (!itemId && !isBoardCellLocked(index) ? index : -1))
+        .filter((index) => index >= 0)
+        .slice(0, 2);
+      const previewPacks = [GIFT_PACKS[SHOP_WEALTH_PACK_ID], GIFT_PACKS[SHOP_SAXAUL_PACK_ID]];
+      previewPacks.forEach((pack, previewIndex) => {
+        const boardIndex = boardIndices[previewIndex];
+        if (boardIndex === undefined || !pack) return;
+        state.board[boardIndex] = pack.itemId;
+        state.giftBoxStates[boardIndex] = { packId: pack.id, nextRewardIndex: 0 };
+      });
+      state.bag[0] = SHOP_WEALTH_ITEM_ID;
+      state.bag[1] = SHOP_SAXAUL_ITEM_ID;
+      state.storedGiftBoxStates = {
+        0: { packId: SHOP_WEALTH_PACK_ID, nextRewardIndex: 0 },
+        1: { packId: SHOP_SAXAUL_PACK_ID, nextRewardIndex: 0 },
+      };
+    }
     state.dailyPouchClaimDay = "";
     state.shopPurchaseCycle = currentDailyShopCycle();
     state.shopPurchasedOfferIds = [];
-    state.shopFoodItemIds = null;
+    state.shopFoodItemIds = DAILY_SHOP_QA_EMPTY ? [] : null;
   }
   reconcileGiftBoxStates();
   restoreBonusBubbleItems();
@@ -2956,6 +2999,7 @@ function saveState() {
       rewardItems: state.rewardItems,
       giftPacks: state.giftPacks,
       giftBoxStates: state.giftBoxStates,
+      storedGiftBoxStates: state.storedGiftBoxStates,
       bubbleStates: state.bubbleStates,
       unlockedCells: state.unlockedCells,
       visibleOrders: state.visibleOrders,
@@ -4855,6 +4899,22 @@ function storyArchiveMoments(chapter) {
   return window.SilkRoadChapterStory?.archiveMoments?.[chapter] ?? [];
 }
 
+function storyArchiveFootnotes(chapter = null) {
+  const notes = window.SilkRoadChapterStory?.archiveFootnotes ?? [];
+  return chapter === null ? notes : notes.filter((note) => note.chapter === chapter);
+}
+
+function storyArchiveFootnoteUnlocked(note) {
+  if (!note?.segmentId) return false;
+  if (chapterStorySeen(note.segmentId)) return true;
+  return state.activeChapterStory?.segmentId === note.segmentId
+    && Number(state.activeChapterStory.index) >= Number(note.stepIndex);
+}
+
+function unlockedStoryArchiveFootnotes(chapter = null) {
+  return storyArchiveFootnotes(chapter).filter(storyArchiveFootnoteUnlocked);
+}
+
 function historicalNoteUnlocked(note) {
   if (!note) return false;
   if (note.repairId) return isRepairCompleted(note.repairId);
@@ -4879,6 +4939,11 @@ function unlockedHistoricalNotes(chapter = null) {
     .sort((left, right) => (left.chapter - right.chapter)
       || ((left.orderId ? -1 : (repairOrder.get(left.repairId) ?? 999))
         - (right.orderId ? -1 : (repairOrder.get(right.repairId) ?? 999))));
+}
+
+function historicalNoteArchiveImageSrc(note) {
+  if (note?.orderId && note.image?.src) return note.image.src;
+  return `./assets/history/clues/${note.id}.webp`;
 }
 
 function historicalNoteForOrder(orderId) {
@@ -5245,6 +5310,7 @@ function unlockedStoryArchiveMoments(unlockedIds = unlockedChapterStoryIds()) {
 
 function storyArchiveChapterIsUnlocked(chapter, unlockedIds = unlockedChapterStoryIds()) {
   return storyArchiveMoments(chapter).some((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds))
+    || unlockedStoryArchiveFootnotes(chapter).length > 0
     || unlockedHistoricalNotes(chapter).length > 0;
 }
 
@@ -5261,13 +5327,14 @@ function storyArchiveChapterForMoment(momentId) {
 function renderStoryArchiveEntry() {
   if (!els.storyArchiveBtn) return;
   const count = unlockedStoryArchiveMoments().length;
+  const footnoteCount = unlockedStoryArchiveFootnotes().length;
   const unreadCount = unreadHistoricalNotes().length;
   els.storyArchiveBtn.disabled = false;
   els.storyArchiveBtn.dataset.unreadNotes = String(unreadCount);
   els.storyArchiveBtn.classList.toggle("has-unread-note", unreadCount > 0);
   els.storyArchiveBtn.setAttribute("aria-label", unreadCount
     ? `回顾已解锁剧情，${unreadCount}则新见闻未读`
-    : count ? "回顾已解锁剧情" : "查看剧情回顾，尚未有纪事");
+    : count || footnoteCount ? "回顾已解锁剧情与史实旁注" : "查看剧情回顾，尚未有纪事");
   els.storyArchiveBtn.title = "剧情回顾";
 }
 
@@ -5363,11 +5430,12 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
   const player = window.SilkRoadChapterStory;
   if (!player || !els.storyArchiveChapters || !els.storyArchiveList) return;
   const unlockedMoments = unlockedStoryArchiveMoments(unlockedIds);
+  const unlockedFootnotes = unlockedStoryArchiveFootnotes();
   const unlockedNotes = unlockedHistoricalNotes();
-  const archiveIsEmpty = unlockedMoments.length === 0 && unlockedNotes.length === 0;
+  const archiveIsEmpty = unlockedMoments.length === 0 && unlockedFootnotes.length === 0 && unlockedNotes.length === 0;
   els.storyArchiveTotal.textContent = archiveIsEmpty
     ? "尚无纪事"
-    : `${unlockedMoments.length} 则剧情 · ${unlockedNotes.length} 则旁注`;
+    : `${unlockedMoments.length} 则剧情 · ${unlockedFootnotes.length + unlockedNotes.length} 则旁注`;
   renderStoryArchiveRecent(unlockedIds);
   els.storyArchiveChapters.replaceChildren();
   [1, 2, 3, 4].forEach((chapter) => {
@@ -5384,10 +5452,11 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
 
   const chapterMoments = storyArchiveMoments(activeStoryArchiveChapter);
   const availableMoments = chapterMoments.filter((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds));
+  const chapterFootnotes = unlockedStoryArchiveFootnotes(activeStoryArchiveChapter);
   const chapterNotes = unlockedHistoricalNotes(activeStoryArchiveChapter);
   els.storyArchiveChapterEyebrow.textContent = `第${activeStoryArchiveChapter}卷`;
   els.storyArchiveChapterTitle.textContent = chapterName(activeStoryArchiveChapter);
-  els.storyArchiveChapterCount.textContent = `剧情 ${availableMoments.length} · 旁注 ${chapterNotes.length}`;
+  els.storyArchiveChapterCount.textContent = `剧情 ${availableMoments.length} · 旁注 ${chapterFootnotes.length + chapterNotes.length}`;
   els.storyArchiveList.replaceChildren();
 
   availableMoments.forEach((archiveMoment, momentIndex) => {
@@ -5418,7 +5487,7 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
     els.storyArchiveList.append(card);
   });
 
-  if (!availableMoments.length && !chapterNotes.length) {
+  if (!availableMoments.length && !chapterFootnotes.length && !chapterNotes.length) {
     const empty = document.createElement("div");
     empty.className = "story-archive-empty";
     const title = document.createElement("strong");
@@ -5433,10 +5502,40 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
     next.textContent = "新的纪事将在旅途中写下";
     els.storyArchiveList.append(next);
   }
+  if (chapterFootnotes.length) {
+    const heading = document.createElement("h4");
+    heading.className = "story-archive-notes-heading";
+    heading.textContent = "史实旁注";
+    els.storyArchiveList.append(heading);
+    chapterFootnotes.forEach((note) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "story-archive-card story-archive-note-card story-archive-footnote-card";
+      card.dataset.storyFootnoteKey = note.key;
+      card.setAttribute("aria-label", `回看第${note.storyChapterNumber}章旁注：${note.title}`);
+      const glyph = document.createElement("span");
+      glyph.className = "historical-note-glyph";
+      glyph.textContent = note.glyph;
+      glyph.setAttribute("aria-hidden", "true");
+      const copy = document.createElement("span");
+      const kind = document.createElement("small");
+      kind.textContent = `第${note.storyChapterNumber}章 · ${note.kind}`;
+      const title = document.createElement("strong");
+      title.textContent = note.title;
+      const teaser = document.createElement("em");
+      teaser.textContent = note.text;
+      copy.append(kind, title, teaser);
+      const arrow = document.createElement("i");
+      arrow.textContent = "›";
+      arrow.setAttribute("aria-hidden", "true");
+      card.append(glyph, copy, arrow);
+      els.storyArchiveList.append(card);
+    });
+  }
   if (chapterNotes.length) {
     const heading = document.createElement("h4");
     heading.className = "story-archive-notes-heading";
-    heading.textContent = "史实旁注 · 想知道更多时再翻开";
+    heading.textContent = "驿站见闻";
     els.storyArchiveList.append(heading);
     chapterNotes.forEach((note) => {
       const card = document.createElement("button");
@@ -5446,10 +5545,13 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
       const unread = !historicalNoteAnswered(note.id);
       card.classList.toggle("is-unread-note", unread);
       card.setAttribute("aria-label", unread ? `阅读新见闻：${note.title}` : `阅读${note.kind}：${note.title}`);
-      const glyph = document.createElement("span");
-      glyph.className = "historical-note-glyph";
-      glyph.textContent = note.glyph;
-      glyph.setAttribute("aria-hidden", "true");
+      const thumbnail = document.createElement("span");
+      thumbnail.className = "historical-note-thumbnail";
+      thumbnail.setAttribute("aria-hidden", "true");
+      const image = document.createElement("img");
+      image.src = historicalNoteArchiveImageSrc(note);
+      image.alt = "";
+      thumbnail.append(image);
       const copy = document.createElement("span");
       const kind = document.createElement("small");
       kind.textContent = note.kind;
@@ -5461,7 +5563,7 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
       const arrow = document.createElement("i");
       arrow.textContent = "›";
       arrow.setAttribute("aria-hidden", "true");
-      card.append(glyph, copy, arrow);
+      card.append(thumbnail, copy, arrow);
       els.storyArchiveList.append(card);
     });
   }
@@ -5510,11 +5612,27 @@ function selectStoryArchiveChapter(event) {
 }
 
 function selectStoryArchiveSegment(event) {
-  const card = event.target.closest("button[data-story-segment-id], button[data-story-moment-id], button[data-historical-note-id]");
+  const card = event.target.closest("button[data-story-segment-id], button[data-story-moment-id], button[data-story-footnote-key], button[data-historical-note-id]");
   if (!card) return;
   if (card.dataset.historicalNoteId) openHistoricalNote(card.dataset.historicalNoteId, { returnToArchive: true });
+  else if (card.dataset.storyFootnoteKey) replayChapterStoryFootnote(card.dataset.storyFootnoteKey);
   else if (card.dataset.storyMomentId) replayChapterStoryMoment(card.dataset.storyMomentId);
   else replayChapterStory(card.dataset.storySegmentId);
+}
+
+function replayChapterStoryFootnote(footnoteKey) {
+  const player = window.SilkRoadChapterStory;
+  const note = storyArchiveFootnotes().find((entry) => entry.key === footnoteKey);
+  if (!player || !note || !storyArchiveFootnoteUnlocked(note)) return;
+  const startReplay = () => {
+    player.play(note.segmentId, {
+      review: true,
+      startIndex: note.stepIndex,
+      onComplete: () => openStoryArchive(note.chapter),
+    });
+  };
+  if (els.storyArchiveModal.open) closeStoryArchive(startReplay);
+  else startReplay();
 }
 
 function replayChapterStory(segmentId) {
@@ -6652,39 +6770,53 @@ function normalizeGiftPacks(value) {
   return [...quantities].map(([id, quantity]) => ({ id, quantity }));
 }
 
+function normalizeGiftBoxStateEntry(entry) {
+  const pack = GIFT_PACKS[entry?.packId];
+  if (!pack) return null;
+  const normalized = {
+    packId: entry.packId,
+    nextRewardIndex: Math.max(0, Math.floor(Number(entry.nextRewardIndex) || 0)),
+  };
+  if (pack.dailyReward && Array.isArray(entry.pendingOutputs)) {
+    normalized.pendingOutputs = entry.pendingOutputs
+      .slice(0, 32)
+      .filter((itemId) => {
+        const item = byId.get(itemId);
+        return item?.type === "bonus_coin" || item?.type === "bonus_stamina";
+      });
+    const reward = pack.rewardPool?.find((candidate) => candidate.id === entry.dailyRewardId);
+    if (reward) normalized.dailyRewardId = reward.id;
+  }
+  return normalized;
+}
+
 function normalizeGiftBoxStates(value) {
   if (!value || typeof value !== "object") return {};
-  return Object.fromEntries(
-    Object.entries(value)
-      .filter(([index, entry]) => {
-        const boardIndex = Number(index);
-        return Number.isInteger(boardIndex)
-          && boardIndex >= 0
-          && boardIndex < BOARD_SIZE
-          && GIFT_PACKS[entry?.packId];
-      })
-      .map(([index, entry]) => {
-        const pack = GIFT_PACKS[entry.packId];
-        const normalized = {
-          packId: entry.packId,
-          nextRewardIndex: Math.max(0, Math.floor(Number(entry.nextRewardIndex) || 0)),
-        };
-        if (pack.dailyReward && Array.isArray(entry.pendingOutputs)) {
-          normalized.pendingOutputs = entry.pendingOutputs
-            .slice(0, 32)
-            .filter((itemId) => {
-              const item = byId.get(itemId);
-              return item?.type === "bonus_coin" || item?.type === "bonus_stamina";
-            });
-          const reward = pack.rewardPool?.find((candidate) => candidate.id === entry.dailyRewardId);
-          if (reward) normalized.dailyRewardId = reward.id;
-        }
-        return [index, normalized];
-      }),
-  );
+  return Object.fromEntries(Object.entries(value).flatMap(([index, entry]) => {
+    const boardIndex = Number(index);
+    const normalized = normalizeGiftBoxStateEntry(entry);
+    if (!Number.isInteger(boardIndex) || boardIndex < 0 || boardIndex >= BOARD_SIZE || !normalized) return [];
+    return [[index, normalized]];
+  }));
+}
+
+function normalizeStoredGiftBoxStates(value, bag) {
+  if (!value || typeof value !== "object") return {};
+  return Object.fromEntries(Object.entries(value).flatMap(([index, entry]) => {
+    const bagIndex = Number(index);
+    const pack = GIFT_PACKS[entry?.packId];
+    const normalized = normalizeGiftBoxStateEntry(entry);
+    const isMatchingStoredProp = Number.isInteger(bagIndex)
+      && bagIndex >= 0
+      && bagIndex < bag.length
+      && pack?.shopOffer
+      && bag[bagIndex] === pack.itemId;
+    return isMatchingStoredProp && normalized ? [[index, normalized]] : [];
+  }));
 }
 
 function reconcileGiftBoxStates() {
+  state.storedGiftBoxStates ??= {};
   const dailyBoardIndices = state.board
     .map((itemId, index) => (itemId === DAILY_POUCH_ITEM_ID ? index : -1))
     .filter((index) => index >= 0);
@@ -6703,6 +6835,10 @@ function reconcileGiftBoxStates() {
   Object.keys(state.giftBoxStates).forEach((index) => {
     const pack = GIFT_PACKS[state.giftBoxStates[index]?.packId];
     if (!pack || state.board[Number(index)] !== pack.itemId) delete state.giftBoxStates[index];
+  });
+  Object.keys(state.storedGiftBoxStates).forEach((index) => {
+    const pack = GIFT_PACKS[state.storedGiftBoxStates[index]?.packId];
+    if (!pack?.shopOffer || state.bag[Number(index)] !== pack.itemId) delete state.storedGiftBoxStates[index];
   });
 }
 
@@ -7182,14 +7318,14 @@ function renderSelected() {
     const productionStatus = item.type === "manual_generator"
       ? cooldownSeconds > 0
         ? "休息中，还剩" + formatGeneratorCountdown(cooldownSeconds)
-        : `×${state.productionMultiplier} · ${manualGeneratorOutputItem(item)?.name ?? "食品"} · 充能 ${generatorState.charges}/${item.generator.chargeMax}`
+        : ""
       : cooldownSeconds > 0
         ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
         : neighborEmptyIndices(state.selectedIndex).length > 0
           ? `本轮剩余${generatorState.remainingOutputs}/${batchSize}份，奶食即将投放`
           : `本轮剩余${generatorState.remainingOutputs}/${batchSize}份；腾出奶房相邻格，或移动奶房后继续`;
     els.selectedName.textContent = /Lv\d+$/.test(item.name) ? item.name : item.name + " · Lv" + (item.level ?? 1);
-    els.selectedText.textContent = productionStatus + " · " + generatorUpgradeSummary(item);
+    els.selectedText.textContent = productionStatus;
     setSellButtonAction(getPieceRemovalAction(item));
     return;
   }
@@ -9888,6 +10024,8 @@ function storeBoardItemToStorage(boardIndex) {
     return;
   }
   const boardItem = byId.get(itemId);
+  const giftState = state.giftBoxStates[boardIndex];
+  const giftPack = giftState ? GIFT_PACKS[giftState.packId] : null;
   if (isGeneratorPiece(boardItem)) {
     if (Number(boardItem.level) === generatorWarehouseAcceptedLevel()) {
       depositGeneratorAtBoardIndex(boardIndex, { openWarehouse: true });
@@ -9905,7 +10043,7 @@ function storeBoardItemToStorage(boardIndex) {
     toast("气泡、铜币、红宝石和体力棋子需要留在棋盘上继续合成。");
     return;
   }
-  if (byId.get(itemId)?.type === "gift_box") {
+  if (boardItem?.type === "gift_box" && !giftPack?.shopOffer) {
     toast("礼盒包要直接点击打开，不能收进普通行囊格。");
     return;
   }
@@ -9915,9 +10053,16 @@ function storeBoardItemToStorage(boardIndex) {
   }
   state.bag[bagIndex] = itemId;
   state.board[boardIndex] = null;
+  if (giftPack?.shopOffer && giftState) {
+    state.storedGiftBoxStates ??= {};
+    state.storedGiftBoxStates[bagIndex] = giftState;
+    delete state.giftBoxStates[boardIndex];
+  }
   state.selectedIndex = null;
   const item = byId.get(itemId);
-  keeper(`${item.name}已收进柜中暂存。`);
+  keeper(giftPack?.shopOffer
+    ? `${item.name}已收进柜中暂存，剩余产出已保留。`
+    : `${item.name}已收进柜中暂存。`);
   render();
   renderBag();
   if (els.storageModal?.open) renderStorage();
@@ -9936,8 +10081,13 @@ function retrieveFromStorage(index) {
     return;
   }
   transferGeneratorState(itemId, bagGeneratorStateKey(index), boardGeneratorStateKey(boardIndex));
+  const storedGiftState = state.storedGiftBoxStates?.[index];
   state.board[boardIndex] = itemId;
   state.bag[index] = null;
+  if (storedGiftState) {
+    state.giftBoxStates[boardIndex] = storedGiftState;
+    delete state.storedGiftBoxStates[index];
+  }
   state.selectedIndex = boardIndex;
   const item = byId.get(itemId);
   keeper(`${item.name}已放回案板。`);
@@ -10319,11 +10469,9 @@ function openGiftBoxOnBoard(index) {
   giftState.nextRewardIndex += 1;
   if (giftState.nextRewardIndex >= pack.rewards.length) {
     clearGiftBox(index);
-    toast(`${pack.name}取完了。`);
   } else {
     state.selectedIndex = index;
     state.pulseIndex = index;
-    toast(`还剩${pack.rewards.length - giftState.nextRewardIndex}份奖励。`);
   }
   clearPulseSoon();
   render();

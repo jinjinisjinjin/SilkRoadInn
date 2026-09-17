@@ -91,7 +91,7 @@
 .weekly-checkin-inner::before {
   z-index: 0;
   inset: 0 0 auto;
-  height: 124px;
+  height: 104px;
   border-bottom: 3px solid #c79b58;
   background:
     radial-gradient(70px 32px at 18% 102%, rgba(238, 207, 139, 0.19) 0 49%, transparent 51%),
@@ -139,7 +139,7 @@
 .weekly-checkin-head {
   position: relative;
   z-index: 1;
-  min-height: 115px;
+  min-height: 95px;
   padding: 16px 48px 0;
   text-align: center;
   color: #fff0c9;
@@ -165,17 +165,10 @@
 }
 
 .weekly-checkin-head h2 {
-  margin: 4px 0 2px;
+  margin: 7px 0 0;
   color: #fff4ce;
   font: 900 31px/1.08 "Songti SC", serif;
   letter-spacing: 7px;
-}
-
-.weekly-checkin-head p {
-  margin: 6px -22px 0;
-  color: #ecd9b0;
-  font: 10.5px/1.4 "Songti SC", serif;
-  letter-spacing: 0.5px;
 }
 
 .weekly-checkin-progress {
@@ -434,10 +427,9 @@
 @media (max-height: 690px), (max-width: 350px) {
   .modal.weekly-checkin-modal { width: min(92vw, 360px); }
   .weekly-checkin-inner { padding-right: 13px; padding-bottom: 12px; padding-left: 13px; }
-  .weekly-checkin-inner::before { height: 108px; }
-  .weekly-checkin-head { min-height: 100px; padding-top: 11px; }
+  .weekly-checkin-inner::before { height: 94px; }
+  .weekly-checkin-head { min-height: 86px; padding-top: 11px; }
   .weekly-checkin-head h2 { font-size: 26px; }
-  .weekly-checkin-head p { margin-top: 3px; font-size: 9px; }
   .weekly-checkin-progress { margin-top: 8px; margin-bottom: 9px; padding: 7px 8px; }
   .weekly-checkin-trail i { width: 18px; height: 18px; }
   .weekly-checkin-grid { gap: 6px; padding: 6px; }
