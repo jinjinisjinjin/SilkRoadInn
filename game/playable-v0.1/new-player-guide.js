@@ -11,11 +11,18 @@
   const GUIDE_SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
     ? "silkroad_new_player_guide_v1_qa"
     : "silkroad_new_player_guide_v1";
+  if (NEW_PLAYER_GUIDE_QA_MODE && params.get("reset") === "1") {
+    localStorage.removeItem(GAME_SAVE_KEY);
+    localStorage.removeItem(GUIDE_SAVE_KEY);
+  }
   const TARGET_CLASS = "new-player-guide-target";
   const FIRST_ORDER_ID = "order_001_guard_lubing";
   const FIRST_REPAIR_ID = "tutorial_complete";
+  const LOCKED_MERGE_ITEM_ID = "hubing_01_dough";
+  const LOCKED_MERGE_ITEM_NAME = "麦面剂";
 
   let layer;
+  let card;
   let copy;
   let pointer;
   let acknowledgeButton;
@@ -53,7 +60,7 @@
     layer.innerHTML = `
       <section class="new-player-guide-card" aria-label="新手引导">
         <div class="new-player-guide-portrait-frame">
-          <img class="new-player-guide-portrait" src="./assets/keeper_portrait.png" alt="掌柜" />
+          <img class="new-player-guide-portrait" src="./assets/keeper_story_portrait_v2.png" alt="掌柜" />
         </div>
         <div class="new-player-guide-copy">
           <small>掌柜指引</small>
@@ -65,6 +72,7 @@
       <i class="new-player-guide-pointer" aria-hidden="true"></i>
     `;
     app.append(layer);
+    card = layer.querySelector(".new-player-guide-card");
     copy = layer.querySelector(".new-player-guide-copy p");
     pointer = layer.querySelector(".new-player-guide-pointer");
     acknowledgeButton = layer.querySelector(".new-player-guide-ack");
@@ -125,6 +133,9 @@
     const first = targets[0].getBoundingClientRect();
     const firstCenterX = first.left - appRect.left + first.width / 2;
     const firstCenterY = first.top - appRect.top + first.height / 2;
+    const targetOnRight = firstCenterX > appRect.width * 0.58;
+    card.style.left = targetOnRight ? "14px" : "auto";
+    card.style.right = targetOnRight ? "auto" : "14px";
     pointer.hidden = false;
     pointer.classList.toggle("drag-path", Boolean(drag && targets[1]));
     pointer.classList.remove("points-up", "points-right", "points-left");
@@ -183,9 +194,63 @@
     return [...document.querySelectorAll("dialog[open]")].some((dialog) => dialog.open);
   }
 
+  function boardIsFull(state) {
+    if (!Array.isArray(state.board)) return false;
+    const usableCells = [...document.querySelectorAll("#board .cell:not(.locked)")]
+      .filter(isVisible);
+    return usableCells.length > 0 && usableCells.every((cell) => {
+      const index = Number(cell.dataset.index);
+      return Number.isInteger(index) && Boolean(state.board[index]);
+    });
+  }
+
   function repairTarget() {
     return document.querySelector(".longscroll-current-region")
       || document.querySelector(".mainline-action.ready");
+  }
+
+  function lockedMergeTarget(state, savedGuide) {
+    const storedIndex = Number(savedGuide.lockedMergeTargetIndex);
+    if (Number.isInteger(storedIndex)) {
+      const unlocked = Array.isArray(state.unlockedCells) && state.unlockedCells.includes(storedIndex);
+      const storedCell = document.querySelector(`.cell[data-index="${storedIndex}"]`);
+      if (unlocked || (storedCell && !storedCell.classList.contains("locked"))) {
+        updateGuideState({ lockedMergeSeen: true });
+        return null;
+      }
+      if (storedCell?.classList.contains("locked")) return storedCell;
+    }
+    const target = [...document.querySelectorAll(".cell.locked")]
+      .find((cell) => cell.getAttribute("aria-label") === LOCKED_MERGE_ITEM_NAME);
+    if (target) updateGuideState({ lockedMergeTargetIndex: Number(target.dataset.index) });
+    return target || null;
+  }
+
+  function showLockedMergeGuide(state, savedGuide, page) {
+    if (savedGuide.lockedMergeSeen) return false;
+    if (page === "inn") {
+      showGuide({
+        text: "先回后厨，学会用相同食物解开风沙棋格。",
+        targets: [document.querySelector("#innKitchenBtn")],
+      });
+      return true;
+    }
+    const target = lockedMergeTarget(state, savedGuide);
+    if (!target) return false;
+    const source = boardCellFor(LOCKED_MERGE_ITEM_ID, state);
+    if (!source) {
+      showGuide({
+        text: "锁格里压着一份麦面。先点小石磨，做一份相同的麦面。",
+        targets: [boardCellFor("gen_mill_01", state), target],
+      });
+      return true;
+    }
+    showGuide({
+      text: "把麦面拖到锁格里的相同麦面上；两份合成时，这格也会一起解开。",
+      targets: [source, target],
+      drag: true,
+    });
+    return true;
   }
 
   function refresh() {
@@ -194,7 +259,7 @@
     const startup = document.querySelector("#startupLoading");
     const app = document.querySelector("#app");
     const savedGuide = guideState();
-    if (savedGuide.dismissed || savedGuide.completed || !app || (startup && !startup.hidden) || blockingDialogOpen()) {
+    if (savedGuide.dismissed || !app || (startup && !startup.hidden) || blockingDialogOpen()) {
       hideGuide();
       return;
     }
@@ -203,12 +268,25 @@
     const tutorialStep = Number.isInteger(state.tutorialStep) ? state.tutorialStep : 0;
     const page = app.dataset.page || "inn";
 
+    if (page === "board" && !savedGuide.boardStorageSeen && boardIsFull(state)) {
+      showGuide({
+        text: "案板放满了。把暂时不用的棋子拖进左下角柜子，腾出空格后再继续备餐。",
+        targets: [document.querySelector("#storageBtn")],
+      });
+      return;
+    }
+
+    if (savedGuide.completed) {
+      hideGuide();
+      return;
+    }
+
     if (tutorialStep <= 3 && page === "inn") {
       const returnCopy = [
-        "点右下角后厨，去案板取第一份麦面。",
-        "回后厨继续备面，合成第一张炉饼。",
+        "点右下角的后厨入口，回案板取第一份麦面。",
+        "回到后厨，再备一份麦面并合成炉饼。",
         "炉饼已经做好，回后厨交给周甲。",
-        "首单已经完成，回后厨打开食鉴，看看刚收录的食物。",
+        "首单已经完成，回后厨看看刚收录的食物。",
       ];
       showGuide({
         text: returnCopy[tutorialStep],
@@ -277,6 +355,8 @@
       return;
     }
 
+    if (showLockedMergeGuide(state, savedGuide, page)) return;
+
     if (page === "board") {
       showGuide({
         text: "去流沙驿看看前厅；铜钱不够时，继续接单就能攒起来。",
@@ -299,6 +379,9 @@
   function bindRefreshSignals() {
     const observer = new MutationObserver(() => scheduleRefresh());
     document.addEventListener("click", (event) => {
+      if (event.target.closest("#storageBtn") && boardIsFull(gameState())) {
+        updateGuideState({ boardStorageSeen: true });
+      }
       if (event.target.closest(".longscroll-current-region, .mainline-action.ready") && Number(gameState().tutorialStep || 0) >= 4) {
         updateGuideState({ completed: true });
       }

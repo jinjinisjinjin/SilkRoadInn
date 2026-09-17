@@ -43,6 +43,10 @@ const SPECIAL_AUDIO_BUTTONS = [
 ].join(",");
 const QA_MODE = new URLSearchParams(location.search).get("qa");
 const TRIAL_GENERATOR_CATEGORY = new URLSearchParams(location.search).get("grantGenerator");
+const WEEKLY_CHECKIN_PREVIEW = new URLSearchParams(location.search).get("preview") === "weekly-checkin-v1";
+const DAILY_SHOP_QA_MODE = QA_MODE === "daily-shop-v1";
+const DAILY_SHOP_QA_RESET = DAILY_SHOP_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const GENERATOR_CHAIN_QA_MODE = QA_MODE === "generator-chain-v1";
@@ -64,6 +68,9 @@ const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
 const CHAPTER_STORY_QA_MODE = QA_MODE === "chapter-story-v1";
 const STORY_ARCHIVE_QA_MODE = QA_MODE === "story-archive-v1";
 const NEW_PLAYER_GUIDE_QA_MODE = QA_MODE === "new-player-guide-v1";
+const NEW_PLAYER_GUIDE_QA_STAGE = new URLSearchParams(location.search).get("stage") || "locked-merge";
+const NEW_PLAYER_GUIDE_QA_RESET = NEW_PLAYER_GUIDE_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const UPGRADE_REVEAL_QA_MODE = QA_MODE === "upgrade-reveal-v1";
 const LONGSCROLL_CAST_QA_MODE = QA_MODE === "longscroll-cast-v1";
 const LONGSCROLL_RENEWAL_QA_MODE = LONGSCROLL_CAST_QA_MODE
@@ -107,9 +114,11 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE;
+const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE;
 const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
+  : DAILY_SHOP_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_daily_shop_v1"
   : LONGSCROLL_CAST_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_longscroll_cast_v1_scene${LONGSCROLL_CAST_QA_SCENE}`
   : NEW_PLAYER_GUIDE_QA_MODE
@@ -184,6 +193,28 @@ const BONUS_STAMINA_ICON_KEYS = Object.freeze([
 const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
 const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
 const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
+const SHOP_FOOD_PRICES = Object.freeze({ 4: 12, 5: 22, 6: 40, 7: 72, 8: 130 });
+const DAILY_SHOP_REFRESH_MS = 16 * 60 * 60 * 1000;
+const SHOP_WEALTH_ITEM_ID = "shop_wealth_figurine";
+const SHOP_WEALTH_PACK_ID = "shop_wealth_figurine_pack";
+const SHOP_SAXAUL_ITEM_ID = "shop_saxaul_tree";
+const SHOP_SAXAUL_PACK_ID = "shop_saxaul_tree_pack";
+const DAILY_SHOP_OFFERS = Object.freeze([
+  { id: "wealth", name: "聚财陶俑", price: 25, packId: SHOP_WEALTH_PACK_ID },
+  { id: "stamina", name: "梭梭树", price: 10, packId: SHOP_SAXAUL_PACK_ID },
+]);
+const WEEKLY_CHECKIN_REWARDS = Object.freeze([
+  { label: "双铃同行", items: [{ itemId: "bonus_stamina_02", quantity: 1 }] },
+  { label: "四级油胡饼", items: [{ itemId: "hubing_04_youhubing", quantity: 1 }] },
+  { label: "三十枚铜钱", items: [{ itemId: "bonus_coin_02", quantity: 1 }] },
+  { label: "单峰驼", items: [{ itemId: "bonus_stamina_03", quantity: 1 }] },
+  { label: "五级葱豉饼", items: [{ itemId: "hubing_05_congchihubing", quantity: 1 }] },
+  { label: "三颗红宝石", items: [{ itemId: "bonus_ruby_02", quantity: 1 }] },
+  {
+    label: "晨礼宝袋＋3红宝石",
+    items: [{ packId: DAILY_POUCH_PACK_ID, quantity: 1 }, { itemId: "bonus_ruby_02", quantity: 1 }],
+  },
+]);
 const DAILY_POUCH_REWARD_POOL = Object.freeze([
   { id: "traveler", name: "行旅小礼", weight: 45, coins: 80, stamina: 2 },
   { id: "market", name: "市集馈赠", weight: 30, coins: 140, stamina: 8 },
@@ -631,10 +662,17 @@ const state = {
   pendingGeneratorRewards: [],
   generatorWarehouse: { selectedCategoryId: "mill", progressByCategory: {}, readyItems: [] },
   storageGuideVersion: 0,
+  generatorWarehouseGuideSeen: false,
   unlockedStorageSlots: STORAGE_FREE_SLOTS,
   staminaPurchaseDay: "",
   staminaPurchasesToday: 0,
   dailyPouchClaimDay: "",
+  weeklyCheckinClaimedDays: 0,
+  weeklyCheckinLastClaimDay: "",
+  weeklyCheckinRound: 1,
+  shopPurchaseCycle: -1,
+  shopPurchasedOfferIds: [],
+  shopFoodItemIds: null,
   innLevel: 1,
   ownedFurniture: [],
   placedFurniture: [],
@@ -668,6 +706,11 @@ const els = {
   staminaPlusBtn: document.querySelector("#staminaPlusBtn"),
   gemPlusBtn: document.querySelector("#gemPlusBtn"),
   dailyPouchBtn: document.querySelector("#dailyPouchBtn"),
+  dailyShopModal: document.querySelector("#dailyShopModal"),
+  dailyShopBalance: document.querySelector("#dailyShopBalance"),
+  dailyShopRefresh: document.querySelector("#dailyShopRefresh"),
+  dailyShopClaimPouch: document.querySelector("#dailyShopClaimPouch"),
+  dailyShopOffers: document.querySelector("#dailyShopOffers"),
   soundToggleBtn: document.querySelector("#soundToggleBtn"),
   productionMultiplier: document.querySelector("#productionMultiplier"),
   audioSettingsPanel: document.querySelector("#audioSettingsPanel"),
@@ -700,7 +743,13 @@ const els = {
   innGems: document.querySelector("#innGems"),
   innStaminaPlusBtn: document.querySelector("#innStaminaPlusBtn"),
   innGemPlusBtn: document.querySelector("#innGemPlusBtn"),
-  innDailyPouchBtn: document.querySelector("#innDailyPouchBtn"),
+  weeklyCheckinBtn: document.querySelector("#weeklyCheckinBtn"),
+  weeklyCheckinModal: document.querySelector("#weeklyCheckinModal"),
+  weeklyCheckinGrid: document.querySelector("#weeklyCheckinGrid"),
+  weeklyCheckinTrail: document.querySelector("#weeklyCheckinTrail"),
+  weeklyCheckinProgress: document.querySelector("#weeklyCheckinProgress"),
+  weeklyCheckinClaim: document.querySelector("#weeklyCheckinClaim"),
+  weeklyCheckinHint: document.querySelector("#weeklyCheckinHint"),
   innSoundToggleBtn: document.querySelector("#innSoundToggleBtn"),
   innScene: document.querySelector("#innScene"),
   innScoreText: document.querySelector("#innScoreText"),
@@ -1863,6 +1912,36 @@ function initializeLongscrollCastQaScenario() {
   }
 }
 
+function initializeNewPlayerGuideQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  state.board[starterGeneratorIndex()] = "gen_mill_01";
+  if (NEW_PLAYER_GUIDE_QA_STAGE === "board-full") {
+    for (let row = ACTIVE_BOARD_START_ROW; row < ACTIVE_BOARD_START_ROW + ACTIVE_BOARD_ROWS; row += 1) {
+      for (let col = ACTIVE_BOARD_START_COL; col < ACTIVE_BOARD_START_COL + ACTIVE_BOARD_COLUMNS; col += 1) {
+        const index = boardIndex(row, col);
+        if (!state.board[index]) state.board[index] = (row + col) % 2 ? "hubing_01_dough" : "hubing_02_lubing";
+      }
+    }
+    state.completedOrderIds = ["order_001_guard_lubing"];
+    state.completedOrders = 3;
+    state.tutorialStep = 5;
+    state.currentPage = "board";
+  } else if (NEW_PLAYER_GUIDE_QA_STAGE === "locked-merge") {
+    state.board[boardIndex(4, 3)] = "hubing_01_dough";
+    state.completedOrderIds = ["order_001_guard_lubing"];
+    state.completedOrders = 1;
+    state.tutorialStep = 4;
+    state.currentPage = "board";
+  } else {
+    state.tutorialStep = 0;
+    state.currentPage = "inn";
+  }
+  state.unlockedCells = [];
+  state.selectedIndex = null;
+  state.stamina = state.staminaConfig.initial.startValue;
+  state.staminaMax = state.staminaConfig.initial.max;
+}
+
 function initializeLongscrollCastQaScene(sceneNumber) {
   const milestones = state.progressionConfig.milestones;
   const currentIndex = Math.min(milestones.length - 1, Math.max(0, sceneNumber - 1));
@@ -2215,12 +2294,16 @@ async function boot() {
   await waitForStartupPaint();
   await finishStartupLoading();
   if (state.currentPage === "board") tickGenerators();
+  if (DAILY_SHOP_QA_MODE) setTimeout(openDailyShop, 100);
+  if (WEEKLY_CHECKIN_PREVIEW) setTimeout(openWeeklyCheckin, 100);
   if (UPGRADE_REVEAL_QA_MODE) setTimeout(() => playInnUpgradeReveal(UPGRADE_REVEAL_QA_LEVEL), 80);
   if (LONGSCROLL_CAST_QA_UNLOCK) setTimeout(maybePromptRepairGuide, 80);
   if (LONGSCROLL_RENEWAL_QA_MODE) setTimeout(() => previewLongscrollRepairRenewal(LONGSCROLL_CAST_QA_SCENE), 180);
   if (LONGSCROLL_FINALE_QA_MODE) setTimeout(() => showInnFinale({ force: true }), 180);
   if (REPAIR_PROGRESS_QA_MODE) setTimeout(openRepairProgressQaScenario, 80);
-  if (STORY_ARCHIVE_QA_AUTOPEN) {
+  if (WEEKLY_CHECKIN_PREVIEW) {
+    // Keep the inn clear while the weekly check-in preview is open.
+  } else if (STORY_ARCHIVE_QA_AUTOPEN) {
     setTimeout(() => openStoryArchive(STORY_ARCHIVE_QA_CHAPTER), 80);
   } else if (CHAPTER_STORY_QA_MODE) {
     setTimeout(() => window.SilkRoadChapterStory?.playChapterQa(CHAPTER_STORY_QA_CHAPTER, CHAPTER_STORY_QA_SCENE), 80);
@@ -2276,6 +2359,90 @@ function currentLocalDayKey(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function currentDailyShopCycle(now = Date.now()) {
+  return Math.floor(now / DAILY_SHOP_REFRESH_MS);
+}
+
+function nextDailyShopRefreshAt(now = Date.now()) {
+  return (currentDailyShopCycle(now) + 1) * DAILY_SHOP_REFRESH_MS;
+}
+
+function syncDailyShopCycle(now = Date.now()) {
+  const cycle = currentDailyShopCycle(now);
+  let changed = state.shopPurchaseCycle !== cycle;
+  if (changed) {
+    state.shopPurchaseCycle = cycle;
+    state.shopPurchasedOfferIds = [];
+    state.shopFoodItemIds = null;
+  }
+  if (!Array.isArray(state.shopFoodItemIds)) {
+    const candidates = [...byId.values()].filter((item) =>
+      SHOP_FOOD_PRICES[item.level]
+      && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(item.line)
+      && (DAILY_SHOP_QA_MODE || orderDemandLinesUnlocked({ demand: [{ itemId: item.id }] })));
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+    state.shopFoodItemIds = candidates.slice(0, 6).map((item) => item.id);
+    changed = true;
+  }
+  return changed;
+}
+
+function dailyShopOffers() {
+  return [...DAILY_SHOP_OFFERS, ...(state.shopFoodItemIds ?? []).map((itemId) => {
+    const item = byId.get(itemId);
+    return { id: `food:${itemId}`, itemId, name: item.name, price: SHOP_FOOD_PRICES[item.level] };
+  })];
+}
+
+function renderShopFoodShelves() {
+  const host = document.querySelector("#dailyShopFoodShelves");
+  if (!host) return;
+  const ids = state.shopFoodItemIds ?? [];
+  const key = JSON.stringify(ids);
+  if (host.dataset.catalog === key) return;
+  host.dataset.catalog = key;
+  host.replaceChildren();
+  ids.forEach((itemId, index) => {
+    if (index % 3 === 0) {
+      const shelf = document.createElement("div");
+      shelf.className = "daily-shop-shelf";
+      const title = document.createElement("div");
+      title.className = "daily-shop-section-title";
+      title.textContent = index === 0 ? "行商好物 · 每16小时换货" : "行商好物";
+      shelf.append(title);
+      host.append(shelf);
+    }
+    const item = byId.get(itemId);
+    const card = document.createElement("article");
+    card.className = "daily-shop-card";
+    card.dataset.shopOffer = `food:${itemId}`;
+    const name = document.createElement("strong");
+    name.textContent = item.name;
+    const detail = document.createElement("button");
+    detail.type = "button";
+    detail.className = "daily-shop-detail";
+    detail.dataset.shopDetail = `food:${itemId}`;
+    detail.setAttribute("aria-label", `查看${item.name}详情`);
+    const img = document.createElement("img");
+    img.src = itemAssetSrc(item);
+    img.alt = "";
+    detail.append(img);
+    const level = document.createElement("small");
+    level.textContent = `${item.level}级`;
+    const stock = document.createElement("small");
+    stock.dataset.shopStock = "";
+    const buy = document.createElement("button");
+    buy.type = "button";
+    buy.dataset.shopBuy = "";
+    buy.innerHTML = '<i class="ruby-icon" aria-hidden="true"></i><span></span>';
+    card.append(name, detail, level, stock, buy);
+    host.lastElementChild.append(card);
+  });
 }
 
 function syncDailyStaminaPurchases() {
@@ -2526,10 +2693,17 @@ function defaultState() {
     pendingGeneratorRewards: [],
     generatorWarehouse: emptyGeneratorWarehouse(),
     storageGuideVersion: 0,
+    generatorWarehouseGuideSeen: false,
     unlockedStorageSlots: STORAGE_FREE_SLOTS,
     staminaPurchaseDay: currentLocalDayKey(),
     staminaPurchasesToday: 0,
     dailyPouchClaimDay: "",
+    weeklyCheckinClaimedDays: 0,
+    weeklyCheckinLastClaimDay: "",
+    weeklyCheckinRound: 1,
+    shopPurchaseCycle: currentDailyShopCycle(),
+    shopPurchasedOfferIds: [],
+  shopFoodItemIds: null,
     innLevel: 1,
     innLevelSchemaVersion: INN_LEVEL_SCHEMA_VERSION,
     ownedFurniture: [],
@@ -2559,7 +2733,7 @@ function normalizeInnLevel(savedLevel, savedSchemaVersion, renovationChoices = {
 }
 
 function loadState() {
-  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) localStorage.removeItem(SAVE_KEY);
+  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) localStorage.removeItem(SAVE_KEY);
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const legacyStorageHasGenerators = Array.isArray(data.bag)
@@ -2686,6 +2860,9 @@ function loadState() {
     pendingGeneratorRewards: normalizePendingGeneratorRewards(data.pendingGeneratorRewards),
     generatorWarehouse: normalizeGeneratorWarehouse(data.generatorWarehouse, data.bag),
     storageGuideVersion: Math.max(0, Math.floor(Number(data.storageGuideVersion) || 0)),
+    generatorWarehouseGuideSeen: data.generatorWarehouseGuideSeen === undefined
+      ? Math.max(0, Math.floor(Number(data.storageGuideVersion) || 0)) >= 1
+      : Boolean(data.generatorWarehouseGuideSeen),
     unlockedStorageSlots: normalizeUnlockedStorageSlots(data.unlockedStorageSlots, data.bag),
     staminaPurchaseDay: data.staminaPurchaseDay === currentLocalDayKey()
       ? data.staminaPurchaseDay
@@ -2694,6 +2871,16 @@ function loadState() {
       ? Math.max(0, Math.floor(Number(data.staminaPurchasesToday) || 0))
       : 0,
     dailyPouchClaimDay: typeof data.dailyPouchClaimDay === "string" ? data.dailyPouchClaimDay : "",
+    weeklyCheckinClaimedDays: Math.max(0, Math.min(7, Math.floor(Number(data.weeklyCheckinClaimedDays) || 0))),
+    weeklyCheckinLastClaimDay: typeof data.weeklyCheckinLastClaimDay === "string" ? data.weeklyCheckinLastClaimDay : "",
+    weeklyCheckinRound: Math.max(1, Math.floor(Number(data.weeklyCheckinRound) || 1)),
+    shopPurchaseCycle: Number.isInteger(Number(data.shopPurchaseCycle))
+      ? Number(data.shopPurchaseCycle)
+      : currentDailyShopCycle(),
+    shopFoodItemIds: Array.isArray(data.shopFoodItemIds) ? [...new Set(data.shopFoodItemIds)].filter((id) => SHOP_FOOD_PRICES[byId.get(id)?.level] && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(byId.get(id)?.line)).slice(0, 6) : null,
+    shopPurchasedOfferIds: Array.isArray(data.shopPurchasedOfferIds)
+      ? data.shopPurchasedOfferIds.filter((offerId) => (DAILY_SHOP_OFFERS.some((offer) => offer.id === offerId) || (typeof offerId === "string" && offerId.startsWith("food:"))))
+      : [],
     innLevel: normalizeInnLevel(data.innLevel, data.innLevelSchemaVersion, loadedRenovationChoices),
     innLevelSchemaVersion: INN_LEVEL_SCHEMA_VERSION,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
@@ -2722,9 +2909,22 @@ function loadState() {
   if (UPGRADE_REVEAL_QA_MODE) initializeUpgradeRevealQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (LONGSCROLL_CAST_QA_MODE) initializeLongscrollCastQaScenario();
+  if (NEW_PLAYER_GUIDE_QA_MODE && (!saved || NEW_PLAYER_GUIDE_QA_RESET)) initializeNewPlayerGuideQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   if (CHAPTER_STORY_QA_MODE) initializeChapterStoryQaScenario();
   const trialGeneratorGranted = grantTrialGeneratorFromUrl();
+  if (DAILY_SHOP_QA_MODE && (!saved || DAILY_SHOP_QA_RESET)) {
+    state.currentPage = "board";
+    state.gems = 80;
+    state.board = Array(BOARD_SIZE).fill(null);
+    state.board[starterGeneratorIndex()] = "gen_mill_01";
+    state.giftPacks = [];
+    state.giftBoxStates = {};
+    state.dailyPouchClaimDay = "";
+    state.shopPurchaseCycle = currentDailyShopCycle();
+    state.shopPurchasedOfferIds = [];
+    state.shopFoodItemIds = null;
+  }
   reconcileGiftBoxStates();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
@@ -2790,10 +2990,17 @@ function saveState() {
       pendingGeneratorRewards: state.pendingGeneratorRewards,
       generatorWarehouse: state.generatorWarehouse,
       storageGuideVersion: state.storageGuideVersion,
+      generatorWarehouseGuideSeen: state.generatorWarehouseGuideSeen,
       unlockedStorageSlots: state.unlockedStorageSlots,
       staminaPurchaseDay: state.staminaPurchaseDay,
       staminaPurchasesToday: state.staminaPurchasesToday,
       dailyPouchClaimDay: state.dailyPouchClaimDay,
+      weeklyCheckinClaimedDays: state.weeklyCheckinClaimedDays,
+      weeklyCheckinLastClaimDay: state.weeklyCheckinLastClaimDay,
+      weeklyCheckinRound: state.weeklyCheckinRound,
+      shopPurchaseCycle: state.shopPurchaseCycle,
+      shopPurchasedOfferIds: state.shopPurchasedOfferIds,
+      shopFoodItemIds: state.shopFoodItemIds,
       innLevel: state.innLevel,
       innLevelSchemaVersion: INN_LEVEL_SCHEMA_VERSION,
       ownedFurniture: state.ownedFurniture,
@@ -2932,6 +3139,22 @@ function generatorWarehouseEntry(categoryId) {
     outputItemId: generatorItemId(categoryId, generatorWarehouseOutputLevel()),
     readyCount: warehouse.readyItems.filter((itemId) => generatorCategoryForItem(itemId) === categoryId).length,
   };
+}
+
+function generatorWarehouseHasActivity() {
+  return (state.generatorWarehouse?.readyItems?.length ?? 0) > 0
+    || Object.values(state.generatorWarehouse?.progressByCategory ?? {})
+      .some((progress) => Number(progress) > 0);
+}
+
+function generatorWarehouseUnlocked() {
+  return generatorWarehouseHasActivity()
+    || (Number(state.innLevel) >= 5 && state.unlockedGeneratorCategories.length >= 2);
+}
+
+function generatorWarehouseUnlockCopy() {
+  if (Number(state.innLevel) < 5) return "流沙驿扩建至 Lv5 后开放";
+  return "解锁第二条生产线后开放";
 }
 
 function generatorCategoryForItem(itemId) {
@@ -3124,6 +3347,8 @@ function tickStamina() {
   tickGenerators();
   tickBonusBubbles();
   renderDailyPouchButtons();
+  renderWeeklyCheckinButton();
+  if (els.dailyShopModal?.open) renderDailyShop();
   const recovered = recoverStaminaAt(Date.now());
   if (recovered > 0) {
     toast("远处又传来驼铃声。");
@@ -3158,7 +3383,7 @@ function bindEvents() {
   els.selectedDetailBtn?.addEventListener("click", openSelectedPieceDetail);
   els.staminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
-  els.dailyPouchBtn?.addEventListener("click", claimDailyPouch);
+  els.dailyPouchBtn?.addEventListener("click", openDailyShop);
   els.soundToggleBtn?.addEventListener("click", toggleAudioSettings);
   els.productionMultiplier?.addEventListener("click", cycleProductionMultiplier);
   els.bgmToggleBtn?.addEventListener("click", toggleBgm);
@@ -3173,7 +3398,21 @@ function bindEvents() {
   els.innKitchenBtn?.addEventListener("click", () => switchPage("board"));
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.innGemPlusBtn?.addEventListener("click", openRubyRecharge);
-  els.innDailyPouchBtn?.addEventListener("click", claimDailyPouch);
+  els.weeklyCheckinBtn?.addEventListener("click", openWeeklyCheckin);
+  els.weeklyCheckinClaim?.addEventListener("click", claimWeeklyCheckin);
+  els.weeklyCheckinGrid?.addEventListener("click", (event) => {
+    if (event.target.closest(".weekly-checkin-day.current")) claimWeeklyCheckin();
+  });
+  els.weeklyCheckinGrid?.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && event.target.closest(".weekly-checkin-day.current")) {
+      event.preventDefault();
+      claimWeeklyCheckin();
+    }
+  });
+  els.dailyShopClaimPouch?.addEventListener("click", claimDailyPouch);
+  els.dailyShopOffers?.addEventListener("click", purchaseDailyShopOffer);
+  els.dailyShopModal?.addEventListener("close", () => playSfx("exitShop"));
+  els.weeklyCheckinModal?.addEventListener("close", () => playSfx("exitShop"));
   els.innSoundToggleBtn?.addEventListener("click", toggleAudioSettings);
   els.storageInviteBtn?.addEventListener("click", explainStorageInvite);
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
@@ -3387,6 +3626,7 @@ function render() {
   renderStaminaCountdown();
   if (els.gems) els.gems.textContent = state.gems ?? 0;
   renderDailyPouchButtons();
+  renderWeeklyCheckinButton();
   renderProductionMultiplier();
   if (els.codexProgress) els.codexProgress.textContent = `${state.unlockedCodex.size}/8`;
   els.generateBtn.disabled = !hasEmptyCell();
@@ -3399,6 +3639,8 @@ function render() {
   renderStoryArchiveEntry();
   if (els.storageModal?.open) renderStorage();
   if (els.staminaPurchaseModal?.open) renderStaminaPurchase();
+  if (els.dailyShopModal?.open) renderDailyShop();
+  if (els.weeklyCheckinModal?.open) renderWeeklyCheckin();
   if (state.currentPage === "inn") {
     renderInnPage();
   } else {
@@ -6107,6 +6349,22 @@ function registerOrderProgressPacks() {
       iconKey: "ui/ui_daily_pomegranate_pouch_v2",
       source: "daily_reward_pouch",
     });
+    byId.set(SHOP_WEALTH_ITEM_ID, {
+      ...starterGift,
+      id: SHOP_WEALTH_ITEM_ID,
+      name: "聚财陶俑",
+      modernName: "轻点后逐枚吐出不同等级的铜币棋子",
+      iconKey: "ui/shop_wealth_figurine_v1",
+      source: "daily_shop",
+    });
+    byId.set(SHOP_SAXAUL_ITEM_ID, {
+      ...starterGift,
+      id: SHOP_SAXAUL_ITEM_ID,
+      name: "梭梭树",
+      modernName: "轻点后逐枚掉落不同等级的驼铃棋子",
+      iconKey: "ui/shop_saxaul_tree_v1",
+      source: "daily_shop",
+    });
   }
   GIFT_PACKS[DAILY_POUCH_PACK_ID] = {
     id: DAILY_POUCH_PACK_ID,
@@ -6116,6 +6374,30 @@ function registerOrderProgressPacks() {
     dailyReward: true,
     rewardPool: DAILY_POUCH_REWARD_POOL,
     rewards: [],
+  };
+  GIFT_PACKS[SHOP_WEALTH_PACK_ID] = {
+    id: SHOP_WEALTH_PACK_ID,
+    name: "聚财陶俑",
+    itemId: SHOP_WEALTH_ITEM_ID,
+    description: "可逐枚吐出6枚不同等级的铜币棋子。",
+    shopOffer: true,
+    rewards: [1, 1, 2, 1, 2, 3].map((level) => ({
+      type: "item",
+      itemId: bonusCoinId(level),
+      quantity: 1,
+    })),
+  };
+  GIFT_PACKS[SHOP_SAXAUL_PACK_ID] = {
+    id: SHOP_SAXAUL_PACK_ID,
+    name: "梭梭树",
+    itemId: SHOP_SAXAUL_ITEM_ID,
+    description: "可逐枚掉落5枚不同等级的驼铃棋子。",
+    shopOffer: true,
+    rewards: [1, 2, 2, 3, 3].map((level) => ({
+      type: "item",
+      itemId: bonusStaminaId(level),
+      quantity: 1,
+    })),
   };
   const entries = state.progressionConfig?.orderProgressPacks ?? [];
   entries.forEach((entry) => {
@@ -7085,14 +7367,247 @@ function hasClaimedDailyPouch() {
 
 function renderDailyPouchButtons() {
   const claimed = hasClaimedDailyPouch();
-  [els.dailyPouchBtn, els.innDailyPouchBtn].filter(Boolean).forEach((button) => {
-    button.disabled = claimed;
+  [els.dailyPouchBtn].filter(Boolean).forEach((button) => {
+    button.disabled = false;
     button.classList.toggle("is-ready", !claimed);
     button.classList.toggle("is-claimed", claimed);
-    const label = claimed ? "今日宝袋已领取" : "领取今日宝袋";
+    const label = claimed ? "打开驿站小铺，今日宝袋已领取" : "打开驿站小铺，今日宝袋待领取";
     button.setAttribute("aria-label", label);
     button.title = label;
   });
+}
+
+function syncWeeklyCheckinRound() {
+  if (state.weeklyCheckinClaimedDays < WEEKLY_CHECKIN_REWARDS.length) return false;
+  if (state.weeklyCheckinLastClaimDay === currentLocalDayKey()) return false;
+  state.weeklyCheckinClaimedDays = 0;
+  state.weeklyCheckinLastClaimDay = "";
+  state.weeklyCheckinRound += 1;
+  return true;
+}
+
+function canClaimWeeklyCheckin() {
+  return state.weeklyCheckinClaimedDays < WEEKLY_CHECKIN_REWARDS.length
+    && state.weeklyCheckinLastClaimDay !== currentLocalDayKey();
+}
+
+function renderWeeklyCheckinButton() {
+  if (!els.weeklyCheckinBtn) return;
+  if (syncWeeklyCheckinRound()) saveState();
+  const claimable = canClaimWeeklyCheckin();
+  const nextDay = Math.min(state.weeklyCheckinClaimedDays + 1, WEEKLY_CHECKIN_REWARDS.length);
+  els.weeklyCheckinBtn.classList.toggle("is-ready", claimable);
+  els.weeklyCheckinBtn.classList.toggle("is-claimed", !claimable);
+  const label = claimable
+    ? `打开七日驿程，第${nextDay}日奖励待领取`
+    : `打开七日驿程，今日已前行，本轮${state.weeklyCheckinClaimedDays}/7`;
+  els.weeklyCheckinBtn.setAttribute("aria-label", label);
+  els.weeklyCheckinBtn.title = label;
+}
+
+function weeklyCheckinRewardItem(entry) {
+  if (entry.itemId) return byId.get(entry.itemId);
+  const pack = entry.packId ? GIFT_PACKS[entry.packId] : null;
+  return pack ? byId.get(pack.itemId) : null;
+}
+
+function renderWeeklyCheckin() {
+  if (!els.weeklyCheckinModal || !els.weeklyCheckinGrid) return;
+  if (syncWeeklyCheckinRound()) saveState();
+  const claimedDays = state.weeklyCheckinClaimedDays;
+  const claimable = canClaimWeeklyCheckin();
+  const currentIndex = claimable ? claimedDays : -1;
+  els.weeklyCheckinGrid.replaceChildren();
+
+  WEEKLY_CHECKIN_REWARDS.forEach((reward, index) => {
+    const day = document.createElement("article");
+    day.className = "weekly-checkin-day";
+    if (index === 6) day.classList.add("weekly-checkin-day-seven");
+    if (index < claimedDays) day.classList.add("claimed");
+    else if (index === currentIndex) day.classList.add("current");
+    else day.classList.add("future");
+    if (index === currentIndex) {
+      day.tabIndex = 0;
+      day.setAttribute("role", "button");
+      day.setAttribute("aria-label", `领取第${index + 1}日奖励：${reward.label}`);
+    } else {
+      day.setAttribute("aria-label", `第${index + 1}日奖励：${reward.label}`);
+    }
+
+    const dayLabel = document.createElement("small");
+    dayLabel.textContent = `第${index + 1}日`;
+    const icons = document.createElement("div");
+    icons.className = "weekly-checkin-reward-icons";
+    reward.items.forEach((entry) => {
+      const item = weeklyCheckinRewardItem(entry);
+      if (!item) return;
+      const icon = document.createElement("img");
+      icon.src = itemAssetSrc(item);
+      icon.alt = "";
+      icons.append(icon);
+    });
+    const label = document.createElement("strong");
+    label.textContent = reward.label;
+    day.append(dayLabel, icons, label);
+    els.weeklyCheckinGrid.append(day);
+  });
+
+  if (els.weeklyCheckinTrail) {
+    els.weeklyCheckinTrail.replaceChildren();
+    WEEKLY_CHECKIN_REWARDS.forEach((_, index) => {
+      const marker = document.createElement("i");
+      if (index < claimedDays) marker.className = "done";
+      else if (index === currentIndex) marker.className = "current";
+      els.weeklyCheckinTrail.append(marker);
+    });
+  }
+  if (els.weeklyCheckinProgress) els.weeklyCheckinProgress.textContent = `${claimedDays}/7`;
+  if (els.weeklyCheckinClaim) {
+    els.weeklyCheckinClaim.disabled = !claimable;
+    els.weeklyCheckinClaim.textContent = claimable
+      ? `领取第 ${claimedDays + 1} 日行程礼`
+      : claimedDays >= 7 ? "本轮驿程已完成" : "今日已经前行";
+  }
+  if (els.weeklyCheckinHint) {
+    els.weeklyCheckinHint.textContent = claimedDays >= 7
+      ? "明日开启下一轮七日驿程"
+      : "每日可前行一步，错过也不会中断本轮驿程";
+  }
+}
+
+function openWeeklyCheckin() {
+  if (!els.weeklyCheckinModal) return;
+  renderWeeklyCheckin();
+  if (!els.weeklyCheckinModal.open) {
+    playSfx("enterShop");
+    els.weeklyCheckinModal.showModal();
+  }
+}
+
+function claimWeeklyCheckin() {
+  if (syncWeeklyCheckinRound()) saveState();
+  if (!canClaimWeeklyCheckin()) {
+    toast("今日已经走过一程，明日再来吧。");
+    return;
+  }
+  const rewardIndex = state.weeklyCheckinClaimedDays;
+  const reward = WEEKLY_CHECKIN_REWARDS[rewardIndex];
+  reward.items.forEach((entry) => {
+    if (entry.itemId) grantRewardItem(entry.itemId, entry.quantity ?? 1);
+    else if (entry.packId) grantGiftPack(entry.packId, entry.quantity ?? 1);
+  });
+  state.weeklyCheckinClaimedDays += 1;
+  state.weeklyCheckinLastClaimDay = currentLocalDayKey();
+  playSfx("coin");
+  render();
+  renderWeeklyCheckin();
+  saveState();
+  toast(`第${rewardIndex + 1}日行程礼已收入行囊。`);
+}
+
+function formatDailyShopCountdown(milliseconds) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function renderDailyShop() {
+  if (!els.dailyShopModal) return;
+  const cycleChanged = syncDailyShopCycle();
+  if (cycleChanged) saveState();
+  renderShopFoodShelves();
+  if (els.dailyShopBalance) els.dailyShopBalance.textContent = state.gems ?? 0;
+  if (els.dailyShopRefresh) {
+    els.dailyShopRefresh.textContent = formatDailyShopCountdown(nextDailyShopRefreshAt() - Date.now());
+  }
+  if (els.dailyShopClaimPouch) {
+    const claimed = hasClaimedDailyPouch();
+    els.dailyShopClaimPouch.disabled = claimed;
+    els.dailyShopClaimPouch.textContent = claimed ? "今日已领取" : "免费领取";
+    els.dailyShopClaimPouch.classList.toggle("claimed", claimed);
+  }
+  els.dailyShopOffers?.querySelectorAll("[data-shop-offer]").forEach((card) => {
+    const offer = dailyShopOffers().find((entry) => entry.id === card.dataset.shopOffer);
+    if (!offer) return;
+    const bought = state.shopPurchasedOfferIds.includes(offer.id);
+    const buyButton = card.querySelector("[data-shop-buy]");
+    card.classList.toggle("sold-out", bought);
+    card.classList.toggle("insufficient", !bought && state.gems < offer.price);
+    if (buyButton) {
+      buyButton.disabled = bought;
+      buyButton.setAttribute("aria-label", bought ? `${offer.name}本轮已售罄` : `花费${offer.price}颗红宝石购买${offer.name}`);
+      const label = buyButton.querySelector("span");
+      if (label) label.textContent = bought ? "已售罄" : String(offer.price);
+    }
+    const stock = card.querySelector("[data-shop-stock]");
+    if (stock) stock.textContent = bought ? "库存 0" : "库存 1";
+  });
+}
+
+function openDailyShop() {
+  if (!els.dailyShopModal) return;
+  if (syncDailyShopCycle()) saveState();
+  renderDailyShop();
+  if (!els.dailyShopModal.open) {
+    playSfx("enterShop");
+    els.dailyShopModal.showModal();
+  }
+}
+
+function purchaseDailyShopOffer(event) {
+  const detailButton = event.target.closest("[data-shop-detail]");
+  if (detailButton) {
+    if (detailButton.dataset.shopDetail.startsWith("food:")) {
+      const item = byId.get(detailButton.dataset.shopDetail.slice(5));
+      if (!item) return;
+      els.pieceDetailIcon.src = itemAssetSrc(item);
+      els.pieceDetailIcon.alt = item.name;
+      els.pieceDetailName.textContent = item.name;
+      els.pieceDetailMeta.textContent = `${item.level}级 · ${SHOP_FOOD_PRICES[item.level]}红宝石 · 本轮限购1份`;
+      els.pieceDetailText.textContent = "购买后收入奖励行囊，放到棋盘可用于合成或交付订单。";
+      els.pieceDetailModal.showModal();
+      return;
+    }
+    const pack = GIFT_PACKS[detailButton.dataset.shopDetail];
+    const item = pack && byId.get(pack.itemId);
+    if (!item) return;
+    els.pieceDetailIcon.src = itemAssetSrc(item);
+    els.pieceDetailIcon.alt = item.name;
+    els.pieceDetailName.textContent = item.name;
+    els.pieceDetailMeta.textContent = "驿站小铺 · 收入奖励行囊";
+    els.pieceDetailText.textContent = `${pack.description ?? item.modernName} 放到棋盘后，轻点逐份领取；产出完毕后消失。`;
+    els.pieceDetailModal.showModal();
+    return;
+  }
+  const buyButton = event.target.closest("[data-shop-buy]");
+  if (!buyButton) return;
+  const card = buyButton.closest("[data-shop-offer]");
+  if (syncDailyShopCycle()) {
+    saveState();
+    renderDailyShop();
+    toast("货架已补货，请查看本轮商品。");
+    return;
+  }
+  const offer = dailyShopOffers().find((entry) => entry.id === card?.dataset.shopOffer);
+  if (!offer) return;
+  if (state.shopPurchasedOfferIds.includes(offer.id)) {
+    toast(`${offer.name}本轮已经买过了。`);
+    return;
+  }
+  if (state.gems < offer.price) {
+    toast(`红宝石不足，还差${offer.price - state.gems}颗。`);
+    return;
+  }
+  state.gems -= offer.price;
+  state.shopPurchasedOfferIds.push(offer.id);
+  if (offer.itemId) grantRewardItem(offer.itemId, 1);
+  else grantGiftPack(offer.packId, 1);
+  playSfx("coin");
+  render();
+  renderDailyShop();
+  saveState();
 }
 
 function renderProductionMultiplier() {
@@ -7126,6 +7641,7 @@ function claimDailyPouch() {
   state.dailyPouchClaimDay = currentLocalDayKey();
   grantGiftPack(DAILY_POUCH_PACK_ID, 1);
   render();
+  renderDailyShop();
   saveState();
 }
 
@@ -8901,7 +9417,9 @@ function openBag() {
 
 function openStorage() {
   const selectedItem = byId.get(state.board[state.selectedIndex]);
-  if (isGeneratorPiece(selectedItem) && Number(selectedItem.level) === generatorWarehouseAcceptedLevel()) {
+  if (generatorWarehouseUnlocked()
+    && isGeneratorPiece(selectedItem)
+    && Number(selectedItem.level) === generatorWarehouseAcceptedLevel()) {
     state.generatorWarehouse.selectedCategoryId = selectedItem.generatorType;
     activeStorageTab = "generator";
   }
@@ -8932,29 +9450,25 @@ function renderStorageGuideStep() {
   els.storageGuideCopy.textContent = isGeneratorStep
     ? "收纳 Lv1 生成器；同类集满 8 枚，会凝成 1 枚 Lv4。"
     : "食材与普通道具收在这里，需要时可以取回棋盘。";
-  els.storageGuideNext.textContent = isGeneratorStep ? "知道了" : "下一步";
+  els.storageGuideNext.textContent = "知道了";
   els.storageGuide.querySelectorAll(".storage-guide-progress i").forEach((dot, index) => {
-    dot.classList.toggle("active", index === (isGeneratorStep ? 1 : 0));
+    dot.classList.toggle("active", index === 0);
   });
   els.storageGuide.querySelector(".storage-guide-progress")?.setAttribute(
     "aria-label",
-    `第${isGeneratorStep ? 2 : 1}步，共2步`,
+    "第1步，共1步",
   );
   els.storageNormalTab?.classList.toggle("storage-guide-target", !isGeneratorStep);
   els.storageGeneratorTab?.classList.toggle("storage-guide-target", isGeneratorStep);
 }
 
 function advanceStorageGuide() {
-  if (storageGuideStep === "normal") {
-    storageGuideStep = "generator";
-    renderStorageGuideStep();
-    return;
-  }
   completeStorageGuide();
 }
 
 function completeStorageGuide() {
-  state.storageGuideVersion = STORAGE_GUIDE_VERSION;
+  if (storageGuideStep === "generator") state.generatorWarehouseGuideSeen = true;
+  else state.storageGuideVersion = STORAGE_GUIDE_VERSION;
   hideStorageGuide();
   saveState();
 }
@@ -8968,8 +9482,18 @@ function hideStorageGuide() {
 }
 
 function setStorageTab(tab) {
+  if (tab === "generator" && !generatorWarehouseUnlocked()) {
+    toast(generatorWarehouseUnlockCopy());
+    return;
+  }
   activeStorageTab = tab === "generator" ? "generator" : "normal";
   renderStorage();
+  if (activeStorageTab === "generator" && !state.generatorWarehouseGuideSeen) {
+    storageGuideStep = "generator";
+    els.storageGuide.hidden = false;
+    els.storageNormalTab?.parentElement?.classList.add("guide-active");
+    renderStorageGuideStep();
+  }
 }
 
 function selectGeneratorWarehouseCategory(event) {
@@ -8994,6 +9518,10 @@ function selectedGeneratorWarehouseCategory() {
 }
 
 function depositGeneratorAtBoardIndex(boardIndex, { openWarehouse = false } = {}) {
+  if (!generatorWarehouseUnlocked()) {
+    toast(generatorWarehouseUnlockCopy());
+    return false;
+  }
   const itemId = state.board[boardIndex];
   const item = byId.get(itemId);
   if (!isGeneratorPiece(item)) {
@@ -9166,7 +9694,17 @@ function purchaseNextStorageSlot() {
 
 function renderStorage() {
   if (!els.storageSlotList) return;
+  const warehouseUnlocked = generatorWarehouseUnlocked();
+  if (!warehouseUnlocked && activeStorageTab === "generator") activeStorageTab = "normal";
   const generatorTabActive = activeStorageTab === "generator";
+  els.storageGeneratorTab?.classList.toggle("locked", !warehouseUnlocked);
+  els.storageGeneratorTab?.setAttribute("aria-disabled", String(!warehouseUnlocked));
+  els.storageGeneratorTab?.setAttribute("aria-label", warehouseUnlocked
+    ? "生成器仓库"
+    : `生成器仓库未解锁：${generatorWarehouseUnlockCopy()}`);
+  if (els.storageGeneratorTab) els.storageGeneratorTab.title = warehouseUnlocked
+    ? "生成器仓库"
+    : generatorWarehouseUnlockCopy();
   els.storageNormalTab?.classList.toggle("active", !generatorTabActive);
   els.storageGeneratorTab?.classList.toggle("active", generatorTabActive);
   if (els.storageNormalPanel) els.storageNormalPanel.hidden = generatorTabActive;

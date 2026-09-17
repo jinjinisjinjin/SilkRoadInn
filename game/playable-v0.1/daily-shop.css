@@ -1,0 +1,69 @@
+/* Illustrated market stall. Interactive merchandise stays in the DOM. */
+.modal.daily-shop-modal { width:min(96vw,440px); max-width:none; max-height:96dvh; padding:0; border:0; border-radius:18px; background:#ecdbb8; overflow:auto; color:#553a27; box-shadow:0 24px 80px #21180eb3; }
+.daily-shop-modal::backdrop { background:rgba(28,29,24,.73); backdrop-filter:blur(4px); }
+.daily-shop-inner { position:relative; width:100%; aspect-ratio:2/3; background:url('./assets/ui/shop_market_stall_v1.png') center/100% 100% no-repeat; outline:none; isolation:isolate; }
+.daily-shop-roof { display:none; }
+/* Flush with the upper-right rim: teal enamel inside a brass bezel. */
+.daily-shop-inner>.close { top:1px; right:1px; width:42px; height:42px; border:2px solid #d9ba7e; border-radius:50%; background:radial-gradient(ellipse at 30% 18%,#73958980,transparent 55%),linear-gradient(145deg,#38665e,#173e39); color:#fff0cc; box-shadow:inset 0 0 0 2px #193c37,inset 0 3px 3px #d0e3c84d,inset 0 -3px 4px #092c2bcc,0 3px 6px #172e2e80; text-shadow:0 2px 1px #102e2b; font:26px/1 Georgia,serif; z-index:5; }
+.daily-shop-inner>.close::after { content:""; position:absolute; inset:4px; border:1px solid #e1c99366; border-radius:50%; pointer-events:none; }
+.daily-shop-inner>.close:active { background:linear-gradient(145deg,#244d46,#163831); box-shadow:inset 0 2px 5px #071e1a99; }
+
+.daily-shop-inner>.close:focus-visible { outline:2px solid #fff3cd; outline-offset:3px; }
+.daily-shop-head { position:absolute; top:15.2%; left:12%; right:12%; text-align:center; }
+.daily-shop-sign small { display:none; color:#edd4a2; font:10px/1.5 'Songti SC',serif; letter-spacing:2px; }
+.daily-shop-sign h2 { margin:0!important; color:#fff0c4; font:900 clamp(24px,7vw,32px)/1.25 'Songti SC',serif; letter-spacing:5px; text-shadow:0 2px 2px #3b261b; }
+.daily-shop-balance { position:absolute; right:30px; top:-73px; display:flex; align-items:center; gap:5px; padding:6px 10px; border:1px solid #ddc6949c; border-radius:20px; background:#214843dd; color:#fff0cf; font:700 14px/1 Georgia,serif; }
+.daily-shop-balance>span { font:10px/1 'Songti SC',serif; }
+.daily-shop-balance .ruby-icon,.daily-shop-card .ruby-icon { width:12px; height:12px; margin:0; flex:none; }
+.daily-shop-footer { position:absolute; top:28%; left:10%; right:10%; display:flex; justify-content:center; align-items:center; gap:7px; color:#73583e; font-size:10px; }
+.daily-shop-footer b { color:#375e53; font:700 12px/1 Georgia,serif; }
+.daily-shop-footer small { display:none; }
+.daily-shop-stall { position:absolute; inset:33% 11% 18%; }
+.daily-shop-section-title { display:none; }
+.daily-shop-grid { height:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:62% 19% 19%; column-gap:4px; }
+.daily-shop-card { position:relative; min-width:0; display:flex; flex-direction:column; align-items:center; text-align:center; padding:0 3px 10px; }
+.daily-shop-card>strong { order:1; color:#503923; font:900 clamp(10px,3vw,13px)/1.5 'Songti SC',serif; white-space:nowrap; }
+.daily-shop-card>img { order:0; width:100%; height:42%; object-fit:contain; filter:drop-shadow(0 5px 3px #623a2433); }
+.daily-shop-card>p { order:2; margin:2px 0; color:#866c4e; font:10px/1.3 'Songti SC',serif; }
+.daily-shop-card>small { order:3; color:#8b765b; font:9px/1.4 'Songti SC',serif; }
+.daily-shop-card>button { order:4; display:flex; justify-content:center; align-items:center; gap:5px; width:90%; min-height:32px; margin-top:5px; padding:5px 2px; border:1px solid #d8bb80; border-radius:5px; background:linear-gradient(#416f62,#2a5149); color:#fff1ca; box-shadow:0 2px 0 #66462f4d,inset 0 1px 0 #b7d2ac4d; font:700 16px/1 Georgia,serif; }
+.daily-shop-pouch-card>button { background:linear-gradient(#b96745,#934b34); font:700 11px/1 'Songti SC',serif; }
+.daily-shop-card>button:disabled { opacity:1; background:#cbb998; border-color:#b59a70; color:#716049; box-shadow:none; font:11px/1.2 'Songti SC',serif; }
+.daily-shop-card.sold-out>img { filter:grayscale(.6); opacity:.6; }
+.daily-shop-card-empty { align-self:center; justify-content:center; height:75%; margin:0 5px; padding:0; border:1px dashed #9a7d4c45; border-radius:8px; background:#f9edcc29; color:#937d58; }
+.daily-shop-card-empty>span { font:10px/1 'Songti SC',serif; letter-spacing:2px; opacity:.65; }
+@media(max-width:350px) { .daily-shop-card>p { font-size:8px; } .daily-shop-card>button { min-height:28px; margin-top:2px; } .daily-shop-balance { top:-60px; } }
+
+/* Only the shelves scroll; canopy and counter remain anchored. */
+.modal.daily-shop-modal { overflow:hidden; width:min(96vw,440px,64dvh); }
+.daily-shop-inner { overflow:hidden; }
+.daily-shop-head { position:static; }
+.daily-shop-sign { position:absolute; top:15.2%; left:12%; right:12%; text-align:center; }
+.daily-shop-balance { top:12px; right:60px; }
+.daily-shop-footer { top:25.5%; }
+.daily-shop-stall { inset:30% 7.5% 13%; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; scrollbar-width:thin; scrollbar-color:#9d8155 #e7d1a5; background:#eddbb7; border-radius:3px; box-shadow:inset 0 4px 8px #68482429; }
+.daily-shop-stall:focus-visible { outline:2px solid #547d69; outline-offset:-2px; }
+.daily-shop-grid { display:block; height:auto; }
+.daily-shop-shelf { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:3px; min-height:238px; padding:27px 6px 25px; background:url('./assets/ui/shop_market_stall_v1.png') center 51% / 118% 300% no-repeat; }
+.daily-shop-shelf[hidden] { display:none; }
+.daily-shop-section-title { position:absolute; display:block; top:9px; left:10px; right:10px; text-align:center; color:#846444; font:11px/1.2 'Songti SC',serif; letter-spacing:2px; }
+.daily-shop-card { padding:0 2px; }
+.daily-shop-card>img { height:86px; flex:none; }
+.daily-shop-card>p { display:none; }
+.daily-shop-card>strong { margin-top:4px; font-size:12px; }
+.daily-shop-card>small { margin-top:4px; font-size:10px; }
+.daily-shop-card>button { min-height:36px; margin-top:8px; }
+.daily-shop-card-empty { height:115px; align-self:center; }
+@media(max-width:350px), (max-height:590px) {
+  .daily-shop-shelf { min-height:214px; padding-top:25px; }
+  .daily-shop-card>img { height:68px; }
+  .daily-shop-card>strong { font-size:10px; }
+  .daily-shop-card>button { min-height:32px; }
+  .daily-shop-sign h2 { font-size:23px; }
+  .daily-shop-balance { top:10px; right:55px; }
+}
+
+.daily-shop-card>.daily-shop-detail { order:0; width:100%; height:86px; min-height:0; margin:0; padding:0; background:none; border:0; box-shadow:none; }
+.daily-shop-detail>img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 5px 3px #623a2433); }
+.daily-shop-detail:focus-visible { outline:2px solid #416f62; outline-offset:-2px; }
+@media(max-width:350px), (max-height:590px) { .daily-shop-card>.daily-shop-detail { height:68px; } }

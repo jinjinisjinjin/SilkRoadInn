@@ -7934,6 +7934,30 @@ button.storage-slot.filled {
   transform: translateY(-1px) scale(1.06);
 }
 
+.storage-tabs button.locked {
+  position: relative;
+  cursor: pointer;
+  filter: saturate(0.38);
+  opacity: 0.64;
+}
+
+.storage-tabs button.locked::after {
+  position: absolute;
+  right: 7px;
+  bottom: 5px;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border: 1px solid rgba(90, 52, 28, 0.5);
+  border-radius: 50%;
+  color: #fff1ca;
+  background: #76503a;
+  box-shadow: 0 1px 2px rgba(47, 27, 16, 0.28);
+  content: "锁";
+  font: 800 8px/1 "Songti SC", serif;
+}
+
 .storage-tabs.guide-active {
   z-index: 10;
 }
@@ -10706,4 +10730,20 @@ body {
   .ruby-recharge-modal[open] .ruby-recharge-inner {
     animation: none;
   }
+}
+
+/* The existing pouch slot now serves as the compact illustrated shop entrance. */
+#app[data-page="board"] .daily-pouch-entry img {
+  width: 96%;
+  height: 96%;
+}
+
+#app[data-page="board"] .daily-pouch-entry.is-ready::after {
+  top: 1px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
+  border-width: 1px;
+  background: #9c5045;
+  box-shadow: 0 1px 2px rgba(61, 26, 18, 0.3);
 }
