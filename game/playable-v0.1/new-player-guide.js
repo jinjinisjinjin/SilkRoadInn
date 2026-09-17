@@ -234,7 +234,15 @@
       const name = cell.querySelector("img[alt]")?.alt;
       return name && !demandedNames.has(name);
     });
-    const usefulCandidates = notCurrentlyDemanded.length ? notCurrentlyDemanded : candidates;
+    const doughCandidates = candidates.filter((cell) => {
+      const index = Number(cell.dataset.index);
+      return state.board[index] === LOCKED_MERGE_ITEM_ID;
+    });
+    const usefulCandidates = doughCandidates.length
+      ? doughCandidates
+      : notCurrentlyDemanded.length
+        ? notCurrentlyDemanded
+        : candidates;
     const unobscured = appRect
       ? usefulCandidates.filter((cell) => cell.getBoundingClientRect().bottom < appRect.top + appRect.height * 0.62)
       : usefulCandidates;
