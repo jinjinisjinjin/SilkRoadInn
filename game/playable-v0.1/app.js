@@ -7003,6 +7003,7 @@ function renderProductionMultiplier() {
   const currentIndex = PRODUCTION_MULTIPLIERS.indexOf(multiplier);
   const nextMultiplier = PRODUCTION_MULTIPLIERS[(currentIndex + 1) % PRODUCTION_MULTIPLIERS.length];
   els.productionMultiplier.textContent = `×${multiplier}`;
+  els.productionMultiplier.dataset.multiplier = String(multiplier);
   els.productionMultiplier.title = `当前×${multiplier}：消耗${multiplier}倍驼铃，产出${multiplier}级食品。点击切换到×${nextMultiplier}`;
   els.productionMultiplier.setAttribute("aria-label", `手动生成器产出倍率，当前×${multiplier}，点击切换到×${nextMultiplier}`);
 }
