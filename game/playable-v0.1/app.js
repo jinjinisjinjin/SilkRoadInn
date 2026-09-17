@@ -1,5 +1,6 @@
 const DATA_PATH = "./data/";
 const STAMINA_RECOVERY_MINUTES = 2;
+const PRODUCTION_MULTIPLIERS = Object.freeze([1, 2, 4]);
 const AUDIO_PATH = "./assets/audio/";
 const AUDIO_MUTED_KEY = "silkroad_tavern_audio_muted_v1";
 const AUDIO_BGM_ENABLED_KEY = "silkroad_tavern_audio_bgm_enabled_v1";
@@ -590,6 +591,7 @@ const state = {
   coins: 0,
   stamina: 100,
   staminaMax: 100,
+  productionMultiplier: 1,
   recoverMinutes: 2,
   generationCount: 0,
   completedOrders: 0,
@@ -651,6 +653,7 @@ const els = {
   gemPlusBtn: document.querySelector("#gemPlusBtn"),
   dailyPouchBtn: document.querySelector("#dailyPouchBtn"),
   soundToggleBtn: document.querySelector("#soundToggleBtn"),
+  productionMultiplier: document.querySelector("#productionMultiplier"),
   audioSettingsPanel: document.querySelector("#audioSettingsPanel"),
   bgmToggleBtn: document.querySelector("#bgmToggleBtn"),
   sfxToggleBtn: document.querySelector("#sfxToggleBtn"),
@@ -2263,6 +2266,11 @@ function normalizeUnlockedFoodLevels(value) {
   );
 }
 
+function normalizeProductionMultiplier(value) {
+  const multiplier = Math.floor(Number(value) || 1);
+  return PRODUCTION_MULTIPLIERS.includes(multiplier) ? multiplier : 1;
+}
+
 function maximumFoodLevelForLine(line) {
   return foodLineMaxLevels.get(line) ?? 0;
 }
@@ -2436,6 +2444,7 @@ function defaultState() {
     gems: startingGemBalance(),
     stamina: state.staminaConfig.initial.startValue,
     staminaMax: state.staminaConfig.initial.max,
+    productionMultiplier: 1,
     recoverMinutes: STAMINA_RECOVERY_MINUTES,
     generationCount: 0,
     completedOrders: 0,
@@ -2574,6 +2583,7 @@ function loadState() {
       )
       : data.stamina ?? state.staminaConfig.initial.startValue,
     staminaMax: Math.max(data.staminaMax ?? state.staminaConfig.initial.max, state.staminaConfig.initial.max),
+    productionMultiplier: normalizeProductionMultiplier(data.productionMultiplier),
     recoverMinutes: STAMINA_RECOVERY_MINUTES,
     generationCount: data.generationCount ?? 0,
     completedOrders: data.completedOrders ?? 0,
@@ -2676,6 +2686,7 @@ function saveState() {
       gems: state.gems,
       stamina: state.stamina,
       staminaMax: state.staminaMax,
+      productionMultiplier: state.productionMultiplier,
       recoverMinutes: state.recoverMinutes,
       generationCount: state.generationCount,
       completedOrders: state.completedOrders,
@@ -3061,6 +3072,7 @@ function bindEvents() {
   els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.dailyPouchBtn?.addEventListener("click", claimDailyPouch);
   els.soundToggleBtn?.addEventListener("click", toggleAudioSettings);
+  els.productionMultiplier?.addEventListener("click", selectProductionMultiplier);
   els.bgmToggleBtn?.addEventListener("click", toggleBgm);
   els.sfxToggleBtn?.addEventListener("click", toggleSfx);
   els.storageBtn?.addEventListener("click", openStorage);
@@ -3287,6 +3299,7 @@ function render() {
   renderStaminaCountdown();
   if (els.gems) els.gems.textContent = state.gems ?? 0;
   renderDailyPouchButtons();
+  renderProductionMultiplier();
   if (els.codexProgress) els.codexProgress.textContent = `${state.unlockedCodex.size}/8`;
   els.generateBtn.disabled = !hasEmptyCell();
   renderOrders();
@@ -6790,7 +6803,7 @@ function renderSelected() {
     const productionStatus = item.type === "manual_generator"
       ? cooldownSeconds > 0
         ? "休息中，还剩" + formatGeneratorCountdown(cooldownSeconds)
-        : "充能 " + generatorState.charges + "/" + item.generator.chargeMax
+        : `×${state.productionMultiplier} · ${manualGeneratorOutputItem(item)?.name ?? "食品"} · 充能 ${generatorState.charges}/${item.generator.chargeMax}`
       : cooldownSeconds > 0
         ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
         : neighborEmptyIndices(state.selectedIndex).length > 0
@@ -6928,9 +6941,11 @@ function openSelectedPieceDetail() {
   if (item.type === "manual_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+    const outputItem = manualGeneratorOutputItem(item);
+    const staminaCost = manualGeneratorStaminaCost(item);
     const productionText = cooldownSeconds > 0
       ? "正在休息，" + formatGeneratorCountdown(cooldownSeconds) + "后恢复" + item.generator.chargeMax + "次充能。"
-      : "点击产出食材，消耗" + item.generator.staminaCost + "点驼铃。当前充能 " + generatorState.charges + "/" + item.generator.chargeMax + "。";
+      : `当前 ×${state.productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
     els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
@@ -6980,6 +6995,32 @@ function renderDailyPouchButtons() {
     button.setAttribute("aria-label", label);
     button.title = label;
   });
+}
+
+function renderProductionMultiplier() {
+  if (!els.productionMultiplier) return;
+  const multiplier = normalizeProductionMultiplier(state.productionMultiplier);
+  els.productionMultiplier.querySelectorAll("[data-production-multiplier]").forEach((button) => {
+    const value = Number(button.dataset.productionMultiplier);
+    const active = value === multiplier;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.title = `消耗${value}倍驼铃，产出${value}级食品`;
+  });
+  els.productionMultiplier.setAttribute("aria-label", `手动生成器产出倍率，当前×${multiplier}`);
+}
+
+function selectProductionMultiplier(event) {
+  const button = event.target.closest("[data-production-multiplier]");
+  if (!button || !els.productionMultiplier?.contains(button)) return;
+  const multiplier = normalizeProductionMultiplier(button.dataset.productionMultiplier);
+  if (state.productionMultiplier === multiplier) return;
+  state.productionMultiplier = multiplier;
+  renderProductionMultiplier();
+  renderSelected();
+  toast(`产出倍率切换为 ×${multiplier}`);
+  keeper(`手动生成器将消耗${multiplier}倍驼铃，直接产出${multiplier}级食品。`);
+  saveState();
 }
 
 function claimDailyPouch() {
@@ -7573,6 +7614,20 @@ function sameNeighborIndex(index, itemId) {
   return -1;
 }
 
+function manualGeneratorOutputItem(item) {
+  const category = state.generatorConfig.categories.find((entry) => entry.id === item?.generatorType);
+  if (!category) return byId.get(item?.generator?.pool?.[0]?.itemId);
+  const targetLevel = normalizeProductionMultiplier(state.productionMultiplier);
+  return foodItemsForLine(category.foodLineId)
+    .find((foodItem) => Number(foodItem.level) === targetLevel)
+    ?? byId.get(item?.generator?.pool?.[0]?.itemId);
+}
+
+function manualGeneratorStaminaCost(item) {
+  return Math.max(0, Number(item?.generator?.staminaCost) || 0)
+    * normalizeProductionMultiplier(state.productionMultiplier);
+}
+
 function activateManualGenerator(index) {
   const itemId = state.board[index];
   const item = byId.get(itemId);
@@ -7589,14 +7644,21 @@ function activateManualGenerator(index) {
     toast("案板已满，先合成或收进柜中腾出空格。");
     return;
   }
-  if (state.stamina < item.generator.staminaCost) {
+  const outputItem = manualGeneratorOutputItem(item);
+  const staminaCost = manualGeneratorStaminaCost(item);
+  if (!outputItem) {
     render();
-    toast("驼铃不足，手动生成器无法产出。");
+    toast("这台生成器还没有对应倍率的食品。");
+    return;
+  }
+  if (state.stamina < staminaCost) {
+    render();
+    toast(`驼铃不足，本次 ×${state.productionMultiplier} 产出需要${staminaCost}点。`);
     return;
   }
 
   const staminaWasFull = state.stamina >= state.staminaMax;
-  state.stamina -= item.generator.staminaCost;
+  state.stamina -= staminaCost;
   if (staminaWasFull && state.stamina < state.staminaMax) state.lastTick = Date.now();
   generatorState.charges -= 1;
   if (generatorState.charges <= 0) {
@@ -7607,7 +7669,7 @@ function activateManualGenerator(index) {
   const outputs = Math.min(item.generator.outputCount, emptyCellCount());
   const generatedOutputs = [];
   for (let i = 0; i < outputs; i += 1) {
-    const newItemId = pickFromWeightedPool(item.generator.pool);
+    const newItemId = outputItem.id;
     const outIndex = randomUnlockedEmptyIndex();
     if (outIndex === -1) break;
     state.board[outIndex] = newItemId;
@@ -7619,7 +7681,7 @@ function activateManualGenerator(index) {
   state.generationCount += 1;
   state.selectedIndex = index;
   if (state.tutorialStep === 0) state.tutorialStep = 1;
-  keeper(`${item.name}备好了一份路上能用的食材。`);
+  keeper(`${item.name}消耗${staminaCost}点驼铃，备好了${outputItem.name}。`);
   clearPulseSoon();
   render();
   generatedOutputs.forEach(({ targetIndex, itemId: outputItemId }) => {
