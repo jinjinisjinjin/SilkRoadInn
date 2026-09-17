@@ -9990,6 +9990,20 @@ body {
   }
 }
 
+@media (max-width: 430px) and (min-height: 831px) {
+  #app[data-page="board"] .resources {
+    top: max(74px, calc(env(safe-area-inset-top) + 74px));
+  }
+
+  #app[data-page="board"] .order-side-rail {
+    top: calc(var(--board-top-gutter) + 106px);
+  }
+
+  #app[data-page="board"] .orders {
+    top: calc(var(--board-top-gutter) + 96px);
+  }
+}
+
 @media (max-height: 830px) {
   #app[data-page="board"] .resources {
     top: max(30px, calc(env(safe-area-inset-top) + 30px));
