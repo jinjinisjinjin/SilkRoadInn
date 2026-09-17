@@ -333,47 +333,23 @@ button:disabled {
 }
 
 .production-multiplier {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  width: max-content;
-  min-height: 27px;
-  padding: 2px 3px;
-  border: 1px solid rgba(224, 184, 107, 0.72);
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(93, 58, 32, 0.94), rgba(55, 34, 22, 0.96));
-  box-shadow: inset 0 1px 0 rgba(255, 246, 217, 0.2), 0 2px 7px rgba(49, 27, 16, 0.22);
-  white-space: nowrap;
-}
-
-.production-multiplier > span {
-  padding: 0 3px 0 5px;
-  color: rgba(255, 226, 161, 0.78);
-  font: 800 9px/1 "Songti SC", "STSong", serif;
-  letter-spacing: 0.08em;
-}
-
-.production-multiplier button {
-  min-width: 26px;
-  height: 23px;
-  min-height: 23px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 999px;
-  color: rgba(255, 232, 184, 0.72);
-  background: transparent;
-  box-shadow: none;
-  font: 800 11px/1 Georgia, serif;
-  transition: color 120ms ease, background 120ms ease, transform 100ms ease;
-}
-
-.production-multiplier button.active {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  place-items: center;
+  padding: 0;
+  border: 2px solid rgba(255, 232, 176, 0.88);
+  border-radius: 50%;
   color: #5b351f;
   background: linear-gradient(180deg, #ffe8aa, #d7a74e);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52), 0 1px 3px rgba(31, 17, 10, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 2px 7px rgba(49, 27, 16, 0.32);
+  font: 900 13px/1 Georgia, serif;
+  white-space: nowrap;
+  transition: filter 120ms ease, transform 100ms ease;
 }
 
-.production-multiplier button:active {
+.production-multiplier:active {
   transform: scale(0.92);
 }
 
@@ -9722,20 +9698,10 @@ body {
     position: absolute;
     top: 34px;
     right: 0;
-    min-height: 25px;
-    padding: 1px 2px;
-  }
-
-  #app[data-page="board"] .production-multiplier > span {
-    display: none;
-  }
-
-  #app[data-page="board"] .production-multiplier button {
-    min-width: 21px;
-    height: 21px;
-    min-height: 21px;
-    padding-inline: 2px;
-    font-size: 10px;
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    font-size: 11px;
   }
 
   #app[data-page="board"] .order-side-rail {

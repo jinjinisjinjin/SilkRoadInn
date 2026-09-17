@@ -3072,7 +3072,7 @@ function bindEvents() {
   els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.dailyPouchBtn?.addEventListener("click", claimDailyPouch);
   els.soundToggleBtn?.addEventListener("click", toggleAudioSettings);
-  els.productionMultiplier?.addEventListener("click", selectProductionMultiplier);
+  els.productionMultiplier?.addEventListener("click", cycleProductionMultiplier);
   els.bgmToggleBtn?.addEventListener("click", toggleBgm);
   els.sfxToggleBtn?.addEventListener("click", toggleSfx);
   els.storageBtn?.addEventListener("click", openStorage);
@@ -7000,21 +7000,17 @@ function renderDailyPouchButtons() {
 function renderProductionMultiplier() {
   if (!els.productionMultiplier) return;
   const multiplier = normalizeProductionMultiplier(state.productionMultiplier);
-  els.productionMultiplier.querySelectorAll("[data-production-multiplier]").forEach((button) => {
-    const value = Number(button.dataset.productionMultiplier);
-    const active = value === multiplier;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", String(active));
-    button.title = `消耗${value}倍驼铃，产出${value}级食品`;
-  });
-  els.productionMultiplier.setAttribute("aria-label", `手动生成器产出倍率，当前×${multiplier}`);
+  const currentIndex = PRODUCTION_MULTIPLIERS.indexOf(multiplier);
+  const nextMultiplier = PRODUCTION_MULTIPLIERS[(currentIndex + 1) % PRODUCTION_MULTIPLIERS.length];
+  els.productionMultiplier.textContent = `×${multiplier}`;
+  els.productionMultiplier.title = `当前×${multiplier}：消耗${multiplier}倍驼铃，产出${multiplier}级食品。点击切换到×${nextMultiplier}`;
+  els.productionMultiplier.setAttribute("aria-label", `手动生成器产出倍率，当前×${multiplier}，点击切换到×${nextMultiplier}`);
 }
 
-function selectProductionMultiplier(event) {
-  const button = event.target.closest("[data-production-multiplier]");
-  if (!button || !els.productionMultiplier?.contains(button)) return;
-  const multiplier = normalizeProductionMultiplier(button.dataset.productionMultiplier);
-  if (state.productionMultiplier === multiplier) return;
+function cycleProductionMultiplier() {
+  const currentMultiplier = normalizeProductionMultiplier(state.productionMultiplier);
+  const currentIndex = PRODUCTION_MULTIPLIERS.indexOf(currentMultiplier);
+  const multiplier = PRODUCTION_MULTIPLIERS[(currentIndex + 1) % PRODUCTION_MULTIPLIERS.length];
   state.productionMultiplier = multiplier;
   renderProductionMultiplier();
   renderSelected();
