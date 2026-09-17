@@ -145,10 +145,16 @@
       const second = targets[1].getBoundingClientRect();
       const secondCenterX = second.left - appRect.left + second.width / 2;
       const secondCenterY = second.top - appRect.top + second.height / 2;
-      pointer.style.left = `${firstCenterX - 12}px`;
-      pointer.style.top = `${firstCenterY - 12}px`;
-      pointer.style.setProperty("--guide-dx", `${secondCenterX - firstCenterX}px`);
-      pointer.style.setProperty("--guide-dy", `${secondCenterY - firstCenterY}px`);
+      // Drag gestures use the fingertip as their anchor. Keep the hand beside
+      // the source so the highlighted food remains visible throughout the cue.
+      const pointerLeft = first.right - appRect.left - 10;
+      const pointerTop = firstCenterY - 8;
+      const fingertipX = pointerLeft + 12;
+      const fingertipY = pointerTop + 4;
+      pointer.style.left = `${pointerLeft}px`;
+      pointer.style.top = `${pointerTop}px`;
+      pointer.style.setProperty("--guide-dx", `${secondCenterX - fingertipX}px`);
+      pointer.style.setProperty("--guide-dy", `${secondCenterY - fingertipY}px`);
       return;
     }
 
