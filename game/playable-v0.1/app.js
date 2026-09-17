@@ -40,6 +40,7 @@ const SPECIAL_AUDIO_BUTTONS = [
   "#innKitchenBtn",
 ].join(",");
 const QA_MODE = new URLSearchParams(location.search).get("qa");
+const TRIAL_GENERATOR_CATEGORY = new URLSearchParams(location.search).get("grantGenerator");
 const GENERATOR_QA_MODE = QA_MODE === "generator-system-v1";
 const GENERATOR_MATERIAL_QA_MODE = QA_MODE === "generator-materials-v03";
 const GENERATOR_CHAIN_QA_MODE = QA_MODE === "generator-chain-v1";
@@ -818,6 +819,13 @@ const els = {
   orderFoodRoute: document.querySelector("#orderFoodRoute"),
   bagModal: document.querySelector("#bagModal"),
   bagList: document.querySelector("#bagList"),
+  confirmModal: document.querySelector("#confirmModal"),
+  confirmEyebrow: document.querySelector("#confirmEyebrow"),
+  confirmTitle: document.querySelector("#confirmTitle"),
+  confirmMessage: document.querySelector("#confirmMessage"),
+  confirmClose: document.querySelector("#confirmClose"),
+  confirmCancel: document.querySelector("#confirmCancel"),
+  confirmAccept: document.querySelector("#confirmAccept"),
   storageModal: document.querySelector("#storageModal"),
   storageSlotList: document.querySelector("#storageSlotList"),
   storageInviteBtn: document.querySelector("#storageInviteBtn"),
@@ -926,6 +934,7 @@ let storyArchivePageDoneTimer = null;
 let activeStorageTab = "normal";
 let storageGuideStep = null;
 let generatorWarehouseAnimationTimer = null;
+let pendingConfirmResolve = null;
 let storyArchivePageTurning = false;
 let historicalNoteReturnChapter = null;
 let historicalNoteTransitioning = false;
@@ -1303,6 +1312,21 @@ function initializeGeneratorQaScenario() {
   state.staminaMax = 99;
   state.stamina = 99;
   state.selectedIndex = null;
+}
+
+function grantTrialGeneratorFromUrl() {
+  if (!TRIAL_GENERATOR_CATEGORY || ISOLATED_QA_MODE) return false;
+  const category = state.generatorConfig.categories.find((entry) => entry.id === TRIAL_GENERATOR_CATEGORY);
+  if (!category) return false;
+  const targetIndex = state.board.findIndex((itemId, index) => !itemId && !isBoardCellLocked(index));
+  if (targetIndex < 0) return false;
+  state.board[targetIndex] = generatorItemId(category.id, 1);
+  state.currentPage = "board";
+  state.selectedIndex = targetIndex;
+  const url = new URL(location.href);
+  url.searchParams.delete("grantGenerator");
+  history.replaceState(null, "", url);
+  return true;
 }
 
 function initializeGeneratorMaterialQaScenario() {
@@ -2645,6 +2669,7 @@ function loadState() {
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (LONGSCROLL_CAST_QA_MODE) initializeLongscrollCastQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
+  const trialGeneratorGranted = grantTrialGeneratorFromUrl();
   reconcileGiftBoxStates();
   restoreBonusBubbleItems();
   convertExpiredBubbles(Date.now());
@@ -2655,7 +2680,7 @@ function loadState() {
   pruneGeneratorStates();
   syncVisibleOrders();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
   if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
@@ -3067,6 +3092,13 @@ function bindEvents() {
   innSceneResizeObserver.observe(els.innScene);
   els.generateBtn.addEventListener("click", generateItem);
   els.sellBtn.addEventListener("click", sellSelected);
+  els.confirmClose?.addEventListener("click", () => settleGameConfirm(false));
+  els.confirmCancel?.addEventListener("click", () => settleGameConfirm(false));
+  els.confirmAccept?.addEventListener("click", () => settleGameConfirm(true));
+  els.confirmModal?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    settleGameConfirm(false);
+  });
   els.selectedDetailBtn?.addEventListener("click", openSelectedPieceDetail);
   els.staminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.gemPlusBtn?.addEventListener("click", openRubyRecharge);
@@ -5683,14 +5715,21 @@ function restoreRepairReturnView(milestone, { promptNextRepair = true, focusMile
   if (promptNextRepair) setTimeout(maybePromptRepairGuide, 0);
 }
 
-function upgradeInn() {
+async function upgradeInn() {
   const check = canUpgradeInn();
   if (!check.ok) {
     toast(check.reason);
     return;
   }
   const level = currentInnLevel();
-  if (!confirm(`消耗${level.upgradeCost}枚铜钱扩建流沙驿？扩建后将推进驿站等级并解锁新内容。`)) return;
+  const accepted = await showGameConfirm({
+    eyebrow: "驿站扩建",
+    title: `流沙驿升至 Lv${Math.min(4, state.innLevel + 1)}？`,
+    message: `将消耗 ${level.upgradeCost} 枚铜钱，并解锁下一阶段的地点与故事。`,
+    confirmLabel: "确认扩建",
+    tone: "primary",
+  });
+  if (!accepted) return;
   state.coins -= level.upgradeCost;
   state.innLevel = Math.min(4, state.innLevel + 1);
   applyInnUnlocks();
@@ -8740,7 +8779,7 @@ function grantCoinRewardToBag(amount) {
   if (coinItems.length) toast(`铜币棋子 ×${coinItems.length} 已收入行囊。`);
 }
 
-function sellSelected() {
+async function sellSelected() {
   const index = state.selectedIndex;
   const itemId = state.board[index];
   if (!itemId) return;
@@ -8751,7 +8790,18 @@ function sellSelected() {
     return;
   }
   const actionName = action.mode === "delete" ? "删除" : "出售";
-  if (action.requiresConfirm && !confirm(`${item.name}很珍贵，确定${actionName}吗？`)) return;
+  if (action.requiresConfirm) {
+    const accepted = await showGameConfirm({
+      eyebrow: action.mode === "delete" ? "舍弃棋子" : "出售棋子",
+      title: `${actionName}${item.name}？`,
+      message: action.mode === "delete"
+        ? "删除后无法找回，也不会获得铜钱。"
+        : `出售后将获得 ${action.value} 枚铜钱，棋子无法找回。`,
+      confirmLabel: `确认${actionName}`,
+      tone: "danger",
+    });
+    if (!accepted) return;
+  }
   clearGeneratorState(boardGeneratorStateKey(index));
   state.board[index] = null;
   state.selectedIndex = null;
@@ -9891,8 +9941,15 @@ function openCodexDetail(codexId) {
   openCodexItemDetail(entry.itemId);
 }
 
-function resetGame() {
-  if (!confirm("确定重置原型进度吗？")) return;
+async function resetGame() {
+  const accepted = await showGameConfirm({
+    eyebrow: "重置存档",
+    title: "重新开始原型？",
+    message: "当前试玩进度会被清除，并回到新档状态。此操作无法撤销。",
+    confirmLabel: "确认重置",
+    tone: "danger",
+  });
+  if (!accepted) return;
   localStorage.removeItem(SAVE_KEY);
   localStorage.removeItem("silkroad_new_player_guide_v1");
   localStorage.removeItem("silkroad_new_player_guide_v1_qa");
@@ -9985,8 +10042,15 @@ function unlockCodexCount(count) {
   state.codexConfig.entries.slice(0, count).forEach((entry) => state.unlockedCodex.add(entry.id));
 }
 
-function debugClearBoard() {
-  if (!confirm("确定清空案板吗？行囊不会清空。")) return;
+async function debugClearBoard() {
+  const accepted = await showGameConfirm({
+    eyebrow: "调试操作",
+    title: "清空整张案板？",
+    message: "案板上的棋子会全部移除，奖励行囊不会受到影响。",
+    confirmLabel: "确认清空",
+    tone: "danger",
+  });
+  if (!accepted) return;
   Object.keys(state.bubbleStates).forEach((bubbleId) => byId.delete(bubbleId));
   state.board = Array(BOARD_SIZE).fill(null);
   state.giftBoxStates = {};
@@ -10130,6 +10194,28 @@ function itemAssetSrc(item) {
   const version = assetVersion ? `?v=${encodeURIComponent(assetVersion)}` : "";
   if (item.iconKey?.startsWith("ui_")) return `./assets/ui/${item.iconKey}.png${version}`;
   return `./assets/${item.iconKey}.png${version}`;
+}
+
+function showGameConfirm({ eyebrow = "请确认", title = "确定继续吗？", message = "", confirmLabel = "确认", tone = "danger" } = {}) {
+  if (!els.confirmModal) return Promise.resolve(false);
+  if (pendingConfirmResolve) settleGameConfirm(false);
+  els.confirmEyebrow.textContent = eyebrow;
+  els.confirmTitle.textContent = title;
+  els.confirmMessage.textContent = message;
+  els.confirmAccept.textContent = confirmLabel;
+  els.confirmModal.querySelector(".confirm-detail")?.classList.toggle("primary", tone === "primary");
+  return new Promise((resolve) => {
+    pendingConfirmResolve = resolve;
+    els.confirmModal.showModal();
+    requestAnimationFrame(() => els.confirmCancel?.focus());
+  });
+}
+
+function settleGameConfirm(accepted) {
+  const resolve = pendingConfirmResolve;
+  pendingConfirmResolve = null;
+  if (els.confirmModal?.open) els.confirmModal.close();
+  resolve?.(Boolean(accepted));
 }
 
 function keeper(line) {
