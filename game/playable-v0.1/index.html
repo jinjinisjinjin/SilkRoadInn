@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1-notice-dot-v5-generator-warehouse-v13-daily-shop" />
+    <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1-notice-dot-v5-generator-warehouse-v14-shopfront" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
@@ -557,33 +557,46 @@
     </dialog>
     <dialog id="dailyShopModal" class="modal daily-shop-modal" aria-labelledby="dailyShopTitle">
       <div class="daily-shop-inner">
+        <div class="daily-shop-roof" aria-hidden="true"><span></span></div>
         <button class="close" data-close="dailyShopModal" aria-label="关闭驿站小铺">×</button>
         <header class="daily-shop-head">
-          <small>西市今日开张</small>
-          <h2 id="dailyShopTitle">驿站小铺</h2>
+          <div class="daily-shop-sign">
+            <small>西市今日开张</small>
+            <h2 id="dailyShopTitle">驿站小铺</h2>
+          </div>
           <div class="daily-shop-balance"><span>现有</span><i class="ruby-icon" aria-hidden="true"></i><b id="dailyShopBalance">0</b></div>
         </header>
-        <section class="daily-shop-pouch" aria-label="每日免费宝袋">
-          <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
-          <div><strong>西域晨礼宝袋</strong><small>每日免费一份</small></div>
-          <button id="dailyShopClaimPouch" type="button">免费领取</button>
-        </section>
-        <div class="daily-shop-section-title"><span>固定好物</span><small>每件库存 1</small></div>
-        <section id="dailyShopOffers" class="daily-shop-offers" aria-label="固定好物">
+        <section id="dailyShopOffers" class="daily-shop-stall" aria-label="驿站小铺货架">
+          <div class="daily-shop-section-title"><span>今日货架</span><small>每件库存 1</small></div>
+          <div class="daily-shop-grid">
+          <article class="daily-shop-card daily-shop-pouch-card" aria-label="每日免费宝袋">
+            <strong>西域晨礼宝袋</strong>
+            <img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" />
+            <p>每日免费一份</p>
+            <small>每日限领 1</small>
+            <button id="dailyShopClaimPouch" type="button">免费领取</button>
+          </article>
           <article class="daily-shop-card" data-shop-offer="wealth">
             <strong>聚财陶俑</strong>
             <img src="./assets/ui/shop_wealth_figurine_v1.png" alt="" />
-            <p>逐枚吐出不同等级的铜币棋子</p>
+            <p>逐枚吐出铜币棋子</p>
             <small data-shop-stock>库存 1</small>
             <button type="button" data-shop-buy><i class="ruby-icon" aria-hidden="true"></i><span>25</span></button>
           </article>
           <article class="daily-shop-card" data-shop-offer="stamina">
             <strong>梭梭树</strong>
             <img src="./assets/ui/shop_saxaul_tree_v1.png" alt="" />
-            <p>骆驼爱吃的草木，逐枚补充驼铃体力</p>
+            <p>逐枚补充驼铃体力</p>
             <small data-shop-stock>库存 1</small>
             <button type="button" data-shop-buy><i class="ruby-icon" aria-hidden="true"></i><span>10</span></button>
           </article>
+          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          <div class="daily-shop-card daily-shop-card-empty" aria-hidden="true"><span>待上新</span></div>
+          </div>
         </section>
         <footer class="daily-shop-footer">
           <span>好物刷新</span><b id="dailyShopRefresh">16:00:00</b><small>购得道具会放入奖励行囊</small>
