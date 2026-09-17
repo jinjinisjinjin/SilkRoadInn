@@ -250,6 +250,10 @@
   animation: newPlayerDragPath 1.65s ease-in-out infinite;
 }
 
+.new-player-guide-pointer.drag-path::after {
+  display: none;
+}
+
 @keyframes newPlayerPointerBob {
   0%,
   100% {

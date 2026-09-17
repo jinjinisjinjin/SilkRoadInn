@@ -238,11 +238,26 @@
       const index = Number(cell.dataset.index);
       return state.board[index] === LOCKED_MERGE_ITEM_ID;
     });
-    const usefulCandidates = doughCandidates.length
-      ? doughCandidates
-      : notCurrentlyDemanded.length
-        ? notCurrentlyDemanded
-        : candidates;
+    const generatorIndices = [...document.querySelectorAll("#board .cell .item.generator")]
+      .map((item) => Number(item.closest(".cell")?.dataset.index))
+      .filter(Number.isInteger);
+    const doughAwayFromGenerators = doughCandidates.filter((cell) => {
+      const index = Number(cell.dataset.index);
+      const row = Math.floor(index / 7);
+      const col = index % 7;
+      return generatorIndices.every((generatorIndex) => {
+        const generatorRow = Math.floor(generatorIndex / 7);
+        const generatorCol = generatorIndex % 7;
+        return Math.abs(row - generatorRow) + Math.abs(col - generatorCol) > 1;
+      });
+    });
+    const usefulCandidates = doughAwayFromGenerators.length
+      ? doughAwayFromGenerators
+      : doughCandidates.length
+        ? doughCandidates
+        : notCurrentlyDemanded.length
+          ? notCurrentlyDemanded
+          : candidates;
     const unobscured = appRect
       ? usefulCandidates.filter((cell) => cell.getBoundingClientRect().bottom < appRect.top + appRect.height * 0.62)
       : usefulCandidates;
