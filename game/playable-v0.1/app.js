@@ -206,12 +206,12 @@ const DAILY_SHOP_OFFERS = Object.freeze([
 const WEEKLY_CHECKIN_REWARDS = Object.freeze([
   { label: "双铃同行", items: [{ itemId: "bonus_stamina_02", quantity: 1 }] },
   { label: "四级油胡饼", items: [{ itemId: "hubing_04_youhubing", quantity: 1 }] },
-  { label: "三十枚铜钱", items: [{ itemId: "bonus_coin_02", quantity: 1 }] },
+  { label: "两枚铜钱", items: [{ itemId: "bonus_coin_02", quantity: 1 }] },
   { label: "单峰驼", items: [{ itemId: "bonus_stamina_03", quantity: 1 }] },
   { label: "五级葱豉饼", items: [{ itemId: "hubing_05_congchihubing", quantity: 1 }] },
-  { label: "三颗红宝石", items: [{ itemId: "bonus_ruby_02", quantity: 1 }] },
+  { label: "二阶红宝石", items: [{ itemId: "bonus_ruby_02", quantity: 1 }] },
   {
-    label: "晨礼宝袋＋3红宝石",
+    label: "晨礼宝袋＋二阶红宝石",
     items: [{ packId: DAILY_POUCH_PACK_ID, quantity: 1 }, { itemId: "bonus_ruby_02", quantity: 1 }],
   },
 ]);
@@ -7456,6 +7456,7 @@ function renderWeeklyCheckin() {
     els.weeklyCheckinTrail.replaceChildren();
     WEEKLY_CHECKIN_REWARDS.forEach((_, index) => {
       const marker = document.createElement("i");
+      marker.textContent = String(index + 1);
       if (index < claimedDays) marker.className = "done";
       else if (index === currentIndex) marker.className = "current";
       els.weeklyCheckinTrail.append(marker);
@@ -7465,7 +7466,7 @@ function renderWeeklyCheckin() {
   if (els.weeklyCheckinClaim) {
     els.weeklyCheckinClaim.disabled = !claimable;
     els.weeklyCheckinClaim.textContent = claimable
-      ? `领取第 ${claimedDays + 1} 日行程礼`
+      ? `收下第 ${claimedDays + 1} 日行礼`
       : claimedDays >= 7 ? "本轮驿程已完成" : "今日已经前行";
   }
   if (els.weeklyCheckinHint) {
