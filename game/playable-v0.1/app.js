@@ -1927,10 +1927,9 @@ function initializeNewPlayerGuideQaScenario() {
     state.tutorialStep = 5;
     state.currentPage = "board";
   } else if (NEW_PLAYER_GUIDE_QA_STAGE === "locked-merge") {
-    state.board[boardIndex(4, 3)] = "hubing_01_dough";
     state.completedOrderIds = [];
     state.completedOrders = 0;
-    state.tutorialStep = 1;
+    state.tutorialStep = 0;
     state.currentPage = "board";
   } else {
     state.tutorialStep = 0;
@@ -7663,9 +7662,9 @@ function renderTutorial() {
   document.querySelectorAll(".tutorial-action").forEach((element) => element.classList.remove("tutorial-action"));
 
   if (state.tutorialStep === 0) {
-    keeper("先点案板上的小石磨，消耗驼铃收下一份麦面。");
+    keeper("先点案板中央的小石磨，生成一份麦面剂。");
   } else if (state.tutorialStep === 1) {
-    keeper("把麦面剂拖到左边锁格里的相同食物上；合成炉饼时，也会解开这格。");
+    keeper("麦面剂做好了。把它拖到左边锁格里的相同食物上，解开棋格并合成炉饼。");
   } else if (state.tutorialStep === 2) {
     keeper("炉饼做好了，交给沙州驿卒试试。");
   } else if (state.tutorialStep === 3) {

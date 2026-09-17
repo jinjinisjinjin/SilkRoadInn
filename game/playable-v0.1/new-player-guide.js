@@ -303,7 +303,7 @@
 
     if (tutorialStep === 0 && page === "board") {
       showGuide({
-        text: "点案板中央的小石磨，取第一份麦面。",
+        text: "先点案板中央的小石磨，生成一份麦面剂。",
         targets: [boardCellFor("gen_mill_01", state)],
       });
       return;
@@ -314,12 +314,12 @@
       const lockedTarget = lockedMergeTarget(state, savedGuide);
       if (!dough.length) {
         showGuide({
-          text: "点小石磨做一份麦面剂，用它解开左边的锁格。",
+          text: "再点一次小石磨，生成一份麦面剂。",
           targets: [boardCellFor("gen_mill_01", state)],
         });
       } else if (lockedTarget) {
         showGuide({
-          text: "先解开左边这个锁格：把麦面剂拖到锁格里的相同食物上，会合成炉饼并腾出新棋格。",
+          text: "麦面剂做好了。把它拖到左边锁格里的相同食物上，解开棋格并合成炉饼。",
           targets: [lockedTarget],
         });
       }
