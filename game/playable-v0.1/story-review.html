@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>丝路食肆｜剧情总览与交互接线</title>
+    <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
+    <link rel="stylesheet" href="./story-review.css?v=story-review-v5-mystery-clean-top" />
+  </head>
+  <body>
+    <header class="review-hero">
+      <div class="review-hero__bar">
+        <a class="back-link" href="./">← 返回游戏</a>
+        <span>内部剧情验收页</span>
+      </div>
+      <div class="review-hero__copy">
+        <p>《丝路食鉴》· 流沙驿纪事</p>
+        <h1>剧情总览与交互接线</h1>
+        <div class="review-stats" aria-label="剧情规模">
+          <b>4 <small>卷</small></b><b>10 <small>级</small></b><b>20 <small>章</small></b><b>22 <small>修缮点</small></b>
+        </div>
+        <a class="story-tour-link" href="./?qa=chapter-story-v1&amp;chapter=1&amp;scene=0">从第一章连续体验四卷剧情</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="flow-section" aria-labelledby="flowTitle">
+        <div class="section-heading">
+          <span>用户交互逻辑</span>
+          <h2 id="flowTitle">一段剧情如何出现</h2>
+        </div>
+        <div class="interaction-flow">
+          <article><i>1</i><b>订单出现</b><span>当前 Lv 开放指定 NPC 剧情订单。</span></article>
+          <article><i>2</i><b>交付与答题</b><span>完成交付，查看答对/答错反馈、奖励和解析。</span></article>
+          <article><i>3</i><b>NPC 留在身边</b><span>奖励与解析结束前，人物不会提前移到下一处。</span></article>
+          <article><i>4</i><b>点击修缮点</b><span>长卷镜头推近，先播放「修缮前」对话。</span></article>
+          <article><i>5</i><b>三步修缮</b><span>进入嵌入式修缮场景，分段支付并完成焕新。</span></article>
+          <article><i>6</i><b>史实问答</b><span>在新场景里发现线索，回答后看解析与宝袋。</span></article>
+          <article><i>7</i><b>剧情收束与转场</b><span>卷末播放修缮后剧情；随后 NPC 再自然前往下一处。</span></article>
+        </div>
+        <aside class="flow-note">
+          <b>开卷规则</b>
+          <span>Lv1 首次进入播第1章；升至 Lv3、Lv6、Lv9 时，先播新卷开场，再显示「流沙驿升至 LvN」动画。</span>
+        </aside>
+      </section>
+
+      <section class="story-section" aria-labelledby="storyTitle">
+        <div class="section-heading story-heading">
+          <div><span>完整二十章</span><h2 id="storyTitle">按卷查看全部剧情</h2></div>
+          <div class="review-tools">
+            <input id="storySearch" type="search" placeholder="搜章名、人物或台词" aria-label="搜索剧情" />
+            <button id="expandAll" type="button">展开全部台词</button>
+            <button id="collapseAll" type="button">收起全部</button>
+          </div>
+        </div>
+        <nav id="volumeFilters" class="volume-filters" aria-label="筛选剧情卷">
+          <button type="button" data-volume="all" class="active">全部</button>
+          <button type="button" data-volume="1">第一卷</button>
+          <button type="button" data-volume="2">第二卷</button>
+          <button type="button" data-volume="3">第三卷</button>
+          <button type="button" data-volume="4">第四卷</button>
+        </nav>
+        <div id="storyReviewVolumes" class="story-volumes" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>本页只用于剧情验收，点击「在游戏中查看」会打开对应 QA 场景，不会改写正式存档。</footer>
+
+    <script src="./chapter-story.js?v=story-viewport-v4-dialogue-narration-v19-huyue-copy-edit"></script>
+    <script src="./story-review.js?v=story-review-v2-mystery-crop"></script>
+  </body>
+</html>

@@ -1,4 +1,6 @@
 const DATA_PATH = "./data/";
+const MAX_INN_LEVEL = 10;
+const INN_LEVEL_SCHEMA_VERSION = 2;
 const STAMINA_RECOVERY_MINUTES = 2;
 const PRODUCTION_MULTIPLIERS = Object.freeze([1, 2, 4]);
 const AUDIO_PATH = "./assets/audio/";
@@ -85,7 +87,7 @@ const CHAPTER_STORY_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchPar
 const CHAPTER_STORY_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
 const STORY_ARCHIVE_QA_CHAPTER = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get("chapter")) || 1));
 const STORY_ARCHIVE_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.search).get("scene")) || 0);
-const UPGRADE_REVEAL_QA_LEVEL = Math.max(2, Math.min(4, Math.trunc(Number(new URLSearchParams(location.search).get("level"))) || 2));
+const UPGRADE_REVEAL_QA_LEVEL = Math.max(2, Math.min(MAX_INN_LEVEL, Math.trunc(Number(new URLSearchParams(location.search).get("level"))) || 2));
 const LONGSCROLL_CAST_QA_SCENE_MAX = 22;
 const LONGSCROLL_CAST_QA_SCENE = Math.max(1, Math.min(LONGSCROLL_CAST_QA_SCENE_MAX, Math.trunc(Number(new URLSearchParams(location.search).get("scene"))) || 1));
 const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
@@ -282,6 +284,19 @@ const CHAPTER_TITLE_LINES = {
   3: ["楼馆", "通途"],
   4: ["灯火", "连城"],
 };
+const VOLUME_START_LEVELS = Object.freeze({ 1: 1, 2: 3, 3: 6, 4: 9 });
+
+function volumeForInnLevel(level) {
+  const normalized = Math.max(1, Math.min(MAX_INN_LEVEL, Math.trunc(Number(level)) || 1));
+  if (normalized >= 9) return 4;
+  if (normalized >= 6) return 3;
+  if (normalized >= 3) return 2;
+  return 1;
+}
+
+function milestoneInnLevel(milestone) {
+  return Math.max(1, Math.min(MAX_INN_LEVEL, Math.trunc(Number(milestone?.innLevel)) || VOLUME_START_LEVELS[milestone?.chapter] || 1));
+}
 const BUILD_MODE = new URLSearchParams(location.search).get("mode") === "release" ? "release" : "dev";
 const LONGSCROLL_KEEPER_STANDEE = "./assets/npc_standee/keeper.png";
 const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
@@ -1308,7 +1323,7 @@ function initializeGeneratorQaScenario() {
   state.generatorLineOrderCounts = Object.fromEntries(state.generatorConfig.categories.map((category) => [category.id, 48]));
   state.claimedGeneratorProgressRewards = allGeneratorProgressRewardIds();
   state.completedOrderIds = state.generatorConfig.categories.map((category) => category.masteryOrderId);
-  state.innLevel = 4;
+  state.innLevel = MAX_INN_LEVEL;
   state.staminaMax = 99;
   state.stamina = 99;
   state.selectedIndex = null;
@@ -1327,6 +1342,18 @@ function grantTrialGeneratorFromUrl() {
   url.searchParams.delete("grantGenerator");
   history.replaceState(null, "", url);
   return true;
+}
+
+function initializeChapterStoryQaScenario() {
+  // 剧情体验使用独立存档；充足体力与零冷却只服务于验收，不影响正式存档。
+  state.staminaMax = 99999;
+  state.stamina = 99999;
+  state.items.forEach((item) => {
+    if (item.generator) item.generator.cooldownSeconds = 0;
+  });
+  Object.values(state.generatorStates).forEach((generatorState) => {
+    generatorState.cooldownEnd = 0;
+  });
 }
 
 function initializeGeneratorMaterialQaScenario() {
@@ -1567,7 +1594,7 @@ function initializeLv4MarketOrdersQaScenario() {
   state.coins = 10000;
   state.staminaMax = 99;
   state.stamina = 99;
-  state.innLevel = 4;
+  state.innLevel = 9;
   state.currentPage = "board";
   state.selectedIndex = null;
 }
@@ -1613,18 +1640,19 @@ function initializeGeneratorOrderQaScenario() {
   state.staminaMax = 99;
   state.stamina = 99;
   state.coins = 9990;
-  state.innLevel = stageIndex >= 4 ? 2 : 1;
+  const qaLevelByStage = [1, 2, 2, 2, 3, 5];
+  state.innLevel = qaLevelByStage[stageIndex] ?? 1;
   state.currentPage = "board";
   state.selectedIndex = null;
 }
 
 const PROGRESSION_FLOW_QA_SPECS = Object.freeze({
   fresh: { completedOrders: 0, repairCount: 0, innLevel: 1, generatorLevel: 1, coins: 0, chapterOrders: 0 },
-  20: { completedOrders: 20, repairCount: 2, innLevel: 1, generatorLevel: 2, coins: 2200, chapterOrders: 8 },
-  60: { completedOrders: 60, repairCount: 6, innLevel: 2, generatorLevel: 3, coins: 3000, chapterOrders: 8 },
-  120: { completedOrders: 120, repairCount: 13, innLevel: 3, generatorLevel: 4, coins: 6000, chapterOrders: 8 },
-  190: { completedOrders: 190, repairCount: 20, innLevel: 4, generatorLevel: 5, coins: 12000, chapterOrders: 8 },
-  260: { completedOrders: 260, repairCount: 22, innLevel: 4, generatorLevel: 6, coins: 25000, chapterOrders: 12 },
+  20: { completedOrders: 20, repairCount: 2, innLevel: 2, generatorLevel: 2, coins: 2200, chapterOrders: 8 },
+  60: { completedOrders: 60, repairCount: 6, innLevel: 4, generatorLevel: 3, coins: 3000, chapterOrders: 8 },
+  120: { completedOrders: 120, repairCount: 13, innLevel: 7, generatorLevel: 4, coins: 6000, chapterOrders: 8 },
+  190: { completedOrders: 190, repairCount: 20, innLevel: 10, generatorLevel: 5, coins: 12000, chapterOrders: 8 },
+  260: { completedOrders: 260, repairCount: 22, innLevel: 10, generatorLevel: 6, coins: 25000, chapterOrders: 12 },
 });
 
 function initializeProgressionFlowQaScenario() {
@@ -1713,7 +1741,13 @@ function initializeProgressionFlowQaScenario() {
       .filter((milestone) => milestone.targetLevel <= highestClaimedTargetLevel)
       .map((milestone) => generatorProgressRewardId(categoryId, milestone.targetLevel)),
   );
-  state.chapterOrderCounts = { 1: 0, 2: 0, 3: 0, 4: 0, [spec.innLevel]: spec.chapterOrders };
+  state.chapterOrderCounts = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    [volumeForInnLevel(spec.innLevel)]: spec.chapterOrders,
+  };
   state.generatorLineOrderCounts = Object.fromEntries(
     state.generatorConfig.categories.map((category) => [
       category.id,
@@ -1721,8 +1755,8 @@ function initializeProgressionFlowQaScenario() {
     ]),
   );
   state.claimedOrderProgressPacks = state.progressionConfig.orderProgressPacks
-    .filter((pack) => pack.chapter < spec.innLevel
-      || (pack.chapter === spec.innLevel && pack.threshold < spec.chapterOrders))
+    .filter((pack) => pack.chapter < volumeForInnLevel(spec.innLevel)
+      || (pack.chapter === volumeForInnLevel(spec.innLevel) && pack.threshold < spec.chapterOrders))
     .map((pack) => pack.id);
   state.coinsEarned = Math.max(0, Math.round(spec.completedOrders * 280));
   state.storyFlags = Object.fromEntries(
@@ -1749,7 +1783,7 @@ function initializeProgressionFlowQaScenario() {
 
 function initializeUpgradeRevealQaScenario() {
   const completedMilestones = state.progressionConfig.milestones.filter(
-    (milestone) => (milestone.chapter ?? 1) < UPGRADE_REVEAL_QA_LEVEL,
+    (milestone) => milestoneInnLevel(milestone) < UPGRADE_REVEAL_QA_LEVEL,
   );
   state.innLevel = UPGRADE_REVEAL_QA_LEVEL;
   state.renovationChoices = Object.fromEntries(
@@ -1791,7 +1825,7 @@ function initializeStoryArchiveQaScenario() {
   state.completedOrderIds = ["order_003_sogdian_humabing"];
   state.answeredHistoricalNoteIds = [];
   state.historicalNoteRewards = {};
-  state.innLevel = STORY_ARCHIVE_QA_CHAPTER;
+  state.innLevel = VOLUME_START_LEVELS[STORY_ARCHIVE_QA_CHAPTER];
   state.currentPage = "inn";
 }
 
@@ -1817,7 +1851,7 @@ function initializeRepairProgressQaScenario() {
   state.activeRepairId = null;
   state.repairPromptedFor = [];
   state.coins = 99990;
-  state.innLevel = REPAIR_PROGRESS_QA_CHAPTER;
+  state.innLevel = Math.max(...chapterMilestones.map(milestoneInnLevel));
   state.currentPage = "inn";
 }
 
@@ -1860,7 +1894,7 @@ function initializeLongscrollCastQaScene(sceneNumber) {
   state.historicalNoteRewards = {};
   state.completedOrders = Math.max(999, state.completedOrders);
   state.coins = 99990;
-  state.innLevel = currentChapter;
+  state.innLevel = milestoneInnLevel(currentMilestone);
   state.currentPage = "inn";
   state.tutorialStep = 5;
 }
@@ -1998,7 +2032,7 @@ function configureRepairProgressQaState(milestone, mode) {
   state.activeRepairId = null;
   state.repairPromptedFor = [];
   state.coins = 99990;
-  state.innLevel = chapter;
+  state.innLevel = milestoneInnLevel(milestone);
   state.currentPage = "inn";
 
   const params = new URLSearchParams(location.search);
@@ -2497,12 +2531,31 @@ function defaultState() {
     staminaPurchasesToday: 0,
     dailyPouchClaimDay: "",
     innLevel: 1,
+    innLevelSchemaVersion: INN_LEVEL_SCHEMA_VERSION,
     ownedFurniture: [],
     placedFurniture: Array(6).fill(null),
     currentPage: "board",
     tutorialStep: 0,
     lastTick: Date.now(),
   };
+}
+
+function normalizeInnLevel(savedLevel, savedSchemaVersion, renovationChoices = {}) {
+  if (Number(savedSchemaVersion) >= INN_LEVEL_SCHEMA_VERSION) {
+    return Math.max(1, Math.min(MAX_INN_LEVEL, Math.trunc(Number(savedLevel)) || 1));
+  }
+  const completed = renovationChoices && typeof renovationChoices === "object" ? renovationChoices : {};
+  const hasRepairHistory = Object.values(completed).some(Boolean);
+  if (!hasRepairHistory) {
+    return ({ 1: 1, 2: 3, 3: 6, 4: 9 })[Math.trunc(Number(savedLevel))] ?? 1;
+  }
+  let migratedLevel = 1;
+  for (let candidate = 1; candidate < MAX_INN_LEVEL; candidate += 1) {
+    const required = state.progressionConfig.milestones.filter((milestone) => milestoneInnLevel(milestone) <= candidate);
+    if (!required.length || required.some((milestone) => !completed[milestone.id])) break;
+    migratedLevel = candidate + 1;
+  }
+  return migratedLevel;
 }
 
 function loadState() {
@@ -2641,7 +2694,8 @@ function loadState() {
       ? Math.max(0, Math.floor(Number(data.staminaPurchasesToday) || 0))
       : 0,
     dailyPouchClaimDay: typeof data.dailyPouchClaimDay === "string" ? data.dailyPouchClaimDay : "",
-    innLevel: data.innLevel ?? 1,
+    innLevel: normalizeInnLevel(data.innLevel, data.innLevelSchemaVersion, loadedRenovationChoices),
+    innLevelSchemaVersion: INN_LEVEL_SCHEMA_VERSION,
     ownedFurniture: Array.isArray(data.ownedFurniture) ? data.ownedFurniture : [],
     placedFurniture: Array.isArray(data.placedFurniture) ? normalizePlacedFurniture(data.placedFurniture) : Array(6).fill(null),
     currentPage: data.currentPage === "inn" ? "inn" : "board",
@@ -2669,6 +2723,7 @@ function loadState() {
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (LONGSCROLL_CAST_QA_MODE) initializeLongscrollCastQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
+  if (CHAPTER_STORY_QA_MODE) initializeChapterStoryQaScenario();
   const trialGeneratorGranted = grantTrialGeneratorFromUrl();
   reconcileGiftBoxStates();
   restoreBonusBubbleItems();
@@ -2740,6 +2795,7 @@ function saveState() {
       staminaPurchasesToday: state.staminaPurchasesToday,
       dailyPouchClaimDay: state.dailyPouchClaimDay,
       innLevel: state.innLevel,
+      innLevelSchemaVersion: INN_LEVEL_SCHEMA_VERSION,
       ownedFurniture: state.ownedFurniture,
       placedFurniture: state.placedFurniture,
       currentPage: state.currentPage,
@@ -3437,7 +3493,7 @@ function renderInnPage() {
   const chapterMilestones = getMilestoneViews().filter((milestone) => (milestone.chapter ?? 1) === chapter);
   const completedChapterMilestones = chapterMilestones.filter((milestone) => selectedRenovationChoice(milestone)).length;
   const chineseNumbers = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
-  els.innChapterEyebrow.textContent = `第${chineseNumbers[chapter] ?? chapter}章`;
+  els.innChapterEyebrow.textContent = `第${chineseNumbers[chapter] ?? chapter}卷`;
   const chapterTitleLines = CHAPTER_TITLE_LINES[chapter] ?? [chapterName(chapter)];
   els.innLevelName.replaceChildren(
     ...chapterTitleLines.map((line) => Object.assign(document.createElement("span"), { textContent: line })),
@@ -3451,26 +3507,26 @@ function renderInnPage() {
   els.innChapterProgress.classList.toggle("is-dense", chapterMilestones.length > 4);
   els.innChapterProgress.setAttribute(
     "aria-label",
-    `本章已完成${chineseNumbers[completedChapterMilestones] ?? completedChapterMilestones}处，共${chineseNumbers[chapterMilestones.length] ?? chapterMilestones.length}处`,
+    `本卷已完成${chineseNumbers[completedChapterMilestones] ?? completedChapterMilestones}处，共${chineseNumbers[chapterMilestones.length] ?? chapterMilestones.length}处`,
   );
   els.innCoins.textContent = state.coins;
   els.innStamina.textContent = state.stamina;
   els.innGems.textContent = state.gems ?? 0;
-  els.innScoreText.textContent = "主线修缮";
+  els.innScoreText.textContent = `流沙驿 Lv${state.innLevel} · 主线修缮`;
   els.innUpgradeText.textContent =
-    level.level >= 4
-      ? "当前原型已到最高驿站等级。"
+    level.level >= MAX_INN_LEVEL
+      ? "流沙驿已经升至最高等级，百味宴正在等候。"
       : canUpgrade.ok
         ? "条件已满足，可以升级流沙驿。"
         : canUpgrade.reason;
-  els.innUpgradeBtn.disabled = level.level >= 4;
+  els.innUpgradeBtn.disabled = level.level >= MAX_INN_LEVEL;
   els.innUpgradeBtn.classList.toggle("locked", !canUpgrade.ok);
-  els.innUpgradeBtn.hidden = level.level >= 4 || !canUpgrade.ok;
+  els.innUpgradeBtn.hidden = level.level >= MAX_INN_LEVEL || !canUpgrade.ok;
   els.innUpgradeBtn.textContent = "扩建";
-  els.innUpgradeBtn.title = canUpgrade.ok ? `扩建流沙驿，消耗${level.upgradeCost}铜币` : canUpgrade.reason;
+  els.innUpgradeBtn.title = canUpgrade.ok ? `将流沙驿升至 Lv${Math.min(MAX_INN_LEVEL, state.innLevel + 1)}` : canUpgrade.reason;
   const repairGate = canEnterRepairPage();
-  els.innStoryLine.textContent = nextMilestone?.chapter > state.innLevel
-    ? `完成 Lv${state.innLevel} 扩建后开放下一章修缮。`
+  els.innStoryLine.textContent = milestoneInnLevel(nextMilestone) > state.innLevel
+    ? `完成 Lv${state.innLevel} 扩建后开放下一级修缮。`
     : nextMilestone
       ? `${nextMilestone.sceneName ?? nextMilestone.name}：${repairGate.ok ? nextMilestone.nextText : repairGate.reason}`
       : level.story;
@@ -3484,7 +3540,7 @@ function renderInnTasks(level) {
   const coinOk = state.coins >= level.upgradeCost;
   const repairOk = innRepairValue() >= level.repairTarget;
   const lines = [
-    `<span class="${coinOk ? "done" : ""}">铜币 ${Math.min(state.coins, level.upgradeCost)}/${level.upgradeCost}</span>`,
+    ...(level.upgradeCost > 0 ? [`<span class="${coinOk ? "done" : ""}">铜币 ${Math.min(state.coins, level.upgradeCost)}/${level.upgradeCost}</span>`] : []),
     `<span class="${repairOk ? "done" : ""}">基础修缮 ${Math.min(innRepairValue(), level.repairTarget)}/${level.repairTarget}</span>`,
     ...taskViews.map((task) => `<span class="${task.done ? "done" : ""}">${task.label} ${task.current}/${task.target}</span>`),
   ];
@@ -3495,7 +3551,7 @@ function renderInnScene(level, repairValue) {
   resetLongscrollClueCamera();
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
-  const availableNext = next && next.chapter <= state.innLevel ? next : null;
+  const availableNext = next && milestoneInnLevel(next) <= state.innLevel ? next : null;
   const showingFreshRepair = Boolean(repairReturnCastMilestoneId);
   const completedRegionIds = new Set(
     milestones
@@ -3778,7 +3834,7 @@ function refreshLongscrollCharacters() {
   const layer = els.innScene.querySelector(".longscroll-character-layer");
   if (!layer) return;
   const next = nextRepairMilestone();
-  const availableNext = next && next.chapter <= state.innLevel ? next : null;
+  const availableNext = next && milestoneInnLevel(next) <= state.innLevel ? next : null;
   layer.outerHTML = renderLongscrollCharacters(longscrollCharacterMilestone(availableNext));
 }
 
@@ -3930,7 +3986,7 @@ function handleLockedRepairClick(milestoneId) {
 function renderMainlineDock() {
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
-  const awaitingExpansion = Boolean(next && next.chapter > state.innLevel);
+  const awaitingExpansion = Boolean(next && milestoneInnLevel(next) > state.innLevel);
   const repairGate = canEnterRepairPage();
   const ready = next && !awaitingExpansion && next.done && repairGate.ok && !selectedRenovationChoice(next);
   const level = currentInnLevel();
@@ -3945,8 +4001,8 @@ function renderMainlineDock() {
     </div>
     ${renderOrderProgressGiftRail()}
     <div class="mainline-current">
-      <b>${awaitingExpansion ? "先扩建流沙驿" : next ? next.sceneName ?? next.name : "本章修缮完成"}</b>
-      <span>${awaitingExpansion ? `完成 Lv${state.innLevel} 扩建后开放下一章修缮。` : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
+      <b>${awaitingExpansion ? "先扩建流沙驿" : next ? next.sceneName ?? next.name : "本级修缮完成"}</b>
+      <span>${awaitingExpansion ? `完成 Lv${state.innLevel} 扩建后开放下一级修缮。` : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
       ${next && !next.done && !awaitingExpansion ? `<small>${next.id === "tutorial_complete" ? "先完成一单，再用赚到的铜钱修缮。" : "修完上一处，就能继续修缮这里。"}</small>` : ""}
     </div>
     <div class="mainline-rail">
@@ -3995,8 +4051,8 @@ function renderOrderProgressGiftRail() {
   const entries = (state.progressionConfig?.orderProgressPacks ?? []).filter((entry) => entry.chapter === chapter);
   if (!entries.length) return "";
   return `
-    <section class="order-progress-gifts" aria-label="本章订单礼盒">
-      <div class="order-progress-copy"><b>${chapterName(chapter)}</b><span>本章 ${count} 单</span></div>
+    <section class="order-progress-gifts" aria-label="本卷订单礼盒">
+      <div class="order-progress-copy"><b>${chapterName(chapter)}</b><span>本卷 ${count} 单</span></div>
       <div class="order-progress-pack-list">
         ${entries.map((entry) => {
           const claimed = state.claimedOrderProgressPacks.includes(entry.id);
@@ -4016,7 +4072,7 @@ function claimOrderProgressPack(packId) {
   if (!entry || state.claimedOrderProgressPacks.includes(packId)) return;
   const count = state.chapterOrderCounts[entry.chapter] ?? 0;
   if (count < entry.threshold) {
-    toast(`本章再完成${entry.threshold - count}单即可领取。`);
+    toast(`本卷再完成${entry.threshold - count}单即可领取。`);
     return;
   }
   state.claimedOrderProgressPacks.push(packId);
@@ -4153,11 +4209,12 @@ function openRepairProgressModal(milestone, mode = "entry") {
   activeRepairMilestoneId = milestone.id;
   activeRepairChoiceId = "completed";
   const chapter = milestone.chapter ?? 1;
-  const chapterMilestones = getMilestoneViews().filter((entry) => entry.chapter === chapter);
-  const completedCount = chapterMilestones.filter((entry) => state.renovationChoices[entry.id]).length;
-  const nextInChapter = chapterMilestones.find((entry) => !state.renovationChoices[entry.id]);
-  const chapterComplete = completedCount === chapterMilestones.length;
-  const focusMilestone = mode === "completion" ? nextInChapter ?? milestone : milestone;
+  const innLevel = milestone.innLevel ?? milestoneInnLevel(milestone);
+  const levelMilestones = getMilestoneViews().filter((entry) => entry.innLevel === innLevel);
+  const completedCount = levelMilestones.filter((entry) => state.renovationChoices[entry.id]).length;
+  const nextInLevel = levelMilestones.find((entry) => !state.renovationChoices[entry.id]);
+  const chapterComplete = isChapterRepairComplete(chapter);
+  const focusMilestone = mode === "completion" ? nextInLevel ?? milestone : milestone;
   const chapterReward = chapterCompletionReward(chapter);
 
   els.repairTitle.textContent = milestone.sceneName ?? milestone.name;
@@ -4168,12 +4225,12 @@ function openRepairProgressModal(milestone, mode = "entry") {
   els.repairStory.textContent = mode === "completion"
     ? milestone.completionText ?? "这一处已经修缮妥当。"
     : milestone.storyText ?? milestone.nextText;
-  els.repairChapterTitle.textContent = `Lv${chapter} · ${chapterName(chapter)}`;
-  els.repairChapterProgress.textContent = `${completedCount}/${chapterMilestones.length}`;
-  els.repairChapterProgressBar.style.width = `${chapterMilestones.length ? (completedCount / chapterMilestones.length) * 100 : 0}%`;
-  els.repairMilestoneStrip.innerHTML = chapterMilestones.map((entry) => {
+  els.repairChapterTitle.textContent = `Lv${innLevel} · 第${chapter}卷 ${chapterName(chapter)}`;
+  els.repairChapterProgress.textContent = `${completedCount}/${levelMilestones.length}`;
+  els.repairChapterProgressBar.style.width = `${levelMilestones.length ? (completedCount / levelMilestones.length) * 100 : 0}%`;
+  els.repairMilestoneStrip.innerHTML = levelMilestones.map((entry) => {
     const completed = Boolean(state.renovationChoices[entry.id]);
-    const current = !completed && nextInChapter?.id === entry.id;
+    const current = !completed && nextInLevel?.id === entry.id;
     const status = completed ? "done" : current ? "current" : "locked";
     const statusLabel = completed ? "已完成" : current ? "进行中" : "未解锁";
     return `
@@ -4190,13 +4247,13 @@ function openRepairProgressModal(milestone, mode = "entry") {
   const followingMilestone = nextRepairMilestone();
   els.repairNextLine.textContent = mode === "entry" || mode === "unlock"
     ? `当前：修缮${milestone.sceneName ?? milestone.name}`
-    : nextInChapter
-      ? `下一处：修缮${nextInChapter.sceneName ?? nextInChapter.name}`
+    : nextInLevel
+      ? `下一处：修缮${nextInLevel.sceneName ?? nextInLevel.name}`
       : followingMilestone
-        ? `下一章：${chapterName(followingMilestone.chapter)}`
+        ? `下一阶段：Lv${milestoneInnLevel(followingMilestone)} · ${chapterName(followingMilestone.chapter)}`
         : "四卷修缮已经全部完成";
-  els.repairCompletionTitle.textContent = `Lv${chapter} 通关礼盒`;
-  renderRepairCompletionRewards(chapterReward);
+  els.repairCompletionTitle.textContent = `第${chapter}卷通关礼盒`;
+  renderRepairCompletionRewards(chapterComplete ? chapterReward : null);
   els.repairModal.classList.toggle("chapter-complete", chapterComplete);
   els.repairChoices.innerHTML = "";
   els.repairChoices.hidden = true;
@@ -4479,8 +4536,9 @@ function playChapterStory(segmentId, onComplete, options = {}) {
 }
 
 function pendingChapterOpeningId() {
-  const chapter = Number(state.innLevel);
+  const chapter = volumeForInnLevel(state.innLevel);
   if (chapter < 2 || chapter > 4 || state.storyFlags[`chapter${chapter}StoryOpeningSeen`]) return null;
+  if (state.innLevel !== VOLUME_START_LEVELS[chapter]) return null;
   const chapterMilestones = (state.progressionConfig?.milestones ?? []).filter((milestone) => milestone.chapter === chapter);
   if (!chapterMilestones.length || chapterMilestones.some((milestone) => state.renovationChoices[milestone.id])) return null;
   return `chapter${chapter}-opening`;
@@ -4503,7 +4561,7 @@ function chapterStoryContinuation(segmentId) {
   const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
   if (!openingMatch) return null;
   return () => {
-    pendingInnUpgradeRevealLevel = Number(openingMatch[1]);
+    pendingInnUpgradeRevealLevel = VOLUME_START_LEVELS[Number(openingMatch[1])];
     showPendingInnUpgradeReveal();
   };
 }
@@ -4533,7 +4591,7 @@ function storySegmentReached(segmentId) {
   const openingMatch = segmentId.match(/^chapter([2-4])-opening$/);
   if (openingMatch) {
     const chapter = Number(openingMatch[1]);
-    return Boolean(state.storyFlags[`chapter${chapter}StoryOpeningSeen`] || state.innLevel >= chapter);
+    return Boolean(state.storyFlags[`chapter${chapter}StoryOpeningSeen`] || state.innLevel >= VOLUME_START_LEVELS[chapter]);
   }
   const repairMatch = segmentId.match(/^(?:before|after):(.+)$/);
   return Boolean(repairMatch && state.renovationChoices[repairMatch[1]]);
@@ -4852,7 +4910,7 @@ function milestoneCenter(milestone) {
 
 async function playHistoricalCastTransition(completedMilestone) {
   const next = nextRepairMilestone();
-  const availableNext = next && next.chapter <= state.innLevel ? next : null;
+  const availableNext = next && milestoneInnLevel(next) <= state.innLevel ? next : null;
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   const currentMap = els.innScene?.querySelector(".longscroll-map");
   const currentLayer = currentMap?.querySelector(".longscroll-character-layer");
@@ -4984,7 +5042,7 @@ function renderStoryArchiveRecent(unlockedIds) {
   const player = window.SilkRoadChapterStory;
   const segmentId = latestUnlockedStorySegmentId(unlockedIds);
   const segment = segmentId ? player?.segments?.[segmentId] : null;
-  const lastStep = segment?.steps?.[segment.steps.length - 1];
+  const lastStep = segment?.steps ? [...segment.steps].reverse().find(Array.isArray) : null;
   if (!els.storyArchiveRecent) return;
   if (!segmentId || !segment || !lastStep) {
     els.storyArchiveRecent.hidden = true;
@@ -5078,22 +5136,22 @@ function renderStoryArchive(unlockedIds = unlockedChapterStoryIds()) {
     button.dataset.storyArchiveChapter = String(chapter);
     button.disabled = !unlocked;
     button.setAttribute("aria-selected", String(chapter === activeStoryArchiveChapter));
-    button.setAttribute("aria-label", unlocked ? `查看第${chapter}章剧情` : `第${chapter}章尚未解锁`);
-    button.textContent = `第${chapter}章`;
+    button.setAttribute("aria-label", unlocked ? `查看第${chapter}卷剧情` : `第${chapter}卷尚未解锁`);
+    button.textContent = `第${chapter}卷`;
     els.storyArchiveChapters.append(button);
   });
 
   const chapterMoments = storyArchiveMoments(activeStoryArchiveChapter);
   const availableMoments = chapterMoments.filter((moment) => storyArchiveMomentIsUnlocked(moment, unlockedIds));
   const chapterNotes = unlockedHistoricalNotes(activeStoryArchiveChapter);
-  els.storyArchiveChapterEyebrow.textContent = `第${activeStoryArchiveChapter}章`;
+  els.storyArchiveChapterEyebrow.textContent = `第${activeStoryArchiveChapter}卷`;
   els.storyArchiveChapterTitle.textContent = chapterName(activeStoryArchiveChapter);
   els.storyArchiveChapterCount.textContent = `剧情 ${availableMoments.length} · 旁注 ${chapterNotes.length}`;
   els.storyArchiveList.replaceChildren();
 
   availableMoments.forEach((archiveMoment, momentIndex) => {
     const segment = player.segments[archiveMoment.segmentIds[0]];
-    const firstStep = segment?.steps?.[0];
+    const firstStep = segment?.steps?.find(Array.isArray);
     if (!segment || !firstStep) return;
     const card = document.createElement("button");
     card.type = "button";
@@ -5722,16 +5780,18 @@ async function upgradeInn() {
     return;
   }
   const level = currentInnLevel();
+  const nextLevel = Math.min(MAX_INN_LEVEL, state.innLevel + 1);
+  const previousVolume = volumeForInnLevel(state.innLevel);
   const accepted = await showGameConfirm({
     eyebrow: "驿站扩建",
-    title: `流沙驿升至 Lv${Math.min(4, state.innLevel + 1)}？`,
-    message: `将消耗 ${level.upgradeCost} 枚铜钱，并解锁下一阶段的地点与故事。`,
+    title: `流沙驿升至 Lv${nextLevel}？`,
+    message: "当前剧情与修缮目标已经完成，升级后将开放新的地点与故事。",
     confirmLabel: "确认扩建",
     tone: "primary",
   });
   if (!accepted) return;
   state.coins -= level.upgradeCost;
-  state.innLevel = Math.min(4, state.innLevel + 1);
+  state.innLevel = nextLevel;
   applyInnUnlocks();
   syncVisibleOrders();
   pendingInnUpgradeRevealLevel = state.innLevel;
@@ -5744,8 +5804,9 @@ async function upgradeInn() {
   els.storyText.textContent = `${level.upgradeStory}${level.unlocks.length ? ` 解锁：${level.unlocks.join("、")}。` : ""}`;
   render();
   saveState();
-  const chapterOpeningId = `chapter${state.innLevel}-opening`;
-  if (window.SilkRoadChapterStory?.segments?.[chapterOpeningId]) {
+  const nextVolume = volumeForInnLevel(state.innLevel);
+  const chapterOpeningId = `chapter${nextVolume}-opening`;
+  if (nextVolume !== previousVolume && window.SilkRoadChapterStory?.segments?.[chapterOpeningId]) {
     playChapterStory(chapterOpeningId, showPendingInnUpgradeReveal);
     return;
   }
@@ -5765,7 +5826,7 @@ function showPendingInnUpgradeReveal() {
 
 function playInnUpgradeReveal(level) {
   if (!els.innUpgradeReveal || !els.innUpgradeRevealText) return;
-  const targetLevel = Math.max(2, Math.min(4, Math.trunc(Number(level)) || 2));
+  const targetLevel = Math.max(2, Math.min(MAX_INN_LEVEL, Math.trunc(Number(level)) || 2));
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   clearTimeout(innUpgradeRevealTimer);
   els.innUpgradeRevealText.textContent = `流沙驿升至 Lv${targetLevel}`;
@@ -5786,9 +5847,9 @@ function playInnUpgradeReveal(level) {
 
 function canUpgradeInn() {
   const level = currentInnLevel();
-  if (level.level >= 4) return { ok: false, reason: "当前原型已到最高驿站等级。" };
+  if (level.level >= MAX_INN_LEVEL) return { ok: false, reason: "流沙驿已经升至最高等级。" };
   const requiredMilestones = state.progressionConfig.milestones.filter(
-    (milestone) => (milestone.chapter ?? 1) <= level.level,
+    (milestone) => milestoneInnLevel(milestone) <= level.level,
   );
   const missingMilestone = requiredMilestones.find((milestone) => !state.renovationChoices[milestone.id]);
   if (missingMilestone) {
@@ -5805,11 +5866,11 @@ function canUpgradeInn() {
 
 function canEnterRepairPage() {
   const current = nextRepairMilestone();
-  if (!current) return { ok: true, reason: "Lv1 修缮已完成，可以查看流沙驿。", milestone: null };
-  if (current.chapter > state.innLevel) {
+  if (!current) return { ok: true, reason: "四卷修缮已全部完成，流沙驿的灯火已连成一片。", milestone: null };
+  if (milestoneInnLevel(current) > state.innLevel) {
     return {
       ok: false,
-      reason: `先扩建流沙驿至 Lv${current.chapter}，才能修缮下一章。`,
+      reason: `先将流沙驿升至 Lv${milestoneInnLevel(current)}，才能继续这段故事。`,
       milestone: current,
     };
   }
@@ -5873,9 +5934,7 @@ function activeStoryChapter() {
   if (ORDER_GIFT_QA_MODE) return ORDER_GIFT_QA_CHAPTER;
   if (LV4_MARKET_ORDERS_QA_MODE) return 4;
   if (STORY_ARCHIVE_QA_MODE) return STORY_ARCHIVE_QA_CHAPTER;
-  const next = nextRepairMilestone();
-  if (next?.chapter) return Math.min(next.chapter, state.innLevel);
-  return getMilestoneViews().reduce((chapter, milestone) => (state.renovationChoices[milestone.id] ? Math.max(chapter, milestone.chapter ?? 1) : chapter), 1);
+  return volumeForInnLevel(state.innLevel);
 }
 
 function chapterName(chapter) {
@@ -6245,7 +6304,7 @@ function normalizeChapterOrderCounts(value, completedOrders = 0, innLevel = 1) {
     });
     return result;
   }
-  const chapter = Math.max(1, Math.min(4, Math.floor(Number(innLevel) || 1)));
+  const chapter = volumeForInnLevel(innLevel);
   result[chapter] = Math.max(0, Math.floor(Number(completedOrders) || 0));
   return result;
 }
@@ -8292,6 +8351,14 @@ function missingVisibleOrderBandId(bands) {
   )))?.id ?? null;
 }
 
+function nextStoryOrderId() {
+  const milestone = nextRepairMilestone();
+  if (!milestone || milestoneInnLevel(milestone) > state.innLevel) return null;
+  return (milestone.conditions?.completedOrderIds ?? []).find(
+    (orderId) => !state.completedOrderIds.includes(orderId),
+  ) ?? null;
+}
+
 function syncVisibleOrders() {
   if (LV4_MARKET_ORDERS_QA_MODE) {
     state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
@@ -8319,6 +8386,13 @@ function syncVisibleOrders() {
       && isOrderEligible(existing, { ignoreVisible: true })) {
       state.visibleOrders.push(existing.id);
     }
+  }
+  const storyOrderId = nextStoryOrderId();
+  const storyOrder = getOrder(storyOrderId);
+  if (storyOrder && !state.visibleOrders.includes(storyOrderId)
+    && isOrderEligible(storyOrder, { ignoreVisible: true, ignoreWeight: true })) {
+    state.visibleOrders.unshift(storyOrderId);
+    if (state.visibleOrders.length > maxVisible) state.visibleOrders.length = maxVisible;
   }
   while (state.visibleOrders.length < targetVisible) {
     const bandId = missingVisibleOrderBandId(bands);
@@ -8398,7 +8472,7 @@ function renderStation() {
   const doneCount = milestones.filter((milestone) => milestone.done).length;
   const repairCount = Object.keys(state.renovationChoices).length;
   const chapter = activeStoryChapter();
-  els.stationSummary.textContent = `Lv${chapter} ${chapterName(chapter)}：已推进 ${doneCount}/${milestones.length} 个修缮节点，已修好 ${repairCount} 处。`;
+  els.stationSummary.textContent = `流沙驿 Lv${state.innLevel} · 第${chapter}卷 ${chapterName(chapter)}：已推进 ${doneCount}/${milestones.length} 个修缮节点，已修好 ${repairCount} 处。`;
   renderStationPreview(milestones);
   renderStories();
   els.stationMilestones.innerHTML = "";
@@ -8598,6 +8672,7 @@ function getMilestoneViews() {
     return {
       id: milestone.id,
       chapter: milestone.chapter ?? 1,
+      innLevel: milestoneInnLevel(milestone),
       name: milestone.name,
       done,
       percent,

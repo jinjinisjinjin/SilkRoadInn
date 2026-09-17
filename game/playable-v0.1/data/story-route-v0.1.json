@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "2.0",
-  "id": "silk-road-inn-story-route-v02",
+  "schemaVersion": "3.0",
+  "id": "silk-road-inn-story-route-v03",
   "status": "runtime-integrated",
   "purpose": "Defines the authoritative four-chapter repair and story order used by the playable runtime.",
   "stateDefaults": {
@@ -20,6 +20,7 @@
         {
           "ordinal": 1,
           "milestoneId": "tutorial_complete",
+          "innLevel": 1,
           "pointId": "02",
           "playerUrl": "./repair-scenes/02/index.html",
           "longscrollRegionIds": [
@@ -27,12 +28,14 @@
           ],
           "requires": {
             "coins": 120,
-            "completedOrders": 1
+            "completedOrders": 1,
+            "orders": ["order_001_guard_lubing"]
           }
         },
         {
           "ordinal": 2,
           "milestoneId": "kitchen_repair",
+          "innLevel": 2,
           "pointId": "04",
           "playerUrl": "./repair-scenes/04/index.html",
           "longscrollRegionIds": [
@@ -42,12 +45,14 @@
             "repairs": [
               "02"
             ],
-            "coins": 175
+            "coins": 175,
+            "orders": ["order_011_dunhuang_woman_lubing"]
           }
         },
         {
           "ordinal": 3,
           "milestoneId": "codex_first_phase",
+          "innLevel": 2,
           "pointId": "11",
           "playerUrl": "./repair-scenes/11/index.html",
           "longscrollRegionIds": [
@@ -57,7 +62,8 @@
             "repairs": [
               "04"
             ],
-            "coins": 180
+            "coins": 180,
+            "orders": ["order_005_monk_humabing"]
           }
         }
       ]
@@ -70,6 +76,7 @@
         {
           "ordinal": 4,
           "milestoneId": "lv2_front_feast",
+          "innLevel": 3,
           "pointId": "03",
           "playerUrl": "./repair-scenes/03/index.html",
           "longscrollRegionIds": [
@@ -79,12 +86,14 @@
             "repairs": [
               "11"
             ],
-            "coins": 80
+            "coins": 80,
+            "orders": ["order_014_musician_youhubing"]
           }
         },
         {
           "ordinal": 5,
           "milestoneId": "lv2_west_market",
+          "innLevel": 3,
           "pointId": "05",
           "playerUrl": "./repair-scenes/05/index.html",
           "longscrollRegionIds": [
@@ -94,12 +103,14 @@
             "repairs": [
               "03"
             ],
-            "coins": 95
+            "coins": 95,
+            "orders": ["order_004_changan_lubing"]
           }
         },
         {
           "ordinal": 6,
           "milestoneId": "lv2_flower_rack",
+          "innLevel": 4,
           "pointId": "06",
           "playerUrl": "./repair-scenes/06/index.html",
           "longscrollRegionIds": [
@@ -109,12 +120,14 @@
             "repairs": [
               "05"
             ],
-            "coins": 110
+            "coins": 110,
+            "orders": ["order_006_camel_worker_youhubing"]
           }
         },
         {
           "ordinal": 7,
           "milestoneId": "lv2_north_shop",
+          "innLevel": 4,
           "pointId": "15",
           "playerUrl": "./repair-scenes/15/index.html",
           "longscrollRegionIds": [
@@ -124,12 +137,14 @@
             "repairs": [
               "06"
             ],
-            "coins": 130
+            "coins": 130,
+            "orders": ["order_007_persian_attendant_congchi"]
           }
         },
         {
           "ordinal": 8,
           "milestoneId": "lv2_south_shop",
+          "innLevel": 5,
           "pointId": "16",
           "playerUrl": "./repair-scenes/16/index.html",
           "longscrollRegionIds": [
@@ -139,12 +154,14 @@
             "repairs": [
               "15"
             ],
-            "coins": 150
+            "coins": 150,
+            "orders": ["order_008_uighur_yangrou"]
           }
         },
         {
           "ordinal": 9,
           "milestoneId": "lv2_well",
+          "innLevel": 5,
           "pointId": "17-18",
           "playerUrl": "./repair-scenes/17-18/index.html",
           "longscrollRegionIds": [
@@ -155,7 +172,8 @@
             "repairs": [
               "16"
             ],
-            "coins": 170
+            "coins": 170,
+            "orders": ["order_009_mystery_suibing"]
           }
         }
       ]
@@ -168,6 +186,7 @@
         {
           "ordinal": 10,
           "milestoneId": "lv3_upper_hall",
+          "innLevel": 6,
           "pointId": "07",
           "playerUrl": "./repair-scenes/07/index.html",
           "longscrollRegionIds": [
@@ -177,12 +196,14 @@
             "repairs": [
               "17-18"
             ],
-            "coins": 190
+            "coins": 190,
+            "orders": ["order_010_caravan_gulouzi"]
           }
         },
         {
           "ordinal": 11,
           "milestoneId": "lv3_north_court",
+          "innLevel": 6,
           "pointId": "08",
           "playerUrl": "./repair-scenes/08/index.html",
           "longscrollRegionIds": [
@@ -192,12 +213,14 @@
             "repairs": [
               "07"
             ],
-            "coins": 215
+            "coins": 215,
+            "orders": ["order_015_monk_rumi"]
           }
         },
         {
           "ordinal": 12,
           "milestoneId": "lv3_west_gate",
+          "innLevel": 7,
           "pointId": "09",
           "playerUrl": "./repair-scenes/09/index.html",
           "longscrollRegionIds": [
@@ -207,12 +230,14 @@
             "repairs": [
               "08"
             ],
-            "coins": 245
+            "coins": 245,
+            "orders": ["order_016_uighur_milk"]
           }
         },
         {
           "ordinal": 13,
           "milestoneId": "lv3_east_court",
+          "innLevel": 7,
           "pointId": "10",
           "playerUrl": "./repair-scenes/10/index.html",
           "longscrollRegionIds": [
@@ -222,12 +247,14 @@
             "repairs": [
               "09"
             ],
-            "coins": 275
+            "coins": 275,
+            "orders": ["order_017_temple_laojiang"]
           }
         },
         {
           "ordinal": 14,
           "milestoneId": "lv3_garden",
+          "innLevel": 8,
           "pointId": "12",
           "playerUrl": "./repair-scenes/12/index.html",
           "longscrollRegionIds": [
@@ -237,12 +264,14 @@
             "repairs": [
               "10"
             ],
-            "coins": 310
+            "coins": 310,
+            "orders": ["order_018_traveler_lubing_rumi"]
           }
         },
         {
           "ordinal": 15,
           "milestoneId": "lv3_watchtower",
+          "innLevel": 8,
           "pointId": "13-14",
           "playerUrl": "./repair-scenes/13-14/index.html",
           "longscrollRegionIds": [
@@ -253,7 +282,8 @@
             "repairs": [
               "12"
             ],
-            "coins": 350
+            "coins": 350,
+            "orders": ["order_019_sogdian_huma_laojiang"]
           }
         }
       ]
@@ -266,6 +296,7 @@
         {
           "ordinal": 16,
           "milestoneId": "lv4_south_shed",
+          "innLevel": 9,
           "pointId": "19",
           "playerUrl": "./repair-scenes/19/index.html",
           "longscrollRegionIds": [
@@ -275,12 +306,14 @@
             "repairs": [
               "13-14"
             ],
-            "coins": 460
+            "coins": 460,
+            "orders": ["order_lv4_south_shed_stocking"]
           }
         },
         {
           "ordinal": 17,
           "milestoneId": "lv4_central_market",
+          "innLevel": 9,
           "pointId": "20",
           "playerUrl": "./repair-scenes/20/index.html",
           "longscrollRegionIds": [
@@ -290,12 +323,14 @@
             "repairs": [
               "19"
             ],
-            "coins": 520
+            "coins": 520,
+            "orders": ["order_lv4_central_market_feast"]
           }
         },
         {
           "ordinal": 18,
           "milestoneId": "lv4_south_street",
+          "innLevel": 9,
           "pointId": "21-23",
           "playerUrl": "./repair-scenes/21-23/index.html",
           "longscrollRegionIds": [
@@ -307,12 +342,14 @@
             "repairs": [
               "20"
             ],
-            "coins": 590
+            "coins": 590,
+            "orders": ["order_lv4_south_street_trade"]
           }
         },
         {
           "ordinal": 19,
           "milestoneId": "lv4_lanes",
+          "innLevel": 10,
           "pointId": "24",
           "playerUrl": "./repair-scenes/24/index.html",
           "longscrollRegionIds": [
@@ -322,12 +359,14 @@
             "repairs": [
               "21-23"
             ],
-            "coins": 670
+            "coins": 670,
+            "orders": ["order_021_lanes_continuation"]
           }
         },
         {
           "ordinal": 20,
           "milestoneId": "lv4_east_shed",
+          "innLevel": 10,
           "pointId": "25",
           "playerUrl": "./repair-scenes/25/index.html",
           "longscrollRegionIds": [
@@ -337,12 +376,14 @@
             "repairs": [
               "24"
             ],
-            "coins": 760
+            "coins": 760,
+            "orders": ["order_022_shed_continuation"]
           }
         },
         {
           "ordinal": 21,
           "milestoneId": "lv4_east_court",
+          "innLevel": 10,
           "pointId": "26",
           "playerUrl": "./repair-scenes/26/index.html",
           "longscrollRegionIds": [
@@ -352,12 +393,14 @@
             "repairs": [
               "25"
             ],
-            "coins": 860
+            "coins": 860,
+            "orders": ["order_023_court_continuation"]
           }
         },
         {
           "ordinal": 22,
           "milestoneId": "lv4_lantern_city",
+          "innLevel": 10,
           "pointId": "27",
           "playerUrl": "./repair-scenes/27/index.html",
           "longscrollRegionIds": [
@@ -367,7 +410,8 @@
             "repairs": [
               "26"
             ],
-            "coins": 980
+            "coins": 980,
+            "orders": ["order_024_lantern_continuation"]
           }
         }
       ]

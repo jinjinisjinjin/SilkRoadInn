@@ -88,6 +88,7 @@
     {
       "id": "tutorial_complete",
       "chapter": 1,
+      "innLevel": 1,
       "name": "前厅客座",
       "sceneName": "前厅客座",
       "speaker": "孟氏",
@@ -103,7 +104,8 @@
       "storyText": "周甲的炉饼刚出炉，孟氏便停在门前。先让人坐得下来，流沙驿才算真的开了门。",
       "completionText": "孟氏轻轻拍去长凳上的浮尘。前厅终于能让赶路的人坐下，流沙驿也有了第一处人声。",
       "conditions": {
-        "completedOrders": 1
+        "completedOrders": 1,
+        "completedOrderIds": ["order_001_guard_lubing"]
       },
       "rewards": {},
       "renovationChoices": []
@@ -111,6 +113,7 @@
     {
       "id": "kitchen_repair",
       "chapter": 1,
+      "innLevel": 2,
       "name": "小修后厨",
       "sceneName": "炉灶重整",
       "speaker": "城外农户",
@@ -128,7 +131,8 @@
       "conditions": {
         "completedRepairs": [
           "tutorial_complete"
-        ]
+        ],
+        "completedOrderIds": ["order_011_dunhuang_woman_lubing"]
       },
       "rewards": {
         "giftPacks": [
@@ -143,6 +147,7 @@
     {
       "id": "codex_first_phase",
       "chapter": 1,
+      "innLevel": 2,
       "name": "食单初成",
       "sceneName": "食单上墙",
       "speaker": "佛寺女施主",
@@ -160,7 +165,8 @@
       "conditions": {
         "completedRepairs": [
           "kitchen_repair"
-        ]
+        ],
+        "completedOrderIds": ["order_005_monk_humabing"]
       },
       "rewards": {
         "unlockOrders": [
@@ -178,6 +184,7 @@
     {
       "id": "lv2_front_feast",
       "chapter": 2,
+      "innLevel": 3,
       "name": "前厅开席",
       "sceneName": "前厅开席",
       "speaker": "粟特胡商",
@@ -195,7 +202,8 @@
       "conditions": {
         "completedRepairs": [
           "codex_first_phase"
-        ]
+        ],
+        "completedOrderIds": ["order_014_musician_youhubing"]
       },
       "rewards": {
         "storyFlags": [
@@ -207,6 +215,7 @@
     {
       "id": "lv2_west_market",
       "chapter": 2,
+      "innLevel": 3,
       "name": "西市开张",
       "sceneName": "西市开张",
       "speaker": "粟特胡商",
@@ -224,7 +233,8 @@
       "conditions": {
         "completedRepairs": [
           "lv2_front_feast"
-        ]
+        ],
+        "completedOrderIds": ["order_004_changan_lubing"]
       },
       "rewards": {
         "storyFlags": [
@@ -236,6 +246,7 @@
     {
       "id": "lv2_flower_rack",
       "chapter": 2,
+      "innLevel": 4,
       "name": "花架留客",
       "sceneName": "花架留客",
       "speaker": "孟氏",
@@ -253,7 +264,8 @@
       "conditions": {
         "completedRepairs": [
           "lv2_west_market"
-        ]
+        ],
+        "completedOrderIds": ["order_006_camel_worker_youhubing"]
       },
       "rewards": {
         "storyFlags": [
@@ -265,6 +277,7 @@
     {
       "id": "lv2_north_shop",
       "chapter": 2,
+      "innLevel": 4,
       "name": "北铺开张",
       "sceneName": "北铺开张",
       "speaker": "求法僧人",
@@ -282,7 +295,8 @@
       "conditions": {
         "completedRepairs": [
           "lv2_flower_rack"
-        ]
+        ],
+        "completedOrderIds": ["order_007_persian_attendant_congchi"]
       },
       "rewards": {
         "storyFlags": [
@@ -294,6 +308,7 @@
     {
       "id": "lv2_south_shop",
       "chapter": 2,
+      "innLevel": 5,
       "name": "南铺开张",
       "sceneName": "南铺开张",
       "speaker": "回鹘牧民",
@@ -311,7 +326,8 @@
       "conditions": {
         "completedRepairs": [
           "lv2_north_shop"
-        ]
+        ],
+        "completedOrderIds": ["order_008_uighur_yangrou"]
       },
       "rewards": {
         "storyFlags": [
@@ -323,6 +339,7 @@
     {
       "id": "lv2_well",
       "chapter": 2,
+      "innLevel": 5,
       "name": "井台初成",
       "sceneName": "井台初成",
       "speaker": "周甲",
@@ -341,7 +358,8 @@
       "conditions": {
         "completedRepairs": [
           "lv2_south_shop"
-        ]
+        ],
+        "completedOrderIds": ["order_009_mystery_suibing"]
       },
       "rewards": {
         "storyFlags": [
@@ -354,6 +372,7 @@
     {
       "id": "lv3_upper_hall",
       "chapter": 3,
+      "innLevel": 6,
       "name": "楼馆迎宾",
       "sceneName": "楼馆迎宾",
       "speaker": "求法僧人",
@@ -371,7 +390,8 @@
       "conditions": {
         "completedRepairs": [
           "lv2_well"
-        ]
+        ],
+        "completedOrderIds": ["order_010_caravan_gulouzi"]
       },
       "rewards": {
         "storyFlags": [
@@ -383,6 +403,7 @@
     {
       "id": "lv3_north_court",
       "chapter": 3,
+      "innLevel": 6,
       "name": "北院安居",
       "sceneName": "北院安居",
       "speaker": "求法僧人",
@@ -400,7 +421,8 @@
       "conditions": {
         "completedRepairs": [
           "lv3_upper_hall"
-        ]
+        ],
+        "completedOrderIds": ["order_015_monk_rumi"]
       },
       "rewards": {
         "storyFlags": [
@@ -412,6 +434,7 @@
     {
       "id": "lv3_west_gate",
       "chapter": 3,
+      "innLevel": 7,
       "name": "西门整饬",
       "sceneName": "西门整饬",
       "speaker": "长安使者",
@@ -429,7 +452,8 @@
       "conditions": {
         "completedRepairs": [
           "lv3_north_court"
-        ]
+        ],
+        "completedOrderIds": ["order_016_uighur_milk"]
       },
       "rewards": {
         "storyFlags": [
@@ -441,6 +465,7 @@
     {
       "id": "lv3_east_court",
       "chapter": 3,
+      "innLevel": 7,
       "name": "东院留客",
       "sceneName": "东院留客",
       "speaker": "长安侍女",
@@ -458,7 +483,8 @@
       "conditions": {
         "completedRepairs": [
           "lv3_west_gate"
-        ]
+        ],
+        "completedOrderIds": ["order_017_temple_laojiang"]
       },
       "rewards": {
         "storyFlags": [
@@ -470,6 +496,7 @@
     {
       "id": "lv3_garden",
       "chapter": 3,
+      "innLevel": 8,
       "name": "花影庭园",
       "sceneName": "花影庭园",
       "speaker": "佛寺女施主",
@@ -487,7 +514,8 @@
       "conditions": {
         "completedRepairs": [
           "lv3_east_court"
-        ]
+        ],
+        "completedOrderIds": ["order_018_traveler_lubing_rumi"]
       },
       "rewards": {
         "storyFlags": [
@@ -499,6 +527,7 @@
     {
       "id": "lv3_watchtower",
       "chapter": 3,
+      "innLevel": 8,
       "name": "望楼通途",
       "sceneName": "望楼通途",
       "speaker": "周氏",
@@ -517,7 +546,8 @@
       "conditions": {
         "completedRepairs": [
           "lv3_garden"
-        ]
+        ],
+        "completedOrderIds": ["order_019_sogdian_huma_laojiang"]
       },
       "rewards": {
         "storyFlags": [
@@ -529,6 +559,7 @@
     {
       "id": "lv4_south_shed",
       "chapter": 4,
+      "innLevel": 9,
       "name": "南棚聚货",
       "sceneName": "南棚聚货",
       "speaker": "康十一",
@@ -546,7 +577,8 @@
       "conditions": {
         "completedRepairs": [
           "lv3_watchtower"
-        ]
+        ],
+        "completedOrderIds": ["order_lv4_south_shed_stocking"]
       },
       "rewards": {
         "storyFlags": [
@@ -560,6 +592,7 @@
     {
       "id": "lv4_central_market",
       "chapter": 4,
+      "innLevel": 9,
       "name": "中市开席",
       "sceneName": "中市开席",
       "speaker": "康十一",
@@ -577,7 +610,8 @@
       "conditions": {
         "completedRepairs": [
           "lv4_south_shed"
-        ]
+        ],
+        "completedOrderIds": ["order_lv4_central_market_feast"]
       },
       "rewards": {
         "storyFlags": [
@@ -589,6 +623,7 @@
     {
       "id": "lv4_south_street",
       "chapter": 4,
+      "innLevel": 9,
       "name": "南市连街",
       "sceneName": "南市连街",
       "speaker": "粟特胡商",
@@ -608,7 +643,8 @@
       "conditions": {
         "completedRepairs": [
           "lv4_central_market"
-        ]
+        ],
+        "completedOrderIds": ["order_lv4_south_street_trade"]
       },
       "rewards": {
         "storyFlags": [
@@ -620,6 +656,7 @@
     {
       "id": "lv4_lanes",
       "chapter": 4,
+      "innLevel": 10,
       "name": "巷路相接",
       "sceneName": "巷路相接",
       "speaker": "孟氏",
@@ -637,7 +674,8 @@
       "conditions": {
         "completedRepairs": [
           "lv4_south_street"
-        ]
+        ],
+        "completedOrderIds": ["order_021_lanes_continuation"]
       },
       "rewards": {
         "storyFlags": [
@@ -649,6 +687,7 @@
     {
       "id": "lv4_east_shed",
       "chapter": 4,
+      "innLevel": 10,
       "name": "东棚盈市",
       "sceneName": "东棚盈市",
       "speaker": "康十一",
@@ -666,7 +705,8 @@
       "conditions": {
         "completedRepairs": [
           "lv4_lanes"
-        ]
+        ],
+        "completedOrderIds": ["order_022_shed_continuation"]
       },
       "rewards": {
         "storyFlags": [
@@ -678,6 +718,7 @@
     {
       "id": "lv4_east_court",
       "chapter": 4,
+      "innLevel": 10,
       "name": "东院焕新",
       "sceneName": "东院焕新",
       "speaker": "长安侍女",
@@ -695,7 +736,8 @@
       "conditions": {
         "completedRepairs": [
           "lv4_east_shed"
-        ]
+        ],
+        "completedOrderIds": ["order_023_court_continuation"]
       },
       "rewards": {
         "storyFlags": [
@@ -707,6 +749,7 @@
     {
       "id": "lv4_lantern_city",
       "chapter": 4,
+      "innLevel": 10,
       "name": "灯火连城",
       "sceneName": "灯火连城",
       "speaker": "康十一",
@@ -724,7 +767,8 @@
       "conditions": {
         "completedRepairs": [
           "lv4_east_court"
-        ]
+        ],
+        "completedOrderIds": ["order_024_lantern_continuation"]
       },
       "rewards": {
         "storyFlags": [
@@ -741,7 +785,7 @@
       "giftPack": {
         "id": "gift_repair_ch1_complete",
         "name": "流沙驿初明礼匣",
-        "description": "完成第1章修缮后获得，内含铜币、驼铃和酒水厢房材料。",
+        "description": "完成第1卷修缮后获得，内含铜币、驼铃和酒水厢房材料。",
         "coinAmount": 100,
         "staminaAmount": 3,
         "materialQuantity": 2,
@@ -753,7 +797,7 @@
       "giftPack": {
         "id": "gift_repair_ch2_complete",
         "name": "西市烟火礼匣",
-        "description": "完成第2章修缮后获得，内含铜币、驼铃和肉铺材料。",
+        "description": "完成第2卷修缮后获得，内含铜币、驼铃和肉铺材料。",
         "coinAmount": 150,
         "staminaAmount": 4,
         "materialQuantity": 2,
@@ -765,7 +809,7 @@
       "giftPack": {
         "id": "gift_repair_ch3_complete",
         "name": "楼馆通途礼匣",
-        "description": "完成第3章修缮后获得，内含铜币、驼铃和香料架材料。",
+        "description": "完成第3卷修缮后获得，内含铜币、驼铃和香料架材料。",
         "coinAmount": 200,
         "staminaAmount": 5,
         "materialQuantity": 3,
@@ -777,7 +821,7 @@
       "giftPack": {
         "id": "gift_repair_ch4_complete",
         "name": "灯火连城礼匣",
-        "description": "完成第4章修缮后获得，内含铜币、驼铃和果摊材料。",
+        "description": "完成第4卷修缮后获得，内含铜币、驼铃和果摊材料。",
         "coinAmount": 250,
         "staminaAmount": 6,
         "materialQuantity": 4,
@@ -790,8 +834,8 @@
       "id": "gift_order_ch1_4",
       "chapter": 1,
       "threshold": 4,
-      "name": "第1章·4单礼盒",
-      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第1卷·4单礼盒",
+      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 30,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -801,8 +845,8 @@
       "id": "gift_order_ch1_8",
       "chapter": 1,
       "threshold": 8,
-      "name": "第1章·8单礼盒",
-      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第1卷·8单礼盒",
+      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 40,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -812,8 +856,8 @@
       "id": "gift_order_ch1_12",
       "chapter": 1,
       "threshold": 12,
-      "name": "第1章·12单礼盒",
-      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第1卷·12单礼盒",
+      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 60,
       "rubyQuantity": 1,
       "materialQuantity": 4,
@@ -823,8 +867,8 @@
       "id": "gift_order_ch2_4",
       "chapter": 2,
       "threshold": 4,
-      "name": "第2章·4单礼盒",
-      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第2卷·4单礼盒",
+      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 60,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -834,8 +878,8 @@
       "id": "gift_order_ch2_8",
       "chapter": 2,
       "threshold": 8,
-      "name": "第2章·8单礼盒",
-      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第2卷·8单礼盒",
+      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 80,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -845,8 +889,8 @@
       "id": "gift_order_ch2_12",
       "chapter": 2,
       "threshold": 12,
-      "name": "第2章·12单礼盒",
-      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第2卷·12单礼盒",
+      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 100,
       "rubyQuantity": 1,
       "materialQuantity": 4,
@@ -856,8 +900,8 @@
       "id": "gift_order_ch3_4",
       "chapter": 3,
       "threshold": 4,
-      "name": "第3章·4单礼盒",
-      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第3卷·4单礼盒",
+      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 100,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -867,8 +911,8 @@
       "id": "gift_order_ch3_8",
       "chapter": 3,
       "threshold": 8,
-      "name": "第3章·8单礼盒",
-      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第3卷·8单礼盒",
+      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 120,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -878,8 +922,8 @@
       "id": "gift_order_ch3_12",
       "chapter": 3,
       "threshold": 12,
-      "name": "第3章·12单礼盒",
-      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第3卷·12单礼盒",
+      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 160,
       "rubyQuantity": 1,
       "materialQuantity": 4,
@@ -889,8 +933,8 @@
       "id": "gift_order_ch4_4",
       "chapter": 4,
       "threshold": 4,
-      "name": "第4章·4单礼盒",
-      "description": "完成本章4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第4卷·4单礼盒",
+      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 150,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -900,8 +944,8 @@
       "id": "gift_order_ch4_8",
       "chapter": 4,
       "threshold": 8,
-      "name": "第4章·8单礼盒",
-      "description": "完成本章8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第4卷·8单礼盒",
+      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 200,
       "rubyQuantity": 1,
       "materialQuantity": 2,
@@ -911,8 +955,8 @@
       "id": "gift_order_ch4_12",
       "chapter": 4,
       "threshold": 12,
-      "name": "第4章·12单礼盒",
-      "description": "完成本章12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "第4卷·12单礼盒",
+      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
       "coinAmount": 250,
       "rubyQuantity": 1,
       "materialQuantity": 4,

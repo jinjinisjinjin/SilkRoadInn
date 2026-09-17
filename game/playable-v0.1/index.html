@@ -9,7 +9,7 @@
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
     <link rel="stylesheet" href="./styles.css?v=repair-flow-v6-landscape-repair-v2-wood-controls-v2-generator-sparkles-v9-loading-poster-v2-short-phone-v1-persistent-scroll-v1-notice-dot-v5-generator-warehouse-v12-mobile-board-stack-confirm-close-v3" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
-    <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-all-v1" />
+    <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-dialogue-v15-mystery-full-bleed" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v16-notice-dot" />
     <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v21-reward-compact-v4" />
@@ -337,6 +337,7 @@
           <div class="chapter-story-copy">
             <div class="chapter-story-speaker"><strong id="chapterStorySpeaker"></strong><span id="chapterStoryRole"></span></div>
             <p id="chapterStoryText"></p>
+            <aside id="chapterStoryFootnote" class="chapter-story-footnote" hidden><span id="chapterStoryFootnoteText"></span><cite id="chapterStoryFootnoteSource"></cite></aside>
             <div class="chapter-story-footer"><div id="chapterStoryDots" class="chapter-story-dots"></div><button id="chapterStoryNext" type="button" aria-label="继续" title="继续"><span hidden>继续</span><i aria-hidden="true">›</i></button></div>
           </div>
         </section>
@@ -349,6 +350,7 @@
         </section>
       </section>
     </dialog>
+    <button id="chapterStoryQaResume" class="chapter-story-qa-resume" type="button" hidden>继续剧情</button>
 
     <dialog id="codexModal" class="modal codex-modal" aria-labelledby="codexTitle">
       <div class="modal-inner codex-index">
@@ -626,9 +628,9 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=story-viewport-v4-closing-dialogue"></script>
+    <script src="./chapter-story.js?v=story-viewport-v4-dialogue-narration-v19-huyue-copy-edit"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
     <script src="./new-player-guide.js?v=mobile-guide-copy-v1"></script>
-    <script src="./app.js?v=generator-chain-v2-repair-sequence-v15-level-reveal-only-v1-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v15-reward-auto-reveal-v3-cast-journey-v1-persistent-scroll-v1-clue-objects-v18-clue-camera-v2-repair-sound-v1-click-volume-v2-generator-warehouse-v7-multiplier-confirm-trial"></script>
+    <script src="./app.js?v=generator-chain-v2-repair-sequence-v15-level-reveal-only-v1-landscape-repair-v1-entering-copy-v1-loading-poster-v2-story-viewport-v1-region-reveal-v1-cast-scale-v2-phone-fit-v1-stamina-2min-v2-board-v1-sell-price-v1-bookmark-progress-v4-full-compact-v1-repair-halo-v1-chapter-diamonds-v1-renewal-v3-inn-finale-v9-history-quiz-v15-reward-auto-reveal-v3-cast-journey-v1-persistent-scroll-v1-clue-objects-v18-clue-camera-v2-repair-sound-v1-click-volume-v2-generator-warehouse-v7-multiplier-confirm-trial-ten-level-story-v4-continuous-qa"></script>
   </body>
 </html>

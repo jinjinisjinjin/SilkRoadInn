@@ -1,127 +1,114 @@
 {
-  "version": "0.3",
+  "version": "0.4-ten-level-story",
   "levels": [
     {
       "level": 1,
-      "name": "破旧流沙驿",
+      "volume": 1,
+      "name": "初燃炉火",
       "repairTarget": 60,
-      "upgradeCost": 120,
-      "tasks": [
-        {
-          "label": "门面修整",
-          "slots": [
-            "front"
-          ],
-          "count": 1
-        },
-        {
-          "label": "接待布置",
-          "slots": [
-            "floor"
-          ],
-          "count": 1
-        },
-        {
-          "label": "灯火照明",
-          "furnitureIds": [
-            "cinnabar_lantern"
-          ],
-          "count": 1
-        }
-      ],
-      "story": "门前风沙还重，先添桌椅与灯盏，让旅人愿意停脚。",
-      "upgradeStory": "旧门帘换下，炉火重新照到门外。流沙驿从破旧驿站，变成能正式迎客的敦煌食肆。",
-      "unlocks": [
-        "既有磨坊、乳畜栏、香料架与酒水厢房继续并存",
-        "西市开张后解锁果摊生成器",
-        "南铺开张后解锁肉铺生成器",
-        "跨品类混合订单逐步加入"
-      ]
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "点起祖父留下的旧火石，做出第一枚炉饼，让流沙驿重新有人进门。",
+      "upgradeStory": "第一枚炉饼有了客人，第一张长凳也重新坐热。",
+      "unlocks": ["门前有客", "后厨修缮"]
     },
     {
       "level": 2,
-      "name": "翻新敦煌食肆",
-      "repairTarget": 160,
-      "upgradeCost": 420,
-      "tasks": [
-        {
-          "label": "后厨分区",
-          "slots": [
-            "kitchen"
-          ],
-          "count": 1
-        },
-        {
-          "label": "香料陈设",
-          "slots": [
-            "wall"
-          ],
-          "count": 1
-        },
-        {
-          "label": "接待升级",
-          "slots": [
-            "floor",
-            "front"
-          ],
-          "count": 3
-        }
-      ],
-      "story": "后厨渐渐有了章法，可以分出奶食、香料与肉食小案。",
-      "upgradeStory": "商旅不再只是买饼就走，开始在流沙驿里围桌歇脚。",
-      "unlocks": [
-        "六类生成器持续并存",
-        "跨品类混合订单扩充",
-        "楼馆与双院修缮",
-        "远路商旅订单"
-      ]
+      "volume": 1,
+      "name": "旧驿站稳",
+      "repairTarget": 167,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "查清烟道、重整炉灶，并让祖父留下的食单第一次被众人看见。",
+      "upgradeStory": "炉火稳了，食单也不再锁在匣中。第一卷《流沙驿初明》完成。",
+      "unlocks": ["第二卷·西市烟火", "前厅开席"]
     },
     {
       "level": 3,
-      "name": "丝路名店",
-      "repairTarget": 320,
-      "upgradeCost": 1200,
-      "tasks": [
-        {
-          "label": "壁画陈设",
-          "furnitureIds": [
-            "mural_corner"
-          ],
-          "count": 1
-        },
-        {
-          "label": "雅间装点",
-          "slots": [
-            "wall",
-            "front"
-          ],
-          "count": 3
-        },
-        {
-          "label": "宴客陈设",
-          "slots": [
-            "floor",
-            "kitchen"
-          ],
-          "count": 3
-        }
-      ],
-      "story": "厢房、酒水、壁画角逐渐齐备，远路客人开始专程寻来。",
-      "upgradeStory": "流沙驿的名声顺着驼铃传向更远的商路。",
-      "unlocks": [
-        "典藏图鉴",
-        "高阶宴席订单",
-        "Lv4预告"
-      ]
+      "volume": 2,
+      "name": "胡麻入市",
+      "repairTarget": 317,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "胡麻饼把客人带到西市，前厅与摊灯开始接住真正的人流。",
+      "upgradeStory": "西市的第一排灯已经亮起，一场急雨却正朝街面压来。",
+      "unlocks": ["花架留客", "夜雨来客"]
     },
     {
       "level": 4,
-      "name": "西域第一楼",
-      "repairTarget": 999,
+      "volume": 2,
+      "name": "雨夜留人",
+      "repairTarget": 491,
       "upgradeCost": 0,
       "tasks": [],
-      "story": "整本食鉴终于有了归处，流沙驿成为丝路上最亮的一盏灯。",
-      "upgradeStory": "Lv4 已是当前原型终点。",
+      "story": "让淋雨的旅人有处等候，让错过宿处的人能在北铺安心过夜。",
+      "upgradeStory": "流沙驿第一次不只供一顿热食，也接住了旅人的一夜平安。",
+      "unlocks": ["南铺开张", "井台共用"]
+    },
+    {
+      "level": 5,
+      "volume": 2,
+      "name": "驼铃入院",
+      "repairTarget": 691,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "北道货物进入南铺，众人在井边立下共同生活的第一条规矩。",
+      "upgradeStory": "井台见清水，康十一也愿意把第一支商队交给流沙驿。第二卷完成。",
+      "unlocks": ["第三卷·楼馆通途", "商队住宿"]
+    },
+    {
+      "level": 6,
+      "volume": 3,
+      "name": "楼馆受托",
+      "repairTarget": 923,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "外部审视与白灾供应同时到来，掌柜必须先接住人，再稳住账。",
+      "upgradeStory": "楼馆与北院亮灯，流沙驿开始承担比一顿饭更重的托付。",
+      "unlocks": ["西门货路", "验货事件"]
+    },
+    {
+      "level": 7,
+      "volume": 3,
+      "name": "验货立规",
+      "repairTarget": 1187,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "一张压在盐袋下的字条揭开问题麦粉，也把堂内留客的规矩推到台前。",
+      "upgradeStory": "西门重新通行，东院也有了能按规矩留人的位置。",
+      "unlocks": ["行牒盘查", "札记与保结"]
+    },
+    {
+      "level": 8,
+      "volume": 3,
+      "name": "通途有据",
+      "repairTarget": 1483,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "账册、货签、住客记录与众人的保结将共同接受巡检查验。",
+      "upgradeStory": "望楼重新见路，流沙驿也凭自己的信用通过盘查。第三卷完成。",
+      "unlocks": ["第四卷·灯火连城", "市集大单"]
+    },
+    {
+      "level": 9,
+      "volume": 4,
+      "name": "验驿成市",
+      "repairTarget": 2023,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "南棚、中市与三铺同时运转，史三也开始最后一轮验驿。",
+      "upgradeStory": "史三把流沙驿写进商路册，三铺也终于连成一条街。",
+      "unlocks": ["流沙木牌", "最终筹备"]
+    },
+    {
+      "level": 10,
+      "volume": 4,
+      "name": "百味归灯",
+      "repairTarget": 2893,
+      "upgradeCost": 0,
+      "tasks": [],
+      "story": "接通巷路、整顿东棚、种下枣树，最后为所有愿意回来的人摆下百味宴。",
+      "upgradeStory": "二十章故事与除夕百味宴在此收束，但驿路不止，食火不灭。",
       "unlocks": []
     }
   ],
@@ -158,7 +145,7 @@
       "name": "石磨角落",
       "cost": 90,
       "repairValue": 35,
-      "unlockLevel": 2,
+      "unlockLevel": 3,
       "slot": "kitchen",
       "flavor": "让谷物线有更扎实的手作感。"
     },
@@ -167,7 +154,7 @@
       "name": "香料木架",
       "cost": 110,
       "repairValue": 42,
-      "unlockLevel": 2,
+      "unlockLevel": 3,
       "slot": "wall",
       "flavor": "胡商带来的香料终于有了归处。"
     },
@@ -176,7 +163,7 @@
       "name": "忍冬纹壁角",
       "cost": 180,
       "repairValue": 70,
-      "unlockLevel": 3,
+      "unlockLevel": 6,
       "slot": "wall",
       "flavor": "把敦煌壁画气质带进食肆。"
     }
