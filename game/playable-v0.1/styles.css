@@ -8068,7 +8068,7 @@ button.storage-slot.filled {
 }
 
 .storage-guide-card strong {
-  margin-top: 7px;
+  margin-top: 0;
   color: #633c25;
   font: 900 20px/1.2 "Kaiti SC", "STKaiti", serif;
 }
