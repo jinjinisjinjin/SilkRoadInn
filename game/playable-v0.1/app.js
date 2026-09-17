@@ -6823,9 +6823,6 @@ function getPieceRemovalAction(item) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
   const cleanup = state.economyConfig?.boardCleanup ?? {};
-  if (isGeneratorPiece(item) && Number(item.level) === generatorWarehouseAcceptedLevel()) {
-    return { mode: "warehouse", value: 0, requiresConfirm: false };
-  }
   if (isGeneratorPiece(item) && cleanup.protectGenerators) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
@@ -6849,14 +6846,15 @@ function getPieceRemovalAction(item) {
   return {
     mode: value === 0 ? "delete" : "sell",
     value,
-    requiresConfirm: maxLevel === SELL_CHAIN_LEVELS.food
-      && level >= (Number(cleanup.protectHighLevelFoodFromLevel) || 5),
+    requiresConfirm: isGeneratorPiece(item)
+      || (maxLevel === SELL_CHAIN_LEVELS.food
+        && level >= (Number(cleanup.protectHighLevelFoodFromLevel) || 5)),
   };
 }
 
 function setSellButtonAction(action) {
   const { mode, value = 0 } = action;
-  els.sellBtn.classList.remove("delete", "sell", "warehouse", "unavailable");
+  els.sellBtn.classList.remove("delete", "sell", "unavailable");
   els.sellBtn.classList.add(mode);
   els.sellBtn.dataset.action = mode;
   els.sellBtn.disabled = mode === "unavailable";
@@ -6873,14 +6871,6 @@ function setSellButtonAction(action) {
     els.sellBtn.innerHTML = `
       <span class="selected-action-value"><img src="./assets/ui/ui_coin_copper.png" alt="" /><strong>+${value}</strong></span>
       <b>出售</b>
-    `;
-    return;
-  }
-  if (mode === "warehouse") {
-    els.sellBtn.setAttribute("aria-label", "将选中的一级生成器收入生成器仓库");
-    els.sellBtn.innerHTML = `
-      <span class="selected-action-storage" aria-hidden="true"></span>
-      <b>收纳</b>
     `;
     return;
   }
@@ -8697,10 +8687,6 @@ function sellSelected() {
   if (!itemId) return;
   const item = byId.get(itemId);
   const action = getPieceRemovalAction(item);
-  if (action.mode === "warehouse") {
-    depositGeneratorAtBoardIndex(index, { openWarehouse: true });
-    return;
-  }
   if (action.mode === "unavailable") {
     toast("这枚棋子不能删除或出售。");
     return;

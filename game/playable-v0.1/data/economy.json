@@ -218,7 +218,7 @@
       3,
       5
     ],
-    "protectGenerators": true,
+    "protectGenerators": false,
     "protectHighLevelFoodFromLevel": 5
   }
 }
