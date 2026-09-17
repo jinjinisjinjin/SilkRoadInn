@@ -153,7 +153,7 @@ const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
 const NPC_STANDEE_VERSION = "foreground-cutout-03";
 const REPAIR_PROTOCOL_VERSION = 1;
 const REPAIR_PART_COUNT = 9;
-const REPAIR_PART_COST_WEIGHTS = Object.freeze([71, 79, 89, 101, 109, 121, 131, 139, 160]);
+const REPAIR_PART_COST_STEPS = Object.freeze([0, 10, 20, 30, 40, 50, 60, 70, 80]);
 const HISTORICAL_REWARD_SCHEMA_VERSION = 2;
 const COIN_ECONOMY_VERSION = 2;
 const OPENING_STAMINA_VERSION = 2;
@@ -2544,18 +2544,18 @@ function syncUnlockedFoodLevels({ includeCompletedOrders = false } = {}) {
 }
 
 function repairPartCosts(milestone) {
-  const total = Math.max(0, Math.floor(Number(milestone?.repairCost) || 0));
   const configuredCosts = Array.isArray(milestone?.repairParts)
     ? milestone.repairParts.map((part) => Math.max(0, Math.floor(Number(part?.cost) || 0)))
     : [];
   if (configuredCosts.length === REPAIR_PART_COUNT
-    && configuredCosts.reduce((sum, cost) => sum + cost, 0) === total) {
+    && configuredCosts.every((cost) => cost >= 100 && cost <= 300)) {
     return configuredCosts;
   }
-  const weightTotal = REPAIR_PART_COST_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
-  const costs = REPAIR_PART_COST_WEIGHTS.map((weight) => Math.floor((total * weight) / weightTotal));
-  costs[costs.length - 1] += total - costs.reduce((sum, cost) => sum + cost, 0);
-  return costs;
+  const milestones = state.progressionConfig?.milestones ?? [];
+  const milestoneIndex = Math.max(0, milestones.findIndex((entry) => entry.id === milestone?.id));
+  const progress = milestones.length > 1 ? milestoneIndex / (milestones.length - 1) : 0;
+  const baseCost = 100 + Math.round((progress * 120) / 10) * 10;
+  return REPAIR_PART_COST_STEPS.map((step) => Math.min(300, baseCost + step));
 }
 
 function normalizeRepairPartIndex(value) {
