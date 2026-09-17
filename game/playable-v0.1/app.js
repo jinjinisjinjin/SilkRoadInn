@@ -9922,6 +9922,9 @@ function storeBoardItemToStorage(boardIndex) {
   renderBag();
   if (els.storageModal?.open) renderStorage();
   saveState();
+  window.dispatchEvent(new CustomEvent("silkroad:storage-deposit", {
+    detail: { boardIndex, itemId },
+  }));
 }
 
 function retrieveFromStorage(index) {

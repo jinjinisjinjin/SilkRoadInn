@@ -212,6 +212,40 @@
     });
   }
 
+  function storageTutorialSource(state) {
+    if (!Array.isArray(state.board)) return null;
+    const appRect = document.querySelector("#app")?.getBoundingClientRect();
+    const candidates = [...document.querySelectorAll("#board .cell:not(.locked)")]
+      .filter(isVisible)
+      .filter((cell) => {
+        const index = Number(cell.dataset.index);
+        return Number.isInteger(index)
+          && Boolean(state.board[index])
+          && !cell.querySelector(".item.generator")
+          && Boolean(cell.querySelector("img"));
+      });
+    if (!candidates.length) return null;
+    const demandedNames = new Set(
+      [...document.querySelectorAll("#orders .order-food-trigger img[alt]")]
+        .map((image) => image.alt)
+        .filter(Boolean),
+    );
+    const notCurrentlyDemanded = candidates.filter((cell) => {
+      const name = cell.querySelector("img[alt]")?.alt;
+      return name && !demandedNames.has(name);
+    });
+    const usefulCandidates = notCurrentlyDemanded.length ? notCurrentlyDemanded : candidates;
+    const unobscured = appRect
+      ? usefulCandidates.filter((cell) => cell.getBoundingClientRect().bottom < appRect.top + appRect.height * 0.62)
+      : usefulCandidates;
+    return (unobscured.length ? unobscured : usefulCandidates)
+      .sort((left, right) => {
+        const leftRect = left.getBoundingClientRect();
+        const rightRect = right.getBoundingClientRect();
+        return rightRect.top - leftRect.top || leftRect.left - rightRect.left;
+      })[0];
+  }
+
   function repairTarget() {
     return document.querySelector(".longscroll-current-region")
       || document.querySelector(".mainline-action.ready");
@@ -275,9 +309,13 @@
     const page = app.dataset.page || "inn";
 
     if (page === "board" && !savedGuide.boardStorageSeen && boardIsFull(state)) {
+      const source = storageTutorialSource(state);
+      const storage = document.querySelector("#storageBtn");
+      const sourceName = source?.querySelector("img[alt]")?.alt || "棋子";
       showGuide({
-        text: "案板放满了。把暂时不用的棋子拖进左下角柜子，腾出空格后再继续备餐。",
-        targets: [document.querySelector("#storageBtn")],
+        text: `案板放满了。按住高亮的${sourceName}，把它拖进左下角柜子，腾出一格再继续备餐。`,
+        targets: [source, storage],
+        drag: Boolean(source && storage),
       });
       return;
     }
@@ -385,14 +423,15 @@
   function bindRefreshSignals() {
     const observer = new MutationObserver(() => scheduleRefresh());
     document.addEventListener("click", (event) => {
-      if (event.target.closest("#storageBtn") && boardIsFull(gameState())) {
-        updateGuideState({ boardStorageSeen: true });
-      }
       if (event.target.closest(".longscroll-current-region, .mainline-action.ready") && Number(gameState().tutorialStep || 0) >= 4) {
         updateGuideState({ completed: true });
       }
       scheduleRefresh(100);
     }, true);
+    window.addEventListener("silkroad:storage-deposit", () => {
+      updateGuideState({ boardStorageSeen: true });
+      scheduleRefresh(60);
+    });
     document.querySelectorAll("dialog").forEach((dialog) => {
       dialog.addEventListener("close", () => scheduleRefresh(80));
       observer.observe(dialog, { attributes: true, attributeFilter: ["open"] });
