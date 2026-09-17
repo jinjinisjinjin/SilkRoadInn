@@ -189,11 +189,11 @@ const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
 const DAILY_SHOP_REFRESH_MS = 16 * 60 * 60 * 1000;
 const SHOP_WEALTH_ITEM_ID = "shop_wealth_figurine";
 const SHOP_WEALTH_PACK_ID = "shop_wealth_figurine_pack";
-const SHOP_STAMINA_ITEM_ID = "shop_camel_bell_furnace";
-const SHOP_STAMINA_PACK_ID = "shop_camel_bell_furnace_pack";
+const SHOP_SAXAUL_ITEM_ID = "shop_saxaul_tree";
+const SHOP_SAXAUL_PACK_ID = "shop_saxaul_tree_pack";
 const DAILY_SHOP_OFFERS = Object.freeze([
   { id: "wealth", name: "聚财陶俑", price: 25, packId: SHOP_WEALTH_PACK_ID },
-  { id: "stamina", name: "驼铃炉", price: 10, packId: SHOP_STAMINA_PACK_ID },
+  { id: "stamina", name: "梭梭树", price: 10, packId: SHOP_SAXAUL_PACK_ID },
 ]);
 const DAILY_POUCH_REWARD_POOL = Object.freeze([
   { id: "traveler", name: "行旅小礼", weight: 45, coins: 80, stamina: 2 },
@@ -6081,12 +6081,12 @@ function registerOrderProgressPacks() {
       iconKey: "ui/shop_wealth_figurine_v1",
       source: "daily_shop",
     });
-    byId.set(SHOP_STAMINA_ITEM_ID, {
+    byId.set(SHOP_SAXAUL_ITEM_ID, {
       ...starterGift,
-      id: SHOP_STAMINA_ITEM_ID,
-      name: "驼铃炉",
-      modernName: "轻点后逐枚吐出不同等级的驼铃棋子",
-      iconKey: "ui/shop_camel_bell_furnace_v1",
+      id: SHOP_SAXAUL_ITEM_ID,
+      name: "梭梭树",
+      modernName: "轻点后逐枚掉落不同等级的驼铃棋子",
+      iconKey: "ui/shop_saxaul_tree_v1",
       source: "daily_shop",
     });
   }
@@ -6111,11 +6111,11 @@ function registerOrderProgressPacks() {
       quantity: 1,
     })),
   };
-  GIFT_PACKS[SHOP_STAMINA_PACK_ID] = {
-    id: SHOP_STAMINA_PACK_ID,
-    name: "驼铃炉",
-    itemId: SHOP_STAMINA_ITEM_ID,
-    description: "可逐枚吐出5枚不同等级的驼铃棋子。",
+  GIFT_PACKS[SHOP_SAXAUL_PACK_ID] = {
+    id: SHOP_SAXAUL_PACK_ID,
+    name: "梭梭树",
+    itemId: SHOP_SAXAUL_ITEM_ID,
+    description: "可逐枚掉落5枚不同等级的驼铃棋子。",
     shopOffer: true,
     rewards: [1, 2, 2, 3, 3].map((level) => ({
       type: "item",
