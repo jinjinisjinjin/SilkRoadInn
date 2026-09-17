@@ -152,6 +152,14 @@
     }
 
     const nearBottom = first.bottom - appRect.top > appRect.height - 112;
+    const nearLeft = first.left - appRect.left < 72;
+    if (nearBottom && nearLeft) {
+      pointer.style.left = `${Math.max(6, firstCenterX - 12)}px`;
+      pointer.style.top = `${Math.max(6, first.top - appRect.top - 54)}px`;
+      pointer.style.setProperty("--guide-dx", "0px");
+      pointer.style.setProperty("--guide-dy", "0px");
+      return;
+    }
     if (nearBottom) {
       pointer.style.left = `${Math.max(6, first.left - appRect.left - 36)}px`;
       pointer.style.top = `${firstCenterY - 12}px`;
@@ -161,7 +169,6 @@
       return;
     }
 
-    const nearLeft = first.left - appRect.left < 72;
     if (nearLeft) {
       pointer.style.left = `${first.right - appRect.left + 12}px`;
       pointer.style.top = `${firstCenterY - 12}px`;
