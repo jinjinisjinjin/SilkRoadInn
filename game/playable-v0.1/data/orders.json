@@ -457,7 +457,7 @@
           "quantity": 1
         },
         {
-          "itemId": "dairy_01_milk",
+          "itemId": "hubing_01_dough",
           "quantity": 1
         }
       ],
@@ -467,15 +467,14 @@
       },
       "weight": 18,
       "unlock": "available_when_producible",
-      "dialogue": "前厅坐稳了，再添一张炉饼和一盏鲜乳。客人吃得安稳，后厨才值得好好收拾。",
+      "dialogue": "前厅坐稳了，再添一张炉饼，留一团麦面备下一炉。客人吃得安稳，后厨才值得好好收拾。",
       "chapter": 1,
       "orderType": "repairMain",
       "contentSource": "handcrafted",
       "orderTier": "repairMain",
       "oneTime": true,
       "requiredGeneratorCategories": [
-        "mill",
-        "dairy"
+        "mill"
       ],
       "priceBand": "quick"
     },

@@ -9214,7 +9214,13 @@ function currentOrderCoinReward(order) {
 }
 
 function pickOrder(bandId = null) {
-  const allCandidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order));
+  const safety = state.ordersConfig.generationPolicy?.unlockSafety ?? {};
+  const highLevel = Number(safety.highItemLevelThreshold) || 5;
+  const highLimit = Number(safety.maxSimultaneousOrdersAtOrAboveItemLevel) || 1;
+  const isHighOrder = (order) => order?.demand.some((demand) => Number(byId.get(demand.itemId)?.level) >= highLevel);
+  const highCount = state.visibleOrders.filter((id) => isHighOrder(getOrder(id))).length;
+  const allCandidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order)
+    && (highCount < highLimit || !isHighOrder(order)));
   const bandCandidates = allCandidates.filter((order) => orderMatchesBand(order, bandId));
   const candidates = bandCandidates.length ? bandCandidates : bandId ? [] : allCandidates;
   if (!candidates.length) return null;
