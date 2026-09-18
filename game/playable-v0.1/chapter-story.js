@@ -57,10 +57,13 @@
       eyebrow: "第一章 · 开场",
       title: "第一缕炉烟",
       scene: "opening",
+      cinematic: true,
       steps: [
-        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "风从门缝里灌进来，旧灶积着灰。阿爷走后，流沙驿已经两年没有亮过火了。"],
-        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "灶台底下还压着他的旧火石。第一下只擦出冷光，第二下，火星终于落进干草里。"],
-        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "《丝路食鉴》扉页上，是阿爷留下的那句话：“驿路不止，食火不灭。”阿爷，我先替你把这炉火续上。"],
+        { type: "narration", cue: "晚唐 · 沙州城外", text: "风沙沿驿道掠过，半块旧匾在门前摇晃。流沙驿已经闭门两年，再没有升起过炊烟。" },
+        { type: "narration", cue: "推门之后", text: "屋里冷得像一只空碗。旧灶、半本《丝路食鉴》和一块火石，还留在阿爷离开时的位置。" },
+        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "我不是回来守一间空屋的。只要炉火重新亮起来，总会有人循着烟来。"],
+        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "第一下只擦出冷光。第二下，火星终于落进干草里。"],
+        ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "食鉴扉页上，是阿爷留下的那句话：“驿路不止，食火不灭。”阿爷，我先替你把这炉火续上。"],
       ],
     },
     "before:tutorial_complete": {
@@ -1085,7 +1088,7 @@
   ];
 
   const dialogueFootnotes = {
-    "opening:2": {
+    "opening:4": {
       text: "唐代的“驿”首先是传递官文、接待官员与转运官物的官方交通设施，与面向普通旅人的客舍并不完全相同。本作将“流沙驿”设定为旧驿功能衰退后逐渐兼营民间食宿的地方。",
       source: "出处：《唐六典》卷五《尚书兵部》；《唐会要》卷六十一《馆驿》。",
     },
@@ -1143,7 +1146,7 @@
     storyChapters.flatMap((chapter) => chapter.segmentIds.map((segmentId) => [segmentId, chapter])),
   );
   const dialogueFootnoteLabels = {
-    "opening:2": ["驿与客舍是一回事吗？", "驿"],
+    "opening:4": ["驿与客舍是一回事吗？", "驿"],
     "chapter2-opening:0": ["胡麻何时进入饼食？", "麻"],
     "before:lv2_front_feast:0": ["粟特商人为何常作中间人？", "商"],
     "before:lv2_south_shop:0": ["河西路上的乳食", "乳"],
@@ -1195,6 +1198,7 @@
   let qaState;
   let reviewMode = false;
   let ui;
+  let cinematicTimer = null;
 
   function syncStoryViewport() {
     const viewport = window.visualViewport;
@@ -1209,6 +1213,7 @@
       modal: document.querySelector("#chapterStoryModal"),
       stage: document.querySelector("#chapterStoryModal .chapter-story-stage"),
       scene: document.querySelector("#chapterStoryModal .chapter-story-scene"),
+      cinematic: document.querySelector("#chapterOpeningCinematic"),
       eyebrow: document.querySelector("#chapterStoryEyebrow"),
       title: document.querySelector("#chapterStoryTitle"),
       skip: document.querySelector("#chapterStorySkip"),
@@ -1255,6 +1260,28 @@
 
   function notifyProgress(rewardVisible) {
     progress?.({ segmentId: activeId, index, rewardVisible });
+  }
+
+  function completeCinematic() {
+    if (!active?.cinematic) return;
+    if (qaState && advanceQaSegment()) return;
+    finish({ completed: true });
+  }
+
+  function renderCinematic() {
+    const view = elements();
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    clearTimeout(cinematicTimer);
+    view.panel.hidden = true;
+    view.reward.hidden = true;
+    view.cinematic.hidden = false;
+    view.stage.classList.remove("reward-visible");
+    view.stage.classList.add("opening-cinematic");
+    view.cinematic.classList.remove("is-playing");
+    void view.cinematic.offsetWidth;
+    view.cinematic.classList.add("is-playing");
+    notifyProgress(false);
+    cinematicTimer = setTimeout(completeCinematic, reducedMotion ? 1600 : 14500);
   }
 
   function renderQaNavigation() {
@@ -1330,6 +1357,11 @@
 
   function renderDialogue() {
     const view = elements();
+    clearTimeout(cinematicTimer);
+    cinematicTimer = null;
+    view.cinematic.hidden = true;
+    view.cinematic.classList.remove("is-playing");
+    view.stage.classList.remove("opening-cinematic");
     const step = active.steps[index];
     const isNarration = step?.type === "narration";
     const footnote = dialogueFootnotes[`${activeId}:${index}`];
@@ -1432,6 +1464,8 @@
   }
 
   function finish(result = { completed: true }) {
+    clearTimeout(cinematicTimer);
+    cinematicTimer = null;
     const pausedQa = Boolean(qaState && result.qaPaused);
     const callback = done;
     active = null;
@@ -1441,7 +1475,9 @@
     qaState = null;
     const view = elements();
     reviewMode = false;
-    view.stage.classList.remove("reward-visible", "review-mode");
+    view.stage.classList.remove("reward-visible", "review-mode", "opening-cinematic");
+    view.cinematic.hidden = true;
+    view.cinematic.classList.remove("is-playing");
     view.skip.textContent = "跳过";
     view.skip.setAttribute("aria-label", "跳过剧情");
     view.skip.title = "跳过剧情";
@@ -1479,7 +1515,8 @@
     view.skip.setAttribute("aria-label", qaState ? "暂离剧情，体验棋盘交互" : reviewMode ? "退出剧情回顾" : "跳过剧情");
     view.skip.title = view.skip.getAttribute("aria-label");
     renderQaNavigation();
-    if (options.startAtReward && segment.reward && !reviewMode) renderReward();
+    if (segment.cinematic && !options.startAtReward) renderCinematic();
+    else if (options.startAtReward && segment.reward && !reviewMode) renderReward();
     else renderDialogue();
     if (!view.modal.open) view.modal.showModal();
     return true;

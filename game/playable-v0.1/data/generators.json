@@ -3,7 +3,7 @@
   "generatorType": "manual_generator",
   "assetRoot": "generators/equipment",
   "levelsPerCategory": 6,
-  "temporaryOutputRule": "Manual generator upgrades increase charge capacity, shorten rest time, and add a conservative chance to output the matching level-2 food. Dairy uses a level-based hourly batch: 6/10/14/18/22/26 total outputs, delivered into its eight neighboring cells whenever space is available; higher levels keep fresh milk as the main output while increasing the chance of level-2 dairy food.",
+  "temporaryOutputRule": "Manual generators have no charge limit or cooldown; each use is paced only by stamina, and upgrades add a conservative chance to output the matching level-2 food. Dairy uses a level-based hourly batch: 6/10/14/18/22/26 total outputs, delivered into its eight neighboring cells whenever space is available; higher levels keep fresh milk as the main output while increasing the chance of level-2 dairy food.",
   "warehouse": {
     "acceptedLevel": 1,
     "defaultTarget": 8,
@@ -20,38 +20,38 @@
   "economy": {
     "staminaCost": 1,
     "chargeMax": 30,
-    "cooldownSeconds": 60,
+    "cooldownSeconds": 0,
     "outputCount": 1
   },
   "levelEconomy": [
     {
       "chargeMax": 30,
-      "cooldownSeconds": 60,
+      "cooldownSeconds": 0,
       "secondaryOutputWeight": 0
     },
     {
       "chargeMax": 32,
-      "cooldownSeconds": 58,
+      "cooldownSeconds": 0,
       "secondaryOutputWeight": 8
     },
     {
       "chargeMax": 34,
-      "cooldownSeconds": 56,
+      "cooldownSeconds": 0,
       "secondaryOutputWeight": 14
     },
     {
       "chargeMax": 36,
-      "cooldownSeconds": 54,
+      "cooldownSeconds": 0,
       "secondaryOutputWeight": 20
     },
     {
       "chargeMax": 38,
-      "cooldownSeconds": 52,
+      "cooldownSeconds": 0,
       "secondaryOutputWeight": 26
     },
     {
       "chargeMax": 40,
-      "cooldownSeconds": 50,
+      "cooldownSeconds": 0,
       "secondaryOutputWeight": 32
     }
   ],

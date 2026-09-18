@@ -43,6 +43,9 @@ const SPECIAL_AUDIO_BUTTONS = [
   "#innKitchenBtn",
 ].join(",");
 const QA_MODE = new URLSearchParams(location.search).get("qa");
+const FULL_GAME_TRIAL_MODE = new URLSearchParams(location.search).get("trial") === "full-game-v1";
+const FULL_GAME_TRIAL_RESET = FULL_GAME_TRIAL_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const TRIAL_GENERATOR_CATEGORY = new URLSearchParams(location.search).get("grantGenerator");
 const WEEKLY_CHECKIN_PREVIEW = new URLSearchParams(location.search).get("preview") === "weekly-checkin-v1";
 const DAILY_SHOP_QA_MODE = QA_MODE === "daily-shop-v1";
@@ -120,7 +123,9 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
 const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE;
-const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
+const SAVE_KEY = FULL_GAME_TRIAL_MODE
+  ? "silkroad_tavern_proto_v02_trial_full_game_v1"
+  : UPGRADE_REVEAL_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
   : DAILY_SHOP_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_daily_shop_v1"
@@ -205,7 +210,7 @@ const SHOP_WEALTH_PACK_ID = "shop_wealth_figurine_pack";
 const SHOP_SAXAUL_ITEM_ID = "shop_saxaul_tree";
 const SHOP_SAXAUL_PACK_ID = "shop_saxaul_tree_pack";
 const DAILY_SHOP_OFFERS = Object.freeze([
-  { id: "wealth", name: "聚财陶俑", price: 25, packId: SHOP_WEALTH_PACK_ID },
+  { id: "wealth", name: "聚财陶罐", price: 25, packId: SHOP_WEALTH_PACK_ID },
   { id: "stamina", name: "梭梭树", price: 10, packId: SHOP_SAXAUL_PACK_ID },
 ]);
 const WEEKLY_CHECKIN_REWARDS = Object.freeze([
@@ -350,7 +355,7 @@ const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
 });
 const INN_PACKAGE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
-  "./assets/longscroll/states-webp/22_done_state_v0.1.webp?v=feather-20260803",
+  "./assets/longscroll/states-webp/22_done_state_v0.1.webp",
   ...Array.from({ length: 27 }, (_, index) => `./assets/longscroll/masks-alpha/${String(index + 1).padStart(2, "0")}_mask_v0.1.png`),
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
@@ -412,7 +417,7 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
 ])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_BASE_SOURCE = `${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png`;
-const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp?v=feather-20260803`;
+const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp`;
 const FINAL_REPAIR_MILESTONE_ID = "lv4_lantern_city";
 const HISTORICAL_NOTES = window.SilkRoadHistoricalNotes ?? [];
 const historicalNotesById = new Map(HISTORICAL_NOTES.map((note) => [note.id, note]));
@@ -2831,7 +2836,9 @@ function normalizeInnLevel(savedLevel, savedSchemaVersion, renovationChoices = {
 }
 
 function loadState() {
-  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) localStorage.removeItem(SAVE_KEY);
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) {
+    localStorage.removeItem(SAVE_KEY);
+  }
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const generatorGiftMigration = Boolean(saved) && !data.generatorGiftProgressionVersion;
@@ -3016,6 +3023,11 @@ function loadState() {
   if (NEW_PLAYER_GUIDE_QA_MODE && (!saved || NEW_PLAYER_GUIDE_QA_RESET)) initializeNewPlayerGuideQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   if (CHAPTER_STORY_QA_MODE) initializeChapterStoryQaScenario();
+  if (FULL_GAME_TRIAL_MODE && (!saved || FULL_GAME_TRIAL_RESET)) {
+    state.staminaMax = 99999;
+    state.stamina = 99999;
+    state.lastTick = Date.now();
+  }
   const trialGeneratorGranted = grantTrialGeneratorFromUrl();
   if (DAILY_SHOP_QA_MODE && (!saved || DAILY_SHOP_QA_RESET)) {
     state.currentPage = "board";
@@ -3067,7 +3079,7 @@ function loadState() {
   syncVisibleOrders();
   if (generatorGiftMigration) saveState();
   if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
-  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
     history.replaceState(null, "", url);
@@ -6565,9 +6577,9 @@ function registerOrderProgressPacks() {
     byId.set(SHOP_WEALTH_ITEM_ID, {
       ...starterGift,
       id: SHOP_WEALTH_ITEM_ID,
-      name: "聚财陶俑",
+      name: "聚财陶罐",
       modernName: "轻点后逐枚吐出不同等级的铜币棋子",
-      iconKey: "ui/shop_wealth_figurine_v1",
+      iconKey: "ui/shop_wealth_jar_v1",
       source: "daily_shop",
     });
     byId.set(SHOP_SAXAUL_ITEM_ID, {
@@ -6590,7 +6602,7 @@ function registerOrderProgressPacks() {
   };
   GIFT_PACKS[SHOP_WEALTH_PACK_ID] = {
     id: SHOP_WEALTH_PACK_ID,
-    name: "聚财陶俑",
+    name: "聚财陶罐",
     itemId: SHOP_WEALTH_ITEM_ID,
     description: "可逐枚吐出6枚不同等级的铜币棋子。",
     shopOffer: true,
@@ -7154,7 +7166,7 @@ function renderBoard() {
       if (!item) return;
       if (!renderBonusBoardItem(cell, item, itemId, index)) {
       const img = document.createElement("img");
-      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""} ${item.id === DAILY_POUCH_ITEM_ID ? "daily-pouch-gift" : ""}`;
+      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""} ${item.id === DAILY_POUCH_ITEM_ID ? "daily-pouch-gift" : ""} ${item.id === SHOP_WEALTH_ITEM_ID ? "wealth-jar" : ""}`;
       img.alt = item.name;
       img.src = itemAssetSrc(item);
       if (item.type === "generator_material") {
@@ -7172,23 +7184,23 @@ function renderBoard() {
         }
         cell.append(sparkles);
         const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
-        const badge = document.createElement("span");
-        badge.className = "generator-badge";
-        const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-        if (seconds > 0) {
-          badge.classList.add("cooldown-clock");
-          if (item.type === "auto_generator") badge.classList.add("automatic");
-          badge.setAttribute("aria-label", `${formatGeneratorCountdown(seconds)}后完成备料`);
-          badge.title = `${formatGeneratorCountdown(seconds)}后完成备料`;
-          badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
-        } else if (item.type === "manual_generator") {
-          badge.textContent = `${generatorState.charges}/${item.generator.chargeMax}`;
-        } else if (generatorState.remainingOutputs > 0) {
-          badge.textContent = `${generatorState.remainingOutputs}`;
-          badge.setAttribute("aria-label", `本轮还可投放${generatorState.remainingOutputs}份`);
-          badge.title = `本轮还可投放${generatorState.remainingOutputs}份`;
+        if (item.type === "auto_generator") {
+          const badge = document.createElement("span");
+          badge.className = "generator-badge";
+          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+          if (seconds > 0) {
+            badge.classList.add("cooldown-clock");
+            badge.classList.add("automatic");
+            badge.setAttribute("aria-label", `${formatGeneratorCountdown(seconds)}后完成备料`);
+            badge.title = `${formatGeneratorCountdown(seconds)}后完成备料`;
+            badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
+          } else if (generatorState.remainingOutputs > 0) {
+            badge.textContent = `${generatorState.remainingOutputs}`;
+            badge.setAttribute("aria-label", `本轮还可投放${generatorState.remainingOutputs}份`);
+            badge.title = `本轮还可投放${generatorState.remainingOutputs}份`;
+          }
+          cell.append(badge);
         }
-        cell.append(badge);
       } else if (item.type === "gift_box") {
         const giftState = state.giftBoxStates[index];
         const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
@@ -7412,9 +7424,7 @@ function renderSelected() {
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     const batchSize = item.generator.outputCount;
     const productionStatus = item.type === "manual_generator"
-      ? cooldownSeconds > 0
-        ? "休息中，还剩" + formatGeneratorCountdown(cooldownSeconds)
-        : ""
+      ? "点击生成，消耗驼铃"
       : cooldownSeconds > 0
         ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
         : neighborEmptyIndices(state.selectedIndex).length > 0
@@ -7550,14 +7560,10 @@ function openSelectedPieceDetail() {
     ? `Lv${item.level ?? 1} · ${item.modernName ?? "生成器"}`
     : `Lv${item.level ?? 1} · ${removalAction.mode === "delete" ? "删除不返还铜币" : `出售可得 ${removalAction.value} 铜币`}`;
   if (item.type === "manual_generator") {
-    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
-    const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     const outputItem = manualGeneratorOutputItem(item);
     const staminaCost = manualGeneratorStaminaCost(item);
     const productionMultiplier = effectiveProductionMultiplier();
-    const productionText = cooldownSeconds > 0
-      ? "正在休息，" + formatGeneratorCountdown(cooldownSeconds) + "后恢复" + item.generator.chargeMax + "次充能。"
-      : `当前 ×${productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
+    const productionText = `当前 ×${productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。无需等待，可连续使用。`;
     els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
@@ -8519,19 +8525,16 @@ function activateManualGenerator(index) {
   const itemId = state.board[index];
   const item = byId.get(itemId);
   if (!item || item.type !== "manual_generator") return;
-  const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
-  const now = Date.now();
+  getGeneratorState(item.id, boardGeneratorStateKey(index));
   state.selectedIndex = index;
-  if (generatorState.cooldownEnd > now) {
-    render();
-    return;
-  }
   if (!hasEmptyCell()) {
     render();
-    const showDefaultTip = window.dispatchEvent(new CustomEvent("silkroad:board-full-attempt", {
-      detail: storageGuideContext(), cancelable: true,
+    const fullBoardMessage = "棋盘已满，先合成食物或拖进柜子腾出空格。";
+    const handledByStorageGuide = !window.dispatchEvent(new CustomEvent("silkroad:board-full-attempt", {
+      detail: storageGuideContext(),
+      cancelable: true,
     }));
-    if (showDefaultTip) toast("案板已满，先合成或收进柜中腾出空格。");
+    if (!handledByStorageGuide) toast(fullBoardMessage, 2800);
     return;
   }
   const outputItem = manualGeneratorOutputItem(item);
@@ -8550,11 +8553,6 @@ function activateManualGenerator(index) {
   const staminaWasFull = state.stamina >= state.staminaMax;
   state.stamina -= staminaCost;
   if (staminaWasFull && state.stamina < state.staminaMax) state.lastTick = Date.now();
-  generatorState.charges -= 1;
-  if (generatorState.charges <= 0) {
-    generatorState.charges = 0;
-    generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
-  }
 
   const outputs = Math.min(item.generator.outputCount, emptyCellCount());
   const generatedOutputs = [];
@@ -8651,7 +8649,7 @@ function getGeneratorState(itemId, stateKey) {
   }
   const generatorState = state.generatorStates[stateKey];
   generatorState.charges = Math.min(item?.generator?.chargeMax ?? 0, Math.max(0, Number(generatorState.charges) || 0));
-  if (item?.type === "manual_generator" && generatorState.cooldownEnd > 0 && generatorState.cooldownEnd <= Date.now()) {
+  if (item?.type === "manual_generator") {
     generatorState.charges = item.generator.chargeMax;
     generatorState.cooldownEnd = 0;
   }
@@ -11152,13 +11150,13 @@ function keeper(line) {
   els.keeperLine.textContent = line;
 }
 
-function toast(message) {
+function toast(message, duration = 1800) {
   els.toast.textContent = message;
   els.toast.hidden = false;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     els.toast.hidden = true;
-  }, 1800);
+  }, duration);
 }
 
 function showCoinBurst(amount) {

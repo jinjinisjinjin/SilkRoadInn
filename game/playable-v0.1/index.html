@@ -7,11 +7,11 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=storage-guide-copy-v1" />
+    <link rel="stylesheet" href="./styles.css?v=board-full-feedback-v1" />
     <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
     <link rel="stylesheet" href="./weekly-checkin.css?v=weekly-checkin-v3-daily-title" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
-    <link rel="stylesheet" href="./chapter-story.css?v=chapter-story-dialogue-v15-mystery-full-bleed" />
+    <link rel="stylesheet" href="./chapter-story.css?v=opening-cinematic-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v16-notice-dot" />
     <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v23-archive-thumbnails" />
@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
     <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1-cast-journey-v1" />
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
-    <link rel="stylesheet" href="./new-player-guide.css?v=storage-context-v1" />
+    <link rel="stylesheet" href="./new-player-guide.css?v=compact-storage-guide-v1" />
     <link rel="stylesheet" href="./generator-chain-qa.css?v=generator-chain-v1" />
   </head>
   <body>
@@ -334,6 +334,25 @@
           <button id="chapterStoryQaNext" type="button" aria-label="下一段" title="下一段">›</button>
         </nav>
         <div class="chapter-story-scene" aria-hidden="true"></div>
+        <section id="chapterOpeningCinematic" class="chapter-opening-cinematic" aria-label="第一缕炉烟开场动画" hidden>
+          <div class="chapter-opening-dust" aria-hidden="true"></div>
+          <div class="chapter-opening-door" aria-hidden="true"><i></i><i></i></div>
+          <div class="chapter-opening-fire" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+          <div class="chapter-opening-caption chapter-opening-caption-place">
+            <strong>晚唐 · 沙州城外</strong>
+            <span>流沙驿闭门两年，再没有升起过炊烟。</span>
+          </div>
+          <div class="chapter-opening-caption chapter-opening-caption-room">
+            <strong>推门之后</strong>
+            <span>旧灶、半本《丝路食鉴》和一块火石，还留在原处。</span>
+          </div>
+          <div class="chapter-opening-title">
+            <small>第一章 · 推门燃炉</small>
+            <strong>第一缕炉烟</strong>
+            <span>驿路不止，食火不灭</span>
+          </div>
+          <div class="chapter-opening-progress" aria-hidden="true"><i></i></div>
+        </section>
         <section class="chapter-story-panel">
           <div id="chapterStoryPortraitFrame" class="chapter-story-portrait"><img id="chapterStoryPortrait" alt="" /></div>
           <div class="chapter-story-copy">
@@ -597,8 +616,8 @@
             <button id="dailyShopClaimPouch" type="button">免费领取</button>
           </article>
           <article class="daily-shop-card" data-shop-offer="wealth">
-            <strong>聚财陶俑</strong>
-            <button type="button" class="daily-shop-detail" data-shop-detail="shop_wealth_figurine_pack" aria-label="查看聚财陶俑详情"><img src="./assets/ui/shop_wealth_figurine_v1.png" alt="" /></button>
+            <strong>聚财陶罐</strong>
+            <button type="button" class="daily-shop-detail" data-shop-detail="shop_wealth_figurine_pack" aria-label="查看聚财陶罐详情"><img src="./assets/ui/shop_wealth_jar_v1.png" alt="" /></button>
             <p>逐枚吐出铜币棋子</p>
             <small data-shop-stock>库存 1</small>
             <button type="button" data-shop-buy><i class="ruby-icon" aria-hidden="true"></i><span>25</span></button>
@@ -693,9 +712,9 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=story-viewport-v4-dialogue-narration-v20-archive-footnotes"></script>
+    <script src="./chapter-story.js?v=opening-cinematic-v1"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
-    <script src="./new-player-guide.js?v=storage-context-v1"></script>
-    <script src="./app.js?v=food-progression-v1-storage-context-v1-story-notes-shop-props-v1"></script>
+    <script src="./new-player-guide.js?v=compact-storage-guide-v1"></script>
+    <script src="./app.js?v=food-progression-v2-compact-storage-guide-v1"></script>
   </body>
 </html>
