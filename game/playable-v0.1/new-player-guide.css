@@ -188,17 +188,11 @@
   --guide-dy: 0px;
   position: absolute;
   z-index: 63;
-  width: 24px;
-  height: 24px;
-  box-sizing: border-box;
-  border: 2px solid #f5d88f;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 30%, #f8cf80 0 8%, transparent 9%),
-    radial-gradient(circle, #bd5b42 0 48%, #87382c 50% 100%);
-  box-shadow:
-    0 3px 7px rgba(48, 25, 12, 0.36),
-    inset 0 0 0 2px rgba(111, 43, 33, 0.18);
+  width: 40px;
+  height: 46px;
+  border: 0;
+  background: url("./assets/ui/tutorial-drag-hand.svg") center / contain no-repeat;
+  filter: drop-shadow(0 3px 3px rgba(48, 25, 12, 0.42));
   pointer-events: none;
   animation: newPlayerPointerBob 0.9s ease-in-out infinite;
 }
@@ -206,23 +200,19 @@
 .new-player-guide-pointer::before {
   content: "";
   position: absolute;
-  inset: -7px;
-  border: 1px solid rgba(244, 202, 111, 0.76);
+  left: 5px;
+  top: -3px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 2px solid rgba(244, 202, 111, 0.88);
   border-radius: 50%;
+  background: rgba(255, 241, 182, 0.18);
   animation: newPlayerPointerRing 1.35s ease-out infinite;
 }
 
 .new-player-guide-pointer::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -8px;
-  width: 7px;
-  height: 7px;
-  border-right: 3px solid #f3d486;
-  border-bottom: 3px solid #f3d486;
-  filter: drop-shadow(1px 1px 0 rgba(92, 43, 28, 0.7));
-  transform: translateX(-50%) rotate(45deg);
+  display: none;
 }
 
 .new-player-guide-pointer.points-up::after {
@@ -249,11 +239,6 @@
 .new-player-guide-pointer.drag-path {
   width: 40px;
   height: 46px;
-  border: 0;
-  border-radius: 0;
-  background: url("./assets/ui/tutorial-drag-hand.svg") center / contain no-repeat;
-  box-shadow: none;
-  filter: drop-shadow(0 3px 3px rgba(48, 25, 12, 0.42));
   animation: newPlayerDragPath 1.65s ease-in-out infinite;
 }
 
@@ -357,11 +342,22 @@
 /* Contextual storage help stays above the board, out of the drag route. */
 .new-player-guide-layer.storage-lesson .new-player-guide-card {
   width: auto;
-  min-height: 0;
-  grid-template-columns: minmax(0, 1fr) 24px;
-  gap: 6px;
-  padding: 10px 12px;
+  min-height: 46px;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  gap: 4px;
+  padding: 5px 8px 6px 10px;
+  border-width: 1px;
+  border-radius: 7px;
+  box-shadow:
+    0 3px 0 rgba(79, 42, 19, 0.18),
+    0 6px 12px rgba(44, 25, 13, 0.2),
+    inset 0 0 0 2px rgba(255, 248, 211, 0.5);
   pointer-events: none;
+}
+
+.new-player-guide-layer.storage-lesson .new-player-guide-card::before {
+  inset: 3px;
+  border-radius: 4px;
 }
 
 .storage-lesson .new-player-guide-portrait-frame,
@@ -372,10 +368,13 @@
 
 .storage-lesson .new-player-guide-copy p {
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .storage-lesson .new-player-guide-skip {
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
   pointer-events: auto;
 }
 

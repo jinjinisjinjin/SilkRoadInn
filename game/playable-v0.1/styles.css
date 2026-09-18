@@ -601,25 +601,6 @@ button:disabled {
   opacity: 0;
 }
 
-.codex-side-entry.tutorial-action::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  top: 3px;
-  right: 3px;
-  width: var(--side-entry-notice-size);
-  height: var(--side-entry-notice-size);
-  border: 1px solid rgba(255, 235, 190, 0.92);
-  border-radius: 50%;
-  background: #9c4636;
-  box-shadow: 0 2px 5px rgba(65, 31, 20, 0.26);
-}
-
-.side-entry.inn-codex-entry.tutorial-action::after {
-  top: 10px;
-  right: 8px;
-}
-
 .repair-side-entry.repair-ready i {
   opacity: 1;
 }
@@ -5529,7 +5510,7 @@ button:disabled {
   position: fixed;
   left: 50%;
   bottom: 22px;
-  z-index: 50;
+  z-index: 80;
   max-width: min(86vw, 360px);
   padding: 10px 14px;
   border-radius: 10px;

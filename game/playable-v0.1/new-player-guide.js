@@ -3,15 +3,20 @@
 
   const params = new URLSearchParams(window.location.search);
   const NEW_PLAYER_GUIDE_QA_MODE = params.get("qa") === "new-player-guide-v1";
+  const FULL_GAME_TRIAL_MODE = params.get("trial") === "full-game-v1";
   if (params.has("qa") && !NEW_PLAYER_GUIDE_QA_MODE) return;
 
   const GAME_SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
     ? "silkroad_tavern_proto_v02_qa_new_player_guide_v1"
-    : "silkroad_tavern_proto_v02";
+    : FULL_GAME_TRIAL_MODE
+      ? "silkroad_tavern_proto_v02_trial_full_game_v1"
+      : "silkroad_tavern_proto_v02";
   const GUIDE_SAVE_KEY = NEW_PLAYER_GUIDE_QA_MODE
     ? "silkroad_new_player_guide_v1_qa"
-    : "silkroad_new_player_guide_v1";
-  if (NEW_PLAYER_GUIDE_QA_MODE && params.get("reset") === "1") {
+    : FULL_GAME_TRIAL_MODE
+      ? "silkroad_new_player_guide_v1_trial_full_game_v1"
+      : "silkroad_new_player_guide_v1";
+  if ((NEW_PLAYER_GUIDE_QA_MODE || FULL_GAME_TRIAL_MODE) && params.get("reset") === "1") {
     localStorage.removeItem(GAME_SAVE_KEY);
     localStorage.removeItem(GUIDE_SAVE_KEY);
   }
@@ -163,10 +168,9 @@
       const second = targets[1].getBoundingClientRect();
       const secondCenterX = second.left - appRect.left + second.width / 2;
       const secondCenterY = second.top - appRect.top + second.height / 2;
-      // Drag gestures use the fingertip as their anchor. Keep the hand beside
-      // the source so the highlighted food remains visible throughout the cue.
-      const pointerLeft = first.right - appRect.left - 10;
-      const pointerTop = firstCenterY - 8;
+      // Both tap and drag cues use the same fingertip anchor at target center.
+      const pointerLeft = firstCenterX - 12;
+      const pointerTop = firstCenterY - 4;
       const fingertipX = pointerLeft + 12;
       const fingertipY = pointerTop + 4;
       pointer.style.left = `${pointerLeft}px`;
@@ -176,40 +180,10 @@
       return;
     }
 
-    const nearBottom = first.bottom - appRect.top > appRect.height - 112;
-    const nearLeft = first.left - appRect.left < 72;
-    if (nearBottom && nearLeft) {
-      pointer.style.left = `${Math.max(6, firstCenterX - 12)}px`;
-      pointer.style.top = `${Math.max(6, first.top - appRect.top - 54)}px`;
-      pointer.style.setProperty("--guide-dx", "0px");
-      pointer.style.setProperty("--guide-dy", "0px");
-      return;
-    }
-    if (nearBottom) {
-      pointer.style.left = `${Math.max(6, first.left - appRect.left - 36)}px`;
-      pointer.style.top = `${firstCenterY - 12}px`;
-      pointer.style.setProperty("--guide-dx", "0px");
-      pointer.style.setProperty("--guide-dy", "0px");
-      pointer.classList.add("points-right");
-      return;
-    }
-
-    if (nearLeft) {
-      pointer.style.left = `${first.right - appRect.left + 12}px`;
-      pointer.style.top = `${firstCenterY - 12}px`;
-      pointer.style.setProperty("--guide-dx", "0px");
-      pointer.style.setProperty("--guide-dy", "0px");
-      pointer.classList.add("points-left");
-      return;
-    }
-
-    const above = first.top - appRect.top - 36;
-    const placeBelow = above < 8;
-    pointer.style.left = `${Math.max(6, Math.min(appRect.width - 30, firstCenterX - 12))}px`;
-    pointer.style.top = `${placeBelow ? first.bottom - appRect.top + 12 : above}px`;
+    pointer.style.left = `${Math.max(0, Math.min(appRect.width - 40, firstCenterX - 12))}px`;
+    pointer.style.top = `${Math.max(0, Math.min(appRect.height - 46, firstCenterY - 4))}px`;
     pointer.style.setProperty("--guide-dx", "0px");
     pointer.style.setProperty("--guide-dy", "0px");
-    pointer.classList.toggle("points-up", placeBelow);
   }
 
   function showGuide({ text, targets = [], drag = false, acknowledge = false }) {

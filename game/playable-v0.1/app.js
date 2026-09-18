@@ -42,6 +42,9 @@ const SPECIAL_AUDIO_BUTTONS = [
   "#innKitchenBtn",
 ].join(",");
 const QA_MODE = new URLSearchParams(location.search).get("qa");
+const FULL_GAME_TRIAL_MODE = new URLSearchParams(location.search).get("trial") === "full-game-v1";
+const FULL_GAME_TRIAL_RESET = FULL_GAME_TRIAL_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const TRIAL_GENERATOR_CATEGORY = new URLSearchParams(location.search).get("grantGenerator");
 const WEEKLY_CHECKIN_PREVIEW = new URLSearchParams(location.search).get("preview") === "weekly-checkin-v1";
 const DAILY_SHOP_QA_MODE = QA_MODE === "daily-shop-v1";
@@ -119,7 +122,9 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
 const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE;
-const SAVE_KEY = UPGRADE_REVEAL_QA_MODE
+const SAVE_KEY = FULL_GAME_TRIAL_MODE
+  ? "silkroad_tavern_proto_v02_trial_full_game_v1"
+  : UPGRADE_REVEAL_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
   : DAILY_SHOP_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_daily_shop_v1"
@@ -2749,7 +2754,9 @@ function normalizeInnLevel(savedLevel, savedSchemaVersion, renovationChoices = {
 }
 
 function loadState() {
-  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) localStorage.removeItem(SAVE_KEY);
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) {
+    localStorage.removeItem(SAVE_KEY);
+  }
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const legacyStorageHasGenerators = Array.isArray(data.bag)
@@ -2930,6 +2937,11 @@ function loadState() {
   if (NEW_PLAYER_GUIDE_QA_MODE && (!saved || NEW_PLAYER_GUIDE_QA_RESET)) initializeNewPlayerGuideQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   if (CHAPTER_STORY_QA_MODE) initializeChapterStoryQaScenario();
+  if (FULL_GAME_TRIAL_MODE && (!saved || FULL_GAME_TRIAL_RESET)) {
+    state.staminaMax = 99999;
+    state.stamina = 99999;
+    state.lastTick = Date.now();
+  }
   const trialGeneratorGranted = grantTrialGeneratorFromUrl();
   if (DAILY_SHOP_QA_MODE && (!saved || DAILY_SHOP_QA_RESET)) {
     state.currentPage = "board";
@@ -2979,7 +2991,7 @@ function loadState() {
   syncVisibleOrders();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
   if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
-  if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
     history.replaceState(null, "", url);
@@ -8410,10 +8422,12 @@ function activateManualGenerator(index) {
   state.selectedIndex = index;
   if (!hasEmptyCell()) {
     render();
-    const showDefaultTip = window.dispatchEvent(new CustomEvent("silkroad:board-full-attempt", {
-      detail: storageGuideContext(), cancelable: true,
+    const fullBoardMessage = "棋盘已满，先合成食物或拖进柜子腾出空格。";
+    const handledByStorageGuide = !window.dispatchEvent(new CustomEvent("silkroad:board-full-attempt", {
+      detail: storageGuideContext(),
+      cancelable: true,
     }));
-    if (showDefaultTip) toast("案板已满，先合成或收进柜中腾出空格。");
+    if (!handledByStorageGuide) toast(fullBoardMessage, 2800);
     return;
   }
   const outputItem = manualGeneratorOutputItem(item);
@@ -11009,13 +11023,13 @@ function keeper(line) {
   els.keeperLine.textContent = line;
 }
 
-function toast(message) {
+function toast(message, duration = 1800) {
   els.toast.textContent = message;
   els.toast.hidden = false;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     els.toast.hidden = true;
-  }, 1800);
+  }, duration);
 }
 
 function showCoinBurst(amount) {
