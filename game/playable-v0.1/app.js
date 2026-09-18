@@ -349,7 +349,7 @@ const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
 });
 const INN_PACKAGE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
-  "./assets/longscroll/states-webp/22_done_state_v0.1.webp?v=feather-20260803",
+  "./assets/longscroll/states-webp/22_done_state_v0.1.webp",
   ...Array.from({ length: 27 }, (_, index) => `./assets/longscroll/masks-alpha/${String(index + 1).padStart(2, "0")}_mask_v0.1.png`),
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
@@ -411,7 +411,7 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
 ])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_BASE_SOURCE = `${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png`;
-const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp?v=feather-20260803`;
+const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp`;
 const FINAL_REPAIR_MILESTONE_ID = "lv4_lantern_city";
 const HISTORICAL_NOTES = window.SilkRoadHistoricalNotes ?? [];
 const historicalNotesById = new Map(HISTORICAL_NOTES.map((note) => [note.id, note]));
@@ -7082,23 +7082,23 @@ function renderBoard() {
         }
         cell.append(sparkles);
         const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
-        const badge = document.createElement("span");
-        badge.className = "generator-badge";
-        const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
-        if (seconds > 0) {
-          badge.classList.add("cooldown-clock");
-          if (item.type === "auto_generator") badge.classList.add("automatic");
-          badge.setAttribute("aria-label", `${formatGeneratorCountdown(seconds)}后完成备料`);
-          badge.title = `${formatGeneratorCountdown(seconds)}后完成备料`;
-          badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
-        } else if (item.type === "manual_generator") {
-          badge.textContent = `${generatorState.charges}/${item.generator.chargeMax}`;
-        } else if (generatorState.remainingOutputs > 0) {
-          badge.textContent = `${generatorState.remainingOutputs}`;
-          badge.setAttribute("aria-label", `本轮还可投放${generatorState.remainingOutputs}份`);
-          badge.title = `本轮还可投放${generatorState.remainingOutputs}份`;
+        if (item.type === "auto_generator") {
+          const badge = document.createElement("span");
+          badge.className = "generator-badge";
+          const seconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
+          if (seconds > 0) {
+            badge.classList.add("cooldown-clock");
+            badge.classList.add("automatic");
+            badge.setAttribute("aria-label", `${formatGeneratorCountdown(seconds)}后完成备料`);
+            badge.title = `${formatGeneratorCountdown(seconds)}后完成备料`;
+            badge.append(Object.assign(document.createElement("span"), { className: "generator-clock-face" }));
+          } else if (generatorState.remainingOutputs > 0) {
+            badge.textContent = `${generatorState.remainingOutputs}`;
+            badge.setAttribute("aria-label", `本轮还可投放${generatorState.remainingOutputs}份`);
+            badge.title = `本轮还可投放${generatorState.remainingOutputs}份`;
+          }
+          cell.append(badge);
         }
-        cell.append(badge);
       } else if (item.type === "gift_box") {
         const giftState = state.giftBoxStates[index];
         const pack = giftState ? GIFT_PACKS[giftState.packId] : null;
@@ -7322,9 +7322,7 @@ function renderSelected() {
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     const batchSize = item.generator.outputCount;
     const productionStatus = item.type === "manual_generator"
-      ? cooldownSeconds > 0
-        ? "休息中，还剩" + formatGeneratorCountdown(cooldownSeconds)
-        : ""
+      ? "点击生成，消耗驼铃"
       : cooldownSeconds > 0
         ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
         : neighborEmptyIndices(state.selectedIndex).length > 0
@@ -7460,13 +7458,9 @@ function openSelectedPieceDetail() {
     ? `Lv${item.level ?? 1} · ${item.modernName ?? "生成器"}`
     : `Lv${item.level ?? 1} · ${removalAction.mode === "delete" ? "删除不返还铜币" : `出售可得 ${removalAction.value} 铜币`}`;
   if (item.type === "manual_generator") {
-    const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
-    const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     const outputItem = manualGeneratorOutputItem(item);
     const staminaCost = manualGeneratorStaminaCost(item);
-    const productionText = cooldownSeconds > 0
-      ? "正在休息，" + formatGeneratorCountdown(cooldownSeconds) + "后恢复" + item.generator.chargeMax + "次充能。"
-      : `当前 ×${state.productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
+    const productionText = `当前 ×${state.productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。无需等待，可连续使用。`;
     els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
@@ -8412,13 +8406,8 @@ function activateManualGenerator(index) {
   const itemId = state.board[index];
   const item = byId.get(itemId);
   if (!item || item.type !== "manual_generator") return;
-  const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(index));
-  const now = Date.now();
+  getGeneratorState(item.id, boardGeneratorStateKey(index));
   state.selectedIndex = index;
-  if (generatorState.cooldownEnd > now) {
-    render();
-    return;
-  }
   if (!hasEmptyCell()) {
     render();
     const showDefaultTip = window.dispatchEvent(new CustomEvent("silkroad:board-full-attempt", {
@@ -8443,11 +8432,6 @@ function activateManualGenerator(index) {
   const staminaWasFull = state.stamina >= state.staminaMax;
   state.stamina -= staminaCost;
   if (staminaWasFull && state.stamina < state.staminaMax) state.lastTick = Date.now();
-  generatorState.charges -= 1;
-  if (generatorState.charges <= 0) {
-    generatorState.charges = 0;
-    generatorState.cooldownEnd = now + item.generator.cooldownSeconds * 1000;
-  }
 
   const outputs = Math.min(item.generator.outputCount, emptyCellCount());
   const generatedOutputs = [];
@@ -8544,7 +8528,7 @@ function getGeneratorState(itemId, stateKey) {
   }
   const generatorState = state.generatorStates[stateKey];
   generatorState.charges = Math.min(item?.generator?.chargeMax ?? 0, Math.max(0, Number(generatorState.charges) || 0));
-  if (item?.type === "manual_generator" && generatorState.cooldownEnd > 0 && generatorState.cooldownEnd <= Date.now()) {
+  if (item?.type === "manual_generator") {
     generatorState.charges = item.generator.chargeMax;
     generatorState.cooldownEnd = 0;
   }

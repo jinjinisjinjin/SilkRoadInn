@@ -724,7 +724,7 @@
       "generator": {
         "staminaCost": 1,
         "chargeMax": 14,
-        "cooldownSeconds": 60,
+        "cooldownSeconds": 0,
         "outputCount": 1,
         "pool": [
           {
@@ -752,7 +752,7 @@
       "generator": {
         "staminaCost": 1,
         "chargeMax": 18,
-        "cooldownSeconds": 50,
+        "cooldownSeconds": 0,
         "outputCount": 1,
         "pool": [
           {
@@ -784,7 +784,7 @@
       "generator": {
         "staminaCost": 1,
         "chargeMax": 14,
-        "cooldownSeconds": 60,
+        "cooldownSeconds": 0,
         "outputCount": 1,
         "pool": [
           {
@@ -812,7 +812,7 @@
       "generator": {
         "staminaCost": 1,
         "chargeMax": 18,
-        "cooldownSeconds": 50,
+        "cooldownSeconds": 0,
         "outputCount": 1,
         "pool": [
           {
