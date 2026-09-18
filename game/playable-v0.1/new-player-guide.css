@@ -353,3 +353,69 @@
     animation: none;
   }
 }
+
+/* Contextual storage help stays above the board, out of the drag route. */
+.new-player-guide-layer.storage-lesson .new-player-guide-card {
+  width: auto;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  gap: 6px;
+  padding: 10px 12px;
+  pointer-events: none;
+}
+
+.storage-lesson .new-player-guide-portrait-frame,
+.storage-lesson .new-player-guide-copy small,
+.storage-lesson .new-player-guide-card::after {
+  display: none;
+}
+
+.storage-lesson .new-player-guide-copy p {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.storage-lesson .new-player-guide-skip {
+  pointer-events: auto;
+}
+
+.new-player-guide-drag-food[hidden] {
+  display: none;
+}
+
+.storage-lesson .new-player-guide-pointer.drag-path {
+  width: 30px;
+  height: 35px;
+  background: none;
+  animation-duration: 2.6s;
+}
+
+.storage-lesson .new-player-guide-drag-food {
+  position: absolute;
+  width: var(--guide-food-size);
+  height: var(--guide-food-size);
+  left: calc(var(--guide-food-size) / -2);
+  top: calc(var(--guide-food-size) / -2);
+  object-fit: contain;
+  opacity: 0.65;
+}
+
+.storage-lesson .new-player-guide-pointer.drag-path::before {
+  display: none;
+}
+
+.storage-lesson .new-player-guide-pointer.drag-path::after {
+  display: block;
+  left: calc(var(--guide-food-size) / 2 - 10px);
+  top: 5px;
+  bottom: auto;
+  width: 30px;
+  height: 35px;
+  border: 0;
+  background: url("./assets/ui/tutorial-drag-hand.svg") center / contain no-repeat;
+  transform: none;
+}
+
+#storageBtn.new-player-guide-target {
+  transition: filter 0.2s;
+}

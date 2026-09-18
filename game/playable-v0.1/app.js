@@ -1928,6 +1928,7 @@ function initializeNewPlayerGuideQaScenario() {
         if (!state.board[index]) state.board[index] = (row + col) % 2 ? "hubing_01_dough" : "hubing_02_lubing";
       }
     }
+    state.board[23] = "dairy_06_milao";
     state.completedOrderIds = ["order_001_guard_lubing"];
     state.completedOrders = 3;
     state.tutorialStep = 5;
@@ -3403,6 +3404,11 @@ function tickStamina() {
 }
 
 function bindEvents() {
+  window.addEventListener("silkroad:storage-guide-request", () => {
+    window.dispatchEvent(new CustomEvent("silkroad:storage-guide-context", {
+      detail: storageGuideContext(),
+    }));
+  });
   preventBrowserSmartZoom();
   let lastInnSceneSize = [els.innScene.clientWidth, els.innScene.clientHeight];
   innSceneResizeObserver = new ResizeObserver(() => {
@@ -7858,6 +7864,9 @@ function onCellPointerDown(event) {
     hoverIndex: null,
   };
 
+  window.dispatchEvent(new CustomEvent("silkroad:board-item-press", {
+    detail: { index, itemId, locked: isBoardCellLocked(index) },
+  }));
   window.addEventListener("pointermove", moveCellPointer);
   window.addEventListener("pointerup", endCellPointer, { once: true });
   window.addEventListener("pointercancel", cancelCellPointer, { once: true });
@@ -7983,6 +7992,7 @@ function cancelCellPointer(event) {
 }
 
 function cleanupCellPointer(_cell, pointerId) {
+  window.dispatchEvent(new Event("silkroad:board-item-release"));
   const sourceCell = dragging?.sourceCell;
   sourceCell?.classList.remove("is-drag-source");
   try {
@@ -8378,6 +8388,26 @@ function manualGeneratorStaminaCost(item) {
     * normalizeProductionMultiplier(state.productionMultiplier);
 }
 
+// Use live item metadata and orders, including matching food inside locked cells.
+function storageGuideContext() {
+  const demanded = new Set(state.visibleOrders.flatMap((id) => getOrder(id)?.demand ?? [])
+    .map((demand) => demand.itemId));
+  const storable = [];
+  const recommended = [];
+  state.board.forEach((itemId, index) => {
+    const item = byId.get(itemId);
+    if (!item || isBoardCellLocked(index) || isGeneratorPiece(item)
+      || activeDailyPouchOutputIndices.has(index)
+      || ["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina"].includes(item.type)) return;
+    if (item.type === "gift_box" && !GIFT_PACKS[state.giftBoxStates[index]?.packId]?.shopOffer) return;
+    storable.push(index);
+    const hasMergePartner = Boolean(item.mergeTo) && state.board.some((otherId, otherIndex) =>
+      otherIndex !== index && (isBoardCellLocked(otherIndex) ? lockedCellItemId(otherIndex) : otherId) === itemId);
+    if (item.codexId && !item.type && !demanded.has(itemId) && !hasMergePartner) recommended.push(index);
+  });
+  return { canStore: firstEmptyBagIndex() !== -1, storable, recommended };
+}
+
 function activateManualGenerator(index) {
   const itemId = state.board[index];
   const item = byId.get(itemId);
@@ -8391,7 +8421,10 @@ function activateManualGenerator(index) {
   }
   if (!hasEmptyCell()) {
     render();
-    toast("案板已满，先合成或收进柜中腾出空格。");
+    const showDefaultTip = window.dispatchEvent(new CustomEvent("silkroad:board-full-attempt", {
+      detail: storageGuideContext(), cancelable: true,
+    }));
+    if (showDefaultTip) toast("案板已满，先合成或收进柜中腾出空格。");
     return;
   }
   const outputItem = manualGeneratorOutputItem(item);

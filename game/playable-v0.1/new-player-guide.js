@@ -18,7 +18,6 @@
   const TARGET_CLASS = "new-player-guide-target";
   const FIRST_ORDER_ID = "order_001_guard_lubing";
   const FIRST_REPAIR_ID = "tutorial_complete";
-  const LOCKED_MERGE_ITEM_ID = "hubing_01_dough";
   const LOCKED_MERGE_ITEM_NAME = "麦面剂";
   const LOCKED_MERGE_TARGET_INDEX = 16;
 
@@ -29,6 +28,12 @@
   let acknowledgeButton;
   let refreshTimer;
   let currentTargets = [];
+  let storageLessonActive = false;
+  let storageDragging = false;
+  let storageContext = null;
+  let storageSourceIndex = null;
+  let storageSuccessUntil = 0;
+  let dragFood;
 
   function readJson(key, fallback) {
     try {
@@ -70,16 +75,23 @@
         </div>
         <button class="new-player-guide-skip" type="button" aria-label="跳过新手引导" title="跳过引导">×</button>
       </section>
-      <i class="new-player-guide-pointer" aria-hidden="true"></i>
+      <i class="new-player-guide-pointer" aria-hidden="true"><img class="new-player-guide-drag-food" alt="" hidden /></i>
     `;
     app.append(layer);
     card = layer.querySelector(".new-player-guide-card");
     copy = layer.querySelector(".new-player-guide-copy p");
     pointer = layer.querySelector(".new-player-guide-pointer");
+    dragFood = layer.querySelector(".new-player-guide-drag-food");
     acknowledgeButton = layer.querySelector(".new-player-guide-ack");
 
     layer.querySelector(".new-player-guide-skip").addEventListener("click", () => {
-      updateGuideState({ dismissed: true });
+      if (storageLessonActive || storageSuccessUntil) {
+        storageLessonActive = false;
+        storageSuccessUntil = 0;
+        updateGuideState({ boardStorageSeen: true });
+      } else {
+        updateGuideState({ dismissed: true });
+      }
       hideGuide();
     });
     acknowledgeButton.addEventListener("click", () => {
@@ -122,12 +134,18 @@
     if (!layer) return;
     layer.hidden = true;
     pointer.hidden = true;
+    dragFood.hidden = true;
+    layer.classList.remove("storage-lesson", "storage-success");
     pointer.classList.remove("drag-path", "points-up", "points-right", "points-left");
   }
 
   function positionPointer(targets, drag) {
     if (!targets.length || !targets.every(isVisible)) {
       pointer.hidden = true;
+      return;
+    }
+    if (layer.classList.contains("storage-lesson")) {
+      positionStorageLesson(targets, drag);
       return;
     }
     const appRect = document.querySelector("#app").getBoundingClientRect();
@@ -218,61 +236,54 @@
     });
   }
 
-  function storageTutorialSource(state) {
-    if (!Array.isArray(state.board)) return null;
-    const appRect = document.querySelector("#app")?.getBoundingClientRect();
-    const candidates = [...document.querySelectorAll("#board .cell:not(.locked)")]
-      .filter(isVisible)
-      .filter((cell) => {
-        const index = Number(cell.dataset.index);
-        return Number.isInteger(index)
-          && Boolean(state.board[index])
-          && !cell.querySelector(".item.generator")
-          && Boolean(cell.querySelector("img"));
-      });
-    if (!candidates.length) return null;
-    const demandedNames = new Set(
-      [...document.querySelectorAll("#orders .order-food-trigger img[alt]")]
-        .map((image) => image.alt)
-        .filter(Boolean),
-    );
-    const notCurrentlyDemanded = candidates.filter((cell) => {
-      const name = cell.querySelector("img[alt]")?.alt;
-      return name && !demandedNames.has(name);
-    });
-    const doughCandidates = candidates.filter((cell) => {
-      const index = Number(cell.dataset.index);
-      return state.board[index] === LOCKED_MERGE_ITEM_ID;
-    });
-    const generatorIndices = [...document.querySelectorAll("#board .cell .item.generator")]
-      .map((item) => Number(item.closest(".cell")?.dataset.index))
-      .filter(Number.isInteger);
-    const doughAwayFromGenerators = doughCandidates.filter((cell) => {
-      const index = Number(cell.dataset.index);
-      const row = Math.floor(index / 7);
-      const col = index % 7;
-      return generatorIndices.every((generatorIndex) => {
-        const generatorRow = Math.floor(generatorIndex / 7);
-        const generatorCol = generatorIndex % 7;
-        return Math.abs(row - generatorRow) + Math.abs(col - generatorCol) > 1;
-      });
-    });
-    const usefulCandidates = doughAwayFromGenerators.length
-      ? doughAwayFromGenerators
-      : doughCandidates.length
-        ? doughCandidates
-        : notCurrentlyDemanded.length
-          ? notCurrentlyDemanded
-          : candidates;
-    const unobscured = appRect
-      ? usefulCandidates.filter((cell) => cell.getBoundingClientRect().bottom < appRect.top + appRect.height * 0.62)
-      : usefulCandidates;
-    return (unobscured.length ? unobscured : usefulCandidates)
-      .sort((left, right) => {
-        const leftRect = left.getBoundingClientRect();
-        const rightRect = right.getBoundingClientRect();
-        return rightRect.top - leftRect.top || leftRect.left - rightRect.left;
-      })[0];
+  function storageTutorialSource() {
+    const indices = storageContext?.recommended ?? [];
+    if (!indices.includes(storageSourceIndex)) storageSourceIndex = indices[0] ?? null;
+    return storageSourceIndex === null ? null
+      : document.querySelector(`.cell[data-index="${storageSourceIndex}"]`);
+  }
+
+  function positionStorageLesson(targets, drag) {
+    pointer.classList.toggle("drag-path", Boolean(drag && targets.length === 2));
+    pointer.classList.remove("points-up", "points-right", "points-left");
+    const appRect = document.querySelector("#app").getBoundingClientRect();
+    const boardRect = document.querySelector("#board").getBoundingClientRect();
+    // A short strip above the board leaves every cell and the cabinet reachable.
+    card.style.left = "8px";
+    card.style.right = "8px";
+    card.style.top = `${Math.max(6, boardRect.top - appRect.top - card.offsetHeight - 8)}px`;
+    card.style.bottom = "auto";
+    pointer.hidden = storageDragging || !drag || targets.length !== 2;
+    if (pointer.hidden) return;
+    const source = targets[0].getBoundingClientRect();
+    const destination = targets[1].getBoundingClientRect();
+    const x = source.left - appRect.left + source.width / 2;
+    const y = source.top - appRect.top + source.height / 2;
+    pointer.style.left = `${x}px`;
+    pointer.style.top = `${y}px`;
+    pointer.style.setProperty("--guide-dx", `${destination.left + destination.width / 2 - appRect.left - x}px`);
+    pointer.style.setProperty("--guide-dy", `${destination.top + destination.height / 2 - appRect.top - y}px`);
+    pointer.style.setProperty("--guide-food-size", `${source.width * 0.8}px`);
+  }
+
+  function showStorageLesson({ success = false } = {}) {
+    const source = success ? null : storageTutorialSource();
+    const storage = document.querySelector("#storageBtn");
+    layer.classList.add("storage-lesson");
+    layer.classList.toggle("storage-success", success);
+    layer.querySelector(".new-player-guide-skip").setAttribute("aria-label", "关闭收纳提示");
+    const text = success
+      ? "已收好，需要时点柜子取回。"
+      : storageDragging ? "拖到左下角柜子，松手收好。"
+        : source ? "案板放满了。把这枚食材拖进柜子，腾出一个空位。"
+          : "案板放满了。选一枚你想暂存的食材，拖进左下角柜子。";
+    showGuide({ text, targets: storageDragging || success || !source ? [storage] : [source, storage],
+      drag: Boolean(source && !storageDragging && !success) });
+    if (source) {
+      const src = source.querySelector("img")?.src;
+      if (src && dragFood.src !== src) dragFood.src = src;
+    }
+    dragFood.hidden = !source || storageDragging || success;
   }
 
   function repairTarget() {
@@ -296,39 +307,13 @@
     return null;
   }
 
-  function showLockedMergeGuide(state, savedGuide, page) {
-    if (savedGuide.lockedMergeSeen) return false;
-    if (page === "inn") {
-      showGuide({
-        text: "先回后厨，学会用相同食物解开风沙棋格。",
-        targets: [document.querySelector("#innKitchenBtn")],
-      });
-      return true;
-    }
-    const target = lockedMergeTarget(state, savedGuide);
-    if (!target) return false;
-    const source = boardCellFor(LOCKED_MERGE_ITEM_ID, state);
-    if (!source) {
-      showGuide({
-        text: "先解开左边这个锁格。它压着一份麦面剂；点小石磨做出相同食物，再拖到这里。",
-        targets: [target],
-      });
-      return true;
-    }
-    showGuide({
-      text: "先解开左边这个锁格：把棋盘上的麦面剂拖到这里，相同食物合成时锁格会一起打开。",
-      targets: [target],
-    });
-    return true;
-  }
-
   function refresh() {
     if (!layer) createLayer();
     if (!layer) return;
     const startup = document.querySelector("#startupLoading");
     const app = document.querySelector("#app");
     const savedGuide = guideState();
-    if (savedGuide.dismissed || !app || (startup && !startup.hidden) || blockingDialogOpen()) {
+    if (!app || (startup && !startup.hidden) || blockingDialogOpen()) {
       hideGuide();
       return;
     }
@@ -336,18 +321,27 @@
     const state = gameState();
     const tutorialStep = Number.isInteger(state.tutorialStep) ? state.tutorialStep : 0;
     const page = app.dataset.page || "inn";
-
-    if (page === "board" && !savedGuide.boardStorageSeen && boardIsFull(state)) {
-      const source = storageTutorialSource(state);
-      const storage = document.querySelector("#storageBtn");
-      const sourceName = source?.querySelector("img[alt]")?.alt || "棋子";
-      showGuide({
-        text: `案板放满了。按住高亮的${sourceName}，把它拖进左下角柜子，腾出一格再继续备餐。`,
-        targets: [source, storage],
-        drag: Boolean(source && storage),
-      });
+    if (page === "board" && storageSuccessUntil > Date.now()) {
+      showStorageLesson({ success: true });
       return;
     }
+    if (storageLessonActive) {
+      window.dispatchEvent(new Event("silkroad:storage-guide-request"));
+      if (page !== "board" || !boardIsFull(state) || !storageContext?.canStore) {
+        storageLessonActive = false;
+        storageDragging = false;
+        hideGuide();
+        return;
+      }
+      showStorageLesson();
+      return;
+    }
+    hideGuide();
+    card.style.top = "";
+    card.style.bottom = "";
+    layer.querySelector(".new-player-guide-skip").setAttribute("aria-label", "跳过新手引导");
+    // Contextual storage help must never rewind the player's core onboarding.
+    if (savedGuide.dismissed || savedGuide.coreHintsRetired || Number(state.completedOrders) > 1) return;
 
     if (savedGuide.completed) {
       hideGuide();
@@ -387,8 +381,13 @@
       } else if (lockedTarget) {
         showGuide({
           text: "麦面剂做好了。把它拖到左边锁格里的相同食物上，解开棋格并合成炉饼。",
-          targets: [lockedTarget],
+          targets: [dough[0], lockedTarget],
+          drag: true,
         });
+      } else if (dough.length >= 2) {
+        showGuide({ text: "把两份麦面剂拖到一起，合成炉饼。", targets: [dough[0], dough[1]], drag: true });
+      } else {
+        showGuide({ text: "再点小石磨，备一份麦面剂来合成炉饼。", targets: [boardCellFor("gen_mill_01", state)] });
       }
       return;
     }
@@ -428,8 +427,6 @@
       return;
     }
 
-    if (showLockedMergeGuide(state, savedGuide, page)) return;
-
     if (page === "board") {
       showGuide({
         text: "去流沙驿看看前厅；铜钱不够时，继续接单就能攒起来。",
@@ -457,9 +454,42 @@
       }
       scheduleRefresh(100);
     }, true);
+    window.addEventListener("silkroad:storage-guide-context", (event) => {
+      storageContext = event.detail;
+    });
+    window.addEventListener("silkroad:board-full-attempt", (event) => {
+      if (guideState().boardStorageSeen) return;
+      storageContext = event.detail;
+      if (!storageContext?.canStore || !storageContext.storable.length) return;
+      event.preventDefault();
+      storageLessonActive = true;
+      storageDragging = false;
+      storageSourceIndex = null;
+      updateGuideState({ coreHintsRetired: true });
+      scheduleRefresh(0);
+    });
+    window.addEventListener("silkroad:board-item-press", (event) => {
+      if (!storageLessonActive || event.detail.locked
+        || !storageContext?.storable.includes(event.detail.index)) return;
+      storageDragging = true;
+      // Stop the demo immediately, before the real drag ghost is created.
+      if (pointer) pointer.hidden = true;
+      refresh();
+    });
+    window.addEventListener("silkroad:board-item-release", () => {
+      storageDragging = false;
+      scheduleRefresh(100);
+    });
     window.addEventListener("silkroad:storage-deposit", () => {
+      const wasActive = storageLessonActive;
+      storageLessonActive = false;
+      storageDragging = false;
       updateGuideState({ boardStorageSeen: true });
-      scheduleRefresh(60);
+      if (wasActive) {
+        storageSuccessUntil = Date.now() + 2400;
+        setTimeout(() => { storageSuccessUntil = 0; scheduleRefresh(0); }, 2450);
+      }
+      scheduleRefresh(0);
     });
     document.querySelectorAll("dialog").forEach((dialog) => {
       dialog.addEventListener("close", () => scheduleRefresh(80));
