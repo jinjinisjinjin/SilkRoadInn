@@ -204,7 +204,7 @@ const SHOP_WEALTH_PACK_ID = "shop_wealth_figurine_pack";
 const SHOP_SAXAUL_ITEM_ID = "shop_saxaul_tree";
 const SHOP_SAXAUL_PACK_ID = "shop_saxaul_tree_pack";
 const DAILY_SHOP_OFFERS = Object.freeze([
-  { id: "wealth", name: "聚财陶俑", price: 25, packId: SHOP_WEALTH_PACK_ID },
+  { id: "wealth", name: "聚财陶罐", price: 25, packId: SHOP_WEALTH_PACK_ID },
   { id: "stamina", name: "梭梭树", price: 10, packId: SHOP_SAXAUL_PACK_ID },
 ]);
 const WEEKLY_CHECKIN_REWARDS = Object.freeze([
@@ -6475,9 +6475,9 @@ function registerOrderProgressPacks() {
     byId.set(SHOP_WEALTH_ITEM_ID, {
       ...starterGift,
       id: SHOP_WEALTH_ITEM_ID,
-      name: "聚财陶俑",
+      name: "聚财陶罐",
       modernName: "轻点后逐枚吐出不同等级的铜币棋子",
-      iconKey: "ui/shop_wealth_figurine_v1",
+      iconKey: "ui/shop_wealth_jar_v1",
       source: "daily_shop",
     });
     byId.set(SHOP_SAXAUL_ITEM_ID, {
@@ -6500,7 +6500,7 @@ function registerOrderProgressPacks() {
   };
   GIFT_PACKS[SHOP_WEALTH_PACK_ID] = {
     id: SHOP_WEALTH_PACK_ID,
-    name: "聚财陶俑",
+    name: "聚财陶罐",
     itemId: SHOP_WEALTH_ITEM_ID,
     description: "可逐枚吐出6枚不同等级的铜币棋子。",
     shopOffer: true,
@@ -7064,7 +7064,7 @@ function renderBoard() {
       if (!item) return;
       if (!renderBonusBoardItem(cell, item, itemId, index)) {
       const img = document.createElement("img");
-      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""} ${item.id === DAILY_POUCH_ITEM_ID ? "daily-pouch-gift" : ""}`;
+      img.className = `item ${isGeneratorPiece(item) ? "generator" : ""} ${item.type === "gift_box" ? "gift-box" : ""} ${item.type === "generator_material" ? "generator-material" : ""} ${item.id === ORDER_PROGRESS_GIFT_ITEM_ID ? "order-progress-gift" : ""} ${item.id === DAILY_POUCH_ITEM_ID ? "daily-pouch-gift" : ""} ${item.id === SHOP_WEALTH_ITEM_ID ? "wealth-jar" : ""}`;
       img.alt = item.name;
       img.src = itemAssetSrc(item);
       if (item.type === "generator_material") {

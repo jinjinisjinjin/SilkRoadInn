@@ -7564,9 +7564,9 @@ button.bag-slot:focus-visible {
 #app[data-page="board"] .item:not(.generator-item),
 #app[data-page="board"] .locked-preview,
 #app[data-page="board"] .locked-material-preview {
-  width: 114%;
-  height: 114%;
-  margin: -7%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   transform: none;
 }
 
