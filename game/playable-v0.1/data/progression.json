@@ -137,7 +137,7 @@
       "rewards": {
         "giftPacks": [
           {
-            "id": "gift_milk_room_parts_01",
+            "id": "gift_dairy_opening_01",
             "quantity": 1
           }
         ]
@@ -171,12 +171,6 @@
       "rewards": {
         "unlockOrders": [
           "order_009_mystery_suibing"
-        ],
-        "giftPacks": [
-          {
-            "id": "gift_livestock_pen_parts_01",
-            "quantity": 1
-          }
         ]
       },
       "renovationChoices": []
@@ -208,6 +202,12 @@
       "rewards": {
         "storyFlags": [
           "frontFeastReady"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_spice_parts_a_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -239,6 +239,12 @@
       "rewards": {
         "storyFlags": [
           "westMarketOpen"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_spice_parts_b_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -270,6 +276,12 @@
       "rewards": {
         "storyFlags": [
           "flowerRackKept"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_fruit_parts_a_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -301,6 +313,12 @@
       "rewards": {
         "storyFlags": [
           "northShopOpen"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_fruit_parts_b_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -332,6 +350,12 @@
       "rewards": {
         "storyFlags": [
           "southShopOpen"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_drink_parts_a_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -365,6 +389,12 @@
         "storyFlags": [
           "lv2Complete",
           "wellReady"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_drink_parts_b_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -396,6 +426,12 @@
       "rewards": {
         "storyFlags": [
           "upperHallReady"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_meat_parts_a_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -427,6 +463,12 @@
       "rewards": {
         "storyFlags": [
           "northCourtSettled"
+        ],
+        "giftPacks": [
+          {
+            "id": "gift_meat_parts_b_01",
+            "quantity": 1
+          }
         ]
       },
       "renovationChoices": []
@@ -785,11 +827,11 @@
       "giftPack": {
         "id": "gift_repair_ch1_complete",
         "name": "流沙驿初明礼匣",
-        "description": "完成第1卷修缮后获得，内含铜币、驼铃和酒水厢房材料。",
+        "description": "完成第1卷修缮后获得，内含铜币、驼铃和奶房材料。",
         "coinAmount": 100,
         "staminaAmount": 3,
         "materialQuantity": 2,
-        "materialCategory": "drink"
+        "materialCategory": "dairy"
       }
     },
     {
@@ -797,11 +839,11 @@
       "giftPack": {
         "id": "gift_repair_ch2_complete",
         "name": "西市烟火礼匣",
-        "description": "完成第2卷修缮后获得，内含铜币、驼铃和肉铺材料。",
+        "description": "完成第2卷修缮后获得，内含铜币、驼铃和酒水厢房材料。",
         "coinAmount": 150,
         "staminaAmount": 4,
         "materialQuantity": 2,
-        "materialCategory": "meat"
+        "materialCategory": "drink"
       }
     },
     {
@@ -809,11 +851,11 @@
       "giftPack": {
         "id": "gift_repair_ch3_complete",
         "name": "楼馆通途礼匣",
-        "description": "完成第3卷修缮后获得，内含铜币、驼铃和香料架材料。",
+        "description": "完成第3卷修缮后获得，内含铜币、驼铃和肉铺材料。",
         "coinAmount": 200,
         "staminaAmount": 5,
         "materialQuantity": 3,
-        "materialCategory": "spice"
+        "materialCategory": "meat"
       }
     },
     {

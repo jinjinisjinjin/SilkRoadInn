@@ -1,6 +1,7 @@
 const DATA_PATH = "./data/";
 const MAX_INN_LEVEL = 10;
 const INN_LEVEL_SCHEMA_VERSION = 2;
+const FOOD_DISCOVERY_SCHEMA_VERSION = 1;
 const STAMINA_RECOVERY_MINUTES = 2;
 const PRODUCTION_MULTIPLIERS = Object.freeze([1, 2, 4]);
 const AUDIO_PATH = "./assets/audio/";
@@ -101,7 +102,7 @@ const STORY_ARCHIVE_QA_SCENE = Math.max(0, Number(new URLSearchParams(location.s
 const UPGRADE_REVEAL_QA_LEVEL = Math.max(2, Math.min(MAX_INN_LEVEL, Math.trunc(Number(new URLSearchParams(location.search).get("level"))) || 2));
 const LONGSCROLL_CAST_QA_SCENE_MAX = 22;
 const LONGSCROLL_CAST_QA_SCENE = Math.max(1, Math.min(LONGSCROLL_CAST_QA_SCENE_MAX, Math.trunc(Number(new URLSearchParams(location.search).get("scene"))) || 1));
-const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "drink", "fruit", "meat"]);
+const GENERATOR_ORDER_QA_STAGES = Object.freeze(["start", "dairy", "spice", "fruit", "drink", "meat"]);
 const GENERATOR_ORDER_QA_STAGE_PARAM = new URLSearchParams(location.search).get("stage");
 const GENERATOR_ORDER_QA_STAGE = GENERATOR_ORDER_QA_STAGES.includes(GENERATOR_ORDER_QA_STAGE_PARAM)
   ? GENERATOR_ORDER_QA_STAGE_PARAM
@@ -293,11 +294,11 @@ const REPAIR_GATE_SEQUENCE = [
 ];
 const GENERATOR_CATEGORY_UNLOCKS = Object.freeze([
   { categoryId: "mill", completedRepairId: null },
-  { categoryId: "dairy", completedRepairId: "tutorial_complete" },
-  { categoryId: "spice", completedRepairId: "kitchen_repair" },
-  { categoryId: "drink", completedRepairId: "codex_first_phase" },
-  { categoryId: "fruit", completedRepairId: "lv2_west_market" },
-  { categoryId: "meat", completedRepairId: "lv2_south_shop" },
+  { categoryId: "dairy", completedRepairId: "kitchen_repair" },
+  { categoryId: "spice", completedRepairId: "lv2_west_market" },
+  { categoryId: "fruit", completedRepairId: "lv2_north_shop" },
+  { categoryId: "drink", completedRepairId: "lv2_well" },
+  { categoryId: "meat", completedRepairId: "lv3_north_court" },
 ]);
 const GENERATOR_ORDER_QA_VISIBLE_BY_STAGE = Object.freeze({
   start: ["order_001_guard_lubing", "order_002_farmer_dough", "order_011_dunhuang_woman_lubing"],
@@ -605,6 +606,71 @@ const GIFT_PACKS = {
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
       { type: "item", itemId: "boxmat_livestock_pen_01", quantity: 1 },
     ],
+  },
+  gift_dairy_opening_01: {
+    progressionCategory: "dairy",
+    name: "奶房开张礼匣",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "完成后厨修缮后获得，内含一座可直接使用的奶房。",
+    rewards: [
+      { type: "item", itemId: "gen_dairy_01", quantity: 1 },
+    ],
+  },
+  gift_spice_parts_a_01: {
+    progressionCategory: "spice",
+    name: "香料架木件·上",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "香料架的第一批木件，与后续木件合成可搭起香料架。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_spice_01", quantity: 1 })),
+  },
+  gift_spice_parts_b_01: {
+    progressionCategory: "spice",
+    name: "香料架木件·下",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "香料架的第二批木件，凑齐后可合成一级香料架。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_spice_01", quantity: 1 })),
+  },
+  gift_fruit_parts_a_01: {
+    progressionCategory: "fruit",
+    name: "果摊木件·上",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "果摊的第一批木件，与后续木件合成可搭起果摊。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_fruit_01", quantity: 1 })),
+  },
+  gift_fruit_parts_b_01: {
+    progressionCategory: "fruit",
+    name: "果摊木件·下",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "果摊的第二批木件，凑齐后可合成一级果摊。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_fruit_01", quantity: 1 })),
+  },
+  gift_drink_parts_a_01: {
+    progressionCategory: "drink",
+    name: "酒水厢房木件·上",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "酒水厢房的第一批木件，与后续木件合成可搭起酒水厢房。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_drink_01", quantity: 1 })),
+  },
+  gift_drink_parts_b_01: {
+    progressionCategory: "drink",
+    name: "酒水厢房木件·下",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "酒水厢房的第二批木件，凑齐后可合成一级酒水厢房。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_drink_01", quantity: 1 })),
+  },
+  gift_meat_parts_a_01: {
+    progressionCategory: "meat",
+    name: "肉铺木件·上",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "肉铺的第一批木件，与后续木件合成可搭起肉铺。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_meat_01", quantity: 1 })),
+  },
+  gift_meat_parts_b_01: {
+    progressionCategory: "meat",
+    name: "肉铺木件·下",
+    itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
+    description: "肉铺的第二批木件，凑齐后可合成一级肉铺。",
+    rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_meat_01", quantity: 1 })),
   },
 };
 const LOCKED_CELL_ITEM_ROWS = [
@@ -1694,7 +1760,7 @@ function initializeGeneratorOrderQaScenario() {
   state.staminaMax = 99;
   state.stamina = 99;
   state.coins = 9990;
-  const qaLevelByStage = [1, 2, 2, 2, 3, 5];
+  const qaLevelByStage = [1, 2, 3, 4, 5, 6];
   state.innLevel = qaLevelByStage[stageIndex] ?? 1;
   state.currentPage = "board";
   state.selectedIndex = null;
@@ -2511,6 +2577,25 @@ function normalizeProductionMultiplier(value) {
   return PRODUCTION_MULTIPLIERS.includes(multiplier) ? multiplier : 1;
 }
 
+function availableProductionMultipliers() {
+  const highestDiscoveredLevel = Math.max(0, ...Object.values(state.unlockedFoodLevels)
+    .map((level) => Math.max(0, Math.floor(Number(level) || 0))));
+  const available = [1];
+  if (highestDiscoveredLevel >= 2 || state.innLevel >= 3) available.push(2);
+  if (state.innLevel >= 3) available.push(4);
+  return available;
+}
+
+function effectiveProductionMultiplier() {
+  const available = availableProductionMultipliers();
+  const selected = normalizeProductionMultiplier(state.productionMultiplier);
+  return available.includes(selected) ? selected : available[available.length - 1];
+}
+
+function productionOutputLevel(multiplier = effectiveProductionMultiplier()) {
+  return multiplier === 4 ? 3 : multiplier;
+}
+
 function maximumFoodLevelForLine(line) {
   return foodLineMaxLevels.get(line) ?? 0;
 }
@@ -2533,7 +2618,11 @@ function rememberUnlockedFoodItem(itemId) {
 
 function syncUnlockedFoodLevels({ includeCompletedOrders = false } = {}) {
   let changed = false;
-  [...state.board, ...state.bag].forEach((itemId) => {
+  state.board.forEach((itemId, index) => {
+    if (isBoardCellLocked(index)) return;
+    if (itemId) changed = rememberUnlockedFoodItem(itemId) || changed;
+  });
+  state.bag.forEach((itemId) => {
     if (itemId) changed = rememberUnlockedFoodItem(itemId) || changed;
   });
   state.unlockedCodex.forEach((codexId) => {
@@ -2547,14 +2636,6 @@ function syncUnlockedFoodLevels({ includeCompletedOrders = false } = {}) {
       });
     });
   }
-  const availability = state.economyConfig?.orderPricing?.availability?.maxDemandLevelByGeneratorLevel ?? {};
-  state.generatorConfig.categories.forEach((category) => {
-    const generatorLevel = highestOwnedGeneratorLevel(category.id);
-    const foodLevel = Number(availability[generatorLevel]);
-    if (generatorLevel > 0 && Number.isFinite(foodLevel)) {
-      changed = rememberUnlockedFoodLevel(category.foodLineId, foodLevel) || changed;
-    }
-  });
   return changed;
 }
 
@@ -2681,6 +2762,7 @@ function defaultState() {
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
     unlockedCodex: ["codex_hubing_01"],
     unlockedFoodLevels: { hubing: 1 },
+    foodDiscoverySchemaVersion: FOOD_DISCOVERY_SCHEMA_VERSION,
     coins: startingCoinBalance(),
     gems: startingGemBalance(),
     stamina: state.staminaConfig.initial.startValue,
@@ -2752,6 +2834,9 @@ function loadState() {
   if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) localStorage.removeItem(SAVE_KEY);
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
+  const generatorGiftMigration = Boolean(saved) && !data.generatorGiftProgressionVersion;
+  const foodDiscoveryNeedsMigration = Boolean(saved)
+    && Number(data.foodDiscoverySchemaVersion || 0) < FOOD_DISCOVERY_SCHEMA_VERSION;
   const legacyStorageHasGenerators = Array.isArray(data.bag)
     && data.bag.some((itemId) => isGeneratorPiece(byId.get(migrateLegacyGeneratorId(itemId))));
   const savedCoinEconomyVersion = Number(data.coinEconomyVersion);
@@ -2839,7 +2924,8 @@ function loadState() {
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
-    unlockedFoodLevels: normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
+    unlockedFoodLevels: foodDiscoveryNeedsMigration ? {} : normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
+    foodDiscoverySchemaVersion: FOOD_DISCOVERY_SCHEMA_VERSION,
     coins: openingCopperNeedsMigration
       ? startingCoinBalance()
       : normalizeSavedCopper(data.coins, startingCoinBalance()),
@@ -2976,9 +3062,11 @@ function loadState() {
   const generatorUnlocksChanged = ensureStarterGenerator();
   const generatorRewardsChanged = !ISOLATED_QA_MODE && syncGeneratorProgressRewards().length > 0;
   pruneGeneratorStates();
-  syncVisibleOrders();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (generatorGiftMigration) backfillGeneratorProgressionGifts();
+  syncVisibleOrders();
+  if (generatorGiftMigration) saveState();
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
   if (PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
@@ -3006,6 +3094,8 @@ function saveState() {
       visibleOrders: state.visibleOrders,
       unlockedCodex: [...state.unlockedCodex],
       unlockedFoodLevels: state.unlockedFoodLevels,
+      foodDiscoverySchemaVersion: FOOD_DISCOVERY_SCHEMA_VERSION,
+      generatorGiftProgressionVersion: 1,
       coins: state.coins,
       gems: state.gems,
       stamina: state.stamina,
@@ -3341,7 +3431,7 @@ function syncGeneratorCategoryUnlocks({ announce = false } = {}) {
     newlyUnlocked.forEach(({ categoryId }) => {
       const category = state.generatorConfig.categories.find((entry) => entry.id === categoryId);
       if (!category) return;
-      toast(`${category.displayName}材料已经开放，合成材料可做出Lv1生成器。`);
+      toast(`${category.displayName}生产线已经开放，修缮礼匣已送来对应器具。`);
     });
   }
   return newlyUnlocked.length > 0;
@@ -7464,9 +7554,10 @@ function openSelectedPieceDetail() {
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     const outputItem = manualGeneratorOutputItem(item);
     const staminaCost = manualGeneratorStaminaCost(item);
+    const productionMultiplier = effectiveProductionMultiplier();
     const productionText = cooldownSeconds > 0
       ? "正在休息，" + formatGeneratorCountdown(cooldownSeconds) + "后恢复" + item.generator.chargeMax + "次充能。"
-      : `当前 ×${state.productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
+      : `当前 ×${productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。当前充能 ${generatorState.charges}/${item.generator.chargeMax}。`;
     els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
@@ -7754,24 +7845,40 @@ function purchaseDailyShopOffer(event) {
 
 function renderProductionMultiplier() {
   if (!els.productionMultiplier) return;
-  const multiplier = normalizeProductionMultiplier(state.productionMultiplier);
-  const currentIndex = PRODUCTION_MULTIPLIERS.indexOf(multiplier);
-  const nextMultiplier = PRODUCTION_MULTIPLIERS[(currentIndex + 1) % PRODUCTION_MULTIPLIERS.length];
+  const available = availableProductionMultipliers();
+  const multiplier = effectiveProductionMultiplier();
+  state.productionMultiplier = multiplier;
+  const currentIndex = available.indexOf(multiplier);
+  const nextMultiplier = available[(currentIndex + 1) % available.length];
+  const outputLevel = productionOutputLevel(multiplier);
+  const outputText = multiplier === 4 ? "合并4份基础产出，获得3级食品" : `产出${outputLevel}级食品`;
   els.productionMultiplier.textContent = `×${multiplier}`;
   els.productionMultiplier.dataset.multiplier = String(multiplier);
-  els.productionMultiplier.title = `当前×${multiplier}：消耗${multiplier}倍驼铃，产出${multiplier}级食品。点击切换到×${nextMultiplier}`;
-  els.productionMultiplier.setAttribute("aria-label", `手动生成器产出倍率，当前×${multiplier}，点击切换到×${nextMultiplier}`);
+  els.productionMultiplier.title = available.length === 1
+    ? "合成第一份2级食品后开放×2；流沙驿升至Lv3后开放×4"
+    : `当前×${multiplier}：消耗${multiplier}倍驼铃，${outputText}。点击切换到×${nextMultiplier}`;
+  els.productionMultiplier.setAttribute("aria-label", available.length === 1
+    ? "手动生成器当前为一倍产出；合成第一份二级食品后开放二倍"
+    : `手动生成器产出倍率，当前×${multiplier}，点击切换到×${nextMultiplier}`);
 }
 
 function cycleProductionMultiplier() {
-  const currentMultiplier = normalizeProductionMultiplier(state.productionMultiplier);
-  const currentIndex = PRODUCTION_MULTIPLIERS.indexOf(currentMultiplier);
-  const multiplier = PRODUCTION_MULTIPLIERS[(currentIndex + 1) % PRODUCTION_MULTIPLIERS.length];
+  const available = availableProductionMultipliers();
+  if (available.length === 1) {
+    toast("先合成第一份2级食品，即可开放 ×2 产出。");
+    keeper("熟悉两两合成后，石磨才能一次备好更高等级的食物。");
+    return;
+  }
+  const currentMultiplier = effectiveProductionMultiplier();
+  const currentIndex = available.indexOf(currentMultiplier);
+  const multiplier = available[(currentIndex + 1) % available.length];
   state.productionMultiplier = multiplier;
   renderProductionMultiplier();
   renderSelected();
   toast(`产出倍率切换为 ×${multiplier}`);
-  keeper(`手动生成器将消耗${multiplier}倍驼铃，直接产出${multiplier}级食品。`);
+  keeper(multiplier === 4
+    ? "手动生成器将消耗4倍驼铃，把四份基础产出压缩成1份3级食品。"
+    : `手动生成器将消耗${multiplier}倍驼铃，直接产出${productionOutputLevel(multiplier)}级食品。`);
   saveState();
 }
 
@@ -8377,7 +8484,7 @@ function sameNeighborIndex(index, itemId) {
 function manualGeneratorOutputItem(item) {
   const category = state.generatorConfig.categories.find((entry) => entry.id === item?.generatorType);
   if (!category) return byId.get(item?.generator?.pool?.[0]?.itemId);
-  const targetLevel = normalizeProductionMultiplier(state.productionMultiplier);
+  const targetLevel = productionOutputLevel();
   return foodItemsForLine(category.foodLineId)
     .find((foodItem) => Number(foodItem.level) === targetLevel)
     ?? byId.get(item?.generator?.pool?.[0]?.itemId);
@@ -8385,7 +8492,7 @@ function manualGeneratorOutputItem(item) {
 
 function manualGeneratorStaminaCost(item) {
   return Math.max(0, Number(item?.generator?.staminaCost) || 0)
-    * normalizeProductionMultiplier(state.productionMultiplier);
+    * effectiveProductionMultiplier();
 }
 
 // Use live item metadata and orders, including matching food inside locked cells.
@@ -8436,7 +8543,7 @@ function activateManualGenerator(index) {
   }
   if (state.stamina < staminaCost) {
     render();
-    toast(`驼铃不足，本次 ×${state.productionMultiplier} 产出需要${staminaCost}点。`);
+    toast(`驼铃不足，本次 ×${effectiveProductionMultiplier()} 产出需要${staminaCost}点。`);
     return;
   }
 
@@ -8653,11 +8760,13 @@ function neighborEmptyIndices(index) {
 }
 
 function unlockCodex(codexId) {
-  if (!codexId || state.unlockedCodex.has(codexId)) return;
+  if (!codexId) return;
   const entry = codexById.get(codexId);
   if (!entry) return;
   const item = byId.get(entry.itemId);
   if (!item) return;
+  rememberUnlockedFoodItem(item.id);
+  if (state.unlockedCodex.has(codexId)) return;
   state.unlockedCodex.add(codexId);
   activeCodexItemId = item.id;
   els.unlockIcon.src = itemAssetSrc(item);
@@ -8951,6 +9060,7 @@ function highestOwnedGeneratorLevel(categoryId) {
 function orderDemandLinesUnlocked(order) {
   const availability = state.economyConfig?.orderPricing?.availability ?? {};
   const maxDemandByGeneratorLevel = availability.maxDemandLevelByGeneratorLevel ?? {};
+  const requireDiscoveredDemandItem = state.ordersConfig?.generationPolicy?.unlockSafety?.requireDiscoveredDemandItem === true;
   return order.demand.every((demand) => {
     const item = byId.get(demand.itemId);
     const category = state.generatorConfig.categories.find((entry) => entry.foodLineId === item?.line);
@@ -8958,7 +9068,10 @@ function orderDemandLinesUnlocked(order) {
     const generatorLevel = highestOwnedGeneratorLevel(category.id);
     if (availability.requireOwnedGeneratorLine && generatorLevel < 1) return false;
     const maxDemandLevel = Number(maxDemandByGeneratorLevel[generatorLevel]) || 8;
-    return (Number(item.level) || 1) <= maxDemandLevel;
+    const demandLevel = Number(item.level) || 1;
+    if (demandLevel > maxDemandLevel) return false;
+    if (!requireDiscoveredDemandItem || demandLevel <= 2) return true;
+    return (Number(state.unlockedFoodLevels[item.line]) || 0) >= demandLevel;
   });
 }
 
@@ -9521,6 +9634,20 @@ function grantGiftPack(packId, quantity = 1) {
     state.giftPacks.push({ id: packId, quantity: amount });
   }
   toast(`${pack.name}已收入行囊。`);
+}
+
+function backfillGeneratorProgressionGifts() {
+  // Completed repairs cannot be replayed. Restore their new supply once for old saves.
+  for (const milestone of state.progressionConfig.milestones) {
+    if (!isRepairCompleted(milestone.id)) continue;
+    for (const reward of milestone.rewards?.giftPacks ?? []) {
+      const category = GIFT_PACKS[reward.id]?.progressionCategory;
+      if (!category || ownsGeneratorCategory(category)) continue;
+      const pending = state.giftPacks.some((entry) => entry.id === reward.id)
+        || Object.values(state.giftBoxStates).some((entry) => entry.packId === reward.id);
+      if (!pending) grantGiftPack(reward.id, reward.quantity ?? 1);
+    }
+  }
 }
 
 function grantRewardItem(itemId, quantity = 1) {
