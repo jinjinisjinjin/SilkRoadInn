@@ -7619,6 +7619,13 @@ function renderBonusBoardItem(cell, item, itemId, index) {
     icon.src = itemAssetSrc(item);
     icon.alt = "";
     tool.append(icon);
+    const sparkles = document.createElement("span");
+    sparkles.className = "splitter-tool-sparkles";
+    sparkles.setAttribute("aria-hidden", "true");
+    for (let sparkleIndex = 0; sparkleIndex < 4; sparkleIndex += 1) {
+      sparkles.append(Object.assign(document.createElement("i"), { className: "splitter-tool-sparkle" }));
+    }
+    tool.append(sparkles);
     const badge = document.createElement("span");
     badge.className = "splitter-charge-badge";
     badge.textContent = String(splitterToolChargesAt(index));
