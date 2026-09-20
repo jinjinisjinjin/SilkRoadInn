@@ -192,10 +192,13 @@ const LEGACY_OPENING_STAMINA = 18;
 const OPENING_COPPER_VERSION = 2;
 const LEGACY_OPENING_COPPER = Object.freeze([40, 400]);
 const COIN_DENOMINATION_MULTIPLIER = 10;
-const CARAVAN_RENOWN_SCHEMA_VERSION = 2;
+const CARAVAN_RENOWN_SCHEMA_VERSION = 3;
 const CARAVAN_RENOWN_TARGET = 10;
-const CARAVAN_RENOWN_REWARD_COUNT = 6;
-const CARAVAN_RENOWN_UNLOCK_ORDERS = 8;
+const CARAVAN_RENOWN_REWARD_MIN = 4;
+const CARAVAN_RENOWN_REWARD_MAX = 9;
+const CARAVAN_RENOWN_UNLOCK_LEVEL = 5;
+const CARAVAN_RENOWN_UNLOCK_REPAIR_ID = "lv2_well";
+const CARAVAN_RENOWN_MAX_DEMAND_PROGRESS = 0.5;
 const CARAVAN_RENOWN_MIN_COINS = 50;
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
@@ -865,6 +868,7 @@ const els = {
   renownEventProgress: document.querySelector("#renownEventProgress"),
   renownEventProgressBar: document.querySelector("#renownEventProgressBar"),
   renownRewardPreview: document.querySelector("#renownRewardPreview"),
+  renownRewardCount: document.querySelector("#renownRewardCount"),
   renownEventClaim: document.querySelector("#renownEventClaim"),
   innSoundToggleBtn: document.querySelector("#innSoundToggleBtn"),
   innScene: document.querySelector("#innScene"),
@@ -2938,6 +2942,7 @@ function createCaravanRenownEvent(round = 1) {
     markedOrderIds: [],
     recentFoodLines: [],
     rewardItemIds: [],
+    rewardPrepared: false,
     claimed: false,
   };
 }
@@ -2945,6 +2950,8 @@ function createCaravanRenownEvent(round = 1) {
 function normalizeCaravanRenown(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const target = CARAVAN_RENOWN_TARGET;
+  const currentSchema = Number(value.schemaVersion) === CARAVAN_RENOWN_SCHEMA_VERSION;
+  const rewardPrepared = currentSchema && Boolean(value.rewardPrepared);
   return {
     schemaVersion: CARAVAN_RENOWN_SCHEMA_VERSION,
     round: Math.max(1, Math.floor(Number(value.round) || 1)),
@@ -2956,17 +2963,18 @@ function normalizeCaravanRenown(value) {
     recentFoodLines: Array.isArray(value.recentFoodLines)
       ? [...new Set(value.recentFoodLines.filter((line) => foodLineMaxLevels.has(line)))].slice(-6)
       : [],
-    rewardItemIds: Array.isArray(value.rewardItemIds)
-      ? value.rewardItemIds.filter((itemId) => byId.has(itemId)).slice(0, CARAVAN_RENOWN_REWARD_COUNT)
+    rewardItemIds: rewardPrepared && Array.isArray(value.rewardItemIds)
+      ? value.rewardItemIds.filter((itemId) => byId.has(itemId)).slice(0, CARAVAN_RENOWN_REWARD_MAX)
       : [],
+    rewardPrepared,
     claimed: Boolean(value.claimed),
   };
 }
 
 function caravanRenownUnlocked() {
   return CARAVAN_RENOWN_QA_MODE
-    || state.completedOrders >= CARAVAN_RENOWN_UNLOCK_ORDERS
-    || state.innLevel >= 2;
+    || (state.innLevel >= CARAVAN_RENOWN_UNLOCK_LEVEL
+      && isRepairCompleted(CARAVAN_RENOWN_UNLOCK_REPAIR_ID));
 }
 
 function caravanRenownIsComplete(event = state.caravanRenown) {
@@ -2990,8 +2998,9 @@ function syncCaravanRenownState() {
   }
   if (caravanRenownIsComplete(state.caravanRenown)
     && !state.caravanRenown.claimed
-    && state.caravanRenown.rewardItemIds.length < CARAVAN_RENOWN_REWARD_COUNT) {
-    state.caravanRenown.rewardItemIds = buildCaravanRenownRewardItems(state.caravanRenown);
+    && !state.caravanRenown.rewardPrepared) {
+    state.caravanRenown.rewardItemIds = buildCaravanRenownRewardItems();
+    state.caravanRenown.rewardPrepared = true;
     changed = true;
   }
   return changed;
@@ -2999,9 +3008,18 @@ function syncCaravanRenownState() {
 
 function initializeCaravanRenownQaScenario() {
   state.currentPage = "board";
-  state.innLevel = 2;
-  state.completedOrders = 12;
-  state.unlockedFoodLevels = { ...state.unlockedFoodLevels, hubing: 4 };
+  state.innLevel = 5;
+  state.completedOrders = 72;
+  state.renovationChoices[CARAVAN_RENOWN_UNLOCK_REPAIR_ID] = "completed";
+  state.unlockedGeneratorCategories = ["mill", "dairy", "spice", "fruit", "drink"];
+  state.unlockedFoodLevels = {
+    ...state.unlockedFoodLevels,
+    hubing: 4,
+    dairy: 4,
+    spice: 4,
+    fruit: 4,
+    drink: 4,
+  };
   ["codex_hubing_02", "codex_hubing_03", "codex_hubing_04"].forEach((id) => state.unlockedCodex.add(id));
   state.visibleOrders = [
     "order_012_changan_maid_lubing",
@@ -3025,7 +3043,8 @@ function initializeCaravanRenownQaScenario() {
   state.caravanRenown.progress = CARAVAN_RENOWN_QA_STAGE === "complete" ? CARAVAN_RENOWN_TARGET : 8;
   state.caravanRenown.recentFoodLines = ["hubing"];
   if (CARAVAN_RENOWN_QA_STAGE === "complete") {
-    state.caravanRenown.rewardItemIds = buildCaravanRenownRewardItems(state.caravanRenown);
+    state.caravanRenown.rewardItemIds = buildCaravanRenownRewardItems();
+    state.caravanRenown.rewardPrepared = true;
   }
   if (CARAVAN_RENOWN_QA_FULL_BOARD) {
     state.board = state.board.map((itemId, index) => (
@@ -8157,7 +8176,10 @@ function recordCaravanRenownOrder(order) {
   const lines = order.demand.map((demand) => byId.get(demand.itemId)?.line).filter(Boolean);
   event.recentFoodLines = [...new Set([...event.recentFoodLines, ...lines])].slice(-6);
   if (caravanRenownIsComplete(event)) {
-    event.rewardItemIds = buildCaravanRenownRewardItems(event);
+    // The just-completed order is replaced later in completeOrder(). Build the
+    // reward after that refresh so the gift helps orders that are still active.
+    event.rewardItemIds = [];
+    event.rewardPrepared = false;
     event.markedOrderIds = [];
     toast("十枚商旅荐印已集齐，商队馈礼到了。");
     setTimeout(openCaravanRenown, 420);
@@ -8176,27 +8198,123 @@ function caravanRenownUnlockedFoodLines() {
   return ["hubing"];
 }
 
-function rollCaravanRenownFoodLevel(maxLevel) {
-  const roll = Math.random() * 100;
-  const desired = roll < 45 ? 2 : roll < 75 ? 3 : roll < 95 ? 4 : 5;
-  return Math.max(1, Math.min(Math.floor(Number(maxLevel) || 1), desired));
+function randomIntegerInclusive(minimum, maximum) {
+  const min = Math.ceil(Number(minimum) || 0);
+  const max = Math.floor(Number(maximum) || min);
+  if (max <= min) return min;
+  return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-function buildCaravanRenownRewardItems(event = state.caravanRenown) {
-  const unlockedLines = caravanRenownUnlockedFoodLines();
-  const preferredLines = event.recentFoodLines.filter((line) => unlockedLines.includes(line));
-  const result = [];
-  for (let index = 0; index < CARAVAN_RENOWN_REWARD_COUNT; index += 1) {
-    const usePreferred = preferredLines.length && Math.random() < 0.6;
-    const lines = usePreferred ? preferredLines : unlockedLines;
-    const line = lines[Math.floor(Math.random() * lines.length)] ?? "hubing";
-    const maxDiscovered = Math.max(1, Number(state.unlockedFoodLevels[line]) || 1);
-    const level = rollCaravanRenownFoodLevel(maxDiscovered);
-    const item = foodItemsForLine(line).find((entry) => Number(entry.level) === level)
-      ?? foodItemsForLine(line)[0];
-    if (item) result.push(item.id);
+function shuffleCaravanRenownRewards(itemIds) {
+  const result = [...itemIds];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIntegerInclusive(0, index);
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
   }
   return result;
+}
+
+function caravanRenownRewardLevelCeiling(targetLevel) {
+  const level = Math.max(1, Math.floor(Number(targetLevel) || 1));
+  if (level <= 3) return level;
+  if (level <= 5) return level - 1;
+  if (level <= 7) return level - 2;
+  return level - 3;
+}
+
+function caravanRenownRewardDemandCandidates() {
+  const unlockedLines = new Set(caravanRenownUnlockedFoodLines());
+  return state.visibleOrders.flatMap((orderId) => {
+    const order = getOrder(orderId);
+    if (!order) return [];
+    return order.demand.flatMap((demand) => {
+      const item = byId.get(demand.itemId);
+      const missing = Math.max(0, Math.floor(Number(demand.quantity) || 1) - countItem(demand.itemId));
+      if (!item || missing <= 0 || !unlockedLines.has(item.line)) return [];
+      return [{
+        orderId,
+        itemId: item.id,
+        line: item.line,
+        targetLevel: Math.max(1, Math.floor(Number(item.level) || 1)),
+        missing,
+        tieBreaker: Math.random(),
+      }];
+    });
+  });
+}
+
+function caravanRenownDemandSelectionCount(totalDemands) {
+  if (totalDemands <= 0) return 0;
+  const minimum = Math.max(1, Math.ceil(totalDemands / 3));
+  const maximum = Math.max(minimum, Math.floor(totalDemands * 3 / 4));
+  return Math.min(
+    CARAVAN_RENOWN_REWARD_MAX,
+    randomIntegerInclusive(minimum, Math.min(totalDemands, maximum)),
+  );
+}
+
+function caravanRenownRewardPlan(candidate) {
+  const targetUnitValue = 2 ** Math.max(0, candidate.targetLevel - 1);
+  const contributionBudget = candidate.targetLevel <= 3
+    ? candidate.missing * targetUnitValue
+    : Math.max(1, Math.floor(candidate.missing * targetUnitValue * CARAVAN_RENOWN_MAX_DEMAND_PROGRESS));
+  return {
+    ...candidate,
+    contributionBudget,
+    rewardLevelCeiling: caravanRenownRewardLevelCeiling(candidate.targetLevel),
+    itemCount: 1,
+    maxItemCount: Math.min(CARAVAN_RENOWN_REWARD_MAX, contributionBudget),
+  };
+}
+
+function allocateCaravanRenownRewardCounts(plans, desiredTotal) {
+  const viablePlans = plans.filter((plan) => plan.maxItemCount > 0);
+  viablePlans.forEach((plan) => { plan.itemCount = 1; });
+  let allocated = viablePlans.length;
+  while (allocated < desiredTotal) {
+    const available = viablePlans.filter((plan) => plan.itemCount < plan.maxItemCount);
+    if (!available.length) break;
+    const smallestAllocation = Math.min(...available.map((plan) => plan.itemCount));
+    const balanced = available.filter((plan) => plan.itemCount === smallestAllocation);
+    const plan = balanced[randomIntegerInclusive(0, balanced.length - 1)];
+    plan.itemCount += 1;
+    allocated += 1;
+  }
+  return viablePlans;
+}
+
+function buildCaravanRenownPlanItems(plan) {
+  const lineItems = foodItemsForLine(plan.line);
+  const result = [];
+  let remainingValue = plan.contributionBudget;
+  for (let index = 0; index < plan.itemCount; index += 1) {
+    const remainingSlots = plan.itemCount - index;
+    const valueAvailableForThisItem = Math.max(1, remainingValue - (remainingSlots - 1));
+    const valueLevel = Math.floor(Math.log2(valueAvailableForThisItem)) + 1;
+    const rewardLevel = Math.max(1, Math.min(plan.rewardLevelCeiling, valueLevel));
+    const item = lineItems.find((entry) => Number(entry.level) === rewardLevel) ?? lineItems[0];
+    if (!item) continue;
+    result.push(item.id);
+    remainingValue -= 2 ** Math.max(0, Number(item.level) - 1);
+  }
+  return result;
+}
+
+function buildCaravanRenownRewardItems() {
+  const candidates = caravanRenownRewardDemandCandidates()
+    .sort((left, right) => (left.targetLevel - right.targetLevel)
+      || (right.missing - left.missing)
+      || (left.tieBreaker - right.tieBreaker));
+  const selectedCount = caravanRenownDemandSelectionCount(candidates.length);
+  const selectedPlans = candidates.slice(0, selectedCount).map(caravanRenownRewardPlan);
+  if (!selectedPlans.length) return [];
+
+  const minimumCount = Math.max(CARAVAN_RENOWN_REWARD_MIN, selectedPlans.length);
+  const desiredTotal = randomIntegerInclusive(minimumCount, CARAVAN_RENOWN_REWARD_MAX);
+  const plans = allocateCaravanRenownRewardCounts(selectedPlans, desiredTotal);
+  return shuffleCaravanRenownRewards(
+    plans.flatMap(buildCaravanRenownPlanItems).slice(0, CARAVAN_RENOWN_REWARD_MAX),
+  );
 }
 
 function renderCaravanRenownEntry() {
@@ -8229,7 +8347,15 @@ function renderCaravanRenown() {
   els.renownEventProgressBar.style.width = `${progressPercent}%`;
   els.renownRewardPreview.replaceChildren();
   const rewardItems = complete ? event.rewardItemIds : [];
-  for (let index = 0; index < CARAVAN_RENOWN_REWARD_COUNT; index += 1) {
+  const previewCount = complete ? rewardItems.length : 6;
+  if (els.renownRewardCount) {
+    els.renownRewardCount.textContent = complete ? `×${rewardItems.length}` : "×4～9";
+  }
+  els.renownRewardPreview.setAttribute(
+    "aria-label",
+    complete ? `${rewardItems.length}份订单助力食材` : "4至9份订单助力食材",
+  );
+  for (let index = 0; index < previewCount; index += 1) {
     const slot = document.createElement("span");
     slot.className = "renown-reward-item";
     const item = byId.get(rewardItems[index]);
