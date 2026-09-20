@@ -60,6 +60,11 @@
     localStorage.setItem(GUIDE_SAVE_KEY, JSON.stringify({ ...guideState(), ...patch }));
   }
 
+  function retireCoreGuide(patch) {
+    updateGuideState(patch);
+    window.dispatchEvent(new CustomEvent("silkroad:new-player-guide-retired", { detail: patch }));
+  }
+
   function createLayer() {
     const app = document.querySelector("#app");
     if (!app || document.querySelector("#newPlayerGuide")) return;
@@ -76,7 +81,7 @@
         <div class="new-player-guide-copy">
           <small>掌柜指引</small>
           <p></p>
-          <button class="new-player-guide-ack" type="button" hidden>明白</button>
+          <button class="new-player-guide-ack" type="button" hidden>继续接单</button>
         </div>
         <button class="new-player-guide-skip" type="button" aria-label="跳过新手引导" title="跳过引导">×</button>
       </section>
@@ -95,12 +100,12 @@
         storageSuccessUntil = 0;
         updateGuideState({ boardStorageSeen: true });
       } else {
-        updateGuideState({ dismissed: true });
+        retireCoreGuide({ dismissed: true });
       }
       hideGuide();
     });
     acknowledgeButton.addEventListener("click", () => {
-      updateGuideState({ coreTipSeen: true });
+      retireCoreGuide({ completed: true });
       hideGuide();
     });
   }
@@ -287,7 +292,8 @@
     const startup = document.querySelector("#startupLoading");
     const app = document.querySelector("#app");
     const savedGuide = guideState();
-    if (!app || (startup && !startup.hidden) || blockingDialogOpen()) {
+    const repairPlayer = document.querySelector("#repairPlayerLayer");
+    if (!app || (startup && !startup.hidden) || blockingDialogOpen() || (repairPlayer && !repairPlayer.hidden)) {
       hideGuide();
       return;
     }
@@ -315,7 +321,7 @@
     card.style.bottom = "";
     layer.querySelector(".new-player-guide-skip").setAttribute("aria-label", "跳过新手引导");
     // Contextual storage help must never rewind the player's core onboarding.
-    if (savedGuide.dismissed || savedGuide.coreHintsRetired || Number(state.completedOrders) > 1) return;
+    if (savedGuide.dismissed || savedGuide.coreHintsRetired) return;
 
     if (savedGuide.completed) {
       hideGuide();
@@ -370,7 +376,7 @@
       const order = [...document.querySelectorAll(".order-card.ready")]
         .find((card) => card.getAttribute("aria-label")?.includes("沙州驿卒"));
       showGuide({
-        text: "炉饼做好了。点上方的交付，把热饼递给周甲。",
+        text: "炉饼做好了。点上方的交付，把热饼递给沙州驿卒周甲。",
         targets: [order?.querySelector(".deliver-btn") || order],
       });
       return;
@@ -384,15 +390,60 @@
       return;
     }
 
-    if (tutorialStep < 4) {
+    if (tutorialStep === 4) {
+      if (page === "inn") {
+        showGuide({
+          text: "回到后厨，再打开《丝路食鉴》看看食物详情。",
+          targets: [document.querySelector("#innKitchenBtn")],
+        });
+        return;
+      }
+      showGuide({
+        text: "再打开《丝路食鉴》，点一下已点亮的小图查看详情。",
+        targets: [document.querySelector("#boardCodexBtn")],
+      });
+      return;
+    }
+
+    if (tutorialStep < 5) {
       hideGuide();
       return;
     }
 
     const repairs = state.renovationChoices || {};
     if (repairs[FIRST_REPAIR_ID]) {
-      updateGuideState({ completed: true });
-      hideGuide();
+      if (page === "inn") {
+        showGuide({
+          text: "前厅已经修好了。点右下角返回后厨，继续接待新的客人。",
+          targets: [document.querySelector("#innKitchenBtn")],
+        });
+        return;
+      }
+      const nextOrder = document.querySelector("#orders .order-card");
+      showGuide({
+        text: "新的订单已经来了。继续制作客人需要的食物，赚铜钱修缮下一处。",
+        targets: [nextOrder || document.querySelector("#orders")],
+        acknowledge: true,
+      });
+      return;
+    }
+    const firstRepairParts = Array.isArray(state.repairProgress?.[FIRST_REPAIR_ID]?.completedParts)
+      ? state.repairProgress[FIRST_REPAIR_ID].completedParts
+      : [];
+    if (firstRepairParts.length > 0) {
+      if (page === "inn") {
+        showGuide({
+          text: "第一件已经修好了。点右下角返回后厨，继续接单攒下一件的铜钱。",
+          targets: [document.querySelector("#innKitchenBtn")],
+        });
+        return;
+      }
+      const nextOrder = document.querySelector("#orders .order-card");
+      showGuide({
+        text: "已经完成一次赚钱与修缮。继续制作新订单需要的食物，逐件修好前厅。",
+        targets: [nextOrder || document.querySelector("#orders")],
+        acknowledge: true,
+      });
       return;
     }
     const firstOrderDone = Array.isArray(state.completedOrderIds) && state.completedOrderIds.includes(FIRST_ORDER_ID);
@@ -403,14 +454,14 @@
 
     if (page === "board") {
       showGuide({
-        text: "去流沙驿看看前厅；铜钱不够时，继续接单就能攒起来。",
+        text: "首单赚到的 10 枚铜钱，正好能修好第一件。点右下角回流沙驿。",
         targets: [document.querySelector("#stationHudBtn") || document.querySelector("#repairSideBtn")],
       });
       return;
     }
 
     showGuide({
-      text: "长卷上的亮处就是下一处修缮点，有铜钱就能逐处修好前厅。",
+      text: "第一件所需的铜钱已经备齐。点长卷上的亮处，先听听门前客人的话，再开始修缮。",
       targets: [repairTarget()],
     });
   }
@@ -423,9 +474,6 @@
   function bindRefreshSignals() {
     const observer = new MutationObserver(() => scheduleRefresh());
     document.addEventListener("click", (event) => {
-      if (event.target.closest(".longscroll-current-region, .mainline-action.ready") && Number(gameState().tutorialStep || 0) >= 4) {
-        updateGuideState({ completed: true });
-      }
       scheduleRefresh(100);
     }, true);
     window.addEventListener("silkroad:storage-guide-context", (event) => {

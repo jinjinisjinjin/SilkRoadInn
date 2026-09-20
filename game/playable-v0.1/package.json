@@ -4,6 +4,8 @@
   "version": "0.3.0",
   "scripts": {
     "build": "node scripts/build-production.mjs",
+    "check": "npm run validate:history && npm run validate:story && npm run validate:economy && npm run validate:food && npm run build",
+    "validate:economy": "node scripts/validate-economy.mjs",
     "validate:history": "node scripts/validate-historical-notes.mjs",
     "validate:story": "node scripts/validate-story-route.mjs",
     "validate:food": "node scripts/validate-food-progression.mjs"

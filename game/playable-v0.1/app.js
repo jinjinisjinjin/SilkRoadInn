@@ -4,6 +4,7 @@ const INN_LEVEL_SCHEMA_VERSION = 2;
 const FOOD_DISCOVERY_SCHEMA_VERSION = 1;
 const STAMINA_RECOVERY_MINUTES = 2;
 const PRODUCTION_MULTIPLIERS = Object.freeze([1, 2, 4]);
+const FIRST_TUTORIAL_REPAIR_ID = "tutorial_complete";
 const AUDIO_PATH = "./assets/audio/";
 const AUDIO_MUTED_KEY = "silkroad_tavern_audio_muted_v1";
 const AUDIO_BGM_ENABLED_KEY = "silkroad_tavern_audio_bgm_enabled_v1";
@@ -18,6 +19,7 @@ const AUDIO_SOURCES = Object.freeze({
   enterShop: `${AUDIO_PATH}enter-shop.m4a`,
   exitShop: `${AUDIO_PATH}exit-shop.m4a`,
   bgm: `${AUDIO_PATH}bgm.m4a`,
+  opening: `${AUDIO_PATH}opening-first-fire-v1.m4a`,
 });
 const AUDIO_VOLUMES = Object.freeze({
   coin: 0.336,
@@ -28,6 +30,7 @@ const AUDIO_VOLUMES = Object.freeze({
   enterShop: SFX_VOLUME,
   exitShop: SFX_VOLUME,
   bgm: 0.24,
+  opening: 0.65,
 });
 const AUDIO_START_OFFSETS = Object.freeze({
   click: 0.3,
@@ -857,6 +860,7 @@ const els = {
   unlockIcon: document.querySelector("#unlockIcon"),
   unlockName: document.querySelector("#unlockName"),
   unlockText: document.querySelector("#unlockText"),
+  unlockAcknowledgeBtn: document.querySelector("#unlockAcknowledgeBtn"),
   viewCodexFromUnlock: document.querySelector("#viewCodexFromUnlock"),
   stationModal: document.querySelector("#stationModal"),
   stationSummary: document.querySelector("#stationSummary"),
@@ -1090,6 +1094,8 @@ const audioRuntime = {
   sfxEnabled: true,
   bgm: null,
   bgmStarted: false,
+  opening: null,
+  openingSession: null,
   fadeFrame: null,
   pools: new Map(),
   cursors: new Map(),
@@ -1130,8 +1136,28 @@ function initAudio() {
   audioRuntime.sfxEnabled = readAudioEnabledPreference(AUDIO_SFX_ENABLED_KEY);
   audioRuntime.bgm = createGameAudio(AUDIO_SOURCES.bgm, 0);
   audioRuntime.bgm.loop = true;
+  audioRuntime.opening = createGameAudio(AUDIO_SOURCES.opening, AUDIO_VOLUMES.opening);
+  audioRuntime.opening.addEventListener("loadedmetadata", () => {
+    if (audioRuntime.openingSession) startOpeningAudioIfAllowed();
+  });
+  window.addEventListener("silkroad:opening-start", (event) => {
+    if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
+    audioRuntime.fadeFrame = null;
+    audioRuntime.bgm.pause();
+    audioRuntime.bgm.volume = 0;
+    audioRuntime.opening.pause();
+    audioRuntime.openingSession = event.detail;
+    startOpeningAudioIfAllowed();
+  });
+  window.addEventListener("silkroad:opening-end", () => {
+    if (!audioRuntime.openingSession) return;
+    audioRuntime.openingSession = null;
+    audioRuntime.opening.pause();
+    setOpeningSoundPrompt(false);
+    startBgmIfAllowed(1200);
+  });
   Object.entries(AUDIO_SOURCES).forEach(([name, src]) => {
-    if (name === "bgm") return;
+    if (name === "bgm" || name === "opening") return;
     const poolSize = name === "click" ? 6 : 2;
     const pool = Array.from({ length: poolSize }, () => createGameAudio(src, AUDIO_VOLUMES[name]));
     audioRuntime.pools.set(name, pool);
@@ -1207,16 +1233,50 @@ function fadeBgmTo(targetVolume, duration = 520) {
   audioRuntime.fadeFrame = requestAnimationFrame(step);
 }
 
-function startBgmIfAllowed() {
+function setOpeningSoundPrompt(visible) {
+  const button = document.querySelector("#chapterOpeningSound");
+  if (button) button.hidden = !visible;
+}
+
+function startOpeningAudioIfAllowed() {
+  const session = audioRuntime.openingSession;
+  const audio = audioRuntime.opening;
+  if (!session || !audio || !audioRuntime.bgmEnabled || document.hidden || session.reducedMotion) return;
+  if (!audio.paused) return;
+  const elapsed = (performance.now() - session.startedAt) / 1000;
+  if (elapsed >= session.duration / 1000) return;
+  // A first visit may require a tap. Join the current frame rather than replaying the wind.
+  if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) audio.currentTime = elapsed;
+  audio.volume = AUDIO_VOLUMES.opening;
+  audio.play().then(() => {
+    if (audioRuntime.openingSession !== session) return;
+    if (document.hidden || !audioRuntime.bgmEnabled) audio.pause();
+    setOpeningSoundPrompt(false);
+  }).catch((error) => {
+    if (audioRuntime.openingSession === session && audioRuntime.bgmEnabled) {
+      setOpeningSoundPrompt(error.name === "NotAllowedError");
+    }
+  });
+}
+
+function startBgmIfAllowed(fadeDuration = 520) {
   if (!audioRuntime.initialized) initAudio();
+  if (audioRuntime.openingSession) {
+    startOpeningAudioIfAllowed();
+    return;
+  }
   if (!audioRuntime.bgmEnabled || document.hidden || !audioRuntime.bgm) return;
   if (!audioRuntime.bgm.paused && audioRuntime.bgmStarted) return;
   const playAttempt = audioRuntime.bgm.play();
   if (!playAttempt) return;
   playAttempt
     .then(() => {
+      if (audioRuntime.openingSession || !audioRuntime.bgmEnabled || document.hidden) {
+        audioRuntime.bgm.pause();
+        return;
+      }
       audioRuntime.bgmStarted = true;
-      fadeBgmTo(AUDIO_VOLUMES.bgm);
+      fadeBgmTo(AUDIO_VOLUMES.bgm, typeof fadeDuration === "number" ? fadeDuration : 520);
     })
     .catch(() => {});
 }
@@ -1268,6 +1328,8 @@ function toggleBgm() {
     if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
     audioRuntime.fadeFrame = null;
     audioRuntime.bgm?.pause();
+    audioRuntime.opening?.pause();
+    setOpeningSoundPrompt(false);
     if (audioRuntime.bgm) audioRuntime.bgm.volume = 0;
     return;
   }
@@ -1300,6 +1362,7 @@ function handleAudioSettingsKeydown(event) {
 }
 
 function handleBasicButtonSound(event) {
+  if (audioRuntime.openingSession) return;
   const target = event.target instanceof Element ? event.target.closest("button") : null;
   if (!target || target.disabled || target.dataset.sound === "none") return;
   if (target.matches(SPECIAL_AUDIO_BUTTONS)) return;
@@ -1318,6 +1381,11 @@ function queueBoardClickSound() {
 function handleAudioVisibility() {
   if (document.hidden) {
     audioRuntime.bgm?.pause();
+    audioRuntime.opening?.pause();
+    return;
+  }
+  if (audioRuntime.openingSession) {
+    startOpeningAudioIfAllowed();
     return;
   }
   if (audioRuntime.bgmEnabled && audioRuntime.bgmStarted) startBgmIfAllowed();
@@ -2649,14 +2717,20 @@ function repairPartCosts(milestone) {
     ? milestone.repairParts.map((part) => Math.max(0, Math.floor(Number(part?.cost) || 0)))
     : [];
   if (configuredCosts.length === REPAIR_PART_COUNT
-    && configuredCosts.every((cost) => cost >= 100 && cost <= 300)) {
+    && configuredCosts.every((cost, index) => (
+      milestone?.id === "tutorial_complete" && index === 0
+        ? cost === 10
+        : cost >= 100 && cost <= 300
+    ))) {
     return configuredCosts;
   }
   const milestones = state.progressionConfig?.milestones ?? [];
   const milestoneIndex = Math.max(0, milestones.findIndex((entry) => entry.id === milestone?.id));
   const progress = milestones.length > 1 ? milestoneIndex / (milestones.length - 1) : 0;
   const baseCost = 100 + Math.round((progress * 120) / 10) * 10;
-  return REPAIR_PART_COST_STEPS.map((step) => Math.min(300, baseCost + step));
+  const costs = REPAIR_PART_COST_STEPS.map((step) => Math.min(300, baseCost + step));
+  if (milestone?.id === "tutorial_complete") costs[0] = 10;
+  return costs;
 }
 
 function normalizeRepairPartIndex(value) {
@@ -3506,6 +3580,12 @@ function tickStamina() {
 }
 
 function bindEvents() {
+  window.addEventListener("silkroad:new-player-guide-retired", () => {
+    state.tutorialStep = Math.max(Number(state.tutorialStep) || 0, 6);
+    keeper("查看新订单需要的食物，继续接待往来的客人。");
+    render();
+    saveState();
+  });
   window.addEventListener("silkroad:storage-guide-request", () => {
     window.dispatchEvent(new CustomEvent("silkroad:storage-guide-context", {
       detail: storageGuideContext(),
@@ -3988,6 +4068,7 @@ function renderInnScene(level, repairValue) {
 }
 
 function renderLongscrollHistoricalMarkers(milestones) {
+  if (firstRepairReturnGuidePending()) return "";
   const unlockedNotes = HISTORICAL_NOTES.filter((note) =>
     note.repairId
     && historicalNoteUnlocked(note))
@@ -4016,6 +4097,17 @@ function renderLongscrollHistoricalMarkers(milestones) {
       </button>`;
     })
     .join("");
+}
+
+function firstRepairReturnGuidePending() {
+  return state.tutorialStep === 5
+    && Boolean(state.renovationChoices?.[FIRST_TUTORIAL_REPAIR_ID]);
+}
+
+function firstTutorialRepairPartCompleted() {
+  return normalizeRepairCompletedParts(
+    state.repairProgress?.[FIRST_TUTORIAL_REPAIR_ID]?.completedParts ?? [],
+  ).length > 0;
 }
 
 function focusInnSceneOnPoint(x, y, { behavior = "smooth", verticalRatio = 0.48 } = {}) {
@@ -5436,7 +5528,7 @@ function renderStoryArchiveEntry() {
   if (!els.storyArchiveBtn) return;
   const count = unlockedStoryArchiveMoments().length;
   const footnoteCount = unlockedStoryArchiveFootnotes().length;
-  const unreadCount = unreadHistoricalNotes().length;
+  const unreadCount = firstRepairReturnGuidePending() ? 0 : unreadHistoricalNotes().length;
   els.storyArchiveBtn.disabled = false;
   els.storyArchiveBtn.dataset.unreadNotes = String(unreadCount);
   els.storyArchiveBtn.classList.toggle("has-unread-note", unreadCount > 0);
@@ -5797,6 +5889,8 @@ function launchRepairPlayer(milestone) {
   playerUrl.searchParams.set("embedded", "1");
   playerUrl.searchParams.set("repairId", milestone.playerPointId);
   playerUrl.searchParams.set("milestoneId", milestone.id);
+  const buildId = new URLSearchParams(location.search).get("build");
+  if (buildId) playerUrl.searchParams.set("build", buildId);
   els.repairPlayerFrame.src = playerUrl.href;
   els.repairPlayerLayer.hidden = false;
 }
@@ -7921,10 +8015,19 @@ function renderTutorial() {
   } else if (state.tutorialStep === 1) {
     keeper("麦面剂做好了。把它拖到左边锁格里的相同食物上，解开棋格并合成炉饼。");
   } else if (state.tutorialStep === 2) {
-    keeper("炉饼做好了，交给沙州驿卒试试。");
+    keeper("炉饼做好了，交给沙州驿卒周甲试试。");
   } else if (state.tutorialStep === 3) {
     els.boardCodexBtn?.classList.add("tutorial-action");
     keeper("第一张食谱已经记下。点「食鉴」看看收录。");
+  } else if (state.tutorialStep === 4) {
+    els.boardCodexBtn?.classList.add("tutorial-action");
+    keeper("再打开《丝路食鉴》，点一下已点亮的小图查看详情。");
+  } else if (state.tutorialStep === 5 && state.renovationChoices?.[FIRST_TUTORIAL_REPAIR_ID]) {
+    keeper("查看新订单需要的食物，继续接待往来的客人。");
+  } else if (state.tutorialStep === 5 && firstTutorialRepairPartCompleted()) {
+    keeper("第一件修缮已经完成。回后厨继续接单，攒够下一件所需的铜钱。");
+  } else if (state.tutorialStep === 5 && state.completedOrderIds.includes("order_001_guard_lubing")) {
+    keeper("首单铜钱已经备齐，回流沙驿修缮前厅客座。");
   }
 }
 
@@ -8767,9 +8870,14 @@ function unlockCodex(codexId) {
   if (state.unlockedCodex.has(codexId)) return;
   state.unlockedCodex.add(codexId);
   activeCodexItemId = item.id;
+  const firstRecipeTutorial = state.tutorialStep <= 1 && item.id === "hubing_02_lubing";
   els.unlockIcon.src = itemAssetSrc(item);
   els.unlockName.textContent = entry.name;
   els.unlockText.textContent = entry.shortText;
+  els.viewCodexFromUnlock.hidden = firstRecipeTutorial;
+  els.unlockAcknowledgeBtn.closest(".modal-actions")?.classList.toggle("single", firstRecipeTutorial);
+  els.unlockAcknowledgeBtn.textContent = firstRecipeTutorial ? "去交付" : "知道了";
+  els.unlockAcknowledgeBtn.classList.toggle("primary", firstRecipeTutorial);
   els.unlockModal.showModal();
 }
 
@@ -10757,10 +10865,24 @@ function renderCodexSelected(item) {
 function renderCodex() {
   const lines = codexFoodLines();
   const selected = defaultCodexItem(lines);
+  const detailTutorialActive = state.tutorialStep === 4;
+  const closeTutorialActive = state.tutorialStep === 5
+    && state.completedOrderIds.includes("order_001_guard_lubing")
+    && !state.renovationChoices?.[FIRST_TUTORIAL_REPAIR_ID];
   activeCodexItemId = selected?.id ?? null;
   els.codexKnownCount.textContent = String(codexKnownFoodCount(lines));
   renderCodexSelected(selected);
   els.codexList.replaceChildren();
+  els.codexModal.dataset.guide = detailTutorialActive
+    ? "food-detail"
+    : closeTutorialActive ? "close" : "";
+  const hint = els.codexModal.querySelector(".codex-index-hint");
+  if (hint) hint.textContent = detailTutorialActive
+    ? "点一下闪动的小图，直接查看这道食物的详情与札记"
+    : closeTutorialActive
+      ? "详情已经看过了，点右上角关闭食鉴，去修缮前厅"
+      : "点击已点亮的小图，可直接查看食物详情与札记";
+  let tutorialTargetAssigned = false;
 
   lines.forEach((line) => {
     const knownLevel = unlockedFoodLevel(line.line);
@@ -10785,23 +10907,33 @@ function renderCodex() {
         : `${line.name}，第${Number(item.level)}阶，尚未识得`);
       cell.setAttribute("aria-pressed", String(unlocked && item.id === activeCodexItemId));
       cell.disabled = !unlocked;
+      if (unlocked && detailTutorialActive && !tutorialTargetAssigned) {
+        cell.classList.add("tutorial-action");
+        tutorialTargetAssigned = true;
+      }
 
       const image = document.createElement("img");
       image.src = unlocked ? itemAssetSrc(item) : "./assets/ui/ui_food_box_lid_locked_v2.png";
       image.alt = "";
       cell.append(image);
-      if (unlocked) cell.addEventListener("click", () => selectCodexItem(item.id));
+      if (unlocked) cell.addEventListener("click", () => selectCodexItem(item.id, { openDetail: true }));
       row.append(cell);
     });
     els.codexList.append(row);
   });
 }
 
-function selectCodexItem(itemId) {
+function selectCodexItem(itemId, { openDetail = false } = {}) {
   const item = byId.get(itemId);
   if (!isFoodItemUnlocked(item)) return;
   activeCodexItemId = item.id;
+  if (state.tutorialStep === 4) {
+    state.tutorialStep = 5;
+    saveState();
+    renderTutorial();
+  }
   renderCodex();
+  if (openDetail) openCodexItemDetail(item.id);
 }
 
 function openCodex(preselectedItemId) {

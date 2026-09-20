@@ -1199,6 +1199,13 @@
   let reviewMode = false;
   let ui;
   let cinematicTimer = null;
+  let cinematicPlaying = false;
+
+  function stopCinematicAudio() {
+    if (!cinematicPlaying) return;
+    cinematicPlaying = false;
+    window.dispatchEvent(new CustomEvent("silkroad:opening-end"));
+  }
 
   function syncStoryViewport() {
     const viewport = window.visualViewport;
@@ -1280,6 +1287,10 @@
     view.cinematic.classList.remove("is-playing");
     void view.cinematic.offsetWidth;
     view.cinematic.classList.add("is-playing");
+    cinematicPlaying = true;
+    window.dispatchEvent(new CustomEvent("silkroad:opening-start", {
+      detail: { startedAt: performance.now(), duration: reducedMotion ? 1600 : 14500, reducedMotion },
+    }));
     notifyProgress(false);
     cinematicTimer = setTimeout(completeCinematic, reducedMotion ? 1600 : 14500);
   }
@@ -1356,6 +1367,7 @@
   }
 
   function renderDialogue() {
+    stopCinematicAudio();
     const view = elements();
     clearTimeout(cinematicTimer);
     cinematicTimer = null;
@@ -1464,6 +1476,7 @@
   }
 
   function finish(result = { completed: true }) {
+    stopCinematicAudio();
     clearTimeout(cinematicTimer);
     cinematicTimer = null;
     const pausedQa = Boolean(qaState && result.qaPaused);

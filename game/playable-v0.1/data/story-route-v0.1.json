@@ -27,7 +27,7 @@
             2
           ],
           "requires": {
-            "coins": 120,
+            "coins": 10,
             "completedOrders": 1,
             "orders": ["order_001_guard_lubing"]
           }
