@@ -1027,6 +1027,45 @@ button:disabled {
   overflow: visible;
 }
 
+.upgrade-tool-qa-controls {
+  position: fixed;
+  z-index: 72;
+  top: max(58px, calc(env(safe-area-inset-top) + 58px));
+  right: max(8px, env(safe-area-inset-right));
+  display: grid;
+  gap: 6px;
+  width: 166px;
+  padding: 8px;
+  border: 1px solid rgba(229, 194, 126, 0.92);
+  border-radius: 12px;
+  color: #fff2cf;
+  background: rgba(57, 37, 27, 0.94);
+  box-shadow: 0 5px 15px rgba(31, 17, 10, 0.4);
+}
+
+.upgrade-tool-qa-controls span {
+  display: grid;
+  gap: 1px;
+}
+
+.upgrade-tool-qa-controls strong {
+  font-size: 12px;
+}
+
+.upgrade-tool-qa-controls small {
+  color: #dccba9;
+  font-size: 9px;
+}
+
+.upgrade-tool-qa-controls button {
+  min-height: 30px;
+  border: 1px solid #e4bd73;
+  border-radius: 8px;
+  color: #fff3d1;
+  background: #8f4939;
+  font: 800 11px/1 "Songti SC", "STSong", serif;
+}
+
 #app[data-page="board"] .upgrade-tool {
   width: 96%;
   height: 96%;

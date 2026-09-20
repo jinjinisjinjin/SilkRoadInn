@@ -1606,6 +1606,25 @@ function initializeUpgradeToolQaScenario() {
   state.selectedIndex = null;
 }
 
+function renderUpgradeToolQaControls() {
+  document.querySelector(".upgrade-tool-qa-controls")?.remove();
+  if (!UPGRADE_TOOL_QA_MODE) return;
+  const controls = document.createElement("aside");
+  controls.className = "upgrade-tool-qa-controls";
+  controls.setAttribute("aria-label", "百味金笺测试工具");
+  controls.innerHTML = `
+    <span><strong>百味金笺测试</strong><small>拖到任意未满阶食物上</small></span>
+    <button type="button">重置测试棋盘</button>
+  `;
+  controls.querySelector("button").addEventListener("click", () => {
+    initializeUpgradeToolQaScenario();
+    render();
+    saveState();
+    toast("测试棋盘已重置");
+  });
+  document.body.append(controls);
+}
+
 function initializeGeneratorMaterialQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
   state.generatorMaterialConfig.categories.forEach((category, categoryIndex) => {
@@ -2494,6 +2513,7 @@ async function boot() {
   render();
   renderLongscrollCastQaNav();
   bindEvents();
+  renderUpgradeToolQaControls();
   applyBuildMode();
   await waitForStartupPaint();
   await finishStartupLoading();
@@ -3164,7 +3184,7 @@ function loadState() {
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (LONGSCROLL_CAST_QA_MODE) initializeLongscrollCastQaScenario();
   if (SCISSORS_TOOL_QA_MODE && (!saved || SCISSORS_TOOL_QA_RESET)) initializeScissorsToolQaScenario();
-  if (UPGRADE_TOOL_QA_MODE && (!saved || UPGRADE_TOOL_QA_RESET)) initializeUpgradeToolQaScenario();
+  if (UPGRADE_TOOL_QA_MODE) initializeUpgradeToolQaScenario();
   if (NEW_PLAYER_GUIDE_QA_MODE && (!saved || NEW_PLAYER_GUIDE_QA_RESET)) initializeNewPlayerGuideQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   if (CHAPTER_STORY_QA_MODE) initializeChapterStoryQaScenario();
