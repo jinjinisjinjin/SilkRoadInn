@@ -84,6 +84,12 @@ const NEW_PLAYER_GUIDE_QA_RESET = NEW_PLAYER_GUIDE_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const UPGRADE_REVEAL_QA_MODE = QA_MODE === "upgrade-reveal-v1";
 const LONGSCROLL_CAST_QA_MODE = QA_MODE === "longscroll-cast-v1";
+const SCISSORS_TOOL_QA_MODE = QA_MODE === "scissors-tool-v1";
+const SCISSORS_TOOL_QA_RESET = SCISSORS_TOOL_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
+const UPGRADE_TOOL_QA_MODE = QA_MODE === "upgrade-tool-v1";
+const UPGRADE_TOOL_QA_RESET = UPGRADE_TOOL_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
 const LONGSCROLL_RENEWAL_QA_MODE = LONGSCROLL_CAST_QA_MODE
   && new URLSearchParams(location.search).get("renewal") === "1";
 const LONGSCROLL_NOTE_FLOW_QA_MODE = LONGSCROLL_RENEWAL_QA_MODE
@@ -125,9 +131,13 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE;
+const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE || SCISSORS_TOOL_QA_MODE || UPGRADE_TOOL_QA_MODE;
 const SAVE_KEY = FULL_GAME_TRIAL_MODE
   ? "silkroad_tavern_proto_v02_trial_full_game_v1"
+  : UPGRADE_TOOL_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_upgrade_tool_v1"
+  : SCISSORS_TOOL_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_scissors_tool_v1"
   : UPGRADE_REVEAL_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
   : DAILY_SHOP_QA_MODE
@@ -206,6 +216,8 @@ const BONUS_STAMINA_ICON_KEYS = Object.freeze([
 const ORDER_PROGRESS_GIFT_ITEM_ID = "gift_pack_order_progress";
 const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
 const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
+const SPLITTER_TOOL_ITEM_ID = "tool_splitter_scissors";
+const UPGRADE_TOOL_ITEM_ID = "tool_baiwei_jinjian";
 const SHOP_FOOD_PRICES = Object.freeze({ 4: 12, 5: 22, 6: 40, 7: 72, 8: 130 });
 const DAILY_SHOP_REFRESH_MS = 16 * 60 * 60 * 1000;
 const SHOP_WEALTH_ITEM_ID = "shop_wealth_figurine";
@@ -412,6 +424,8 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/ui_bag_inventory.png",
   "./assets/ui/ui_daily_pomegranate_pouch_v2.png",
   "./assets/ui/ui_kitchen_entry.png",
+  "./assets/items/tools/ui_scissors_splitter_v1.png?v=scissors-splitter-v1",
+  "./assets/ui/ui_baiwei_jinjian_v1.png?v=baiwei-jinjian-v1",
   "./assets/ui/order_gift_coffer_v1.png",
   "./assets/ui/bonus_ruby_lv01.png",
   "./assets/ui/bonus_ruby_lv02.png",
@@ -709,6 +723,7 @@ const state = {
   giftPacks: [],
   giftBoxStates: {},
   storedGiftBoxStates: {},
+  splitterToolCharges: {},
   bubbleStates: {},
   unlockedCells: [],
   visibleOrders: [],
@@ -731,6 +746,7 @@ const state = {
   storyFlags: {},
   answeredHistoricalNoteIds: [],
   historicalNoteRewards: {},
+  splitterIntroRewardClaimed: false,
   renovationChoices: {},
   repairProgress: {},
   activeRepairId: null,
@@ -833,7 +849,6 @@ const els = {
   innScene: document.querySelector("#innScene"),
   innScoreText: document.querySelector("#innScoreText"),
   innUpgradeText: document.querySelector("#innUpgradeText"),
-  innUpgradeBtn: document.querySelector("#innUpgradeBtn"),
   furnitureShop: document.querySelector("#furnitureShop"),
   innStoryLine: document.querySelector("#innStoryLine"),
   resetBtn: document.querySelector("#resetBtn"),
@@ -967,6 +982,13 @@ const els = {
   confirmEyebrow: document.querySelector("#confirmEyebrow"),
   confirmTitle: document.querySelector("#confirmTitle"),
   confirmMessage: document.querySelector("#confirmMessage"),
+  confirmUpgradePreview: document.querySelector("#confirmUpgradePreview"),
+  confirmUpgradeFromImg: document.querySelector("#confirmUpgradeFromImg"),
+  confirmUpgradeFromName: document.querySelector("#confirmUpgradeFromName"),
+  confirmUpgradeFromLevel: document.querySelector("#confirmUpgradeFromLevel"),
+  confirmUpgradeToImg: document.querySelector("#confirmUpgradeToImg"),
+  confirmUpgradeToName: document.querySelector("#confirmUpgradeToName"),
+  confirmUpgradeToLevel: document.querySelector("#confirmUpgradeToLevel"),
   confirmClose: document.querySelector("#confirmClose"),
   confirmCancel: document.querySelector("#confirmCancel"),
   confirmAccept: document.querySelector("#confirmAccept"),
@@ -1036,6 +1058,7 @@ const codexById = new Map();
 const codexByItemId = new Map();
 const foodLineMaxLevels = new Map();
 let dragging = null;
+let splitterPulseIndices = new Set();
 let toastTimer = null;
 let suppressNextCellClick = false;
 let suppressNextCellClickTimer = null;
@@ -1549,6 +1572,40 @@ function initializeChapterStoryQaScenario() {
   });
 }
 
+function initializeScissorsToolQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  state.board[boardIndex(4, 2)] = SPLITTER_TOOL_ITEM_ID;
+  state.board[boardIndex(4, 4)] = "dairy_03_laojiang";
+  state.board[boardIndex(5, 4)] = "hubing_02_lubing";
+  state.board[boardIndex(5, 2)] = "dairy_01_milk";
+  state.splitterToolCharges = { [boardIndex(4, 2)]: 3 };
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.rewardItems = [{ itemId: SPLITTER_TOOL_ITEM_ID, quantity: 2 }];
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.storedGiftBoxStates = {};
+  state.bubbleStates = {};
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
+function initializeUpgradeToolQaScenario() {
+  state.board = Array(BOARD_SIZE).fill(null);
+  state.board[boardIndex(4, 2)] = UPGRADE_TOOL_ITEM_ID;
+  state.board[boardIndex(4, 4)] = "dairy_03_laojiang";
+  state.board[boardIndex(5, 4)] = "hubing_02_lubing";
+  state.board[boardIndex(5, 2)] = "dairy_01_milk";
+  state.board[boardIndex(4, 5)] = "hubing_08_gulouzi";
+  state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
+  state.rewardItems = [{ itemId: UPGRADE_TOOL_ITEM_ID, quantity: 1 }];
+  state.giftPacks = [];
+  state.giftBoxStates = {};
+  state.storedGiftBoxStates = {};
+  state.bubbleStates = {};
+  state.currentPage = "board";
+  state.selectedIndex = null;
+}
+
 function initializeGeneratorMaterialQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
   state.generatorMaterialConfig.categories.forEach((category, categoryIndex) => {
@@ -2018,6 +2075,7 @@ function initializeStoryArchiveQaScenario() {
   state.completedOrderIds = ["order_003_sogdian_humabing"];
   state.answeredHistoricalNoteIds = [];
   state.historicalNoteRewards = {};
+  state.splitterIntroRewardClaimed = false;
   state.shopFoodItemIds = null;
   state.innLevel = VOLUME_START_LEVELS[STORY_ARCHIVE_QA_CHAPTER];
   state.currentPage = "inn";
@@ -2116,6 +2174,7 @@ function initializeLongscrollCastQaScene(sceneNumber) {
   state.repairPromptedFor = [];
   state.answeredHistoricalNoteIds = [];
   state.historicalNoteRewards = {};
+  state.splitterIntroRewardClaimed = false;
   state.completedOrders = Math.max(999, state.completedOrders);
   state.coins = 99990;
   state.innLevel = milestoneInnLevel(currentMilestone);
@@ -2460,6 +2519,8 @@ async function boot() {
     setTimeout(() => playChapterStory("opening", maybePromptRepairGuide), 80);
   } else if (!ISOLATED_QA_MODE && pendingChapterOpeningId()) {
     setTimeout(() => playChapterStory(pendingChapterOpeningId(), maybePromptRepairGuide), 80);
+  } else if (!ISOLATED_QA_MODE && pendingInnUpgradeRevealLevel) {
+    setTimeout(showPendingInnUpgradeReveal, 80);
   } else if (!ISOLATED_QA_MODE && shouldShowInnFinale()) {
     setTimeout(showInnFinale, 120);
   } else if (!ISOLATED_QA_MODE) {
@@ -2836,6 +2897,7 @@ function defaultState() {
     giftPacks: [],
     giftBoxStates: {},
     storedGiftBoxStates: {},
+    splitterToolCharges: {},
     bubbleStates: {},
     unlockedCells: [],
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
@@ -2860,6 +2922,7 @@ function defaultState() {
     storyFlags: {},
     answeredHistoricalNoteIds: [],
     historicalNoteRewards: {},
+    splitterIntroRewardClaimed: false,
     renovationChoices: {},
     repairProgress: {},
     activeRepairId: null,
@@ -2910,7 +2973,7 @@ function normalizeInnLevel(savedLevel, savedSchemaVersion, renovationChoices = {
 }
 
 function loadState() {
-  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET) {
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     localStorage.removeItem(SAVE_KEY);
   }
   const saved = localStorage.getItem(SAVE_KEY);
@@ -3001,6 +3064,7 @@ function loadState() {
     giftPacks: normalizeGiftPacks(data.giftPacks),
     giftBoxStates: normalizeGiftBoxStates(data.giftBoxStates),
     storedGiftBoxStates: normalizeStoredGiftBoxStates(data.storedGiftBoxStates, loadedBag),
+    splitterToolCharges: normalizeSplitterToolCharges(data.splitterToolCharges, data.board),
     bubbleStates: normalizeBubbleStates(data.bubbleStates),
     unlockedCells: normalizeUnlockedCells(data.unlockedCells),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
@@ -3035,6 +3099,11 @@ function loadState() {
     storyFlags: normalizeStoryFlags(data.storyFlags),
     answeredHistoricalNoteIds: Array.isArray(data.answeredHistoricalNoteIds) ? data.answeredHistoricalNoteIds : [],
     historicalNoteRewards: normalizeHistoricalNoteRewards(data.historicalNoteRewards),
+    splitterIntroRewardClaimed: Boolean(data.splitterIntroRewardClaimed)
+      || Object.values(data.historicalNoteRewards ?? {}).some((reward) =>
+        (Array.isArray(reward?.itemIds) && reward.itemIds.includes(SPLITTER_TOOL_ITEM_ID))
+        || (Array.isArray(reward?.bags) && reward.bags.some((bag) =>
+          Array.isArray(bag) && bag.includes(SPLITTER_TOOL_ITEM_ID)))),
     renovationChoices: loadedRenovationChoices,
     repairProgress: loadedRepairProgress,
     activeRepairId: loadedActiveRepairId,
@@ -3094,6 +3163,8 @@ function loadState() {
   if (UPGRADE_REVEAL_QA_MODE) initializeUpgradeRevealQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
   if (LONGSCROLL_CAST_QA_MODE) initializeLongscrollCastQaScenario();
+  if (SCISSORS_TOOL_QA_MODE && (!saved || SCISSORS_TOOL_QA_RESET)) initializeScissorsToolQaScenario();
+  if (UPGRADE_TOOL_QA_MODE && (!saved || UPGRADE_TOOL_QA_RESET)) initializeUpgradeToolQaScenario();
   if (NEW_PLAYER_GUIDE_QA_MODE && (!saved || NEW_PLAYER_GUIDE_QA_RESET)) initializeNewPlayerGuideQaScenario();
   if (STORY_ARCHIVE_QA_MODE) initializeStoryArchiveQaScenario();
   if (CHAPTER_STORY_QA_MODE) initializeChapterStoryQaScenario();
@@ -3151,9 +3222,10 @@ function loadState() {
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
   if (generatorGiftMigration) backfillGeneratorProgressionGifts();
   syncVisibleOrders();
+  const innLevelAdvanced = !ISOLATED_QA_MODE && advanceInnLevelsIfReady({ announce: false });
   if (generatorGiftMigration) saveState();
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
-  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET) {
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || innLevelAdvanced || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
     history.replaceState(null, "", url);
@@ -3175,6 +3247,7 @@ function saveState() {
       giftPacks: state.giftPacks,
       giftBoxStates: state.giftBoxStates,
       storedGiftBoxStates: state.storedGiftBoxStates,
+      splitterToolCharges: state.splitterToolCharges,
       bubbleStates: state.bubbleStates,
       unlockedCells: state.unlockedCells,
       visibleOrders: state.visibleOrders,
@@ -3200,6 +3273,7 @@ function saveState() {
       storyFlags: state.storyFlags,
       answeredHistoricalNoteIds: state.answeredHistoricalNoteIds,
       historicalNoteRewards: state.historicalNoteRewards,
+      splitterIntroRewardClaimed: state.splitterIntroRewardClaimed,
       renovationChoices: state.renovationChoices,
       repairProgress: state.repairProgress,
       activeRepairId: state.activeRepairId,
@@ -3373,7 +3447,7 @@ function generatorWarehouseUnlocked() {
 }
 
 function generatorWarehouseUnlockCopy() {
-  if (Number(state.innLevel) < 5) return "流沙驿扩建至 Lv5 后开放";
+  if (Number(state.innLevel) < 5) return "流沙驿修缮进度达到 Lv5 后开放";
   return "解锁第二条生产线后开放";
 }
 
@@ -3690,7 +3764,6 @@ function bindEvents() {
     event.preventDefault();
     closeInnFinale();
   });
-  els.innUpgradeBtn.addEventListener("click", upgradeInn);
   els.resetBtn.addEventListener("click", resetGame);
   els.debugStaminaBtn.addEventListener("click", debugAddStamina);
   els.debugDoughBtn.addEventListener("click", debugAddDough);
@@ -3990,16 +4063,11 @@ function renderInnPage() {
     level.level >= MAX_INN_LEVEL
       ? "流沙驿已经升至最高等级，百味宴正在等候。"
       : canUpgrade.ok
-        ? "条件已满足，可以升级流沙驿。"
+        ? "当前阶段已经完成，下一阶段将自动开启。"
         : canUpgrade.reason;
-  els.innUpgradeBtn.disabled = level.level >= MAX_INN_LEVEL;
-  els.innUpgradeBtn.classList.toggle("locked", !canUpgrade.ok);
-  els.innUpgradeBtn.hidden = level.level >= MAX_INN_LEVEL || !canUpgrade.ok;
-  els.innUpgradeBtn.textContent = "扩建";
-  els.innUpgradeBtn.title = canUpgrade.ok ? `将流沙驿升至 Lv${Math.min(MAX_INN_LEVEL, state.innLevel + 1)}` : canUpgrade.reason;
   const repairGate = canEnterRepairPage();
   els.innStoryLine.textContent = milestoneInnLevel(nextMilestone) > state.innLevel
-    ? `完成 Lv${state.innLevel} 扩建后开放下一级修缮。`
+    ? "正在开启下一阶段修缮。"
     : nextMilestone
       ? `${nextMilestone.sceneName ?? nextMilestone.name}：${repairGate.ok ? nextMilestone.nextText : repairGate.reason}`
       : level.story;
@@ -4486,8 +4554,8 @@ function renderMainlineDock() {
     </div>
     ${renderOrderProgressGiftRail()}
     <div class="mainline-current">
-      <b>${awaitingExpansion ? "先扩建流沙驿" : next ? next.sceneName ?? next.name : "本级修缮完成"}</b>
-      <span>${awaitingExpansion ? `完成 Lv${state.innLevel} 扩建后开放下一级修缮。` : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
+      <b>${awaitingExpansion ? "下一阶段即将开启" : next ? next.sceneName ?? next.name : "本级修缮完成"}</b>
+      <span>${awaitingExpansion ? "完成当前阶段后将自动开放后续修缮。" : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
       ${next && !next.done && !awaitingExpansion ? `<small>${next.id === "tutorial_complete" ? "先完成一单，再用赚到的铜钱修缮。" : "修完上一处，就能继续修缮这里。"}</small>` : ""}
     </div>
     <div class="mainline-rail">
@@ -4512,7 +4580,7 @@ function renderMainlineDock() {
     ${
       next && !awaitingExpansion
         ? `<button class="mainline-action ${ready ? "ready" : ""}" data-mainline="${next.id}" ${ready ? "" : "disabled"}>${ready ? state.activeRepairId === next.id ? "继续修缮" : "进入修缮" : "等待主线或铜钱"}</button>`
-        : `<button class="mainline-action ready" data-upgrade-focus="true">查看扩建条件</button>`
+        : `<span class="mainline-action" aria-live="polite">正在开启下一阶段</span>`
     }
   `;
   els.furnitureShop.querySelectorAll("[data-order-progress-pack]").forEach((button) => {
@@ -4520,13 +4588,6 @@ function renderMainlineDock() {
   });
   els.furnitureShop.querySelectorAll("[data-mainline]").forEach((button) => {
     button.addEventListener("click", () => handleRepairNodeClick(button.dataset.mainline, button));
-  });
-  els.furnitureShop.querySelectorAll("[data-upgrade-focus]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const check = canUpgradeInn();
-      toast(check.ok ? "扩建条件已满足。" : check.reason);
-      keeper(check.ok ? "可以扩建流沙驿了。" : check.reason);
-    });
   });
 }
 
@@ -5172,7 +5233,7 @@ function historicalRewardFoodId(level) {
   return candidates[Math.floor(Math.random() * candidates.length)]?.id ?? "hubing_03_humabing";
 }
 
-function createHistoricalNoteReward(note, chosenIndex) {
+function createHistoricalNoteReward(note, chosenIndex, grantSplitterIntroReward = false, grantUpgradeToolReward = false) {
   const correct = chosenIndex === note.answerIndex;
   const addOccasionalThirdItem = (items, options, chance = 0.3) => {
     if (Math.random() < chance) items.push(weightedHistoricalReward(options));
@@ -5202,6 +5263,12 @@ function createHistoricalNoteReward(note, chosenIndex) {
       addOccasionalThirdItem([historicalRewardFoodId(3), weightedHistoricalReward(foodOptions)], foodOptions),
     ]
     : [addOccasionalThirdItem([bonusCoinId(1), weightedHistoricalReward(consolationOptions)], consolationOptions, 0.2)];
+  if (correct && grantSplitterIntroReward) {
+    bags[1].push(SPLITTER_TOOL_ITEM_ID);
+  }
+  if (correct && grantUpgradeToolReward) {
+    bags[1].push(UPGRADE_TOOL_ITEM_ID);
+  }
   const validBags = bags.map((bag) => bag.filter((itemId) => byId.has(itemId)));
   return {
     schemaVersion: HISTORICAL_REWARD_SCHEMA_VERSION,
@@ -5273,7 +5340,9 @@ function appendHistoricalRewardRow(itemIds, bagIndex, animate = true) {
     card.className = "historical-note-reward-item";
     card.style.setProperty("--reward-index", String(itemIndex));
     card.setAttribute("role", "img");
-    card.setAttribute("aria-label", `${item.name}，${item.level ?? 1}级`);
+    card.setAttribute("aria-label", ["splitter_tool", "upgrade_tool"].includes(item.type)
+      ? `${item.name}，稀有道具`
+      : `${item.name}，${item.level ?? 1}级`);
     card.innerHTML = `<img src="${itemAssetSrc(item)}" alt="" />`;
     row.append(card);
   });
@@ -5378,8 +5447,16 @@ function answerHistoricalNote(note, chosenIndex) {
   if (!els.historicalNoteFeedback.hidden) return;
   showHistoricalAnswerFeedback(note, chosenIndex);
   if (!historicalNoteAnswered(note.id)) {
+    const grantSplitterIntroReward = chosenIndex === note.answerIndex && !state.splitterIntroRewardClaimed;
+    const grantUpgradeToolReward = chosenIndex === note.answerIndex && Math.random() < 0.04;
     state.answeredHistoricalNoteIds.push(note.id);
-    state.historicalNoteRewards[note.id] = createHistoricalNoteReward(note, chosenIndex);
+    state.historicalNoteRewards[note.id] = createHistoricalNoteReward(
+      note,
+      chosenIndex,
+      grantSplitterIntroReward,
+      grantUpgradeToolReward,
+    );
+    if (grantSplitterIntroReward) state.splitterIntroRewardClaimed = true;
     saveState();
     renderStoryArchiveEntry();
   }
@@ -6150,6 +6227,7 @@ function finalizeRepairMilestoneState(milestone) {
   syncGeneratorCategoryUnlocks({ announce: true });
   if (isChapterRepairComplete(milestone.chapter)) applyChapterCompletionReward(milestone.chapter);
   syncVisibleOrders();
+  advanceInnLevelsIfReady();
   const nextAfterRepair = nextRepairMilestone();
   lastInnFocusKey = null;
   pendingInnFocusPosition = nextAfterRepair?.longscrollRegionIds ?? null;
@@ -6331,47 +6409,14 @@ function restoreRepairReturnView(milestone, { promptNextRepair = true, focusMile
     }
   }));
   saveState();
-  if (promptNextRepair) setTimeout(maybePromptRepairGuide, 0);
-}
-
-async function upgradeInn() {
-  const check = canUpgradeInn();
-  if (!check.ok) {
-    toast(check.reason);
-    return;
+  const chapterOpeningId = pendingChapterOpeningId();
+  if (pendingInnUpgradeRevealLevel && chapterOpeningId) {
+    setTimeout(() => playChapterStory(chapterOpeningId, showPendingInnUpgradeReveal), 0);
+  } else if (pendingInnUpgradeRevealLevel) {
+    setTimeout(showPendingInnUpgradeReveal, 0);
+  } else if (promptNextRepair) {
+    setTimeout(maybePromptRepairGuide, 0);
   }
-  const level = currentInnLevel();
-  const nextLevel = Math.min(MAX_INN_LEVEL, state.innLevel + 1);
-  const previousVolume = volumeForInnLevel(state.innLevel);
-  const accepted = await showGameConfirm({
-    eyebrow: "驿站扩建",
-    title: `流沙驿升至 Lv${nextLevel}？`,
-    message: "当前剧情与修缮目标已经完成，升级后将开放新的地点与故事。",
-    confirmLabel: "确认扩建",
-    tone: "primary",
-  });
-  if (!accepted) return;
-  state.coins -= level.upgradeCost;
-  state.innLevel = nextLevel;
-  applyInnUnlocks();
-  syncVisibleOrders();
-  pendingInnUpgradeRevealLevel = state.innLevel;
-  toast(`流沙驿升至 Lv${state.innLevel}`);
-  keeper(level.upgradeStory);
-  els.storyTitle.textContent = `流沙驿 Lv${state.innLevel}`;
-  els.storySpeaker.textContent = "掌柜";
-  els.storyAvatar.src = "./assets/keeper_portrait.png";
-  els.storyAvatar.alt = "掌柜";
-  els.storyText.textContent = `${level.upgradeStory}${level.unlocks.length ? ` 解锁：${level.unlocks.join("、")}。` : ""}`;
-  render();
-  saveState();
-  const nextVolume = volumeForInnLevel(state.innLevel);
-  const chapterOpeningId = `chapter${nextVolume}-opening`;
-  if (nextVolume !== previousVolume && window.SilkRoadChapterStory?.segments?.[chapterOpeningId]) {
-    playChapterStory(chapterOpeningId, showPendingInnUpgradeReveal);
-    return;
-  }
-  els.storyModal.showModal();
 }
 
 function applyInnUnlocks() {
@@ -6425,13 +6470,29 @@ function canUpgradeInn() {
   return { ok: true, reason: "" };
 }
 
+function advanceInnLevelsIfReady({ announce = true } = {}) {
+  let advanced = false;
+  while (state.innLevel < MAX_INN_LEVEL && canUpgradeInn().ok) {
+    const level = currentInnLevel();
+    state.coins -= level.upgradeCost;
+    state.innLevel = Math.min(MAX_INN_LEVEL, state.innLevel + 1);
+    applyInnUnlocks();
+    syncVisibleOrders();
+    advanced = true;
+  }
+  if (!advanced) return false;
+  pendingInnUpgradeRevealLevel = state.innLevel;
+  if (announce) toast(`流沙驿焕新至 Lv${state.innLevel}`);
+  return true;
+}
+
 function canEnterRepairPage() {
   const current = nextRepairMilestone();
   if (!current) return { ok: true, reason: "四卷修缮已全部完成，流沙驿的灯火已连成一片。", milestone: null };
   if (milestoneInnLevel(current) > state.innLevel) {
     return {
       ok: false,
-      reason: `先将流沙驿升至 Lv${milestoneInnLevel(current)}，才能继续这段故事。`,
+      reason: "当前阶段完成后，将自动开放这处修缮。",
       milestone: current,
     };
   }
@@ -6534,6 +6595,21 @@ function normalizeBoard(value) {
   });
 }
 
+function normalizeSplitterToolCharges(value, boardValue) {
+  const board = normalizeBoard(boardValue);
+  const saved = value && typeof value === "object" ? value : {};
+  const normalized = {};
+  board.forEach((itemId, index) => {
+    if (itemId !== SPLITTER_TOOL_ITEM_ID) return;
+    normalized[index] = Math.max(1, Math.floor(Number(saved[index]) || 1));
+  });
+  return normalized;
+}
+
+function splitterToolChargesAt(index) {
+  return Math.max(0, Math.floor(Number(state.splitterToolCharges?.[index]) || 0));
+}
+
 function normalizeGeneratorStates(value) {
   if (!value || typeof value !== "object") return {};
   return Object.fromEntries(
@@ -6579,6 +6655,11 @@ function transferBoardItemState(itemId, fromIndex, toIndex) {
     state.giftBoxStates[toIndex] = giftState;
   }
   delete state.giftBoxStates[fromIndex];
+  delete state.splitterToolCharges[toIndex];
+  if (itemId === SPLITTER_TOOL_ITEM_ID) {
+    state.splitterToolCharges[toIndex] = Math.max(1, splitterToolChargesAt(fromIndex));
+  }
+  delete state.splitterToolCharges[fromIndex];
 }
 
 function clearGeneratorState(stateKey) {
@@ -7228,7 +7309,7 @@ function renderBoard() {
   state.board.forEach((itemId, index) => {
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
-    cell.className = `cell ${locked ? "locked" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${activeDailyPouchOutputIndices.has(index) ? "daily-pouch-receiving" : ""} ${activeDailyPouchStates.has(state.giftBoxStates[index]) ? "daily-pouch-dispensing" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
+    cell.className = `cell ${locked ? "locked" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${splitterPulseIndices.has(index) ? "splitter-result-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${activeDailyPouchOutputIndices.has(index) ? "daily-pouch-receiving" : ""} ${activeDailyPouchStates.has(state.giftBoxStates[index]) ? "daily-pouch-dispensing" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
     cell.dataset.index = index;
     cell.setAttribute("role", "button");
     cell.tabIndex = locked ? -1 : 0;
@@ -7335,6 +7416,32 @@ function renderBoard() {
 }
 
 function renderBonusBoardItem(cell, item, itemId, index) {
+  if (item.type === "upgrade_tool") {
+    cell.classList.add("upgrade-tool-cell");
+    const icon = document.createElement("img");
+    icon.className = "upgrade-tool";
+    icon.src = itemAssetSrc(item);
+    icon.alt = "";
+    cell.append(icon);
+    cell.setAttribute("aria-label", `${item.name}，极稀有，拖到未满阶食物上升一级`);
+    return true;
+  }
+  if (item.type === "splitter_tool") {
+    cell.classList.add("splitter-tool-cell");
+    const tool = document.createElement("div");
+    tool.className = "splitter-tool";
+    const icon = document.createElement("img");
+    icon.src = itemAssetSrc(item);
+    icon.alt = "";
+    tool.append(icon);
+    const badge = document.createElement("span");
+    badge.className = "splitter-charge-badge";
+    badge.textContent = String(splitterToolChargesAt(index));
+    tool.append(badge);
+    cell.append(tool);
+    cell.setAttribute("aria-label", `${item.name}，剩余${splitterToolChargesAt(index)}次，拖到二级或更高食材上拆解`);
+    return true;
+  }
   if (item.type === "bonus_bubble") {
     const bubbleState = state.bubbleStates[itemId];
     const contained = byId.get(item.bubbleItemId);
@@ -7513,6 +7620,20 @@ function renderSelected() {
     els.sellBtn.disabled = true;
     return;
   }
+  if (item.type === "splitter_tool") {
+    selectedPanel?.classList.add("no-sell");
+    els.selectedName.textContent = item.name;
+    els.selectedText.textContent = `剩余${splitterToolChargesAt(state.selectedIndex)}次 · 拖到Lv2或更高食材上，可拆成两个低一级食材`;
+    els.sellBtn.disabled = true;
+    return;
+  }
+  if (item.type === "upgrade_tool") {
+    selectedPanel?.classList.add("no-sell");
+    els.selectedName.textContent = `${item.name} · 极稀有`;
+    els.selectedText.textContent = "拖到任意未满阶食物上，使其立即升一阶";
+    els.sellBtn.disabled = true;
+    return;
+  }
   if (isGeneratorPiece(item)) {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
@@ -7547,7 +7668,7 @@ function isGeneratorMaterialPiece(item) {
 }
 
 function getPieceRemovalAction(item) {
-  if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina", "gift_box"].includes(item.type)) {
+  if (!item || ["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina", "gift_box", "splitter_tool", "upgrade_tool"].includes(item.type)) {
     return { mode: "unavailable", value: 0, requiresConfirm: false };
   }
   const cleanup = state.economyConfig?.boardCleanup ?? {};
@@ -8115,6 +8236,136 @@ function removeDragGhost() {
   if (dragging) dragging.ghost = null;
 }
 
+function isSplitterTargetItem(item) {
+  return Boolean(
+    item
+    && item.type !== "splitter_tool"
+    && Number(item.level) >= 2
+    && typeof item.mergeFrom === "string"
+    && foodLineMaxLevels.has(item.line),
+  );
+}
+
+function splitterAdjacentEmptyIndex(targetIndex) {
+  const row = Math.floor(targetIndex / BOARD_COLUMNS);
+  const col = targetIndex % BOARD_COLUMNS;
+  const candidates = [
+    col < BOARD_COLUMNS - 1 ? targetIndex + 1 : -1,
+    col > 0 ? targetIndex - 1 : -1,
+    row < BOARD_ROWS - 1 ? targetIndex + BOARD_COLUMNS : -1,
+    row > 0 ? targetIndex - BOARD_COLUMNS : -1,
+  ];
+  return candidates.find((index) => index >= 0 && !isBoardCellLocked(index) && !state.board[index]) ?? -1;
+}
+
+function clearSplitterDropTargets() {
+  els.board.querySelectorAll(".splitter-drop-target, .splitter-drop-ready").forEach((cell) => {
+    cell.classList.remove("splitter-drop-target", "splitter-drop-ready");
+  });
+}
+
+function updateSplitterDropTargets(hoveredIndex = null) {
+  clearSplitterDropTargets();
+  if (!dragging || byId.get(state.board[dragging.fromIndex])?.type !== "splitter_tool") return;
+  state.board.forEach((itemId, index) => {
+    if (!isSplitterTargetItem(byId.get(itemId))) return;
+    if (splitterAdjacentEmptyIndex(index) < 0) return;
+    const cell = els.board.querySelector(`.cell[data-index="${index}"]`);
+    cell?.classList.add("splitter-drop-target");
+    if (index === hoveredIndex) cell?.classList.add("splitter-drop-ready");
+  });
+}
+
+function isUpgradeToolTargetItem(item) {
+  return Boolean(
+    item
+    && typeof item.mergeTo === "string"
+    && foodLineMaxLevels.has(item.line)
+    && byId.has(item.mergeTo),
+  );
+}
+
+function clearUpgradeDropTargets() {
+  els.board.querySelectorAll(".upgrade-drop-target, .upgrade-drop-ready").forEach((cell) => {
+    cell.classList.remove("upgrade-drop-target", "upgrade-drop-ready");
+  });
+}
+
+function updateUpgradeDropTargets(hoveredIndex = null) {
+  clearUpgradeDropTargets();
+  if (!dragging || byId.get(state.board[dragging.fromIndex])?.type !== "upgrade_tool") return;
+  state.board.forEach((itemId, index) => {
+    if (!isUpgradeToolTargetItem(byId.get(itemId))) return;
+    const cell = els.board.querySelector(`.cell[data-index="${index}"]`);
+    cell?.classList.add("upgrade-drop-target");
+    if (index === hoveredIndex) cell?.classList.add("upgrade-drop-ready");
+  });
+}
+
+async function useUpgradeTool(toolIndex, targetIndex) {
+  const target = byId.get(state.board[targetIndex]);
+  if (!isUpgradeToolTargetItem(target)) {
+    toast(target && foodLineMaxLevels.has(target.line)
+      ? `${target.name}已经满阶，无法继续升阶。`
+      : "百味金笺只能用于未满阶食物。");
+    return false;
+  }
+  const upgraded = byId.get(target.mergeTo);
+  if (!upgraded) return false;
+  const accepted = await showGameConfirm({
+    eyebrow: "使用极稀有道具",
+    title: "确认升阶？",
+    message: "",
+    confirmLabel: "确认升阶",
+    tone: "primary",
+    upgradePreview: { from: target, to: upgraded },
+  });
+  if (!accepted || state.board[toolIndex] !== UPGRADE_TOOL_ITEM_ID || state.board[targetIndex] !== target.id) return false;
+  state.board[targetIndex] = upgraded.id;
+  state.board[toolIndex] = null;
+  state.selectedIndex = targetIndex;
+  state.pulseIndex = targetIndex;
+  playSfx("merge");
+  keeper(`${target.name}升为${upgraded.name}，百味金笺已经化入食香。`);
+  toast(`升阶成功 · ${upgraded.name}`);
+  clearPulseSoon();
+  return true;
+}
+
+function useSplitterTool(toolIndex, targetIndex) {
+  const target = byId.get(state.board[targetIndex]);
+  if (!isSplitterTargetItem(target)) {
+    toast("拆解剪只能用于Lv2或更高的食材。");
+    return false;
+  }
+  const outputIndex = splitterAdjacentEmptyIndex(targetIndex);
+  if (outputIndex < 0) {
+    toast("食材旁边需要留出一个空格，才能拆成两份。");
+    return false;
+  }
+  const lowerItem = byId.get(target.mergeFrom);
+  if (!lowerItem) return false;
+  state.board[targetIndex] = lowerItem.id;
+  state.board[outputIndex] = lowerItem.id;
+  const remaining = splitterToolChargesAt(toolIndex) - 1;
+  if (remaining > 0) {
+    state.splitterToolCharges[toolIndex] = remaining;
+  } else {
+    delete state.splitterToolCharges[toolIndex];
+    state.board[toolIndex] = null;
+  }
+  state.selectedIndex = targetIndex;
+  splitterPulseIndices = new Set([targetIndex, outputIndex]);
+  playSfx("merge");
+  keeper(`${target.name}拆成了两份${lowerItem.name}，拆解剪还剩${Math.max(0, remaining)}次。`);
+  toast(`${target.name} → ${lowerItem.name} ×2`);
+  setTimeout(() => {
+    splitterPulseIndices.clear();
+    renderBoard();
+  }, 760);
+  return true;
+}
+
 function moveCellPointer(event) {
   if (!dragging || dragging.pointerId !== event.pointerId) return;
   const dx = event.clientX - dragging.startX;
@@ -8139,10 +8390,12 @@ function moveCellPointer(event) {
     }
   }
   positionDragGhost(event.clientX, event.clientY);
+  updateSplitterDropTargets(hoveredIndex);
+  updateUpgradeDropTargets(hoveredIndex);
   els.storageBtn?.classList.toggle("drop-ready", isStorageDropPoint(event.clientX, event.clientY));
 }
 
-function endCellPointer(event) {
+async function endCellPointer(event) {
   if (!dragging || dragging.pointerId !== event.pointerId) return;
 
   const { fromIndex, itemId, moved, prevSelected } = dragging;
@@ -8173,6 +8426,13 @@ function endCellPointer(event) {
   suppressNextCellClickBriefly();
 
   if (isBoardCellLocked(toIndex)) {
+    if (["splitter_tool", "upgrade_tool"].includes(byId.get(itemId)?.type)) {
+      toast(byId.get(itemId)?.type === "upgrade_tool"
+        ? "百味金笺不能用来解锁棋盘格。"
+        : "拆解剪不能用来解锁棋盘格。");
+      render();
+      return;
+    }
     unlockLockedCellByMerge(fromIndex, toIndex, itemId);
     render();
     saveState();
@@ -8181,6 +8441,19 @@ function endCellPointer(event) {
   }
 
   const targetItemId = state.board[toIndex];
+  const sourceItem = byId.get(itemId);
+  if (sourceItem?.type === "upgrade_tool" && targetItemId) {
+    await useUpgradeTool(fromIndex, toIndex);
+    render();
+    saveState();
+    return;
+  }
+  if (sourceItem?.type === "splitter_tool" && targetItemId) {
+    useSplitterTool(fromIndex, toIndex);
+    render();
+    saveState();
+    return;
+  }
   if (!targetItemId) {
     state.board[toIndex] = itemId;
     state.board[fromIndex] = null;
@@ -8211,6 +8484,8 @@ function cleanupCellPointer(_cell, pointerId) {
   window.dispatchEvent(new Event("silkroad:board-item-release"));
   const sourceCell = dragging?.sourceCell;
   sourceCell?.classList.remove("is-drag-source");
+  clearSplitterDropTargets();
+  clearUpgradeDropTargets();
   try {
     if (sourceCell?.hasPointerCapture?.(pointerId)) sourceCell.releasePointerCapture(pointerId);
   } catch { /* ignore */ }
@@ -8265,7 +8540,7 @@ function getCellIndexFromPoint(x, y) {
   return null;
 }
 
-function handleCellClick(index, prevSelected = state.selectedIndex) {
+async function handleCellClick(index, prevSelected = state.selectedIndex) {
   if (activeDailyPouchOutputIndices.has(index)) return;
   const activeSelectedGiftState = state.giftBoxStates[prevSelected];
   if (prevSelected !== index && activeDailyPouchStates.has(activeSelectedGiftState)) {
@@ -8278,6 +8553,13 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
     queueBoardClickSound();
     if (prevSelected !== null && !isBoardCellLocked(prevSelected)) {
       const selectedItemId = state.board[prevSelected];
+      const selectedItem = byId.get(selectedItemId);
+      if (["splitter_tool", "upgrade_tool"].includes(selectedItem?.type)) {
+        toast(selectedItem.type === "upgrade_tool"
+          ? "百味金笺不能用来解锁棋盘格。"
+          : "拆解剪不能用来解锁棋盘格。");
+        return;
+      }
       unlockLockedCellByMerge(prevSelected, index, selectedItemId);
       render();
       saveState();
@@ -8291,6 +8573,20 @@ function handleCellClick(index, prevSelected = state.selectedIndex) {
 
   const itemId = state.board[index];
   const item = itemId ? byId.get(itemId) : null;
+  const previouslySelectedItem = prevSelected !== null ? byId.get(state.board[prevSelected]) : null;
+
+  if (prevSelected !== index && itemId && previouslySelectedItem?.type === "splitter_tool") {
+    useSplitterTool(prevSelected, index);
+    render();
+    saveState();
+    return;
+  }
+  if (prevSelected !== index && itemId && previouslySelectedItem?.type === "upgrade_tool") {
+    await useUpgradeTool(prevSelected, index);
+    render();
+    saveState();
+    return;
+  }
 
   // A second tap on the same generator should merge, while a single tap still produces food.
   if (item?.type === "manual_generator") {
@@ -10247,7 +10543,7 @@ function renderBag() {
   rewardEntries.forEach(({ entry, item }) => {
     const slot = document.createElement("button");
     slot.type = "button";
-    slot.className = `bag-slot reward-item-slot ${item.type === "bonus_coin" ? "coin-reward-slot" : ""} ${item.type === "bonus_ruby" ? "ruby-reward-slot" : ""} ${item.type === "bonus_stamina" ? "stamina-reward-slot" : ""} ${isGeneratorPiece(item) ? "generator-piece" : ""} ${item.type === "generator_material" ? "generator-material-piece" : ""}`;
+    slot.className = `bag-slot reward-item-slot ${item.type === "bonus_coin" ? "coin-reward-slot" : ""} ${item.type === "bonus_ruby" ? "ruby-reward-slot" : ""} ${item.type === "bonus_stamina" ? "stamina-reward-slot" : ""} ${item.type === "splitter_tool" ? "splitter-tool-slot" : ""} ${item.type === "upgrade_tool" ? "upgrade-tool-slot" : ""} ${isGeneratorPiece(item) ? "generator-piece" : ""} ${item.type === "generator_material" ? "generator-material-piece" : ""}`;
     slot.setAttribute("aria-label", `将1个${item.name}随机投放到棋盘，行囊内共${entry.quantity}个`);
     slot.title = `随机投放：${item.name}`;
     slot.innerHTML = `
@@ -10314,8 +10610,12 @@ function storeBoardItemToStorage(boardIndex) {
     return;
   }
   const bagIndex = firstEmptyBagIndex();
-  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina"].includes(boardItem?.type)) {
-    toast("气泡、铜币、红宝石和体力棋子需要留在棋盘上继续合成。");
+  if (["bonus_bubble", "bonus_coin", "bonus_ruby", "bonus_stamina", "splitter_tool", "upgrade_tool"].includes(boardItem?.type)) {
+    toast(boardItem?.type === "splitter_tool"
+      ? "拆解剪需要留在棋盘上使用。"
+      : boardItem?.type === "upgrade_tool"
+        ? "百味金笺需要留在棋盘上使用。"
+        : "气泡、铜币、红宝石和体力棋子需要留在棋盘上继续合成。");
     return;
   }
   if (boardItem?.type === "gift_box" && !giftPack?.shopOffer) {
@@ -10375,6 +10675,23 @@ function placeRewardItemFromBag(itemId) {
   const rewardEntry = state.rewardItems.find((entry) => entry.itemId === itemId);
   const item = byId.get(itemId);
   if (!rewardEntry || rewardEntry.quantity <= 0 || !item) return;
+  if (item.type === "splitter_tool") {
+    const existingIndex = state.board.findIndex((boardItemId) => boardItemId === itemId);
+    if (existingIndex >= 0) {
+      rewardEntry.quantity -= 1;
+      state.rewardItems = state.rewardItems.filter((entry) => entry.quantity > 0);
+      state.splitterToolCharges[existingIndex] = splitterToolChargesAt(existingIndex)
+        + Math.max(1, Math.floor(Number(item.chargesPerCopy) || 1));
+      state.selectedIndex = existingIndex;
+      state.pulseIndex = existingIndex;
+      keeper(`又添了一把拆解剪，现在可以使用${splitterToolChargesAt(existingIndex)}次。`);
+      clearPulseSoon();
+      render();
+      refreshRewardBagAfterPlacement();
+      saveState();
+      return;
+    }
+  }
   const boardIndex = randomUnlockedEmptyIndex();
   if (boardIndex === -1) {
     toast("案板已满，这份奖励仍留在行囊中。");
@@ -10383,6 +10700,9 @@ function placeRewardItemFromBag(itemId) {
   rewardEntry.quantity -= 1;
   state.rewardItems = state.rewardItems.filter((entry) => entry.quantity > 0);
   state.board[boardIndex] = itemId;
+  if (item.type === "splitter_tool") {
+    state.splitterToolCharges[boardIndex] = Math.max(1, Math.floor(Number(item.chargesPerCopy) || 1));
+  }
   state.selectedIndex = boardIndex;
   state.pulseIndex = boardIndex;
   keeper(`${item.name}已从行囊随机落到案板上。`);
@@ -11082,8 +11402,8 @@ function debugPrepareLv1Upgrade() {
   const level = currentInnLevel();
   state.coins = Math.max(state.coins, level.upgradeCost);
   state.repairPromptedFor = [...new Set([...state.repairPromptedFor, ...state.progressionConfig.milestones.map((milestone) => milestone.id)])];
-  keeper("调试：Lv1 修缮已完成，可验收扩建按钮。");
-  toast("Lv1 已准备扩建。");
+  keeper("调试：Lv1 修缮已完成，可验收自动焕新。");
+  toast("Lv1 已准备进入下一阶段。");
   if (els.bagModal.open) els.bagModal.close();
   saveState();
   switchPage("inn");
@@ -11262,12 +11582,22 @@ function itemAssetSrc(item) {
   return `./assets/${item.iconKey}.png${version}`;
 }
 
-function showGameConfirm({ eyebrow = "请确认", title = "确定继续吗？", message = "", confirmLabel = "确认", tone = "danger" } = {}) {
+function showGameConfirm({ eyebrow = "请确认", title = "确定继续吗？", message = "", confirmLabel = "确认", tone = "danger", upgradePreview = null } = {}) {
   if (!els.confirmModal) return Promise.resolve(false);
   if (pendingConfirmResolve) settleGameConfirm(false);
   els.confirmEyebrow.textContent = eyebrow;
   els.confirmTitle.textContent = title;
   els.confirmMessage.textContent = message;
+  els.confirmMessage.hidden = !message;
+  els.confirmUpgradePreview.hidden = !upgradePreview;
+  if (upgradePreview) {
+    els.confirmUpgradeFromImg.src = itemAssetSrc(upgradePreview.from);
+    els.confirmUpgradeFromName.textContent = upgradePreview.from.name;
+    els.confirmUpgradeFromLevel.textContent = `${upgradePreview.from.level}阶`;
+    els.confirmUpgradeToImg.src = itemAssetSrc(upgradePreview.to);
+    els.confirmUpgradeToName.textContent = upgradePreview.to.name;
+    els.confirmUpgradeToLevel.textContent = `${upgradePreview.to.level}阶`;
+  }
   els.confirmAccept.textContent = confirmLabel;
   els.confirmModal.querySelector(".confirm-detail")?.classList.toggle("primary", tone === "primary");
   return new Promise((resolve) => {

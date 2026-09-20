@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=repair-entry-logic-v3" />
+    <link rel="stylesheet" href="./styles.css?v=baiwei-jinjian-v1" />
     <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
     <link rel="stylesheet" href="./weekly-checkin.css?v=weekly-checkin-v3-daily-title" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
@@ -122,7 +122,6 @@
             <small id="innChapterEyebrow">第一章</small>
             <h1 id="innLevelName"><span>流沙驿</span><span>初明</span></h1>
             <span id="innChapterProgress" class="inn-chapter-progress" role="img" aria-label="本章修缮进度"></span>
-            <button id="innUpgradeBtn" class="inn-upgrade-seal" hidden>扩建</button>
           </aside>
         </header>
         <section class="inn-scene" id="innScene"></section>
@@ -465,7 +464,7 @@
       <div class="modal-inner repair-detail guide-detail">
         <button class="close" data-close="repairGuideModal">×</button>
         <div class="repair-hero"><div><span>主线推进</span><h2 id="repairGuideTitle">可以修缮流沙驿了</h2></div><img id="repairGuideAvatar" src="./assets/keeper_portrait.png" alt="掌柜" /></div>
-        <p id="repairGuideText">积攒足够铜钱，修缮驿站扩建空间。</p>
+        <p id="repairGuideText">积攒足够铜钱，逐处修缮流沙驿。</p>
         <div class="modal-actions single"><button id="repairGuideBtn" class="primary">知道了</button></div>
       </div>
     </dialog>
@@ -504,7 +503,7 @@
             <button id="debugDoughBtn">放入麦面</button>
             <button id="debugRenovationBtn">预览修缮页</button>
             <button id="debugNextRepairBtn">推进修缮条件</button>
-            <button id="debugLv1UpgradeBtn">Lv1待扩建</button>
+            <button id="debugLv1UpgradeBtn">Lv1阶段完成</button>
             <button id="debugClearBtn" class="danger">清空案板</button>
           </div>
           <h3 class="debug-stage-title">成长阶段</h3>
@@ -527,6 +526,17 @@
         <small id="confirmEyebrow">请确认</small>
         <h2 id="confirmTitle">确定继续吗？</h2>
         <p id="confirmMessage"></p>
+        <div id="confirmUpgradePreview" class="confirm-upgrade-preview" hidden>
+          <figure>
+            <img id="confirmUpgradeFromImg" alt="" />
+            <figcaption><b id="confirmUpgradeFromName"></b><span id="confirmUpgradeFromLevel"></span></figcaption>
+          </figure>
+          <i aria-hidden="true">›</i>
+          <figure>
+            <img id="confirmUpgradeToImg" alt="" />
+            <figcaption><b id="confirmUpgradeToName"></b><span id="confirmUpgradeToLevel"></span></figcaption>
+          </figure>
+        </div>
         <div class="confirm-actions">
           <button id="confirmCancel" type="button">取消</button>
           <button id="confirmAccept" class="danger" type="button">确认</button>
@@ -716,6 +726,6 @@
     <script src="./chapter-story.js?v=opening-audio-v1"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
     <script src="./new-player-guide.js?v=repair-entry-logic-v3"></script>
-    <script src="./app.js?v=first-repair-return-guide-v4"></script>
+    <script src="./app.js?v=baiwei-jinjian-auto-progress-v1"></script>
   </body>
 </html>

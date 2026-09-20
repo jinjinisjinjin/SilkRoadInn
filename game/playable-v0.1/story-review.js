@@ -48,7 +48,7 @@
       const volume = Number(opening[1]);
       return {
         title: `升至 Lv${volumeStartLevels[volume]} 时开卷`,
-        detail: `完成上一卷并扩建后，先播第${volume}卷开场，然后播放升级揭示。`,
+        detail: `完成上一卷后，先播第${volume}卷开场，然后播放焕新揭示。`,
       };
     }
     const [phase, milestoneId] = segmentId.split(":");

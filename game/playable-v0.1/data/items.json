@@ -938,6 +938,38 @@
       }
     },
     {
+      "id": "tool_splitter_scissors",
+      "type": "splitter_tool",
+      "name": "拆解剪",
+      "modernName": "拖到二级或更高食材上，可拆成两个低一级食材",
+      "line": "activity_tool",
+      "iconKey": "items/tools/ui_scissors_splitter_v1",
+      "assetVersion": "scissors-splitter-v1",
+      "source": "activity_and_quiz_reward",
+      "mergeFrom": null,
+      "mergeTo": null,
+      "sellValue": 0,
+      "codexId": null,
+      "highValueConfirm": false,
+      "chargesPerCopy": 1
+    },
+    {
+      "id": "tool_baiwei_jinjian",
+      "type": "upgrade_tool",
+      "name": "百味金笺",
+      "modernName": "拖到任意未满阶食物上，使其立即升一阶",
+      "line": "activity_tool",
+      "iconKey": "ui_baiwei_jinjian_v1",
+      "assetVersion": "baiwei-jinjian-v1",
+      "source": "rare_activity_task_and_quiz_reward",
+      "rarity": "extremely_rare",
+      "mergeFrom": null,
+      "mergeTo": null,
+      "sellValue": 0,
+      "codexId": null,
+      "highValueConfirm": true
+    },
+    {
       "id": "bonus_ruby_01",
       "type": "bonus_ruby",
       "level": 1,

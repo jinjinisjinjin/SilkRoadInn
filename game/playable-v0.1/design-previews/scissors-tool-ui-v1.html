@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>拆解剪 · 道具UI原型</title>
+  <style>
+    *{box-sizing:border-box} :root{--ink:#4c3020;--red:#914c3d;--gold:#d4a85e;--paper:#f5e4bd;--cell:#edc778}
+    body{margin:0;min-height:100dvh;color:var(--ink);background:#291b14 url("../assets/kitchen-bg.png") center/cover fixed;font-family:"Songti SC","STSong",serif}
+    body:before{content:"";position:fixed;inset:0;background:rgba(43,25,15,.56);backdrop-filter:blur(5px)}
+    .page{position:relative;z-index:1;width:min(940px,100%);margin:auto;padding:max(20px,env(safe-area-inset-top)) 18px max(26px,env(safe-area-inset-bottom))}
+    header{text-align:center;color:#f8e7c4;text-shadow:0 2px 6px #2a160d} header small{color:#d8ae6b;letter-spacing:.25em} h1{margin:6px 0 4px;font-size:clamp(27px,7vw,38px);letter-spacing:.09em} header p{margin:0;color:#e1c8a7;font-size:14px}
+    .layout{display:grid;grid-template-columns:minmax(320px,1.08fr) minmax(280px,.92fr);gap:18px;margin-top:20px}
+    .panel{position:relative;border:1px solid rgba(218,180,117,.72);background:linear-gradient(145deg,rgba(253,239,202,.96),rgba(226,191,132,.94));box-shadow:0 18px 35px rgba(17,8,3,.45),inset 0 0 0 5px rgba(255,245,215,.28)}
+    .board-panel{padding:16px}.board-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.board-head b{font-size:19px}.board-head span{color:#875641;font-size:13px}
+    .board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:9px;border-radius:18px;background:linear-gradient(#8b562f,#6f4025);box-shadow:inset 0 3px 8px rgba(42,20,8,.5),0 2px 0 #eccf91}
+    .cell{position:relative;aspect-ratio:1;border:0;border-radius:11px;background:linear-gradient(140deg,rgba(255,246,205,.38),rgba(142,98,46,.1)),var(--cell);box-shadow:inset 0 0 0 2px rgba(255,235,180,.3),inset 0 0 0 1px rgba(95,59,28,.2);cursor:default}
+    .cell.item-cell{cursor:pointer}.cell img{position:absolute;inset:7%;width:86%;height:86%;object-fit:contain;filter:drop-shadow(0 3px 2px rgba(87,46,17,.25));user-select:none;pointer-events:none}
+    .cell.scissors{cursor:grab;touch-action:none}.cell.scissors:active{cursor:grabbing}.cell.scissors img{inset:4%;width:92%;height:92%;transform:rotate(-3deg)}
+    .charge{position:absolute;z-index:4;right:3px;bottom:3px;display:flex;align-items:center;justify-content:center;width:14px;height:14px;padding:0 0 1px;border:1px solid rgba(255,232,181,.9);border-radius:50%;color:#fff6dd;background:linear-gradient(#9d594c,#7b3c34);box-shadow:0 1px 2px rgba(75,36,26,.6),inset 0 0 0 1px rgba(255,225,164,.2);font:700 8px/1 Arial,sans-serif;font-variant-numeric:tabular-nums;text-align:center}.charge:before{content:"";position:absolute;inset:1px;border:1px solid rgba(255,225,164,.18);border-radius:50%}
+    .scissors.dragging{opacity:.34;box-shadow:inset 0 0 0 3px rgba(132,75,47,.55)}
+    .eligible{animation:target-glow 1.15s ease-in-out infinite}.eligible:after{content:"可拆";position:absolute;left:50%;top:-8px;z-index:3;padding:2px 6px;border-radius:8px;color:#fff2ca;background:#8b4939;transform:translateX(-50%);font-size:10px;white-space:nowrap;box-shadow:0 2px 4px #50261b}.eligible.drop-ready{z-index:4;transform:scale(1.05);box-shadow:0 0 0 4px #934736,inset 0 0 0 3px #ffe6a7,0 0 24px #ffd273}
+    .drag-ghost{position:fixed;z-index:99;width:78px;height:78px;pointer-events:none;transform:translate(-50%,-50%) rotate(-6deg) scale(1.05);filter:drop-shadow(0 9px 5px rgba(45,20,8,.38))}.drag-ghost img{width:100%;height:100%;object-fit:contain}.drag-ghost .charge{right:8px;bottom:8px}
+    .result-pop{animation:result-pop .5s cubic-bezier(.2,.9,.3,1.25)}
+    .hint{display:flex;align-items:center;gap:9px;min-height:48px;margin-top:12px;padding:9px 12px;border-top:1px solid rgba(128,81,40,.25);color:#74503a;font-size:14px;line-height:1.45}.hint i{display:grid;place-items:center;flex:0 0 26px;height:26px;border-radius:50%;color:#f8e7c4;background:#8c4c3d;font-style:normal;font-weight:700}
+    .details{padding:21px 21px 18px}.name-line{display:flex;align-items:center;gap:13px;padding-bottom:15px;border-bottom:1px solid rgba(119,77,38,.25)}.icon-wrap{position:relative;width:74px;height:74px;border-radius:15px;background:linear-gradient(145deg,#f4d995,#c8944c);box-shadow:inset 0 0 0 2px rgba(255,241,191,.55),0 5px 10px rgba(85,45,21,.2)}.icon-wrap img{width:100%;height:100%;object-fit:contain}.icon-wrap .charge{right:-3px;bottom:-3px}.name-line h2{margin:0 0 5px;font-size:25px}.name-line p{margin:0;color:#92513f;font-size:13px;letter-spacing:.08em}
+    .rule{margin:17px 0 0;padding:0;list-style:none}.rule li{position:relative;margin:0 0 11px;padding-left:25px;line-height:1.55;font-size:15px}.rule li:before{content:"";position:absolute;left:3px;top:.52em;width:9px;height:9px;background:#a35442;transform:rotate(45deg);box-shadow:0 0 0 2px #eac98a}
+    .formula{display:flex;align-items:center;justify-content:center;gap:9px;margin:17px 0 4px;padding:13px 7px;border:1px solid rgba(139,87,43,.25);background:rgba(255,243,210,.43)}.formula figure{margin:0;text-align:center}.formula img{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 3px 2px rgba(78,44,22,.2))}.formula figcaption{font-size:11px;color:#7d5942}.formula b{font-size:21px;color:#99513f}.reset{display:block;width:100%;min-height:42px;margin-top:15px;border:1px solid #7b4434;border-radius:4px;color:#fff0cf;background:linear-gradient(#985544,#7b3f34);box-shadow:inset 0 0 0 2px rgba(255,221,165,.14);font:700 15px "Songti SC",serif;cursor:pointer}
+    .note{margin:13px 0 0;color:#795943;font-size:12px;line-height:1.55}.note b{color:#874838}
+    @keyframes tool-float{50%{transform:translateY(-4px)}}@keyframes target-glow{50%{box-shadow:0 0 0 3px #a65442,inset 0 0 0 3px #ffe3a1,0 0 17px #ffd77c}}@keyframes result-pop{0%{transform:scale(.55);opacity:.2}100%{transform:none;opacity:1}}
+    @media(max-width:740px){.page{padding-left:10px;padding-right:10px}.layout{grid-template-columns:1fr;max-width:470px;margin:16px auto 0}.details{padding:18px}.board-panel{padding:12px}.cell{border-radius:9px}}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header><small>流沙驿 · 活动道具</small><h1>拆解剪</h1><p>把高阶食材拆回两个低一阶食材</p></header>
+    <section class="layout">
+      <article class="panel board-panel">
+        <div class="board-head"><b>棋盘试玩</b><span id="stepText">拖动剪刀</span></div>
+        <div class="board" id="board" aria-label="拆解剪道具演示棋盘"></div>
+        <div class="hint"><i>剪</i><span id="hintText">按住剪刀，拖到 Lv2 或更高的食材格子上。</span></div>
+      </article>
+      <article class="panel details">
+        <div class="name-line">
+          <div class="icon-wrap"><img src="../assets/items/tools/ui_scissors_splitter_v1.png" alt="拆解剪"><span class="charge" id="cardCharge">3</span></div>
+          <div><h2>拆解剪</h2><p>活动限定 · 可重复使用</p></div>
+        </div>
+        <ul class="rule">
+          <li>按住剪刀，拖到 <b>Lv2 或更高</b>的食材格子。</li>
+          <li>目标退回一级，并变成两个相同食材；每次消耗一次。</li>
+          <li>右下角数字表示剩余次数，归零后剪刀从棋盘消失。</li>
+        </ul>
+        <div class="formula" aria-label="三级食材拆成两个二级食材">
+          <figure><img src="../assets/dairy_lv03_laojiang_v1.png" alt="三级酪浆"><figcaption>Lv3 酪浆</figcaption></figure><b>→</b>
+          <figure><img src="../assets/dairy_lv02_rumi_v1.png" alt="二级乳糜"><figcaption>Lv2 乳糜</figcaption></figure><b>＋</b>
+          <figure><img src="../assets/dairy_lv02_rumi_v1.png" alt="二级乳糜"><figcaption>Lv2 乳糜</figcaption></figure>
+        </div>
+        <button class="reset" id="reset" type="button">重新演示</button>
+        <p class="note"><b>建议规则：</b>拆解时至少要有一个空格；原位置保留一个结果，另一个落到最近的空格。Lv1、生成器、宝袋和奖励棋子不可拆。</p>
+      </article>
+    </section>
+  </main>
+  <script>
+    const board=document.getElementById('board');const step=document.getElementById('stepText');const hint=document.getElementById('hintText');const cardCharge=document.getElementById('cardCharge');
+    let charge=3,drag=null,lastResult=[];const ITEMS={scissors:'../assets/items/tools/ui_scissors_splitter_v1.png',l3:'../assets/dairy_lv03_laojiang_v1.png',l2:'../assets/dairy_lv02_rumi_v1.png',l1:'../assets/dairy_lv01_milk_v1.png'};let state={5:'l1',12:'l3',16:'scissors',19:'l2'};
+    const label=t=>t==='scissors'?'拆解剪':t==='l3'?'三级酪浆':t==='l2'?'二级乳糜':'一级乳汁';
+    function cell(i,type){const b=document.createElement('button');b.type='button';b.className='cell';b.dataset.i=i;if(type){b.classList.add('item-cell',type);const img=document.createElement('img');img.src=ITEMS[type];img.alt=label(type);b.append(img)}if(type==='scissors'){const n=document.createElement('span');n.className='charge';n.textContent=charge;b.append(n)}return b}
+    function render(){board.innerHTML='';for(let i=0;i<25;i++){const type=state[i]||'';const b=cell(i,type);if(lastResult.includes(i))b.classList.add('result-pop');board.append(b)}cardCharge.textContent=charge;lastResult=[]}
+    function adjacentEmpty(i){const col=i%5;const candidates=[];if(col<4)candidates.push(i+1);if(col>0)candidates.push(i-1);if(i>=5)candidates.push(i-5);if(i<20)candidates.push(i+5);return candidates.find(n=>!state[n])}
+    function finishDrag(target){if(!drag)return;const type=target?state[target]:'';const next=type==='l3'?'l2':type==='l2'?'l1':'';const empty=target!=null?adjacentEmpty(target):undefined;if(next&&empty!==undefined){state[target]=next;state[empty]=next;charge--;lastResult=[target,empty];if(charge===0)delete state[16];step.textContent='拆解完成 · 剩余 '+charge+' 次';hint.textContent=label(type)+'已拆成两个'+label(next)+'，一个留在本格，另一个落到相邻空格。'}else{step.textContent='未使用';hint.textContent=next?'目标旁边没有空格，剪刀已返回原位。':'只能拆解 Lv2 或更高的食材，剪刀已返回原位。'}drag.ghost.remove();drag=null;render()}
+    board.addEventListener('pointerdown',e=>{const source=e.target.closest('.cell.scissors');if(!source||charge<1)return;e.preventDefault();const ghost=document.createElement('div');ghost.className='drag-ghost';ghost.innerHTML='<img src="'+ITEMS.scissors+'" alt=""><span class="charge">'+charge+'</span>';document.body.append(ghost);drag={ghost,target:null};source.classList.add('dragging');board.querySelectorAll('.l2,.l3').forEach(c=>c.classList.add('eligible'));step.textContent='拖到发光食材';hint.textContent='松手后，食材会在本格和一个相邻空格中拆成两个。';move(e)});
+    function move(e){if(!drag)return;drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';document.querySelectorAll('.drop-ready').forEach(c=>c.classList.remove('drop-ready'));const c=document.elementFromPoint(e.clientX,e.clientY)?.closest('.cell');const i=c?Number(c.dataset.i):null;if(c&&(state[i]==='l2'||state[i]==='l3')){c.classList.add('drop-ready');drag.target=i}else drag.target=null}
+    document.addEventListener('pointermove',e=>{if(drag){e.preventDefault();move(e)}},{passive:false});document.addEventListener('pointerup',()=>finishDrag(drag?.target));document.addEventListener('pointercancel',()=>finishDrag(null));
+    document.getElementById('reset').addEventListener('click',()=>{charge=3;drag?.ghost.remove();drag=null;lastResult=[];state={5:'l1',12:'l3',16:'scissors',19:'l2'};step.textContent='拖动剪刀';hint.textContent='按住剪刀，拖到 Lv2 或更高的食材格子上。';render()});render();
+  </script>
+</body>
+</html>
