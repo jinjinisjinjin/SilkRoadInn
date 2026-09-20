@@ -1611,12 +1611,24 @@ function initializeScissorsToolQaScenario() {
 }
 
 function initializeUpgradeToolQaScenario() {
-  state.board = Array(BOARD_SIZE).fill(null);
+  const upgradeableFoodIds = state.items
+    .filter(isUpgradeToolTargetItem)
+    .sort((left, right) => (Number(left.level) - Number(right.level)) || left.line.localeCompare(right.line))
+    .map((item) => item.id);
+  const maxFoodIds = state.items
+    .filter((item) => foodLineMaxLevels.has(item.line) && Number(item.level) === foodLineMaxLevels.get(item.line))
+    .map((item) => item.id);
+  state.board = Array.from(
+    { length: BOARD_SIZE },
+    (_, index) => upgradeableFoodIds[index % upgradeableFoodIds.length] ?? "hubing_02_lubing",
+  );
+  [6, 20, 48, BOARD_SIZE - 1].forEach((index, maxIndex) => {
+    state.board[index] = maxFoodIds[maxIndex % maxFoodIds.length] ?? "hubing_08_gulouzi";
+  });
+  [0, 34, BOARD_SIZE - 3].forEach((index) => {
+    state.board[index] = null;
+  });
   state.board[boardIndex(4, 2)] = UPGRADE_TOOL_ITEM_ID;
-  state.board[boardIndex(4, 4)] = "dairy_03_laojiang";
-  state.board[boardIndex(5, 4)] = "hubing_02_lubing";
-  state.board[boardIndex(5, 2)] = "dairy_01_milk";
-  state.board[boardIndex(4, 5)] = "hubing_08_gulouzi";
   state.unlockedCells = Array.from({ length: BOARD_SIZE }, (_, index) => index);
   state.rewardItems = [{ itemId: UPGRADE_TOOL_ITEM_ID, quantity: 1 }];
   state.giftPacks = [];
@@ -1634,7 +1646,7 @@ function renderUpgradeToolQaControls() {
   controls.className = "upgrade-tool-qa-controls";
   controls.setAttribute("aria-label", "百味金笺测试工具");
   controls.innerHTML = `
-    <span><strong>百味金笺测试</strong><small>拖到任意未满阶食物上</small></span>
+    <span><strong>百味金笺 · 近满盘</strong><small>拖到任意未满阶食物上</small></span>
     <button type="button">重置测试棋盘</button>
   `;
   controls.querySelector("button").addEventListener("click", () => {
