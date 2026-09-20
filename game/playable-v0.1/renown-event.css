@@ -129,7 +129,7 @@
 }
 
 @keyframes renownEntryReady {
-  50% { filter: brightness(1.12); transform: translateY(-2px); }
+  50% { filter: brightness(1.14) drop-shadow(0 0 5px rgba(232, 178, 91, .54)); }
 }
 
 .renown-order-mark {
@@ -498,14 +498,206 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
+/* The event page is one complete recommendation board: the keeper, ranking
+   slips, title and progress all share the same illustrated surface. */
+.renown-event-scroll {
+  padding: 28px 14px 20px;
+}
+
+.renown-event-poster {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid rgba(103, 62, 31, .72);
+  border-radius: 14px;
+  background: #e7c98d;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 239, 193, .44),
+    0 8px 18px rgba(67, 37, 20, .24);
+  overflow: hidden;
+}
+
+.renown-event-poster::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 207, .12), transparent 25%),
+    linear-gradient(0deg, rgba(58, 31, 18, .2), transparent 20%);
+  pointer-events: none;
+}
+
+.renown-poster-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.renown-event-poster .renown-event-head {
+  position: absolute;
+  z-index: 3;
+  top: 3.8%;
+  right: 13%;
+  left: 13%;
+  text-align: center;
+}
+
+.renown-event-poster .renown-event-head span {
+  display: inline-block;
+  padding: 3px 9px 2px;
+  border: 1px solid rgba(142, 77, 44, .24);
+  border-radius: 999px;
+  color: #8f4936;
+  background: rgba(249, 225, 175, .62);
+  font-size: 10px;
+  letter-spacing: .14em;
+}
+
+.renown-event-poster .renown-event-head h2 {
+  margin-top: 3px;
+  color: #672d27;
+  font-size: 34px;
+  text-shadow: 0 2px 0 rgba(255, 236, 190, .72);
+}
+
+.renown-event-poster .renown-route {
+  position: absolute;
+  z-index: 3;
+  top: 16.4%;
+  right: 7%;
+  left: 7%;
+  grid-template-columns: 39px 1fr 48px;
+  gap: 6px;
+  margin: 0;
+}
+
+.renown-event-poster .renown-route-seal {
+  width: 36px;
+  height: 36px;
+  border-color: rgba(143, 51, 43, .72);
+  color: rgba(139, 46, 40, .86);
+  background: rgba(248, 221, 172, .62);
+  font-size: 21px;
+}
+
+.renown-event-poster .renown-route-track {
+  height: 13px;
+  border-color: rgba(104, 66, 36, .84);
+  background: rgba(84, 51, 29, .31);
+}
+
+.renown-event-poster .renown-route-chest {
+  width: 48px;
+  height: 44px;
+}
+
+.renown-event-poster .renown-route-chest img {
+  width: 49px;
+  height: 49px;
+}
+
+.renown-event-poster .renown-route strong {
+  top: 22px;
+  padding: 2px 7px;
+  font-size: 10px;
+}
+
+.renown-keeper-line {
+  position: absolute;
+  z-index: 3;
+  right: 8px;
+  bottom: 7px;
+  left: 8px;
+  margin: 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(139, 86, 42, .34);
+  border-radius: 9px;
+  color: #6e402d;
+  background: rgba(255, 248, 220, .88);
+  box-shadow: 0 2px 6px rgba(77, 43, 24, .11);
+  font: 800 12px/1.35 "STKaiti", "Kaiti SC", serif;
+  text-align: center;
+}
+
+.renown-event-poster .renown-keeper-line {
+  right: 5%;
+  bottom: 2.2%;
+  left: 5%;
+  padding: 8px 10px 7px;
+  border-color: rgba(106, 61, 31, .42);
+  border-radius: 8px;
+  color: #5d3528;
+  background: rgba(249, 232, 188, .9);
+  box-shadow: 0 3px 8px rgba(55, 31, 18, .18);
+  font-size: 12px;
+}
+
+.renown-reward-flight {
+  position: fixed;
+  z-index: 120;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 4px rgba(63, 34, 20, .28));
+}
+
+.renown-seal-burst {
+  position: fixed;
+  z-index: 121;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 3px double rgba(164, 57, 45, .92);
+  color: #a13b30;
+  background: rgba(255, 239, 197, .9);
+  box-shadow: 0 6px 16px rgba(66, 31, 20, .22);
+  font: 900 30px/1 "STKaiti", "Kaiti SC", serif;
+  pointer-events: none;
+  animation: renownSealBurst 700ms ease-out both;
+}
+
+.cell.renown-reward-pending > .item { opacity: 0; }
+
+.cell.renown-reward-land {
+  animation: renownRewardLand 480ms cubic-bezier(.2, .75, .2, 1) both;
+}
+
+.renown-bag-land { animation: renownBagLand 480ms ease-out both; }
+
+@keyframes renownSealBurst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8) rotate(-13deg); }
+  35% { opacity: 1; transform: translate(-50%, -50%) scale(.92) rotate(-4deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08) rotate(-4deg); }
+}
+
+@keyframes renownRewardLand {
+  0% { filter: brightness(1.45); transform: scale(.5); }
+  55% { filter: brightness(1.16); transform: scale(1.12); }
+  100% { filter: none; transform: scale(1); }
+}
+
+@keyframes renownBagLand {
+  0% { transform: scale(.84); }
+  55% { transform: scale(1.15) rotate(-4deg); }
+  100% { transform: scale(1); }
+}
+
 @media (max-width: 370px) {
   .renown-event-scroll { padding-inline: 18px; }
-  .renown-event-stage { grid-template-columns: 112px minmax(0, 1fr); }
-  .renown-keeper-card { min-height: 174px; }
-  .renown-keeper-card img { min-height: 174px; }
-  .renown-event-brief > p { padding-inline: 8px; font-size: 14px; }
+  .renown-event-poster .renown-event-head h2 { font-size: 30px; }
+  .renown-event-poster .renown-route { right: 6%; left: 6%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .renown-event-entry.is-complete { animation: none; }
+  .renown-event-entry.is-complete,
+  .renown-seal-burst,
+  .cell.renown-reward-land,
+  .renown-bag-land { animation: none; }
 }
