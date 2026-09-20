@@ -96,14 +96,14 @@
       "repairCost": 10,
       "repairParts": [
         { "cost": 10 },
-        { "cost": 110 },
         { "cost": 120 },
         { "cost": 130 },
         { "cost": 140 },
         { "cost": 150 },
         { "cost": 160 },
         { "cost": 170 },
-        { "cost": 180 }
+        { "cost": 180 },
+        { "cost": 200 }
       ],
       "repairValue": 60,
       "scenePosition": "front",

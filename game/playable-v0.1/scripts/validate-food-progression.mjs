@@ -96,9 +96,9 @@ for (const milestone of progression.milestones) {
   }
 }
 assert.equal(progression.milestones.reduce((sum, milestone) =>
-  sum + sandbox.repairPartCosts(milestone).reduce((total, cost) => total + cost, 0), 0), 39510);
+  sum + sandbox.repairPartCosts(milestone).reduce((total, cost) => total + cost, 0), 0), 39600);
 const firstRepair = progression.milestones.find((milestone) => milestone.id === "tutorial_complete");
-assert.deepEqual(sandbox.repairPartCosts(firstRepair), [10, 110, 120, 130, 140, 150, 160, 170, 180]);
+assert.deepEqual(sandbox.repairPartCosts(firstRepair), [10, 120, 130, 140, 150, 160, 170, 180, 200]);
 assert.equal(orders.orders.find((order) => order.id === "order_001_guard_lubing")?.reward?.coins, 10);
 
 // Half-open legacy packs retain the same output positions and total rewards.
@@ -129,4 +129,4 @@ for (let index = 0; index < 100; index++) {
   const next = sandbox.pickOrder();
   assert.ok(next.demand.every((d) => byId.get(d.itemId)?.level < 5));
 }
-console.log("Food progression passed: all 22 repair gates, six lines, deterministic gifts, legacy gifts, discovery gates, multipliers, difficult-order limit and 39,510 repair cost.");
+console.log("Food progression passed: all 22 repair gates, six lines, deterministic gifts, legacy gifts, discovery gates, multipliers, difficult-order limit and 39,600 repair cost.");

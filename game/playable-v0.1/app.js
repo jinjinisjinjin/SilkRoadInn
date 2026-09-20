@@ -73,6 +73,12 @@ const STAMINA_POUCH_QA_RESET = STAMINA_POUCH_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const LV4_MARKET_ORDERS_QA_MODE = QA_MODE === "lv4-market-orders-v1";
 const GENERATOR_ORDER_QA_MODE = QA_MODE === "generator-order-progression-v1";
+const CARAVAN_RENOWN_QA_MODE = QA_MODE === "caravan-renown-v1";
+const CARAVAN_RENOWN_QA_RESET = CARAVAN_RENOWN_QA_MODE
+  && new URLSearchParams(location.search).get("reset") === "1";
+const CARAVAN_RENOWN_QA_STAGE = new URLSearchParams(location.search).get("stage") || "progress";
+const CARAVAN_RENOWN_QA_FULL_BOARD = CARAVAN_RENOWN_QA_MODE
+  && new URLSearchParams(location.search).get("board") === "full";
 const GLOBAL_LOADING_QA_MODE = QA_MODE === "global-loading-v1";
 const PROGRESSION_FLOW_QA_MODE = QA_MODE === "progression-flow-v1";
 const REPAIR_PROGRESS_QA_MODE = QA_MODE === "repair-progress-v1";
@@ -131,7 +137,7 @@ const PROGRESSION_FLOW_QA_RESET = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("reset") === "1";
 const REWARD_BAG_DEMO_MODE = PROGRESSION_FLOW_QA_MODE
   && new URLSearchParams(location.search).get("demo") === "reward-bag";
-const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE || SCISSORS_TOOL_QA_MODE || UPGRADE_TOOL_QA_MODE;
+const ISOLATED_QA_MODE = DAILY_SHOP_QA_MODE || GENERATOR_QA_MODE || GENERATOR_MATERIAL_QA_MODE || GENERATOR_CHAIN_QA_MODE || ORDER_GIFT_QA_MODE || RUBY_DISPLAY_QA_MODE || STAMINA_POUCH_QA_MODE || LV4_MARKET_ORDERS_QA_MODE || GENERATOR_ORDER_QA_MODE || CARAVAN_RENOWN_QA_MODE || GLOBAL_LOADING_QA_MODE || PROGRESSION_FLOW_QA_MODE || REPAIR_PROGRESS_QA_MODE || CHAPTER_STORY_QA_MODE || STORY_ARCHIVE_QA_MODE || NEW_PLAYER_GUIDE_QA_MODE || UPGRADE_REVEAL_QA_MODE || LONGSCROLL_CAST_QA_MODE || SCISSORS_TOOL_QA_MODE || UPGRADE_TOOL_QA_MODE;
 const SAVE_KEY = FULL_GAME_TRIAL_MODE
   ? "silkroad_tavern_proto_v02_trial_full_game_v1"
   : UPGRADE_TOOL_QA_MODE
@@ -140,6 +146,8 @@ const SAVE_KEY = FULL_GAME_TRIAL_MODE
   ? "silkroad_tavern_proto_v02_qa_scissors_tool_v1"
   : UPGRADE_REVEAL_QA_MODE
   ? `silkroad_tavern_proto_v02_qa_upgrade_reveal_v1_lv${UPGRADE_REVEAL_QA_LEVEL}`
+  : CARAVAN_RENOWN_QA_MODE
+  ? "silkroad_tavern_proto_v02_qa_caravan_renown_v1"
   : DAILY_SHOP_QA_MODE
   ? "silkroad_tavern_proto_v02_qa_daily_shop_v1"
   : LONGSCROLL_CAST_QA_MODE
@@ -184,6 +192,11 @@ const LEGACY_OPENING_STAMINA = 18;
 const OPENING_COPPER_VERSION = 2;
 const LEGACY_OPENING_COPPER = Object.freeze([40, 400]);
 const COIN_DENOMINATION_MULTIPLIER = 10;
+const CARAVAN_RENOWN_SCHEMA_VERSION = 2;
+const CARAVAN_RENOWN_TARGET = 10;
+const CARAVAN_RENOWN_REWARD_COUNT = 6;
+const CARAVAN_RENOWN_UNLOCK_ORDERS = 8;
+const CARAVAN_RENOWN_MIN_COINS = 50;
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
 const BOARD_SIZE = BOARD_COLUMNS * BOARD_ROWS;
@@ -765,6 +778,7 @@ const state = {
   weeklyCheckinClaimedDays: 0,
   weeklyCheckinLastClaimDay: "",
   weeklyCheckinRound: 1,
+  caravanRenown: null,
   shopPurchaseCycle: -1,
   shopPurchasedOfferIds: [],
   shopFoodItemIds: null,
@@ -845,6 +859,13 @@ const els = {
   weeklyCheckinProgress: document.querySelector("#weeklyCheckinProgress"),
   weeklyCheckinClaim: document.querySelector("#weeklyCheckinClaim"),
   weeklyCheckinHint: document.querySelector("#weeklyCheckinHint"),
+  renownEventBtn: document.querySelector("#renownEventBtn"),
+  renownEventBadge: document.querySelector("#renownEventBadge"),
+  renownEventModal: document.querySelector("#renownEventModal"),
+  renownEventProgress: document.querySelector("#renownEventProgress"),
+  renownEventProgressBar: document.querySelector("#renownEventProgressBar"),
+  renownRewardPreview: document.querySelector("#renownRewardPreview"),
+  renownEventClaim: document.querySelector("#renownEventClaim"),
   innSoundToggleBtn: document.querySelector("#innSoundToggleBtn"),
   innScene: document.querySelector("#innScene"),
   innScoreText: document.querySelector("#innScoreText"),
@@ -2520,6 +2541,7 @@ async function boot() {
   if (state.currentPage === "board") tickGenerators();
   if (DAILY_SHOP_QA_MODE) setTimeout(openDailyShop, 100);
   if (WEEKLY_CHECKIN_PREVIEW) setTimeout(openWeeklyCheckin, 100);
+  if (CARAVAN_RENOWN_QA_MODE) setTimeout(openCaravanRenown, 100);
   if (UPGRADE_REVEAL_QA_MODE) setTimeout(() => playInnUpgradeReveal(UPGRADE_REVEAL_QA_LEVEL), 80);
   if (LONGSCROLL_CAST_QA_UNLOCK) setTimeout(maybePromptRepairGuide, 80);
   if (LONGSCROLL_RENEWAL_QA_MODE) setTimeout(() => previewLongscrollRepairRenewal(LONGSCROLL_CAST_QA_SCENE), 180);
@@ -2907,6 +2929,111 @@ function normalizeHistoricalNoteRewards(value) {
     .filter(([, reward]) => reward.itemIds.length > 0));
 }
 
+function createCaravanRenownEvent(round = 1) {
+  return {
+    schemaVersion: CARAVAN_RENOWN_SCHEMA_VERSION,
+    round: Math.max(1, Math.floor(Number(round) || 1)),
+    progress: 0,
+    target: CARAVAN_RENOWN_TARGET,
+    markedOrderIds: [],
+    recentFoodLines: [],
+    rewardItemIds: [],
+    claimed: false,
+  };
+}
+
+function normalizeCaravanRenown(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const target = CARAVAN_RENOWN_TARGET;
+  return {
+    schemaVersion: CARAVAN_RENOWN_SCHEMA_VERSION,
+    round: Math.max(1, Math.floor(Number(value.round) || 1)),
+    progress: Math.max(0, Math.min(target, Math.floor(Number(value.progress) || 0))),
+    target,
+    markedOrderIds: Array.isArray(value.markedOrderIds)
+      ? [...new Set(value.markedOrderIds.filter((orderId) => typeof orderId === "string"))]
+      : [],
+    recentFoodLines: Array.isArray(value.recentFoodLines)
+      ? [...new Set(value.recentFoodLines.filter((line) => foodLineMaxLevels.has(line)))].slice(-6)
+      : [],
+    rewardItemIds: Array.isArray(value.rewardItemIds)
+      ? value.rewardItemIds.filter((itemId) => byId.has(itemId)).slice(0, CARAVAN_RENOWN_REWARD_COUNT)
+      : [],
+    claimed: Boolean(value.claimed),
+  };
+}
+
+function caravanRenownUnlocked() {
+  return CARAVAN_RENOWN_QA_MODE
+    || state.completedOrders >= CARAVAN_RENOWN_UNLOCK_ORDERS
+    || state.innLevel >= 2;
+}
+
+function caravanRenownIsComplete(event = state.caravanRenown) {
+  return Boolean(event) && event.progress >= event.target;
+}
+
+function caravanRenownIsActive(event = state.caravanRenown) {
+  return caravanRenownUnlocked() && Boolean(event);
+}
+
+function syncCaravanRenownState() {
+  if (!caravanRenownUnlocked()) return false;
+  let changed = false;
+  if (!state.caravanRenown) {
+    state.caravanRenown = createCaravanRenownEvent();
+    changed = true;
+  }
+  if (state.caravanRenown.claimed) {
+    state.caravanRenown = createCaravanRenownEvent(state.caravanRenown.round + 1);
+    changed = true;
+  }
+  if (caravanRenownIsComplete(state.caravanRenown)
+    && !state.caravanRenown.claimed
+    && state.caravanRenown.rewardItemIds.length < CARAVAN_RENOWN_REWARD_COUNT) {
+    state.caravanRenown.rewardItemIds = buildCaravanRenownRewardItems(state.caravanRenown);
+    changed = true;
+  }
+  return changed;
+}
+
+function initializeCaravanRenownQaScenario() {
+  state.currentPage = "board";
+  state.innLevel = 2;
+  state.completedOrders = 12;
+  state.unlockedFoodLevels = { ...state.unlockedFoodLevels, hubing: 4 };
+  ["codex_hubing_02", "codex_hubing_03", "codex_hubing_04"].forEach((id) => state.unlockedCodex.add(id));
+  state.visibleOrders = [
+    "order_012_changan_maid_lubing",
+    "order_exp_goal_001",
+    "order_lv4_south_shed_stocking",
+    "order_ch1_variant_04_mill_humabing",
+  ];
+  state.board = Array(BOARD_SIZE).fill(null);
+  state.board[starterGeneratorIndex()] = "gen_mill_01";
+  const previewFoodIndices = [
+    boardIndex(ACTIVE_BOARD_START_ROW, ACTIVE_BOARD_START_COL),
+    boardIndex(ACTIVE_BOARD_START_ROW, ACTIVE_BOARD_START_COL + 1),
+    boardIndex(ACTIVE_BOARD_START_ROW, ACTIVE_BOARD_START_COL + 2),
+    boardIndex(ACTIVE_BOARD_START_ROW + 1, ACTIVE_BOARD_START_COL),
+  ];
+  ["hubing_02_lubing", "hubing_02_lubing", "hubing_03_humabing", "hubing_04_youhubing"]
+    .forEach((itemId, offset) => {
+      state.board[previewFoodIndices[offset]] = itemId;
+    });
+  state.caravanRenown = createCaravanRenownEvent();
+  state.caravanRenown.progress = CARAVAN_RENOWN_QA_STAGE === "complete" ? CARAVAN_RENOWN_TARGET : 8;
+  state.caravanRenown.recentFoodLines = ["hubing"];
+  if (CARAVAN_RENOWN_QA_STAGE === "complete") {
+    state.caravanRenown.rewardItemIds = buildCaravanRenownRewardItems(state.caravanRenown);
+  }
+  if (CARAVAN_RENOWN_QA_FULL_BOARD) {
+    state.board = state.board.map((itemId, index) => (
+      isInitialActiveCell(index) ? itemId ?? "hubing_01_dough" : itemId
+    ));
+  }
+}
+
 function defaultState() {
   const board = Array(BOARD_SIZE).fill(null);
   board[starterGeneratorIndex()] = "gen_mill_01";
@@ -2961,6 +3088,7 @@ function defaultState() {
     weeklyCheckinClaimedDays: 0,
     weeklyCheckinLastClaimDay: "",
     weeklyCheckinRound: 1,
+    caravanRenown: null,
     shopPurchaseCycle: currentDailyShopCycle(),
     shopPurchasedOfferIds: [],
   shopFoodItemIds: null,
@@ -2993,7 +3121,7 @@ function normalizeInnLevel(savedLevel, savedSchemaVersion, renovationChoices = {
 }
 
 function loadState() {
-  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET || CARAVAN_RENOWN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     localStorage.removeItem(SAVE_KEY);
   }
   const saved = localStorage.getItem(SAVE_KEY);
@@ -3148,6 +3276,7 @@ function loadState() {
     weeklyCheckinClaimedDays: Math.max(0, Math.min(7, Math.floor(Number(data.weeklyCheckinClaimedDays) || 0))),
     weeklyCheckinLastClaimDay: typeof data.weeklyCheckinLastClaimDay === "string" ? data.weeklyCheckinLastClaimDay : "",
     weeklyCheckinRound: Math.max(1, Math.floor(Number(data.weeklyCheckinRound) || 1)),
+    caravanRenown: normalizeCaravanRenown(data.caravanRenown),
     shopPurchaseCycle: Number.isInteger(Number(data.shopPurchaseCycle))
       ? Number(data.shopPurchaseCycle)
       : currentDailyShopCycle(),
@@ -3179,6 +3308,7 @@ function loadState() {
   if (STAMINA_POUCH_QA_MODE && (!saved || STAMINA_POUCH_QA_RESET)) initializeStaminaPouchQaScenario();
   if (LV4_MARKET_ORDERS_QA_MODE) initializeLv4MarketOrdersQaScenario();
   if (GENERATOR_ORDER_QA_MODE && (!saved || DAIRY_DROP_DEMO_MODE)) initializeGeneratorOrderQaScenario();
+  if (CARAVAN_RENOWN_QA_MODE && (!saved || CARAVAN_RENOWN_QA_RESET)) initializeCaravanRenownQaScenario();
   if (PROGRESSION_FLOW_QA_MODE && !saved) initializeProgressionFlowQaScenario();
   if (UPGRADE_REVEAL_QA_MODE) initializeUpgradeRevealQaScenario();
   if (REPAIR_PROGRESS_QA_MODE) initializeRepairProgressQaScenario();
@@ -3240,12 +3370,14 @@ function loadState() {
   const generatorRewardsChanged = !ISOLATED_QA_MODE && syncGeneratorProgressRewards().length > 0;
   pruneGeneratorStates();
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
+  const caravanRenownChanged = syncCaravanRenownState();
   if (generatorGiftMigration) backfillGeneratorProgressionGifts();
   syncVisibleOrders();
+  const caravanRenownOrdersChanged = syncCaravanRenownOrders();
   const innLevelAdvanced = !ISOLATED_QA_MODE && advanceInnLevelsIfReady({ announce: false });
   if (generatorGiftMigration) saveState();
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || trialGeneratorGranted || innLevelAdvanced || (PROGRESSION_FLOW_QA_MODE && !saved)) saveState();
-  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || caravanRenownChanged || caravanRenownOrdersChanged || trialGeneratorGranted || innLevelAdvanced || (PROGRESSION_FLOW_QA_MODE && !saved) || (CARAVAN_RENOWN_QA_MODE && !saved)) saveState();
+  if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || CARAVAN_RENOWN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
     history.replaceState(null, "", url);
@@ -3312,6 +3444,7 @@ function saveState() {
       weeklyCheckinClaimedDays: state.weeklyCheckinClaimedDays,
       weeklyCheckinLastClaimDay: state.weeklyCheckinLastClaimDay,
       weeklyCheckinRound: state.weeklyCheckinRound,
+      caravanRenown: state.caravanRenown,
       shopPurchaseCycle: state.shopPurchaseCycle,
       shopPurchasedOfferIds: state.shopPurchasedOfferIds,
       shopFoodItemIds: state.shopFoodItemIds,
@@ -3662,6 +3795,7 @@ function tickStamina() {
   tickBonusBubbles();
   renderDailyPouchButtons();
   renderWeeklyCheckinButton();
+  renderCaravanRenownEntry();
   if (els.dailyShopModal?.open) renderDailyShop();
   const recovered = recoverStaminaAt(Date.now());
   if (recovered > 0) {
@@ -3724,6 +3858,8 @@ function bindEvents() {
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.innGemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.weeklyCheckinBtn?.addEventListener("click", openWeeklyCheckin);
+  els.renownEventBtn?.addEventListener("click", openCaravanRenown);
+  els.renownEventClaim?.addEventListener("click", handleCaravanRenownAction);
   els.weeklyCheckinClaim?.addEventListener("click", claimWeeklyCheckin);
   els.weeklyCheckinGrid?.addEventListener("click", (event) => {
     if (event.target.closest(".weekly-checkin-day.current")) claimWeeklyCheckin();
@@ -3965,6 +4101,7 @@ function render() {
   if (els.staminaPurchaseModal?.open) renderStaminaPurchase();
   if (els.dailyShopModal?.open) renderDailyShop();
   if (els.weeklyCheckinModal?.open) renderWeeklyCheckin();
+  if (els.renownEventModal?.open) renderCaravanRenown();
   if (state.currentPage === "inn") {
     renderInnPage();
   } else {
@@ -7220,8 +7357,9 @@ function renderOrders() {
       })
       .filter(Boolean);
     const canComplete = canCompleteOrder(order);
+    const hasRenownMark = state.caravanRenown?.markedOrderIds?.includes(order.id) === true;
     const card = document.createElement("article");
-    card.className = `order-card ${canComplete ? "ready" : ""}`;
+    card.className = `order-card ${canComplete ? "ready" : ""} ${hasRenownMark ? "renown-order" : ""}`;
     card.tabIndex = 0;
     card.setAttribute("role", "button");
     card.setAttribute("aria-label", `${order.npcName}订单详情`);
@@ -7234,6 +7372,15 @@ function renderOrders() {
     const reward = document.createElement("div");
     reward.className = "reward-bubble";
     reward.innerHTML = `<img src="./assets/ui/ui_coin_copper.png" alt="" /><span>${currentOrderCoinReward(order)}</span>`;
+
+    const renownMark = document.createElement("span");
+    if (hasRenownMark) {
+      renownMark.className = "renown-order-mark";
+      renownMark.textContent = "荐";
+      renownMark.setAttribute("aria-label", "高价值推荐订单");
+      renownMark.title = "完成这份高价值订单可获得1枚商旅荐印";
+      reward.prepend(renownMark);
+    }
 
     const foods = document.createElement("div");
     foods.className = "need-items";
@@ -7977,6 +8124,178 @@ function claimWeeklyCheckin() {
   renderWeeklyCheckin();
   saveState();
   toast(`第${rewardIndex + 1}日行程礼已收入行囊。`);
+}
+
+function isCaravanRenownOrderCandidate(order) {
+  if (!order || order.oneTime || order.generatorMasteryCategory) return false;
+  if (["guide", "repairMain"].includes(order.orderTier)) return false;
+  if (order.id === nextStoryOrderId()) return false;
+  return calculatedOrderCoinReward(order) >= CARAVAN_RENOWN_MIN_COINS;
+}
+
+function syncCaravanRenownOrders() {
+  const event = state.caravanRenown;
+  if (!caravanRenownIsActive() || !event || event.claimed || caravanRenownIsComplete(event)) {
+    if (event?.markedOrderIds?.length) {
+      event.markedOrderIds = [];
+      return true;
+    }
+    return false;
+  }
+  const previous = [...event.markedOrderIds];
+  const selected = state.visibleOrders
+    .filter((orderId) => isCaravanRenownOrderCandidate(getOrder(orderId)));
+  event.markedOrderIds = selected;
+  return JSON.stringify(previous) !== JSON.stringify(event.markedOrderIds);
+}
+
+function recordCaravanRenownOrder(order) {
+  const event = state.caravanRenown;
+  if (!caravanRenownIsActive() || !event || event.claimed || !event.markedOrderIds.includes(order.id)) return false;
+  event.markedOrderIds = event.markedOrderIds.filter((orderId) => orderId !== order.id);
+  event.progress = Math.min(event.target, event.progress + 1);
+  const lines = order.demand.map((demand) => byId.get(demand.itemId)?.line).filter(Boolean);
+  event.recentFoodLines = [...new Set([...event.recentFoodLines, ...lines])].slice(-6);
+  if (caravanRenownIsComplete(event)) {
+    event.rewardItemIds = buildCaravanRenownRewardItems(event);
+    event.markedOrderIds = [];
+    toast("十枚商旅荐印已集齐，商队馈礼到了。");
+    setTimeout(openCaravanRenown, 420);
+  } else {
+    toast(`商旅荐印 +1 · ${event.progress}/${event.target}`);
+  }
+  return true;
+}
+
+function caravanRenownUnlockedFoodLines() {
+  const lines = state.generatorConfig.categories
+    .filter((category) => state.unlockedGeneratorCategories.includes(category.id))
+    .map((category) => category.foodLineId)
+    .filter((line) => (Number(state.unlockedFoodLevels[line]) || 0) > 0);
+  if (lines.length) return [...new Set(lines)];
+  return ["hubing"];
+}
+
+function rollCaravanRenownFoodLevel(maxLevel) {
+  const roll = Math.random() * 100;
+  const desired = roll < 45 ? 2 : roll < 75 ? 3 : roll < 95 ? 4 : 5;
+  return Math.max(1, Math.min(Math.floor(Number(maxLevel) || 1), desired));
+}
+
+function buildCaravanRenownRewardItems(event = state.caravanRenown) {
+  const unlockedLines = caravanRenownUnlockedFoodLines();
+  const preferredLines = event.recentFoodLines.filter((line) => unlockedLines.includes(line));
+  const result = [];
+  for (let index = 0; index < CARAVAN_RENOWN_REWARD_COUNT; index += 1) {
+    const usePreferred = preferredLines.length && Math.random() < 0.6;
+    const lines = usePreferred ? preferredLines : unlockedLines;
+    const line = lines[Math.floor(Math.random() * lines.length)] ?? "hubing";
+    const maxDiscovered = Math.max(1, Number(state.unlockedFoodLevels[line]) || 1);
+    const level = rollCaravanRenownFoodLevel(maxDiscovered);
+    const item = foodItemsForLine(line).find((entry) => Number(entry.level) === level)
+      ?? foodItemsForLine(line)[0];
+    if (item) result.push(item.id);
+  }
+  return result;
+}
+
+function renderCaravanRenownEntry() {
+  if (!els.renownEventBtn) return;
+  const cycleChanged = syncCaravanRenownState();
+  const ordersChanged = syncCaravanRenownOrders();
+  if (cycleChanged || ordersChanged) saveState();
+  const event = state.caravanRenown;
+  const visible = caravanRenownIsActive();
+  els.renownEventBtn.hidden = !visible;
+  if (!visible || !event) return;
+  const complete = caravanRenownIsComplete(event);
+  els.renownEventBtn.classList.toggle("is-complete", complete && !event.claimed);
+  els.renownEventBadge.textContent = event.claimed ? "已领" : `${event.progress}/${event.target}`;
+  const label = event.claimed
+    ? "名扬丝路，商队馈礼已领取"
+    : complete
+      ? "名扬丝路，商队馈礼待领取"
+      : `名扬丝路，已收集${event.progress}/${event.target}枚商旅荐印`;
+  els.renownEventBtn.setAttribute("aria-label", label);
+  els.renownEventBtn.title = label;
+}
+
+function renderCaravanRenown() {
+  const event = state.caravanRenown;
+  if (!event || !els.renownEventModal) return;
+  const complete = caravanRenownIsComplete(event);
+  const progressPercent = Math.min(100, Math.round(event.progress / event.target * 100));
+  els.renownEventProgress.textContent = `${event.progress}/${event.target}`;
+  els.renownEventProgressBar.style.width = `${progressPercent}%`;
+  els.renownRewardPreview.replaceChildren();
+  const rewardItems = complete ? event.rewardItemIds : [];
+  for (let index = 0; index < CARAVAN_RENOWN_REWARD_COUNT; index += 1) {
+    const slot = document.createElement("span");
+    slot.className = "renown-reward-item";
+    const item = byId.get(rewardItems[index]);
+    if (item) {
+      const image = document.createElement("img");
+      image.src = itemAssetSrc(item);
+      image.alt = item.name;
+      slot.title = item.name;
+      slot.append(image);
+    } else {
+      slot.classList.add("mystery");
+      slot.setAttribute("aria-label", "待揭晓食材");
+    }
+    els.renownRewardPreview.append(slot);
+  }
+  if (event.claimed) {
+    els.renownEventClaim.disabled = true;
+    els.renownEventClaim.textContent = "馈礼已领取";
+  } else if (complete) {
+    els.renownEventClaim.disabled = false;
+    els.renownEventClaim.textContent = "收下馈礼";
+  } else {
+    els.renownEventClaim.disabled = false;
+    els.renownEventClaim.textContent = "继续接单";
+  }
+}
+
+function openCaravanRenown() {
+  if (!els.renownEventModal || !caravanRenownIsActive()) return;
+  renderCaravanRenown();
+  if (!els.renownEventModal.open) {
+    playSfx("enterShop");
+    els.renownEventModal.showModal();
+  }
+}
+
+function handleCaravanRenownAction() {
+  const event = state.caravanRenown;
+  if (!event || event.claimed) return;
+  if (!caravanRenownIsComplete(event)) {
+    els.renownEventModal.close();
+    return;
+  }
+  let boardCount = 0;
+  let bagCount = 0;
+  event.rewardItemIds.forEach((itemId) => {
+    const boardIndex = randomUnlockedEmptyIndex();
+    if (boardIndex >= 0) {
+      state.board[boardIndex] = itemId;
+      state.pulseIndex = boardIndex;
+      boardCount += 1;
+    } else if (grantRewardItem(itemId)) {
+      bagCount += 1;
+    }
+  });
+  const nextRound = event.round + 1;
+  state.caravanRenown = createCaravanRenownEvent(nextRound);
+  syncCaravanRenownOrders();
+  playSfx("coin");
+  keeper(bagCount
+    ? `商队送来${boardCount + bagCount}份食材，${bagCount}份已收入奖励行囊。`
+    : `商队送来的${boardCount}份食材已经散落到案板上。`);
+  if (els.renownEventModal.open) els.renownEventModal.close();
+  render();
+  saveState();
+  clearPulseSoon();
 }
 
 function formatDailyShopCountdown(milliseconds) {
@@ -9239,6 +9558,7 @@ function completeOrder(orderId) {
   if (firstClear) {
     state.completedOrderIds.push(order.id);
   }
+  recordCaravanRenownOrder(order);
   syncGeneratorProgressRewards({ announce: true });
   if (state.tutorialStep === 2 && order.id === "order_001_guard_lubing") {
     state.tutorialStep = 3;
@@ -9246,6 +9566,7 @@ function completeOrder(orderId) {
   keeper(order.dialogue);
   state.visibleOrders = state.visibleOrders.filter((visibleOrderId) => visibleOrderId !== orderId);
   syncVisibleOrders();
+  syncCaravanRenownOrders();
   if (state.currentOrderDetailId === orderId && els.orderDetailModal.open) {
     els.orderDetailModal.close();
     state.currentOrderDetailId = null;
@@ -9583,6 +9904,16 @@ function nextStoryOrderId() {
 }
 
 function syncVisibleOrders() {
+  if (CARAVAN_RENOWN_QA_MODE) {
+    const qaOrderIds = [
+      "order_012_changan_maid_lubing",
+      "order_exp_goal_001",
+      "order_lv4_south_shed_stocking",
+      "order_ch1_variant_04_mill_humabing",
+    ];
+    state.visibleOrders = qaOrderIds;
+    return;
+  }
   if (LV4_MARKET_ORDERS_QA_MODE) {
     state.visibleOrders = LV4_MARKET_ORDER_IDS.filter((orderId) => !state.completedOrderIds.includes(orderId));
     return;
