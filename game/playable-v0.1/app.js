@@ -7601,7 +7601,13 @@ function renderBonusBoardItem(cell, item, itemId, index) {
     icon.className = "upgrade-tool";
     icon.src = itemAssetSrc(item);
     icon.alt = "";
-    cell.append(icon);
+    const sparkles = document.createElement("span");
+    sparkles.className = "upgrade-tool-sparkles";
+    sparkles.setAttribute("aria-hidden", "true");
+    for (let sparkleIndex = 0; sparkleIndex < 6; sparkleIndex += 1) {
+      sparkles.append(Object.assign(document.createElement("i"), { className: "upgrade-tool-sparkle" }));
+    }
+    cell.append(icon, sparkles);
     cell.setAttribute("aria-label", `${item.name}，极稀有，拖到未满阶食物上升一级`);
     return true;
   }
