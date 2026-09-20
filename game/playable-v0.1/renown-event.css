@@ -498,155 +498,114 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
+/* The event page is one complete recommendation board: the keeper, ranking
+   slips, title and progress all share the same illustrated surface. */
+.renown-event-scroll {
+  padding: 28px 14px 20px;
+}
+
 .renown-event-poster {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(126px, .88fr);
-  align-items: end;
-  gap: 7px;
-  min-height: 270px;
-  padding: 8px 8px 44px;
-  border: 1.5px solid rgba(130, 81, 39, 0.52);
+  display: block;
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid rgba(103, 62, 31, .72);
   border-radius: 14px;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255, 253, 230, .82), transparent 42%),
-    linear-gradient(145deg, rgba(255, 246, 211, .72), rgba(224, 184, 111, .38));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+  background: #e7c98d;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 239, 193, .44),
+    0 8px 18px rgba(67, 37, 20, .24);
   overflow: hidden;
 }
 
 .renown-event-poster::before {
   content: "";
   position: absolute;
+  z-index: 1;
   inset: 0;
   background:
-    linear-gradient(90deg, transparent 49%, rgba(139, 86, 42, .06) 50%, transparent 51%),
-    repeating-linear-gradient(0deg, rgba(122, 77, 38, .035) 0 1px, transparent 1px 5px);
+    linear-gradient(180deg, rgba(255, 244, 207, .12), transparent 25%),
+    linear-gradient(0deg, rgba(58, 31, 18, .2), transparent 20%);
   pointer-events: none;
 }
 
-.renown-poster-keeper {
-  position: relative;
-  z-index: 1;
-  align-self: stretch;
-  min-width: 0;
-}
-
-.renown-poster-keeper img {
+.renown-poster-art {
   position: absolute;
-  right: -5px;
-  bottom: -39px;
-  width: 184px;
-  height: 276px;
-  object-fit: contain;
-  object-position: center bottom;
-  filter: drop-shadow(0 5px 6px rgba(77, 43, 24, .18));
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.renown-recommend-board {
-  position: relative;
-  z-index: 2;
-  align-self: center;
-  min-height: 204px;
-  padding: 13px 11px 10px;
-  border: 5px solid #8d5d31;
-  border-radius: 5px;
-  background:
-    repeating-linear-gradient(0deg, rgba(129, 77, 34, .045) 0 1px, transparent 1px 5px),
-    #f6e7bd;
-  box-shadow:
-    inset 0 0 0 2px rgba(255, 248, 218, .76),
-    0 6px 12px rgba(77, 43, 24, .2);
-  transform: rotate(1.5deg);
-}
-
-.renown-recommend-board::before,
-.renown-recommend-board::after {
-  content: "◆";
+.renown-event-poster .renown-event-head {
   position: absolute;
-  color: #c49755;
-  font-size: 12px;
-  line-height: 1;
-}
-
-.renown-recommend-board::before { top: -3px; left: -2px; }
-.renown-recommend-board::after { right: -2px; bottom: -3px; }
-
-.renown-recommend-board header {
-  padding-bottom: 7px;
-  border-bottom: 1px solid rgba(132, 77, 36, .34);
+  z-index: 3;
+  top: 3.8%;
+  right: 13%;
+  left: 13%;
   text-align: center;
 }
 
-.renown-recommend-board header small,
-.renown-recommend-board header strong {
-  display: block;
-}
-
-.renown-recommend-board header small {
-  color: #9b5b3c;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: .18em;
-}
-
-.renown-recommend-board header strong {
-  margin-top: 3px;
-  color: #67382a;
-  font: 900 21px/1.05 "STKaiti", "Kaiti SC", serif;
-  letter-spacing: .08em;
-}
-
-.renown-recommend-board ol {
-  display: grid;
-  gap: 5px;
-  margin: 9px 0 7px;
-  padding: 0;
-  list-style: none;
-}
-
-.renown-recommend-board li {
-  display: grid;
-  grid-template-columns: 25px 1fr auto;
-  align-items: center;
-  gap: 5px;
-  min-height: 26px;
-  padding: 2px 4px;
-  border-bottom: 1px dotted rgba(123, 75, 34, .28);
-}
-
-.renown-recommend-board li i {
-  display: grid;
-  width: 23px;
-  height: 23px;
-  place-items: center;
-  border: 1px solid rgba(158, 57, 46, .64);
-  color: rgba(151, 52, 44, .82);
-  font: normal 15px/1 "STKaiti", "Kaiti SC", serif;
-  transform: rotate(-5deg);
-}
-
-.renown-recommend-board li span {
-  height: 5px;
+.renown-event-poster .renown-event-head span {
+  display: inline-block;
+  padding: 3px 9px 2px;
+  border: 1px solid rgba(142, 77, 44, .24);
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(112, 69, 34, .24), rgba(112, 69, 34, .06));
+  color: #8f4936;
+  background: rgba(249, 225, 175, .62);
+  font-size: 10px;
+  letter-spacing: .14em;
 }
 
-.renown-recommend-board li b {
-  color: #986145;
-  font: 800 8px/1 ui-sans-serif, system-ui, sans-serif;
+.renown-event-poster .renown-event-head h2 {
+  margin-top: 3px;
+  color: #672d27;
+  font-size: 34px;
+  text-shadow: 0 2px 0 rgba(255, 236, 190, .72);
 }
 
-.renown-recommend-board > p {
+.renown-event-poster .renown-route {
+  position: absolute;
+  z-index: 3;
+  top: 16.4%;
+  right: 7%;
+  left: 7%;
+  grid-template-columns: 39px 1fr 48px;
+  gap: 6px;
   margin: 0;
-  color: #76523b;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1.45;
-  text-align: center;
 }
 
-.renown-recommend-board > p b { color: #9b4435; }
+.renown-event-poster .renown-route-seal {
+  width: 36px;
+  height: 36px;
+  border-color: rgba(143, 51, 43, .72);
+  color: rgba(139, 46, 40, .86);
+  background: rgba(248, 221, 172, .62);
+  font-size: 21px;
+}
+
+.renown-event-poster .renown-route-track {
+  height: 13px;
+  border-color: rgba(104, 66, 36, .84);
+  background: rgba(84, 51, 29, .31);
+}
+
+.renown-event-poster .renown-route-chest {
+  width: 48px;
+  height: 44px;
+}
+
+.renown-event-poster .renown-route-chest img {
+  width: 49px;
+  height: 49px;
+}
+
+.renown-event-poster .renown-route strong {
+  top: 22px;
+  padding: 2px 7px;
+  font-size: 10px;
+}
 
 .renown-keeper-line {
   position: absolute;
@@ -663,6 +622,19 @@
   box-shadow: 0 2px 6px rgba(77, 43, 24, .11);
   font: 800 12px/1.35 "STKaiti", "Kaiti SC", serif;
   text-align: center;
+}
+
+.renown-event-poster .renown-keeper-line {
+  right: 5%;
+  bottom: 2.2%;
+  left: 5%;
+  padding: 8px 10px 7px;
+  border-color: rgba(106, 61, 31, .42);
+  border-radius: 8px;
+  color: #5d3528;
+  background: rgba(249, 232, 188, .9);
+  box-shadow: 0 3px 8px rgba(55, 31, 18, .18);
+  font-size: 12px;
 }
 
 .renown-reward-flight {
@@ -719,9 +691,8 @@
 
 @media (max-width: 370px) {
   .renown-event-scroll { padding-inline: 18px; }
-  .renown-event-poster { grid-template-columns: minmax(0, 1.05fr) minmax(116px, .95fr); }
-  .renown-poster-keeper img { right: -10px; width: 168px; height: 252px; }
-  .renown-recommend-board { padding-inline: 8px; }
+  .renown-event-poster .renown-event-head h2 { font-size: 30px; }
+  .renown-event-poster .renown-route { right: 6%; left: 6%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
