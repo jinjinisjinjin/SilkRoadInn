@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./styles.css?v=baiwei-jinjian-qa-v2" />
     <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
     <link rel="stylesheet" href="./weekly-checkin.css?v=weekly-checkin-v3-daily-title" />
-    <link rel="stylesheet" href="./renown-event.css?v=caravan-renown-v7" />
+    <link rel="stylesheet" href="./renown-event.css?v=caravan-renown-v8-poster" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=opening-cinematic-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
@@ -683,16 +683,23 @@
           <span class="renown-route-chest"><img src="./assets/ui/order_gift_coffer_v1.png" alt="商队馈礼" /></span>
           <strong id="renownEventProgress">0/10</strong>
         </div>
-        <section class="renown-event-stage" aria-labelledby="renownRewardTitle">
-          <div class="renown-keeper-card">
-            <img src="./assets/keeper_story_portrait_v2.png" alt="女掌柜" />
-            <span>掌柜</span>
+        <section class="renown-event-poster" aria-label="掌柜荐榜">
+          <div class="renown-poster-keeper">
+            <img src="./assets/keeper_recommendation_stamp_v1.png" alt="女掌柜手持荐印，为菜品盖章推荐" />
           </div>
-          <div class="renown-event-brief">
-            <p>“认准荐印，<b>集满十枚！</b>”</p>
-            <div class="renown-reward-title"><h3 id="renownRewardTitle">商队馈礼</h3><b id="renownRewardCount">×4～9</b></div>
-            <div id="renownRewardPreview" class="renown-reward-preview" aria-label="4至9份订单助力食材"></div>
+          <div class="renown-recommend-board">
+            <header>
+              <small>楼兰饭馆</small>
+              <strong>掌柜荐榜</strong>
+            </header>
+            <ol aria-hidden="true">
+              <li><i>荐</i><span></span><b>上榜</b></li>
+              <li><i>荐</i><span></span><b>上榜</b></li>
+              <li><i>荐</i><span></span><b>上榜</b></li>
+            </ol>
+            <p>完成荐印订单<br /><b>集十印 · 得馈礼</b></p>
           </div>
+          <p class="renown-keeper-line">“这几道，值得向往来商旅好好推荐。”</p>
         </section>
         <footer class="renown-event-footer">
           <button id="renownEventClaim" type="button">继续接单</button>
@@ -760,6 +767,6 @@
     <script src="./chapter-story.js?v=opening-audio-v1"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
     <script src="./new-player-guide.js?v=repair-entry-logic-v3"></script>
-    <script src="./app.js?v=baiwei-jinjian-v2-caravan-renown-v4"></script>
+    <script src="./app.js?v=baiwei-jinjian-v2-caravan-renown-v5-poster"></script>
   </body>
 </html>

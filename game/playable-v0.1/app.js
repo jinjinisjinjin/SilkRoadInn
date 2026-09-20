@@ -867,8 +867,6 @@ const els = {
   renownEventModal: document.querySelector("#renownEventModal"),
   renownEventProgress: document.querySelector("#renownEventProgress"),
   renownEventProgressBar: document.querySelector("#renownEventProgressBar"),
-  renownRewardPreview: document.querySelector("#renownRewardPreview"),
-  renownRewardCount: document.querySelector("#renownRewardCount"),
   renownEventClaim: document.querySelector("#renownEventClaim"),
   innSoundToggleBtn: document.querySelector("#innSoundToggleBtn"),
   innScene: document.querySelector("#innScene"),
@@ -2545,7 +2543,9 @@ async function boot() {
   if (state.currentPage === "board") tickGenerators();
   if (DAILY_SHOP_QA_MODE) setTimeout(openDailyShop, 100);
   if (WEEKLY_CHECKIN_PREVIEW) setTimeout(openWeeklyCheckin, 100);
-  if (CARAVAN_RENOWN_QA_MODE) setTimeout(openCaravanRenown, 100);
+  if (CARAVAN_RENOWN_QA_MODE && CARAVAN_RENOWN_QA_STAGE !== "complete") {
+    setTimeout(openCaravanRenown, 100);
+  }
   if (UPGRADE_REVEAL_QA_MODE) setTimeout(() => playInnUpgradeReveal(UPGRADE_REVEAL_QA_LEVEL), 80);
   if (LONGSCROLL_CAST_QA_UNLOCK) setTimeout(maybePromptRepairGuide, 80);
   if (LONGSCROLL_RENEWAL_QA_MODE) setTimeout(() => previewLongscrollRepairRenewal(LONGSCROLL_CAST_QA_SCENE), 180);
@@ -3877,7 +3877,7 @@ function bindEvents() {
   els.innStaminaPlusBtn?.addEventListener("click", openStaminaPurchase);
   els.innGemPlusBtn?.addEventListener("click", openRubyRecharge);
   els.weeklyCheckinBtn?.addEventListener("click", openWeeklyCheckin);
-  els.renownEventBtn?.addEventListener("click", openCaravanRenown);
+  els.renownEventBtn?.addEventListener("click", handleCaravanRenownEntryClick);
   els.renownEventClaim?.addEventListener("click", handleCaravanRenownAction);
   els.weeklyCheckinClaim?.addEventListener("click", claimWeeklyCheckin);
   els.weeklyCheckinGrid?.addEventListener("click", (event) => {
@@ -8182,7 +8182,6 @@ function recordCaravanRenownOrder(order) {
     event.rewardPrepared = false;
     event.markedOrderIds = [];
     toast("十枚商旅荐印已集齐，商队馈礼到了。");
-    setTimeout(openCaravanRenown, 420);
   } else {
     toast(`商旅荐印 +1 · ${event.progress}/${event.target}`);
   }
@@ -8345,46 +8344,16 @@ function renderCaravanRenown() {
   const progressPercent = Math.min(100, Math.round(event.progress / event.target * 100));
   els.renownEventProgress.textContent = `${event.progress}/${event.target}`;
   els.renownEventProgressBar.style.width = `${progressPercent}%`;
-  els.renownRewardPreview.replaceChildren();
-  const rewardItems = complete ? event.rewardItemIds : [];
-  const previewCount = complete ? rewardItems.length : 6;
-  if (els.renownRewardCount) {
-    els.renownRewardCount.textContent = complete ? `×${rewardItems.length}` : "×4～9";
-  }
-  els.renownRewardPreview.setAttribute(
-    "aria-label",
-    complete ? `${rewardItems.length}份订单助力食材` : "4至9份订单助力食材",
-  );
-  for (let index = 0; index < previewCount; index += 1) {
-    const slot = document.createElement("span");
-    slot.className = "renown-reward-item";
-    const item = byId.get(rewardItems[index]);
-    if (item) {
-      const image = document.createElement("img");
-      image.src = itemAssetSrc(item);
-      image.alt = item.name;
-      slot.title = item.name;
-      slot.append(image);
-    } else {
-      slot.classList.add("mystery");
-      slot.setAttribute("aria-label", "待揭晓食材");
-    }
-    els.renownRewardPreview.append(slot);
-  }
-  if (event.claimed) {
-    els.renownEventClaim.disabled = true;
-    els.renownEventClaim.textContent = "馈礼已领取";
-  } else if (complete) {
-    els.renownEventClaim.disabled = false;
-    els.renownEventClaim.textContent = "收下馈礼";
-  } else {
-    els.renownEventClaim.disabled = false;
-    els.renownEventClaim.textContent = "继续接单";
-  }
+  els.renownEventClaim.disabled = Boolean(event.claimed);
+  els.renownEventClaim.textContent = complete ? "收下馈礼" : "继续接单";
 }
 
 function openCaravanRenown() {
   if (!els.renownEventModal || !caravanRenownIsActive()) return;
+  if (caravanRenownIsComplete()) {
+    claimCaravanRenownReward();
+    return;
+  }
   renderCaravanRenown();
   if (!els.renownEventModal.open) {
     playSfx("enterShop");
@@ -8392,22 +8361,109 @@ function openCaravanRenown() {
   }
 }
 
-function handleCaravanRenownAction() {
-  const event = state.caravanRenown;
-  if (!event || event.claimed) return;
-  if (!caravanRenownIsComplete(event)) {
-    els.renownEventModal.close();
+let caravanRenownDistributionInProgress = false;
+
+function handleCaravanRenownEntryClick() {
+  if (caravanRenownDistributionInProgress) return;
+  if (caravanRenownIsComplete()) claimCaravanRenownReward();
+  else openCaravanRenown();
+}
+
+function caravanRenownElementCenter(element) {
+  const rect = element?.getBoundingClientRect();
+  if (!rect?.width || !rect?.height) {
+    return { x: window.innerWidth / 2, y: 72 };
+  }
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+
+function finishCaravanRenownLanding(delivery) {
+  if (delivery.boardIndex >= 0) {
+    const cell = els.board.querySelector(`.cell[data-index="${delivery.boardIndex}"]`);
+    if (!cell) return;
+    cell.classList.remove("renown-reward-pending");
+    cell.classList.add("renown-reward-land");
+    setTimeout(() => cell.classList.remove("renown-reward-land"), 520);
     return;
   }
+  const bagTarget = els.rewardBagBtn ?? els.bagBtn;
+  bagTarget?.classList.add("renown-bag-land");
+  setTimeout(() => bagTarget?.classList.remove("renown-bag-land"), 520);
+}
+
+async function animateCaravanRenownDelivery(delivery, origin, delay) {
+  await new Promise((resolve) => setTimeout(resolve, delay));
+  const target = delivery.boardIndex >= 0
+    ? els.board.querySelector(`.cell[data-index="${delivery.boardIndex}"]`)
+    : els.rewardBagBtn ?? els.bagBtn;
+  const item = byId.get(delivery.itemId);
+  if (!target || !item || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    finishCaravanRenownLanding(delivery);
+    return;
+  }
+  const targetCenter = caravanRenownElementCenter(target);
+  const flight = document.createElement("img");
+  flight.className = "renown-reward-flight";
+  flight.src = itemAssetSrc(item);
+  flight.alt = "";
+  document.body.append(flight);
+  const arcX = origin.x + (targetCenter.x - origin.x) * 0.52;
+  const arcY = Math.min(origin.y, targetCenter.y) - 58;
+  try {
+    const motion = flight.animate([
+      { left: `${origin.x}px`, top: `${origin.y}px`, opacity: 0, transform: "translate(-50%, -50%) scale(.2) rotate(-14deg)" },
+      { left: `${origin.x}px`, top: `${origin.y - 18}px`, opacity: 1, transform: "translate(-50%, -50%) scale(1.08) rotate(8deg)", offset: 0.2 },
+      { left: `${arcX}px`, top: `${arcY}px`, opacity: 1, transform: "translate(-50%, -50%) scale(.94) rotate(176deg)", offset: 0.58 },
+      { left: `${targetCenter.x}px`, top: `${targetCenter.y}px`, opacity: 1, transform: "translate(-50%, -50%) scale(.72) rotate(354deg)" },
+    ], { duration: 620, easing: "cubic-bezier(.2,.72,.2,1)", fill: "forwards" });
+    await motion.finished;
+  } catch {
+    // A page transition may cancel the animation; the reward has already landed in state.
+  }
+  flight.remove();
+  finishCaravanRenownLanding(delivery);
+}
+
+function animateCaravanRenownDistribution(deliveries, origin) {
+  const seal = document.createElement("span");
+  seal.className = "renown-seal-burst";
+  seal.textContent = "荐";
+  seal.style.left = `${origin.x}px`;
+  seal.style.top = `${origin.y}px`;
+  document.body.append(seal);
+  setTimeout(() => seal.remove(), 720);
+
+  deliveries.forEach((delivery) => {
+    if (delivery.boardIndex < 0) return;
+    els.board.querySelector(`.cell[data-index="${delivery.boardIndex}"]`)?.classList.add("renown-reward-pending");
+  });
+  Promise.all(deliveries.map((delivery, index) => (
+    animateCaravanRenownDelivery(delivery, origin, 120 + index * 105)
+  ))).finally(() => {
+    caravanRenownDistributionInProgress = false;
+  });
+}
+
+function claimCaravanRenownReward() {
+  const event = state.caravanRenown;
+  if (!event || event.claimed || caravanRenownDistributionInProgress) return;
+  if (!caravanRenownIsComplete(event)) {
+    if (els.renownEventModal.open) els.renownEventModal.close();
+    return;
+  }
+  caravanRenownDistributionInProgress = true;
+  const origin = caravanRenownElementCenter(els.renownEventBtn);
+  const deliveries = [];
   let boardCount = 0;
   let bagCount = 0;
   event.rewardItemIds.forEach((itemId) => {
     const boardIndex = randomUnlockedEmptyIndex();
     if (boardIndex >= 0) {
       state.board[boardIndex] = itemId;
-      state.pulseIndex = boardIndex;
+      deliveries.push({ itemId, boardIndex });
       boardCount += 1;
     } else if (grantRewardItem(itemId)) {
+      deliveries.push({ itemId, boardIndex: -1 });
       bagCount += 1;
     }
   });
@@ -8421,7 +8477,12 @@ function handleCaravanRenownAction() {
   if (els.renownEventModal.open) els.renownEventModal.close();
   render();
   saveState();
-  clearPulseSoon();
+  animateCaravanRenownDistribution(deliveries, origin);
+}
+
+function handleCaravanRenownAction() {
+  if (caravanRenownIsComplete()) claimCaravanRenownReward();
+  else if (els.renownEventModal.open) els.renownEventModal.close();
 }
 
 function formatDailyShopCountdown(milliseconds) {
