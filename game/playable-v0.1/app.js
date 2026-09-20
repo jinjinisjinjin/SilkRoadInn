@@ -834,6 +834,7 @@ const els = {
   boardCodexBtn: document.querySelector("#boardCodexBtn"),
   rewardBagBtn: document.querySelector("#rewardBagBtn"),
   rewardBagBadge: document.querySelector("#rewardBagBadge"),
+  sevenDayActivityBtn: document.querySelector("#sevenDayActivityBtn"),
   bagBtn: document.querySelector("#bagBtn"),
   stationBtn: document.querySelector("#stationBtn"),
   boardReturnBtn: document.querySelector("#boardReturnBtn"),
@@ -3882,6 +3883,9 @@ function bindEvents() {
   els.stationHudBtn?.addEventListener("click", handleStationButton);
   els.repairSideBtn?.addEventListener("click", handleStationButton);
   els.rewardBagBtn?.addEventListener("click", openBag);
+  els.sevenDayActivityBtn?.addEventListener("click", () => {
+    location.href = "./design-previews/seven-day-activity-panel-v1.html?from=board&refresh=v6";
+  });
   els.bagBtn.addEventListener("click", openBag);
   els.stationBtn.addEventListener("click", handleStationButton);
   els.boardReturnBtn.addEventListener("click", () => switchPage("board"));

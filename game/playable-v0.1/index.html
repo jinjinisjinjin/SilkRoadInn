@@ -77,6 +77,35 @@
                 <span id="rewardBagBadge" class="reward-bag-badge" hidden>0</span>
               </button>
             </div>
+            <button id="sevenDayActivityBtn" class="seven-day-activity-entry has-reward" type="button" aria-label="打开七日任务，有奖励可领取" title="七日任务">
+              <span class="seven-day-entry-cord" aria-hidden="true"></span>
+              <svg class="seven-day-route-icon" viewBox="0 0 48 62" aria-hidden="true">
+                <defs>
+                  <linearGradient id="routePaper" x1="0" x2="1">
+                    <stop offset="0" stop-color="#cba568"/>
+                    <stop offset=".16" stop-color="#f2dca6"/>
+                    <stop offset=".5" stop-color="#e7cb90"/>
+                    <stop offset=".82" stop-color="#f5e2ae"/>
+                    <stop offset="1" stop-color="#ba8b50"/>
+                  </linearGradient>
+                  <filter id="routeShadow" x="-30%" y="-20%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="1.4" flood-color="#4d2818" flood-opacity=".42"/>
+                  </filter>
+                </defs>
+                <path d="M5 7 16 3l11 4 15-4v49l-15 6-11-4-11 4Z" fill="url(#routePaper)" stroke="#865132" stroke-width="1.3" filter="url(#routeShadow)"/>
+                <path d="m16 3 0 51M27 7v51" fill="none" stroke="#9d7446" stroke-opacity=".44" stroke-width="1"/>
+                <path d="M10 48C9 41 18 42 17 35s-7-7-4-13c3-5 12 1 15-4 2-3 0-6 4-9" fill="none" stroke="#9d4938" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.4 2.4"/>
+                <g fill="#c58d42" stroke="#704127" stroke-width=".7">
+                  <circle cx="10" cy="48" r="2.1"/><circle cx="14" cy="41" r="2.1"/><circle cx="17" cy="35" r="2.1"/><circle cx="13" cy="28" r="2.1"/><circle cx="18" cy="22" r="2.1"/><circle cx="27" cy="19" r="2.1"/>
+                </g>
+                <g class="seven-day-route-finish">
+                  <circle cx="32" cy="9" r="3.2" fill="#9f4637" stroke="#f0c778" stroke-width="1.2"/>
+                  <path d="M32 7v9m0-8 8 2.7-8 2.7" fill="#a34b3a" stroke="#713324" stroke-width="1" stroke-linejoin="round"/>
+                </g>
+                <path d="M8 54c9-2 22 0 31-4" fill="none" stroke="#835033" stroke-opacity=".32" stroke-width=".8"/>
+              </svg>
+              <i class="seven-day-entry-notice" aria-hidden="true"></i>
+            </button>
             <div class="orders" id="orders"></div>
           </div>
         </section>
