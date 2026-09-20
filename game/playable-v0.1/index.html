@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./styles.css?v=board-full-feedback-v1" />
     <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
     <link rel="stylesheet" href="./weekly-checkin.css?v=weekly-checkin-v3-daily-title" />
+    <link rel="stylesheet" href="./renown-event.css?v=caravan-renown-v6" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=opening-cinematic-v1" />
     <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
@@ -52,6 +53,10 @@
             <span class="resource-pill plus-resource ruby-resource"><i class="ruby-icon" aria-hidden="true"></i><b id="gems">0</b><button id="gemPlusBtn" class="resource-plus" aria-label="补充红宝石">+</button></span>
             <button id="dailyPouchBtn" class="daily-pouch-entry" type="button" aria-label="打开驿站小铺" title="打开驿站小铺">
               <img src="./assets/ui/shop_entry_stall_v1.png" alt="" />
+            </button>
+            <button id="renownEventBtn" class="renown-event-entry" type="button" aria-label="打开名扬丝路" title="名扬丝路" hidden>
+              <span class="renown-seal" aria-hidden="true">荐</span>
+              <b id="renownEventBadge" class="renown-event-badge">0/10</b>
             </button>
             <button id="soundToggleBtn" class="sound-toggle" type="button" data-sound="none" aria-label="声音设置" title="声音设置" aria-controls="audioSettingsPanel" aria-expanded="false">
               <span aria-hidden="true">♪</span>
@@ -654,6 +659,35 @@
         </footer>
       </div>
     </dialog>
+    <dialog id="renownEventModal" class="modal renown-event-modal" aria-labelledby="renownEventTitle">
+      <section class="renown-event-scroll">
+        <button class="close renown-event-close" data-close="renownEventModal" aria-label="关闭名扬丝路">×</button>
+        <header class="renown-event-head">
+          <span>商旅荐印</span>
+          <h2 id="renownEventTitle">名扬丝路</h2>
+        </header>
+        <div class="renown-route" aria-label="商旅荐印进度">
+          <span class="renown-route-seal" aria-hidden="true">荐</span>
+          <div class="renown-route-track"><i id="renownEventProgressBar"></i></div>
+          <span class="renown-route-chest"><img src="./assets/ui/order_gift_coffer_v1.png" alt="商队馈礼" /></span>
+          <strong id="renownEventProgress">0/10</strong>
+        </div>
+        <section class="renown-event-stage" aria-labelledby="renownRewardTitle">
+          <div class="renown-keeper-card">
+            <img src="./assets/keeper_story_portrait_v2.png" alt="女掌柜" />
+            <span>掌柜</span>
+          </div>
+          <div class="renown-event-brief">
+            <p>“认准荐印，<b>集满十枚！</b>”</p>
+            <div class="renown-reward-title"><h3 id="renownRewardTitle">商队馈礼</h3><b>×6</b></div>
+            <div id="renownRewardPreview" class="renown-reward-preview" aria-label="6份已解锁食材奖励"></div>
+          </div>
+        </section>
+        <footer class="renown-event-footer">
+          <button id="renownEventClaim" type="button">继续接单</button>
+        </footer>
+      </section>
+    </dialog>
     <dialog id="staminaPurchaseModal" class="modal stamina-purchase-modal" aria-labelledby="staminaPurchaseTitle">
       <div class="modal-inner stamina-purchase-inner">
         <button class="close" data-close="staminaPurchaseModal" aria-label="关闭驼铃兑换">×</button>
@@ -715,6 +749,6 @@
     <script src="./chapter-story.js?v=opening-cinematic-v1"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
     <script src="./new-player-guide.js?v=compact-storage-guide-v1"></script>
-    <script src="./app.js?v=food-progression-v2-compact-storage-guide-v1"></script>
+    <script src="./app.js?v=food-progression-v2-caravan-renown-v3"></script>
   </body>
 </html>
