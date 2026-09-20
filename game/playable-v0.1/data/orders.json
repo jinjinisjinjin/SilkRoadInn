@@ -282,7 +282,7 @@
     {
       "id": "order_001_guard_lubing",
       "npcId": "npc_shazhou_guard",
-      "npcName": "沙州驿卒",
+      "npcName": "周甲（沙州驿卒）",
       "demand": [
         {
           "itemId": "hubing_02_lubing",
@@ -618,7 +618,7 @@
         }
       ],
       "reward": {
-        "coins": 33,
+        "coins": 30,
         "codexExp": 4
       },
       "weight": 10,

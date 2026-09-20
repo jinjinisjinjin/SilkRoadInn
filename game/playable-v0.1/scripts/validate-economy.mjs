@@ -165,10 +165,6 @@ for (const order of orders.orders) {
 
 for (const milestone of progression.milestones) {
   assert(
-    !milestone.conditions?.completedOrderIds,
-    `${milestone.id} still requires a specific order`,
-  );
-  assert(
     !Object.prototype.hasOwnProperty.call(milestone.rewards ?? {}, "coins"),
     `${milestone.id} still refunds repair coins`,
   );

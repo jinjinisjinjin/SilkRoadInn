@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>百味金笺｜升阶道具 UI 预览</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --ink:#4a2e20; --muted:#806349; --paper:#f7e7bd; --paper-2:#ead09a;
+      --gold:#d9aa55; --gold-light:#ffe6a0; --red:#9c4938; --jade:#2f6a5d;
+    }
+    * { box-sizing:border-box; }
+    html,body { margin:0; min-height:100%; background:#241711; color:var(--ink); }
+    body { display:grid; place-items:center; font-family:"Songti SC","STSong",serif; }
+    button { font:inherit; }
+    .phone {
+      position:relative; width:min(100vw,460px); min-height:100svh; overflow:hidden;
+      background:
+        linear-gradient(rgba(61,36,20,.14),rgba(61,36,20,.3)),
+        url("../assets/kitchen-bg.png") center/cover;
+      box-shadow:0 0 45px #0009;
+    }
+    .topbar {
+      position:relative; z-index:4; display:flex; align-items:center; justify-content:space-between;
+      margin:12px; padding:9px 12px; border:1px solid #e1bd75aa; border-radius:18px;
+      color:#fff1c9; background:#3d2a20e8; box-shadow:0 4px 14px #25150ca8;
+    }
+    .topbar small { display:block; opacity:.72; font-size:11px; letter-spacing:.12em; }
+    .topbar strong { display:block; margin-top:2px; font-size:18px; }
+    .reset { border:0; border-radius:999px; padding:7px 11px; color:#fff1c9; background:#8b4939; }
+    .rare-card {
+      position:relative; z-index:3; display:grid; grid-template-columns:74px 1fr; gap:10px;
+      margin:0 12px 10px; padding:10px; border:1px solid #e5bd69; border-radius:14px;
+      background:linear-gradient(135deg,#fff0c9f5,#e9cc91f5); box-shadow:0 5px 15px #301c10a0;
+    }
+    .rare-card::after { content:"极稀有"; position:absolute; right:10px; top:9px; color:#9b4434; font-size:11px; font-weight:800; letter-spacing:.08em; }
+    .rare-card img { width:72px; height:72px; object-fit:contain; filter:drop-shadow(0 4px 4px #65432155); }
+    .rare-card h1 { margin:4px 0 3px; font-size:21px; }
+    .rare-card p { margin:0; padding-right:54px; color:#6f5139; font-size:12px; line-height:1.55; }
+    .board-wrap { position:relative; z-index:2; margin:0 12px; padding:10px; border:2px solid #7b4d27; border-radius:18px; background:#7c542ee8; box-shadow:inset 0 0 0 2px #d7a95c88,0 8px 20px #24130cab; }
+    .board { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+    .cell {
+      position:relative; aspect-ratio:1; display:grid; place-items:center; min-width:0;
+      border:1px solid #e5c27e; border-radius:14px; background:linear-gradient(145deg,#f7dfa6,#d8ad63);
+      box-shadow:inset 0 2px 4px #fff8d27a,0 2px 2px #42271566; transition:.18s ease;
+    }
+    .cell img { width:82%; height:82%; object-fit:contain; pointer-events:none; filter:drop-shadow(0 3px 3px #5e351f4a); }
+    .cell .lv { position:absolute; right:5px; bottom:4px; padding:1px 5px; border-radius:999px; color:#fff3cf; background:#55382ccf; font:700 10px/1.5 system-ui; }
+    .cell .name { position:absolute; left:5px; top:4px; color:#6a4129; font-size:9px; font-weight:800; }
+    .cell.empty { opacity:.58; }
+    .cell.max::after { content:"满阶"; position:absolute; inset:auto 5px 5px auto; padding:1px 5px; border-radius:999px; color:#eee0c4; background:#6f5f51cc; font:700 9px/1.5 system-ui; }
+    .token { cursor:grab; touch-action:none; }
+    .token::before { content:"金"; position:absolute; z-index:2; left:5px; top:5px; display:grid; place-items:center; width:19px; height:19px; border-radius:50%; color:#fff1bd; background:#a74434; font-size:10px; font-weight:900; box-shadow:0 0 0 2px #f6d889; }
+    .token img { width:96%; height:96%; }
+    .token.dragging { opacity:.18; }
+    .drag-ghost { position:fixed; z-index:50; width:90px; height:90px; object-fit:contain; pointer-events:none; transform:translate(-50%,-65%) rotate(-3deg); filter:drop-shadow(0 7px 6px #2c180b80) drop-shadow(0 0 9px #ffd879); }
+    .cell.eligible { animation:eligiblePulse .8s ease-in-out infinite alternate; }
+    .cell.eligible::after { content:"可升阶"; position:absolute; top:-7px; left:50%; transform:translateX(-50%); white-space:nowrap; padding:2px 7px; border-radius:999px; color:#fff3c8; background:#2f6a5df2; font-size:9px; font-weight:800; box-shadow:0 2px 5px #213b34aa; }
+    .cell.hover { transform:scale(1.07); box-shadow:inset 0 0 0 3px #fff0a3,0 0 18px #ffd76f; }
+    @keyframes eligiblePulse { from{box-shadow:inset 0 0 0 1px #ffe5a3,0 0 5px #f8ca54aa} to{box-shadow:inset 0 0 0 3px #fff0a3,0 0 16px #ffd76f} }
+    .hint { position:relative; z-index:3; margin:10px 12px 16px; padding:10px 12px; border-radius:12px; color:#fff0c9; background:#3f2a21e8; text-align:center; font-size:13px; box-shadow:0 4px 12px #27160dab; }
+    .hint b { color:#ffdd82; }
+    .modal { position:fixed; z-index:80; inset:0; display:grid; place-items:center; padding:18px; background:#21140dbd; backdrop-filter:blur(2px); }
+    .modal[hidden] { display:none; }
+    .sheet { width:min(390px,100%); padding:15px; border:2px solid #a7753e; border-radius:20px; background:linear-gradient(#fff1c9,#ead09a); box-shadow:0 18px 44px #130b07c7,inset 0 0 0 3px #fff8d279; text-align:center; }
+    .sheet small { color:#9c4938; font-weight:800; letter-spacing:.12em; }
+    .sheet h2 { margin:6px 0 2px; font-size:25px; }
+    .sheet > p { margin:0 0 12px; color:#74563e; font-size:13px; }
+    .upgrade-row { display:grid; grid-template-columns:1fr 38px 1fr; align-items:center; gap:4px; margin:9px 0 15px; }
+    .preview-item { padding:8px 5px; border:1px solid #c89a52; border-radius:13px; background:#f7e4b8; }
+    .preview-item img { display:block; width:76px; height:76px; margin:auto; object-fit:contain; }
+    .preview-item b { display:block; font-size:15px; }
+    .preview-item span { color:#826248; font-size:11px; }
+    .arrow { color:#a24937; font-size:31px; font-weight:900; }
+    .actions { display:grid; grid-template-columns:1fr 1.35fr; gap:8px; }
+    .actions button { min-height:45px; border:1px solid #9c6c3e; border-radius:11px; color:#68402b; background:#f4dfac; font-weight:800; }
+    .actions .confirm { color:#fff1cd; border-color:#663e2a; background:#9f5039; box-shadow:inset 0 1px #d58a68; }
+    .toast { position:fixed; z-index:100; left:50%; bottom:34px; transform:translateX(-50%); width:max-content; max-width:calc(100vw - 30px); padding:10px 16px; border:1px solid #efca7b; border-radius:999px; color:#fff2ce; background:#3c2a20ed; box-shadow:0 7px 20px #1c1009a6; font-weight:800; animation:toastIn .24s ease-out; }
+    .toast[hidden] { display:none; }
+    @keyframes toastIn { from{opacity:0;transform:translate(-50%,10px)} }
+    @media (max-width:360px) { .rare-card{grid-template-columns:62px 1fr}.rare-card img{width:60px;height:60px}.board{gap:5px}.board-wrap{padding:8px}.cell{border-radius:11px} }
+    @media (prefers-reduced-motion:reduce) { *{animation:none!important;transition:none!important} }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <header class="topbar">
+      <div><small>道具交互预览</small><strong>百味金笺</strong></div>
+      <button class="reset" id="resetBtn" type="button">重置</button>
+    </header>
+    <section class="rare-card">
+      <img src="../assets/ui/ui_baiwei_jinjian_v1.png" alt="百味金笺">
+      <div><h1>百味金笺</h1><p>拖到任意未满阶食物上，使其立即升一阶。</p></div>
+    </section>
+    <section class="board-wrap" aria-label="升阶道具棋盘预览">
+      <div class="board" id="board">
+        <button class="cell food" data-next-name="胡麻饼" data-next-level="3" data-next-src="../assets/hubing_lv03_humabing_cutout.png" type="button"><span class="name">炉饼</span><img src="../assets/hubing_lv02_lubing_cutout.png" alt="炉饼"><span class="lv">Lv2</span></button>
+        <button class="cell food" data-next-name="干酪" data-next-level="4" data-next-src="../assets/dairy_lv04_ganlao.png" type="button"><span class="name">酪浆</span><img src="../assets/dairy_lv03_laojiang.png" alt="酪浆"><span class="lv">Lv3</span></button>
+        <button class="cell max" type="button"><span class="name">满阶食物</span><img src="../assets/hubing_lv08_gulouzi.png" alt="满阶食物"></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+        <button class="cell token" id="token" type="button"><img src="../assets/ui/ui_baiwei_jinjian_v1.png" alt="百味金笺"><span class="lv">×1</span></button>
+        <button class="cell food" data-next-name="乳糜" data-next-level="2" data-next-src="../assets/dairy_lv02_rumi.png" type="button"><span class="name">鲜乳</span><img src="../assets/dairy_lv01_milk.png" alt="鲜乳"><span class="lv">Lv1</span></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+        <button class="cell empty" type="button" aria-label="空棋格"></button>
+      </div>
+    </section>
+    <p class="hint" id="hint"><b>拖动百味金笺</b>到炉饼、酪浆或鲜乳上试试</p>
+  </main>
+
+  <div class="modal" id="confirmModal" hidden>
+    <section class="sheet">
+      <small>使用极稀有道具</small><h2>确认升阶？</h2>
+      <div class="upgrade-row">
+        <div class="preview-item"><img id="fromImg" alt=""><b id="fromName"></b><span id="fromLv"></span></div>
+        <div class="arrow">›</div>
+        <div class="preview-item"><img id="toImg" alt=""><b id="toName"></b><span id="toLv"></span></div>
+      </div>
+      <div class="actions"><button id="cancelBtn" type="button">取消</button><button class="confirm" id="confirmBtn" type="button">确认升阶</button></div>
+    </section>
+  </div>
+  <div class="toast" id="toast" hidden>升阶成功 · 新食物已收入《丝路食鉴》</div>
+
+  <script>
+    const token = document.querySelector('#token');
+    const foods = [...document.querySelectorAll('.cell.food')];
+    const modal = document.querySelector('#confirmModal');
+    const toast = document.querySelector('#toast');
+    const hint = document.querySelector('#hint');
+    let ghost = null, hover = null, target = null, used = false;
+
+    function setEligible(active) { foods.forEach(cell => cell.classList.toggle('eligible', active)); }
+    function clearDrag() { ghost?.remove(); ghost=null; token.classList.remove('dragging'); hover?.classList.remove('hover'); hover=null; setEligible(false); }
+    function beginDrag(event) {
+      if (used) return;
+      event.preventDefault(); token.setPointerCapture?.(event.pointerId); token.classList.add('dragging'); setEligible(true);
+      ghost = document.createElement('img'); ghost.className='drag-ghost'; ghost.src='../assets/ui/ui_baiwei_jinjian_v1.png'; document.body.append(ghost); moveDrag(event);
+    }
+    function moveDrag(event) {
+      if (!ghost) return; ghost.style.left=`${event.clientX}px`; ghost.style.top=`${event.clientY}px`;
+      ghost.hidden=true; const found=document.elementFromPoint(event.clientX,event.clientY)?.closest('.cell.food'); ghost.hidden=false;
+      if (hover!==found) { hover?.classList.remove('hover'); hover=found; hover?.classList.add('hover'); }
+    }
+    function endDrag() { const chosen=hover; clearDrag(); if (chosen) openConfirm(chosen); }
+    function openConfirm(cell) {
+      target=cell; const img=cell.querySelector('img'); const name=cell.querySelector('.name').textContent; const level=Number(cell.querySelector('.lv').textContent.replace(/\D/g,''));
+      fromImg.src=img.src; fromName.textContent=name; fromLv.textContent=`${level}阶`;
+      toImg.src=cell.dataset.nextSrc; toName.textContent=cell.dataset.nextName; toLv.textContent=`${cell.dataset.nextLevel}阶`;
+      modal.hidden=false;
+    }
+    token.addEventListener('pointerdown',beginDrag); window.addEventListener('pointermove',moveDrag); window.addEventListener('pointerup',endDrag); window.addEventListener('pointercancel',clearDrag);
+    cancelBtn.addEventListener('click',()=>{modal.hidden=true;target=null});
+    confirmBtn.addEventListener('click',()=>{
+      if(!target)return; const img=target.querySelector('img'); img.src=target.dataset.nextSrc; img.alt=target.dataset.nextName;
+      target.querySelector('.name').textContent=target.dataset.nextName; target.querySelector('.lv').textContent=`Lv${target.dataset.nextLevel}`;
+      target.classList.add('hover'); setTimeout(()=>target?.classList.remove('hover'),700); token.replaceChildren(); token.classList.add('empty'); token.classList.remove('token'); used=true;
+      modal.hidden=true; hint.innerHTML='<b>升阶完成</b>，百味金笺已消耗'; toast.hidden=false; setTimeout(()=>toast.hidden=true,2200); target=null;
+    });
+    resetBtn.addEventListener('click',()=>location.reload());
+  </script>
+</body>
+</html>

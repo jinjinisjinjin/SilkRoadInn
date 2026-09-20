@@ -182,6 +182,9 @@
       <button class="repair-economy-back" type="button" aria-label="返回流沙驿">
         <span aria-hidden="true">‹</span><b>返回</b>
       </button>
+      <div class="repair-return-guide" role="status" aria-live="polite" hidden>
+        铜钱不足。点左上角「返回」，回后厨完成订单，赚取下一件修缮所需的铜钱。
+      </div>
     `;
     const feedback = document.createElement("div");
     feedback.className = "repair-economy-feedback";
@@ -192,6 +195,7 @@
     return {
       hud,
       back: hud.querySelector(".repair-economy-back"),
+      returnGuide: hud.querySelector(".repair-return-guide"),
       feedback,
     };
   }
@@ -280,6 +284,7 @@
     let focusTransitionTimer = 0;
     let entryOverviewTimer = 0;
     let revealHoldTimer = 0;
+    let returnGuideTimer = 0;
     let revealHeld = false;
     let entryOverviewPending = typeof options.overview === "function";
     let lastFocusedIndex = -1;
@@ -540,6 +545,22 @@
       return walletCoins + prepaidRemaining;
     }
 
+    function hideFirstReturnGuide() {
+      clearTimeout(returnGuideTimer);
+      returnGuideTimer = 0;
+      ui.returnGuide.hidden = true;
+      ui.back.classList.remove("is-guide-target");
+    }
+
+    function showFirstReturnGuide() {
+      returnGuideTimer = 0;
+      const nextIndex = nextIncompleteIndex();
+      const nextCost = costs[nextIndex] ?? 0;
+      if (repairId !== "02" || applied.size !== 1 || nextIndex !== 1 || availableCoins() >= nextCost) return;
+      ui.returnGuide.hidden = false;
+      ui.back.classList.add("is-guide-target");
+    }
+
     function receiveBalances(data) {
       const hasWallet = Number.isFinite(Number(data.walletCoins));
       const hasPrepaid = Number.isFinite(Number(data.prepaidRemaining));
@@ -721,6 +742,10 @@
           prepaidRemaining,
           cost: integer(data.cost, costs[index] ?? 0),
         });
+        if (repairId === "02" && index === 0) {
+          clearTimeout(returnGuideTimer);
+          returnGuideTimer = window.setTimeout(showFirstReturnGuide, REPAIR_REVEAL_HOLD_MS + 120);
+        }
       }
     }
 
@@ -744,6 +769,7 @@
       });
     });
     ui.back.addEventListener("click", () => {
+      hideFirstReturnGuide();
       if (!postToParent({ type: MESSAGE.EXIT, repairId })) history.back();
     });
     document.addEventListener("click", (event) => {
@@ -767,6 +793,7 @@
         return applyPart(index, null, true);
       },
       reset() {
+        hideFirstReturnGuide();
         clearTimeout(entryOverviewTimer);
         entryOverviewTimer = 0;
         clearTimeout(revealHoldTimer);

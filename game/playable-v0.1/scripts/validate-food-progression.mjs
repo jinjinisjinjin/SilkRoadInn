@@ -97,6 +97,9 @@ for (const milestone of progression.milestones) {
 }
 assert.equal(progression.milestones.reduce((sum, milestone) =>
   sum + sandbox.repairPartCosts(milestone).reduce((total, cost) => total + cost, 0), 0), 39600);
+const firstRepair = progression.milestones.find((milestone) => milestone.id === "tutorial_complete");
+assert.deepEqual(sandbox.repairPartCosts(firstRepair), [10, 120, 130, 140, 150, 160, 170, 180, 200]);
+assert.equal(orders.orders.find((order) => order.id === "order_001_guard_lubing")?.reward?.coins, 10);
 
 // Half-open legacy packs retain the same output positions and total rewards.
 for (const [id, coins] of [["gift_milk_room_parts_01", 30], ["gift_livestock_pen_parts_01", 42]]) {

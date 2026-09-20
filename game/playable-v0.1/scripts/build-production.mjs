@@ -9,6 +9,7 @@ const releaseModeSource =
   'const BUILD_MODE = new URLSearchParams(location.search).get("mode") === "release" ? "release" : "dev";';
 const releaseModeOutput = 'const BUILD_MODE = "release";';
 const textExtensions = new Set([".css", ".html", ".js", ".json", ".svg", ".webmanifest"]);
+const rasterSourceExtensions = new Set([".png", ".jpg", ".jpeg"]);
 const skippedDirectories = new Set(["dist", "node_modules", "scripts", "design-previews", ".playwright-cli"]);
 const skippedFiles = new Set(["README.md", "package.json", "package-lock.json", "vercel.json", ".DS_Store"]);
 
@@ -46,7 +47,7 @@ await collect(sourceRoot);
 
 const outputPaths = new Set();
 for (const relativePath of inputs) {
-  const destination = relativePath.replace(/\.png$/i, ".webp");
+  const destination = relativePath.replace(/\.(?:png|jpe?g)$/i, ".webp");
   if (outputPaths.has(destination)) {
     throw new Error(`Production asset name collision: ${destination}`);
   }
@@ -61,10 +62,11 @@ async function worker() {
   while (nextInput < inputs.length) {
     const relativePath = inputs[nextInput++];
     const source = path.join(sourceRoot, relativePath);
-    const destination = path.join(outputRoot, relativePath.replace(/\.png$/i, ".webp"));
+    const sourceExtension = path.extname(relativePath).toLowerCase();
+    const destination = path.join(outputRoot, relativePath.replace(/\.(?:png|jpe?g)$/i, ".webp"));
     await mkdir(path.dirname(destination), { recursive: true });
 
-    if (/\.png$/i.test(relativePath)) {
+    if (rasterSourceExtensions.has(sourceExtension)) {
       const isAlphaMask = relativePath.includes(`${path.sep}masks-alpha${path.sep}`);
       await sharp(source)
         .webp(isAlphaMask ? { lossless: true, effort: 4 } : { quality: 82, effort: 4 })
@@ -82,17 +84,20 @@ async function worker() {
         content = content.replace(releaseModeSource, releaseModeOutput);
       }
       content = content.replaceAll(".png", ".webp");
+      content = content.replaceAll(".jpg", ".webp");
+      content = content.replaceAll(".jpeg", ".webp");
       if (relativePath === "index.html") {
         content = content.replace('type="image/png"', 'type="image/webp"');
       }
-      if (content.includes(".png")) {
-        throw new Error(`Unconverted PNG reference in ${relativePath}.`);
+      if (/\.(?:png|jpe?g)/i.test(content)) {
+        throw new Error(`Unconverted raster reference in ${relativePath}.`);
       }
       await writeFile(destination, content);
     } else {
       await copyFile(source, destination);
     }
-    totalBytes += (await stat(destination)).size;
+    const destinationStat = await stat(destination);
+    totalBytes += destinationStat.size;
   }
 }
 
@@ -102,5 +107,5 @@ if (!outputPaths.has("index.html") || !outputPaths.has("app.js")) {
   throw new Error("Production output is missing the playable entry point.");
 }
 console.log(
-  `Built ${inputs.length} production files (${convertedImages} PNG images converted, ${recompressedImages} WebP images recompressed, ${(totalBytes / 1048576).toFixed(1)} MiB).`,
+  `Built ${inputs.length} production files (${convertedImages} raster images converted, ${recompressedImages} WebP images recompressed, ${(totalBytes / 1048576).toFixed(1)} MiB).`,
 );
