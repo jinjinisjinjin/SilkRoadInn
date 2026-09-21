@@ -6129,60 +6129,158 @@ button:disabled {
   text-align: center;
 }
 
-.codex-modal[data-guide="food-detail"] .codex-index-hint {
-  margin: 7px 20px 0;
-  padding: 7px 9px;
-  border: 1px solid rgba(155, 70, 55, 0.5);
-  border-radius: 8px;
-  background: rgba(255, 244, 204, 0.92);
-  color: #7b382d;
-  font-size: 10px;
-  box-shadow: 0 3px 8px rgba(93, 52, 26, 0.15);
-}
-
-.codex-modal[data-guide="food-detail"] .codex-index-hint::before {
-  content: "↑";
-  display: inline-block;
-  margin-right: 6px;
-  color: #aa5038;
-  font-size: 14px;
-  animation: codexGuideArrow 0.8s ease-in-out infinite alternate;
-}
-
+.codex-modal[data-guide="food-detail"] .codex-index-hint,
 .codex-modal[data-guide="close"] .codex-index-hint {
-  margin: 7px 20px 0;
-  padding: 7px 9px;
-  border: 1px solid rgba(155, 70, 55, 0.5);
-  border-radius: 8px;
-  background: rgba(255, 244, 204, 0.92);
-  color: #7b382d;
-  font-size: 10px;
-  box-shadow: 0 3px 8px rgba(93, 52, 26, 0.15);
+  min-height: 45px;
+  margin: 9px 10px 0;
+  padding: 9px 12px 9px 49px;
+  border: 2px solid #a94c38;
+  border-radius: 12px;
+  color: #6f3028;
+  background:
+    linear-gradient(100deg, rgba(255, 250, 221, .98), rgba(255, 230, 171, .96));
+  box-shadow:
+    0 5px 12px rgba(82, 43, 23, .22),
+    0 0 0 3px rgba(255, 224, 137, .34),
+    inset 0 1px 0 rgba(255, 255, 255, .72);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.codex-modal[data-guide="food-detail"] .codex-index-hint::before,
+.codex-modal[data-guide="close"] .codex-index-hint::before {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 2px solid #f4cb75;
+  border-radius: 50%;
+  color: #fff0c5;
+  background: linear-gradient(145deg, #bd5941, #8d352c);
+  box-shadow: 0 2px 5px rgba(76, 35, 23, .28);
+  font: 900 16px/1 Georgia, serif;
+  transform: translateY(-50%);
+  animation: codexGuideStepPulse .9s ease-in-out infinite alternate;
+}
+
+.codex-modal[data-guide="food-detail"] .codex-index-hint::before { content: "1"; }
+
+.codex-modal[data-guide="food-detail"] .codex-matrix-cell.tutorial-action {
+  z-index: 7;
+  border: 2px solid #ad4937;
+  outline: none;
+  background: #fff1b8;
+  box-shadow:
+    0 0 0 4px rgba(255, 218, 112, .72),
+    0 0 17px 7px rgba(195, 91, 54, .4),
+    inset 0 0 9px rgba(255, 255, 232, .92);
+  transform: scale(1.13);
+  animation: codexFoodTargetPulse .82s ease-in-out infinite alternate;
+}
+
+.codex-modal[data-guide="food-detail"] .codex-matrix-cell.tutorial-action::before {
+  content: "点这里";
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  width: max-content;
+  padding: 4px 7px 3px;
+  border: 1px solid #f0c66e;
+  border-radius: 7px;
+  color: #fff4cf;
+  background: #963b30;
+  box-shadow: 0 3px 7px rgba(70, 31, 20, .3);
+  font: 900 10px/1.2 "Songti SC", "STSong", serif;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.codex-modal[data-guide="food-detail"] .codex-matrix-cell.tutorial-action::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-right: 5px solid transparent;
+  border-top: 7px solid #963b30;
+  border-left: 5px solid transparent;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .codex-modal[data-guide="close"] .codex-close {
-  outline: 3px solid rgba(255, 220, 124, 0.86);
+  border: 2px solid #a64434;
+  outline: 4px solid rgba(255, 218, 111, .88);
   outline-offset: 3px;
+  color: #7c2f28;
+  background: linear-gradient(145deg, #fff2ba, #dba75a);
   animation: codexCloseGuidePulse 0.85s ease-in-out infinite alternate;
 }
 
+.codex-modal[data-guide="close"] .codex-close::before {
+  content: "关闭食鉴";
+  position: absolute;
+  top: 39px;
+  right: -5px;
+  width: max-content;
+  padding: 5px 8px 4px;
+  border: 1px solid #efc26a;
+  border-radius: 8px;
+  color: #fff2ca;
+  background: #963b30;
+  box-shadow: 0 4px 9px rgba(69, 31, 20, .32);
+  font: 900 10px/1.2 "Songti SC", "STSong", serif;
+  pointer-events: none;
+}
+
+.codex-modal[data-guide="close"] .codex-close::after {
+  content: "";
+  position: absolute;
+  top: 33px;
+  right: 8px;
+  width: 0;
+  height: 0;
+  border-right: 5px solid transparent;
+  border-bottom: 7px solid #963b30;
+  border-left: 5px solid transparent;
+  pointer-events: none;
+}
+
 .codex-modal[data-guide="close"] .codex-index-hint::before {
-  content: "↗";
-  display: inline-block;
-  margin-right: 6px;
-  color: #aa5038;
-  font-size: 14px;
-  animation: codexGuideArrow 0.8s ease-in-out infinite alternate;
+  content: "2";
 }
 
 @keyframes codexCloseGuidePulse {
-  from { box-shadow: 0 0 0 2px rgba(255, 231, 151, 0.2); }
-  to { box-shadow: 0 0 0 7px rgba(255, 231, 151, 0.48); }
+  from { box-shadow: 0 0 0 2px rgba(255, 231, 151, .36), 0 2px 4px rgba(54, 31, 17, .24); }
+  to { box-shadow: 0 0 0 9px rgba(224, 104, 58, .46), 0 4px 11px rgba(77, 34, 21, .36); }
 }
 
-@keyframes codexGuideArrow {
-  from { transform: translateY(2px); }
-  to { transform: translateY(-2px); }
+@keyframes codexGuideStepPulse {
+  from { transform: translateY(-50%) scale(.94); }
+  to { transform: translateY(-50%) scale(1.08); }
+}
+
+@keyframes codexFoodTargetPulse {
+  from {
+    box-shadow:
+      0 0 0 3px rgba(255, 218, 112, .58),
+      0 0 10px 4px rgba(195, 91, 54, .28),
+      inset 0 0 8px rgba(255, 255, 232, .82);
+  }
+  to {
+    box-shadow:
+      0 0 0 6px rgba(255, 218, 112, .86),
+      0 0 22px 9px rgba(195, 91, 54, .5),
+      inset 0 0 12px rgba(255, 255, 232, 1);
+  }
 }
 
 @keyframes codexIndexOpen {
@@ -6279,7 +6377,11 @@ button:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .codex-modal[open] .codex-index {
+  .codex-modal[open] .codex-index,
+  .codex-modal[data-guide="food-detail"] .codex-index-hint::before,
+  .codex-modal[data-guide="food-detail"] .codex-matrix-cell.tutorial-action,
+  .codex-modal[data-guide="close"] .codex-close,
+  .codex-modal[data-guide="close"] .codex-index-hint::before {
     animation: none;
   }
 }
