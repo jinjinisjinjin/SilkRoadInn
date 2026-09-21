@@ -384,37 +384,12 @@ const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
   npc_changan_maid: "./assets/npc_standee/npc_changan_maid_full_v1.png",
   npc_caravan_leader: "./assets/npc_standee/npc_caravan_leader_full_v1.png",
 });
-const INN_PACKAGE_ASSETS = [
+const INN_CORE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
   "./assets/longscroll/states-webp/22_done_state_v0.1.webp",
-  ...Array.from({ length: 27 }, (_, index) => `./assets/longscroll/masks-alpha/${String(index + 1).padStart(2, "0")}_mask_v0.1.png`),
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
   "./assets/keeper_story_portrait_v2.png",
-  LONGSCROLL_KEEPER_STANDEE,
-  "./assets/npc_standee/npc_dunhuang_woman_full_v1.png",
-  "./assets/npc_standee/npc_farmer_full_v1.png",
-  "./assets/npc_standee/npc_temple_donor_full_v1.png",
-  "./assets/npc_standee/npc_dunhuang_woman.png",
-  "./assets/npc_standee/npc_farmer.png",
-  "./assets/npc_standee/npc_temple_donor.png",
-  "./assets/npc_standee/npc_caravan_leader.png",
-  "./assets/npc_standee/npc_sogdian_merchant.png",
-  "./assets/npc_standee/npc_pilgrim_monk.png",
-  "./assets/npc_standee/npc_uighur_herder.png",
-  "./assets/npc_standee/npc_shazhou_guard.png",
-  "./assets/npc_standee/npc_changan_envoy.png",
-  "./assets/npc_standee/npc_changan_maid.png",
-  "./assets/npc_repair_portrait/npc_dunhuang_woman_v1.png",
-  "./assets/npc_repair_portrait/npc_farmer_v1.png",
-  "./assets/npc_repair_portrait/npc_temple_donor_v1.png",
-  "./assets/npc_repair_portrait/npc_sogdian_merchant_v1.png",
-  "./assets/npc_repair_portrait/npc_pilgrim_monk_v1.png",
-  "./assets/npc_repair_portrait/npc_uighur_herder_v1.png",
-  "./assets/npc_repair_portrait/npc_shazhou_guard_v1.png",
-  "./assets/npc_repair_portrait/npc_changan_envoy_v1.png",
-  "./assets/npc_repair_portrait/npc_changan_maid_v1.png",
-  "./assets/npc_repair_portrait/npc_caravan_leader_v1.png",
 ];
 const STARTUP_DATA_NAMES = Object.freeze([
   "items",
@@ -429,7 +404,7 @@ const STARTUP_DATA_NAMES = Object.freeze([
 ]);
 const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
   "./assets/ui/loading_poster_character_v2.jpg",
-  ...INN_PACKAGE_ASSETS,
+  ...INN_CORE_ASSETS,
   "./assets/kitchen-bg.png",
   "./assets/order_tray_approved_front.png",
   "./assets/ui/ui_coin_copper.png",
@@ -2434,7 +2409,7 @@ function currentInnStartupAssets() {
     .filter((milestone) => selectedRenovationChoice(milestone))
     .flatMap((milestone) => milestone.longscrollRegionIds);
   const next = nextRepairMilestone();
-  const assets = [LONGSCROLL_REPAIRED_SOURCE];
+  const assets = [LONGSCROLL_BASE_SOURCE, LONGSCROLL_REPAIRED_SOURCE];
   if (next) {
     [...completedRegionIds, ...next.longscrollRegionIds]
       .forEach((regionId) => assets.push(longscrollMaskSrc(regionId)));
@@ -4060,7 +4035,10 @@ async function ensureInnPackageLoaded() {
   if (innPackageLoaded) return true;
   if (innPackagePromise) return innPackagePromise;
   showLoadingOverlay("正在展开流沙驿驿院全景", "加载修缮分包资源，请稍候。", false);
-  innPackagePromise = preloadAssets(INN_PACKAGE_ASSETS)
+  innPackagePromise = preloadAssets([...new Set([
+    ...INN_CORE_ASSETS,
+    ...currentInnStartupAssets(),
+  ])])
     .then(waitForInnPackagePaint)
     .then(() => {
       innPackageLoaded = true;
