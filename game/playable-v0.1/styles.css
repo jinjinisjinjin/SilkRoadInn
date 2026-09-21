@@ -11346,6 +11346,36 @@ body {
   left: 98px;
 }
 
+.trial-reset-button {
+  position: absolute;
+  z-index: 80;
+  right: 8px;
+  top: max(78px, calc(env(safe-area-inset-top) + 66px));
+  display: inline-flex;
+  min-height: 29px;
+  padding: 4px 9px 5px;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #754033;
+  border-radius: 14px;
+  color: #ffecc5;
+  background: linear-gradient(#9e5744, #75382f);
+  box-shadow: inset 0 1px rgba(255, 223, 170, 0.28), 0 2px 5px rgba(50, 25, 17, 0.32);
+  font: 700 11px/1 "Songti SC", "STSong", serif;
+}
+
+.trial-reset-button[hidden] {
+  display: none;
+}
+
+.trial-reset-button span {
+  font: 700 15px/1 Georgia, serif;
+}
+
+.trial-reset-button:active {
+  transform: translateY(1px);
+}
+
 @media (max-height: 830px) and (min-width: 431px) {
   #app[data-page="board"] .seven-day-activity-entry {
     top: calc(var(--board-top-gutter) + 82px);

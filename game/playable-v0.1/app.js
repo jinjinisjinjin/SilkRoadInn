@@ -875,6 +875,7 @@ const els = {
   innUpgradeText: document.querySelector("#innUpgradeText"),
   furnitureShop: document.querySelector("#furnitureShop"),
   innStoryLine: document.querySelector("#innStoryLine"),
+  trialResetBtn: document.querySelector("#trialResetBtn"),
   resetBtn: document.querySelector("#resetBtn"),
   codexBtn: document.querySelector("#codexBtn"),
   codexModal: document.querySelector("#codexModal"),
@@ -3156,6 +3157,11 @@ function loadState() {
   if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || DAILY_SHOP_QA_RESET || CARAVAN_RENOWN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     localStorage.removeItem(SAVE_KEY);
   }
+  if (FULL_GAME_TRIAL_RESET) {
+    const cleanUrl = new URL(location.href);
+    cleanUrl.searchParams.delete("reset");
+    history.replaceState(null, "", cleanUrl);
+  }
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const generatorGiftMigration = Boolean(saved) && !data.generatorGiftProgressionVersion;
@@ -3956,6 +3962,10 @@ function bindEvents() {
     closeInnFinale();
   });
   els.resetBtn.addEventListener("click", resetGame);
+  if (els.trialResetBtn) {
+    els.trialResetBtn.hidden = !FULL_GAME_TRIAL_MODE;
+    els.trialResetBtn.addEventListener("click", resetGame);
+  }
   els.debugStaminaBtn.addEventListener("click", debugAddStamina);
   els.debugDoughBtn.addEventListener("click", debugAddDough);
   els.debugRenovationBtn.addEventListener("click", debugUnlockRenovation);
