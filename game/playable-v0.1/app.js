@@ -203,6 +203,7 @@ const CARAVAN_RENOWN_MIN_COINS = 50;
 const BOARD_COLUMNS = 7;
 const BOARD_ROWS = 9;
 const BOARD_SIZE = BOARD_COLUMNS * BOARD_ROWS;
+const BOARD_REVEAL_SCHEMA_VERSION = 1;
 const STORAGE_FREE_SLOTS = 8;
 const ACTIVE_BOARD_COLUMNS = 3;
 const ACTIVE_BOARD_ROWS = 3;
@@ -686,16 +687,19 @@ const GIFT_PACKS = {
     rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_meat_01", quantity: 1 })),
   },
 };
+// The buried board is authored from the centre outwards. Early frontier cells
+// support the opening mill orders; generator materials and later food lines sit
+// farther out so uncovering the board also teaches the progression order.
 const LOCKED_CELL_ITEM_ROWS = [
-  ["hubing_08_gulouzi", "meat_06_suzhi_yanglei", "fruit_05_guopu_pan", "dairy_04_ganlao", "spice_04_jiaochi_jiang", "drink_05_mijiang", "fruit_06_mijian_guo"],
-  ["material_dairy_01", "hubing_04_youhubing", "dairy_03_laojiang", "meat_04_jiaochi_yangrou", "spice_03_hujiao_li", "fruit_04_wuhuaguo", "boxmat_livestock_pen_01"],
-  ["meat_02_roumi_xian", "hubing_02_lubing", "hubing_01_dough", "material_dairy_01", "dairy_01_milk", "dairy_02_rumi", "spice_02_ziran_mo"],
-  ["fruit_03_yezao", "fruit_01_putao", null, null, null, "hubing_02_lubing", "drink_04_shiliujiang"],
-  ["hubing_04_youhubing", "boxmat_livestock_pen_01", null, null, null, "dairy_02_rumi", "drink_03_sanlejiang"],
-  ["meat_03_roupu", "drink_01_putaozhi", null, null, null, "meat_02_roumi_xian", "dairy_04_ganlao"],
-  ["spice_04_jiaochi_jiang", "spice_02_ziran_mo", "fruit_02_gan_putao", "hubing_03_humabing", "dairy_03_laojiang", "drink_02_putaojiang", "hubing_03_humabing"],
-  ["material_dairy_01", "fruit_02_gan_putao", "hubing_03_humabing", "meat_04_jiaochi_yangrou", "dairy_03_laojiang", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
-  ["spice_06_hexiang_jiangzhan", "meat_05_yangrou_geng", "gen_dairy_02", "dairy_05_suyou", "hubing_05_congchihubing", "hubing_04_youhubing", "dairy_07_tihusu"],
+  ["hubing_04_youhubing", "meat_03_roupu", "fruit_03_yezao", "dairy_03_laojiang", "spice_03_hujiao_li", "drink_03_sanlejiang", "hubing_04_youhubing"],
+  ["hubing_03_humabing", "hubing_02_lubing", "material_mill_02", "hubing_02_lubing", "material_dairy_02", "dairy_02_rumi", "hubing_03_humabing"],
+  ["hubing_02_lubing", "hubing_01_dough", "material_mill_01", "hubing_01_dough", "material_mill_01", "hubing_01_dough", "hubing_02_lubing"],
+  ["hubing_02_lubing", "hubing_01_dough", null, null, null, "hubing_01_dough", "hubing_02_lubing"],
+  ["hubing_01_dough", "hubing_01_dough", null, null, null, "hubing_01_dough", "hubing_02_lubing"],
+  ["hubing_02_lubing", "hubing_02_lubing", null, null, null, "hubing_02_lubing", "hubing_02_lubing"],
+  ["hubing_03_humabing", "hubing_02_lubing", "hubing_02_lubing", "hubing_01_dough", "hubing_02_lubing", "hubing_02_lubing", "hubing_03_humabing"],
+  ["dairy_01_milk", "material_dairy_01", "hubing_03_humabing", "hubing_02_lubing", "material_dairy_01", "dairy_01_milk", "fruit_01_putao"],
+  ["spice_02_ziran_mo", "meat_02_roumi_xian", "material_dairy_02", "dairy_03_laojiang", "fruit_02_gan_putao", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
 ];
 
 const state = {
@@ -717,6 +721,7 @@ const state = {
   splitterToolCharges: {},
   bubbleStates: {},
   unlockedCells: [],
+  revealedCells: [],
   visibleOrders: [],
   unlockedCodex: new Set(),
   unlockedFoodLevels: {},
@@ -3066,6 +3071,8 @@ function defaultState() {
     splitterToolCharges: {},
     bubbleStates: {},
     unlockedCells: [],
+    revealedCells: initialRevealedCells(),
+    boardRevealSchemaVersion: BOARD_REVEAL_SCHEMA_VERSION,
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
     unlockedCodex: ["codex_hubing_01"],
     unlockedFoodLevels: { hubing: 1 },
@@ -3153,6 +3160,8 @@ function loadState() {
   const generatorGiftMigration = Boolean(saved) && !data.generatorGiftProgressionVersion;
   const foodDiscoveryNeedsMigration = Boolean(saved)
     && Number(data.foodDiscoverySchemaVersion || 0) < FOOD_DISCOVERY_SCHEMA_VERSION;
+  const boardRevealNeedsMigration = Boolean(saved)
+    && Number(data.boardRevealSchemaVersion || 0) < BOARD_REVEAL_SCHEMA_VERSION;
   const legacyStorageHasGenerators = Array.isArray(data.bag)
     && data.bag.some((itemId) => isGeneratorPiece(byId.get(migrateLegacyGeneratorId(itemId))));
   const savedCoinEconomyVersion = Number(data.coinEconomyVersion);
@@ -3229,6 +3238,7 @@ function loadState() {
     || JSON.stringify(loadedRepairProgress) !== JSON.stringify(persistedRepairProgress);
   const loadedBag = normalizeStorageSlots(data.bag, data.unlockedStorageSlots)
     .map((itemId) => isGeneratorPiece(byId.get(itemId)) ? null : itemId);
+  const loadedUnlockedCells = normalizeUnlockedCells(data.unlockedCells);
   Object.assign(state, {
     board: normalizeBoard(data.board),
     bag: loadedBag,
@@ -3238,7 +3248,12 @@ function loadState() {
     storedGiftBoxStates: normalizeStoredGiftBoxStates(data.storedGiftBoxStates, loadedBag),
     splitterToolCharges: normalizeSplitterToolCharges(data.splitterToolCharges, data.board),
     bubbleStates: normalizeBubbleStates(data.bubbleStates),
-    unlockedCells: normalizeUnlockedCells(data.unlockedCells),
+    unlockedCells: loadedUnlockedCells,
+    revealedCells: normalizeRevealedCells(
+      data.revealedCells,
+      loadedUnlockedCells,
+      data.boardRevealSchemaVersion,
+    ),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
     unlockedFoodLevels: foodDiscoveryNeedsMigration ? {} : normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
@@ -3400,7 +3415,7 @@ function loadState() {
   const caravanRenownOrdersChanged = syncCaravanRenownOrders();
   const innLevelAdvanced = !ISOLATED_QA_MODE && advanceInnLevelsIfReady({ announce: false });
   if (generatorGiftMigration) saveState();
-  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || caravanRenownChanged || caravanRenownOrdersChanged || trialGeneratorGranted || innLevelAdvanced || (PROGRESSION_FLOW_QA_MODE && !saved) || (CARAVAN_RENOWN_QA_MODE && !saved)) saveState();
+  if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || boardRevealNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || caravanRenownChanged || caravanRenownOrdersChanged || trialGeneratorGranted || innLevelAdvanced || (PROGRESSION_FLOW_QA_MODE && !saved) || (CARAVAN_RENOWN_QA_MODE && !saved)) saveState();
   if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || CARAVAN_RENOWN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     const url = new URL(location.href);
     url.searchParams.delete("reset");
@@ -3426,6 +3441,8 @@ function saveState() {
       splitterToolCharges: state.splitterToolCharges,
       bubbleStates: state.bubbleStates,
       unlockedCells: state.unlockedCells,
+      revealedCells: state.revealedCells,
+      boardRevealSchemaVersion: BOARD_REVEAL_SCHEMA_VERSION,
       visibleOrders: state.visibleOrders,
       unlockedCodex: [...state.unlockedCodex],
       unlockedFoodLevels: state.unlockedFoodLevels,
@@ -7321,6 +7338,61 @@ function normalizeUnlockedCells(value) {
   return [...new Set(value.map(Number).filter((index) => Number.isInteger(index) && index >= 0 && index < BOARD_SIZE))];
 }
 
+function orthogonalNeighborIndices(index) {
+  const row = Math.floor(index / BOARD_COLUMNS);
+  const col = index % BOARD_COLUMNS;
+  return [
+    [row - 1, col],
+    [row, col + 1],
+    [row + 1, col],
+    [row, col - 1],
+  ]
+    .filter(([nextRow, nextCol]) => (
+      nextRow >= 0 && nextRow < BOARD_ROWS && nextCol >= 0 && nextCol < BOARD_COLUMNS
+    ))
+    .map(([nextRow, nextCol]) => boardIndex(nextRow, nextCol));
+}
+
+function initialRevealedCells() {
+  const centerRow = ACTIVE_BOARD_START_ROW + Math.floor(ACTIVE_BOARD_ROWS / 2);
+  const centerCol = ACTIVE_BOARD_START_COL + Math.floor(ACTIVE_BOARD_COLUMNS / 2);
+  return [
+    boardIndex(ACTIVE_BOARD_START_ROW - 1, centerCol),
+    boardIndex(centerRow, ACTIVE_BOARD_START_COL - 1),
+    boardIndex(centerRow, ACTIVE_BOARD_START_COL + ACTIVE_BOARD_COLUMNS),
+    boardIndex(ACTIVE_BOARD_START_ROW + ACTIVE_BOARD_ROWS, centerCol),
+  ];
+}
+
+function deriveRevealedCells(unlockedCells = []) {
+  if (!unlockedCells.length) return initialRevealedCells();
+  const open = new Set(unlockedCells);
+  for (let index = 0; index < BOARD_SIZE; index += 1) {
+    if (isInitialActiveCell(index)) open.add(index);
+  }
+  const frontier = new Set();
+  open.forEach((index) => {
+    orthogonalNeighborIndices(index).forEach((neighborIndex) => {
+      if (!open.has(neighborIndex) && !isInitialActiveCell(neighborIndex)) frontier.add(neighborIndex);
+    });
+  });
+  return [...frontier];
+}
+
+function normalizeRevealedCells(value, unlockedCells = [], schemaVersion = 0) {
+  const unlocked = new Set(unlockedCells);
+  const source = Number(schemaVersion) >= BOARD_REVEAL_SCHEMA_VERSION && Array.isArray(value)
+    ? value
+    : deriveRevealedCells(unlockedCells);
+  return [...new Set(source.map(Number).filter((index) => (
+    Number.isInteger(index)
+    && index >= 0
+    && index < BOARD_SIZE
+    && !isInitialActiveCell(index)
+    && !unlocked.has(index)
+  )))];
+}
+
 function migrateOccupiedLockedCells() {
   const occupiedLockedCells = state.board
     .map((itemId, index) => (itemId && isBoardCellLocked(index) ? index : null))
@@ -7340,6 +7412,18 @@ function starterGeneratorIndex() {
 function isBoardCellLocked(index) {
   if (isInitialActiveCell(index)) return false;
   return !state.unlockedCells.includes(index);
+}
+
+function isBoardCellRevealed(index) {
+  return isBoardCellLocked(index) && state.revealedCells.includes(index);
+}
+
+function revealLockedNeighbors(index) {
+  const newlyRevealed = orthogonalNeighborIndices(index)
+    .filter((neighborIndex) => isBoardCellLocked(neighborIndex) && !isBoardCellRevealed(neighborIndex));
+  if (!newlyRevealed.length) return [];
+  state.revealedCells = [...new Set([...state.revealedCells, ...newlyRevealed])];
+  return newlyRevealed;
 }
 
 function isInitialActiveCell(index) {
@@ -7510,16 +7594,17 @@ function renderBoard() {
   state.board.forEach((itemId, index) => {
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
-    cell.className = `cell ${locked ? "locked" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${splitterPulseIndices.has(index) ? "splitter-result-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${activeDailyPouchOutputIndices.has(index) ? "daily-pouch-receiving" : ""} ${activeDailyPouchStates.has(state.giftBoxStates[index]) ? "daily-pouch-dispensing" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
+    const revealed = isBoardCellRevealed(index);
+    cell.className = `cell ${locked ? "locked" : ""} ${revealed ? "locked-revealed" : locked ? "locked-covered" : ""} ${readyOrderHighlights.has(index) ? "order-ready-item" : ""} ${state.selectedIndex === index ? "selected" : ""} ${state.pulseIndex === index ? "merge-pop" : ""} ${splitterPulseIndices.has(index) ? "splitter-result-pop" : ""} ${state.unlockPulseIndex === index ? "unlock-pop" : ""} ${activeGeneratorOutputIndices.has(index) ? "receiving-item" : ""} ${activeDailyPouchOutputIndices.has(index) ? "daily-pouch-receiving" : ""} ${activeDailyPouchStates.has(state.giftBoxStates[index]) ? "daily-pouch-dispensing" : ""} ${isTutorialBoardFocus(itemId) ? "tutorial-focus" : ""}`;
     cell.dataset.index = index;
     cell.setAttribute("role", "button");
-    cell.tabIndex = locked ? -1 : 0;
+    cell.tabIndex = locked && !revealed ? -1 : 0;
     if (locked) {
       cell.removeAttribute("aria-disabled");
       const lockedItem = byId.get(lockedCellItemId(index));
       const visual = lockedCellVisual(index);
-      cell.setAttribute("aria-label", visual ? visual.name : lockedItem ? lockedItem.name : "待解锁格");
-      if (visual) {
+      cell.setAttribute("aria-label", revealed && visual ? `${visual.name}，半解锁` : "被风沙覆盖的棋格");
+      if (revealed && visual) {
         const isGeneratorMaterial = visual.kind === "generator_material";
         const img = document.createElement("img");
         img.className = `item locked-preview ${isGeneratorMaterial ? "generator-material locked-material-preview" : ""}`;
@@ -7531,11 +7616,10 @@ function renderBoard() {
         }
         cell.append(img);
       }
-      const dust = Object.assign(document.createElement("img"), {
+      const dust = Object.assign(document.createElement("span"), {
         className: "locked-dust",
-        src: "./assets/ui/locked.png",
-        alt: "",
       });
+      dust.setAttribute("aria-hidden", "true");
       cell.append(dust);
     } else if (itemId) {
       const item = byId.get(itemId);
@@ -8790,6 +8874,23 @@ function removeDragGhost() {
   if (dragging) dragging.ghost = null;
 }
 
+function clearLockedMergeDropTargets() {
+  els.board.querySelectorAll(".locked-merge-target, .locked-merge-ready").forEach((cell) => {
+    cell.classList.remove("locked-merge-target", "locked-merge-ready");
+  });
+}
+
+function updateLockedMergeDropTargets(itemId, hoveredIndex = null) {
+  clearLockedMergeDropTargets();
+  if (!itemId || !byId.get(itemId)?.mergeTo) return;
+  state.revealedCells.forEach((index) => {
+    if (!isBoardCellRevealed(index) || lockedCellItemId(index) !== itemId) return;
+    const cell = els.board.querySelector(`.cell[data-index="${index}"]`);
+    cell?.classList.add("locked-merge-target");
+    if (index === hoveredIndex) cell?.classList.add("locked-merge-ready");
+  });
+}
+
 function isSplitterTargetItem(item) {
   return Boolean(
     item
@@ -8926,6 +9027,7 @@ function moveCellPointer(event) {
   const dy = event.clientY - dragging.startY;
   const sourceItemId = state.board[dragging.fromIndex];
   const hoveredIndex = getCellIndexFromEventTarget(event);
+  const pointedIndex = getCellIndexFromPoint(event.clientX, event.clientY);
 
   if (hoveredIndex !== null && hoveredIndex !== dragging.fromIndex) {
     dragging.hoverIndex = hoveredIndex;
@@ -8944,6 +9046,7 @@ function moveCellPointer(event) {
     }
   }
   positionDragGhost(event.clientX, event.clientY);
+  updateLockedMergeDropTargets(sourceItemId, pointedIndex);
   updateSplitterDropTargets(hoveredIndex);
   updateUpgradeDropTargets(hoveredIndex);
   els.storageBtn?.classList.toggle("drop-ready", isStorageDropPoint(event.clientX, event.clientY));
@@ -9038,6 +9141,7 @@ function cleanupCellPointer(_cell, pointerId) {
   window.dispatchEvent(new Event("silkroad:board-item-release"));
   const sourceCell = dragging?.sourceCell;
   sourceCell?.classList.remove("is-drag-source");
+  clearLockedMergeDropTargets();
   clearSplitterDropTargets();
   clearUpgradeDropTargets();
   try {
@@ -9105,6 +9209,10 @@ async function handleCellClick(index, prevSelected = state.selectedIndex) {
   // Click on locked cell: try to unlock with selected piece
   if (isBoardCellLocked(index)) {
     queueBoardClickSound();
+    if (!isBoardCellRevealed(index)) {
+      toast("这格仍被风沙完全盖住，先解开相邻的半露棋格。");
+      return;
+    }
     if (prevSelected !== null && !isBoardCellLocked(prevSelected)) {
       const selectedItemId = state.board[prevSelected];
       const selectedItem = byId.get(selectedItemId);
@@ -9336,14 +9444,20 @@ function generatorUpgradeDetail(item) {
   return `${mergeRule}Lv1生成器可由同系材料逐级合成；同系订单达标后，也可从奖励行囊领取副本。`;
 }
 function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
+  if (!isBoardCellRevealed(toIndex)) {
+    toast("这格仍被风沙完全盖住，先从半露出的棋格向外推进。");
+    return false;
+  }
   const lockedItemId = lockedCellItemId(toIndex);
   const item = byId.get(itemId);
   const lockedItem = byId.get(lockedItemId);
   if (!lockedItemId || lockedItemId !== itemId) {
     toast(lockedItem ? `需要用${lockedItem.name}来解开这格。` : "这格还被风沙遮住。");
-    return;
+    return false;
   }
   state.unlockedCells = [...new Set([...state.unlockedCells, toIndex])];
+  state.revealedCells = state.revealedCells.filter((index) => index !== toIndex);
+  const newlyRevealed = revealLockedNeighbors(toIndex);
   clearGeneratorState(boardGeneratorStateKey(fromIndex));
   clearGeneratorState(boardGeneratorStateKey(toIndex));
   state.board[fromIndex] = null;
@@ -9355,8 +9469,12 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   state.pulseIndex = toIndex;
   state.unlockPulseIndex = toIndex;
   const output = byId.get(outputId);
-  keeper(`风沙散开，解开了一格：${output?.name ?? lockedItem.name}。`);
-  toast(`解锁格子：${output?.name ?? lockedItem.name}`);
+  keeper(newlyRevealed.length
+    ? `风沙散开，${output?.name ?? lockedItem.name}合成成功，附近又露出了${newlyRevealed.length}格。`
+    : `风沙散开，解开了一格：${output?.name ?? lockedItem.name}。`);
+  toast(newlyRevealed.length
+    ? `解锁成功 · 附近露出${newlyRevealed.length}格`
+    : `解锁格子：${output?.name ?? lockedItem.name}`);
   if (navigator.vibrate) navigator.vibrate(16);
   if (item?.boxMaterial) tryBuildGeneratorFromMaterials(itemId);
   if (item?.mergeTo) unlockCodex(byId.get(item.mergeTo)?.codexId);
@@ -9364,6 +9482,7 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
     state.tutorialStep = 2;
   }
   clearPulseSoon();
+  return true;
 }
 
 function suppressNextCellClickBriefly() {
@@ -9468,7 +9587,8 @@ function storageGuideContext() {
     if (item.type === "gift_box" && !GIFT_PACKS[state.giftBoxStates[index]?.packId]?.shopOffer) return;
     storable.push(index);
     const hasMergePartner = Boolean(item.mergeTo) && state.board.some((otherId, otherIndex) =>
-      otherIndex !== index && (isBoardCellLocked(otherIndex) ? lockedCellItemId(otherIndex) : otherId) === itemId);
+      otherIndex !== index
+      && (isBoardCellRevealed(otherIndex) ? lockedCellItemId(otherIndex) : otherId) === itemId);
     if (item.codexId && !item.type && !demanded.has(itemId) && !hasMergePartner) recommended.push(index);
   });
   return { canStore: firstEmptyBagIndex() !== -1, storable, recommended };
