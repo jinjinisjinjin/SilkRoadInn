@@ -2149,7 +2149,18 @@ function initializeLongscrollCastQaScenario() {
 function initializeNewPlayerGuideQaScenario() {
   state.board = Array(BOARD_SIZE).fill(null);
   state.board[starterGeneratorIndex()] = "gen_mill_01";
-  if (NEW_PLAYER_GUIDE_QA_STAGE === "board-full") {
+  if (NEW_PLAYER_GUIDE_QA_STAGE === "codex-detail") {
+    state.completedOrderIds = ["order_001_guard_lubing"];
+    state.completedOrders = 1;
+    state.tutorialStep = 4;
+    state.currentPage = "board";
+  } else if (NEW_PLAYER_GUIDE_QA_STAGE === "codex-close") {
+    state.completedOrderIds = ["order_001_guard_lubing"];
+    state.completedOrders = 1;
+    state.tutorialStep = 5;
+    state.renovationChoices = {};
+    state.currentPage = "board";
+  } else if (NEW_PLAYER_GUIDE_QA_STAGE === "board-full") {
     for (let row = ACTIVE_BOARD_START_ROW; row < ACTIVE_BOARD_START_ROW + ACTIVE_BOARD_ROWS; row += 1) {
       for (let col = ACTIVE_BOARD_START_COL; col < ACTIVE_BOARD_START_COL + ACTIVE_BOARD_COLUMNS; col += 1) {
         const index = boardIndex(row, col);
@@ -11753,9 +11764,9 @@ function renderCodex() {
     : closeTutorialActive ? "close" : "";
   const hint = els.codexModal.querySelector(".codex-index-hint");
   if (hint) hint.textContent = detailTutorialActive
-    ? "点一下闪动的小图，直接查看这道食物的详情与札记"
+    ? "点击高亮的食物图标，打开详情与札记"
     : closeTutorialActive
-      ? "详情已经看过了，点右上角关闭食鉴，去修缮前厅"
+      ? "点击右上角的关闭按钮，前往流沙驿修缮"
       : "点击已点亮的小图，可直接查看食物详情与札记";
   let tutorialTargetAssigned = false;
 
