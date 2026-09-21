@@ -24,7 +24,7 @@
   const FIRST_ORDER_ID = "order_001_guard_lubing";
   const FIRST_REPAIR_ID = "tutorial_complete";
   const LOCKED_MERGE_ITEM_NAME = "麦面剂";
-  const LOCKED_MERGE_TARGET_INDEX = 16;
+  const POST_REPAIR_GUIDE_CLASS = "post-repair-next";
 
   let layer;
   let card;
@@ -145,7 +145,7 @@
     layer.hidden = true;
     pointer.hidden = true;
     dragFood.hidden = true;
-    layer.classList.remove("storage-lesson", "storage-success");
+    layer.classList.remove("storage-lesson", "storage-success", POST_REPAIR_GUIDE_CLASS);
     pointer.classList.remove("drag-path", "points-up", "points-right", "points-left");
   }
 
@@ -191,8 +191,9 @@
     pointer.style.setProperty("--guide-dy", "0px");
   }
 
-  function showGuide({ text, targets = [], drag = false, acknowledge = false }) {
+  function showGuide({ text, targets = [], drag = false, acknowledge = false, variant = "" }) {
     clearTargets();
+    layer.classList.toggle(POST_REPAIR_GUIDE_CLASS, variant === POST_REPAIR_GUIDE_CLASS);
     currentTargets = targets.filter(isVisible);
     currentTargets.forEach((target) => target.classList.add(TARGET_CLASS));
     copy.textContent = text;
@@ -271,19 +272,43 @@
   }
 
   function lockedMergeTarget(state, savedGuide) {
-    const target = document.querySelector(`.cell[data-index="${LOCKED_MERGE_TARGET_INDEX}"]`);
-    const unlocked = Array.isArray(state.unlockedCells)
-      && state.unlockedCells.includes(LOCKED_MERGE_TARGET_INDEX);
-    if (unlocked || (target && !target.classList.contains("locked"))) {
-      updateGuideState({ lockedMergeSeen: true, lockedMergeTargetIndex: LOCKED_MERGE_TARGET_INDEX });
-      return null;
-    }
-    if (target?.classList.contains("locked")
-      && target.getAttribute("aria-label") === LOCKED_MERGE_ITEM_NAME) {
-      updateGuideState({ lockedMergeTargetIndex: LOCKED_MERGE_TARGET_INDEX });
-      return target;
-    }
-    return null;
+    const candidates = [...document.querySelectorAll(".cell.locked-revealed")]
+      .filter((cell) => cell.getAttribute("aria-label")?.startsWith(LOCKED_MERGE_ITEM_NAME));
+    if (!candidates.length) return null;
+    const savedTargetIndex = Number(savedGuide.lockedMergeTargetIndex);
+    const savedTarget = candidates.find((cell) => Number(cell.dataset.index) === savedTargetIndex);
+    if (savedTarget) return savedTarget;
+
+    const generator = boardCellFor("gen_mill_01", state);
+    const generatorRect = generator?.getBoundingClientRect();
+    const target = generatorRect
+      ? candidates.sort((left, right) => {
+        const leftRect = left.getBoundingClientRect();
+        const rightRect = right.getBoundingClientRect();
+        const generatorX = generatorRect.left + generatorRect.width / 2;
+        const generatorY = generatorRect.top + generatorRect.height / 2;
+        const leftX = leftRect.left + leftRect.width / 2;
+        const rightX = rightRect.left + rightRect.width / 2;
+        const leftPriority = leftX < generatorX ? 0 : 1;
+        const rightPriority = rightX < generatorX ? 0 : 1;
+        if (leftPriority !== rightPriority) return leftPriority - rightPriority;
+        const leftDistance = Math.hypot(leftX - generatorX, leftRect.top + leftRect.height / 2 - generatorY);
+        const rightDistance = Math.hypot(rightX - generatorX, rightRect.top + rightRect.height / 2 - generatorY);
+        return leftDistance - rightDistance;
+      })[0]
+      : candidates[0];
+    updateGuideState({ lockedMergeTargetIndex: Number(target.dataset.index) });
+    return target;
+  }
+
+  function showPostRepairBoardGuide(state, completedRepair = false) {
+    showGuide({
+      text: completedRepair
+        ? "前厅已经修好。点小石磨继续备餐，完成订单攒够铜钱，再回长卷修下一处。"
+        : "门面第一处已经修好。点小石磨继续备餐，完成订单后，再回长卷修下一件。",
+      targets: [boardCellFor("gen_mill_01", state)],
+      variant: POST_REPAIR_GUIDE_CLASS,
+    });
   }
 
   function refresh() {
@@ -419,12 +444,7 @@
         });
         return;
       }
-      const nextOrder = document.querySelector("#orders .order-card");
-      showGuide({
-        text: "新的订单已经来了。继续制作客人需要的食物，赚铜钱修缮下一处。",
-        targets: [nextOrder || document.querySelector("#orders")],
-        acknowledge: true,
-      });
+      showPostRepairBoardGuide(state, true);
       return;
     }
     const firstRepairParts = Array.isArray(state.repairProgress?.[FIRST_REPAIR_ID]?.completedParts)
@@ -438,12 +458,7 @@
         });
         return;
       }
-      const nextOrder = document.querySelector("#orders .order-card");
-      showGuide({
-        text: "已经完成一次赚钱与修缮。继续制作新订单需要的食物，逐件修好前厅。",
-        targets: [nextOrder || document.querySelector("#orders")],
-        acknowledge: true,
-      });
+      showPostRepairBoardGuide(state);
       return;
     }
     const firstOrderDone = Array.isArray(state.completedOrderIds) && state.completedOrderIds.includes(FIRST_ORDER_ID);
@@ -491,6 +506,12 @@
       scheduleRefresh(0);
     });
     window.addEventListener("silkroad:board-item-press", (event) => {
+      if (layer?.classList.contains(POST_REPAIR_GUIDE_CLASS)
+        && event.detail.itemId?.startsWith("gen_mill_")) {
+        retireCoreGuide({ completed: true, postRepairGeneratorSeen: true });
+        hideGuide();
+        return;
+      }
       if (!storageLessonActive || event.detail.locked
         || !storageContext?.storable.includes(event.detail.index)) return;
       storageDragging = true;

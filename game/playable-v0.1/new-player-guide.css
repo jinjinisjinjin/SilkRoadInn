@@ -166,6 +166,44 @@
   display: none;
 }
 
+/* The final onboarding step points at the next real action and stays compact so
+   the board remains readable while the player continues. */
+.new-player-guide-layer.post-repair-next .new-player-guide-card {
+  width: min(292px, calc(100% - 24px));
+  min-height: 78px;
+  bottom: max(82px, calc(env(safe-area-inset-bottom) + 72px));
+  grid-template-columns: 52px minmax(0, 1fr) 20px;
+  gap: 8px;
+  padding: 8px 8px 8px 9px;
+}
+
+.new-player-guide-layer.post-repair-next .new-player-guide-card::after {
+  left: 60px;
+  width: 48px;
+}
+
+.new-player-guide-layer.post-repair-next .new-player-guide-portrait-frame {
+  width: 50px;
+  height: 50px;
+  border-width: 2px;
+  border-radius: 10px;
+}
+
+.new-player-guide-layer.post-repair-next .new-player-guide-copy {
+  gap: 3px;
+}
+
+.new-player-guide-layer.post-repair-next .new-player-guide-copy p {
+  font-size: 13px;
+  line-height: 1.38;
+}
+
+.new-player-guide-layer.post-repair-next .new-player-guide-skip {
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+}
+
 .new-player-guide-target {
   z-index: 61 !important;
   outline: 3px solid rgba(255, 218, 129, 0.88) !important;
