@@ -11556,18 +11556,19 @@ body {
 }
 
 #app[data-page="board"] .board {
-  gap: 2px;
+  gap: 3px;
 }
 
 #app[data-page="board"] .cell.locked-covered {
   cursor: default;
   border-radius: 8px;
   background:
-    linear-gradient(145deg, rgba(255, 242, 205, 0.055), rgba(105, 69, 38, 0.035));
+    linear-gradient(145deg, rgba(255, 244, 211, 0.1), rgba(99, 64, 35, 0.075));
   box-shadow:
-    inset 0 0 0 1px rgba(103, 70, 40, 0.09),
-    inset 0 1px 0 rgba(255, 243, 208, 0.09),
-    inset 0 -2px 4px rgba(83, 53, 28, 0.035);
+    inset 0 0 0 1px rgba(96, 63, 35, 0.17),
+    inset 0 1px 0 rgba(255, 244, 211, 0.17),
+    inset 0 -4px 7px rgba(79, 50, 27, 0.065),
+    0 1px 1px rgba(255, 227, 170, 0.055);
 }
 
 #app[data-page="board"] .cell.locked-covered::after,
