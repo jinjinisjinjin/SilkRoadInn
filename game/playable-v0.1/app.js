@@ -18,7 +18,9 @@ const AUDIO_SOURCES = Object.freeze({
   bubble: `${AUDIO_PATH}bubble-pop.m4a`,
   enterShop: `${AUDIO_PATH}enter-shop.m4a`,
   exitShop: `${AUDIO_PATH}exit-shop.m4a`,
-  bgm: `${AUDIO_PATH}bgm.m4a`,
+  repairComplete: `${AUDIO_PATH}repair-complete-v1.m4a`,
+  bgmBoard: `${AUDIO_PATH}bgm-board-seamless-v2.wav`,
+  bgmInn: `${AUDIO_PATH}longscroll-warm-strings-v2.m4a`,
   opening: `${AUDIO_PATH}opening-first-fire-v1.m4a`,
 });
 const AUDIO_VOLUMES = Object.freeze({
@@ -29,7 +31,9 @@ const AUDIO_VOLUMES = Object.freeze({
   bubble: SFX_VOLUME,
   enterShop: SFX_VOLUME,
   exitShop: SFX_VOLUME,
-  bgm: 0.24,
+  repairComplete: 0.64,
+  bgmBoard: 0.24,
+  bgmInn: 0.21,
   opening: 0.65,
 });
 const AUDIO_START_OFFSETS = Object.freeze({
@@ -1120,7 +1124,11 @@ const audioRuntime = {
   initialized: false,
   bgmEnabled: true,
   sfxEnabled: true,
-  bgm: null,
+  bgms: null,
+  activeBgmKey: null,
+  bgmRequestId: 0,
+  sfxGeneration: 0,
+  sfxRequests: new WeakMap(),
   bgmStarted: false,
   opening: null,
   openingSession: null,
@@ -1162,17 +1170,25 @@ function initAudio() {
   audioRuntime.initialized = true;
   audioRuntime.bgmEnabled = readAudioEnabledPreference(AUDIO_BGM_ENABLED_KEY);
   audioRuntime.sfxEnabled = readAudioEnabledPreference(AUDIO_SFX_ENABLED_KEY);
-  audioRuntime.bgm = createGameAudio(AUDIO_SOURCES.bgm, 0);
-  audioRuntime.bgm.loop = true;
+  audioRuntime.bgms = {
+    board: createGameAudio(AUDIO_SOURCES.bgmBoard, 0),
+    inn: createGameAudio(AUDIO_SOURCES.bgmInn, 0),
+  };
+  Object.values(audioRuntime.bgms).forEach((audio) => {
+    audio.loop = true;
+  });
   audioRuntime.opening = createGameAudio(AUDIO_SOURCES.opening, AUDIO_VOLUMES.opening);
   audioRuntime.opening.addEventListener("loadedmetadata", () => {
     if (audioRuntime.openingSession) startOpeningAudioIfAllowed();
   });
   window.addEventListener("silkroad:opening-start", (event) => {
+    audioRuntime.bgmRequestId += 1;
     if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
     audioRuntime.fadeFrame = null;
-    audioRuntime.bgm.pause();
-    audioRuntime.bgm.volume = 0;
+    Object.values(audioRuntime.bgms).forEach((audio) => {
+      audio.pause();
+      audio.volume = 0;
+    });
     audioRuntime.opening.pause();
     audioRuntime.openingSession = event.detail;
     startOpeningAudioIfAllowed();
@@ -1185,7 +1201,7 @@ function initAudio() {
     startBgmIfAllowed(1200);
   });
   Object.entries(AUDIO_SOURCES).forEach(([name, src]) => {
-    if (name === "bgm" || name === "opening") return;
+    if (name === "bgmBoard" || name === "bgmInn" || name === "opening") return;
     const poolSize = name === "click" ? 6 : 2;
     const pool = Array.from({ length: poolSize }, () => createGameAudio(src, AUDIO_VOLUMES[name]));
     audioRuntime.pools.set(name, pool);
@@ -1204,15 +1220,22 @@ function playSfx(name, { markSpecific = name !== "click" } = {}) {
   const audios = Array.from({ length: layerCount }, (_, index) => pool[(cursor + index) % pool.length]);
   audioRuntime.cursors.set(name, (cursor + layerCount) % pool.length);
   const startOffset = AUDIO_START_OFFSETS[name] ?? 0;
+  const generation = audioRuntime.sfxGeneration;
   audios.forEach((audio) => {
+    const request = {};
+    audioRuntime.sfxRequests.set(audio, request);
+    const isAllowed = () => audioRuntime.sfxEnabled && !document.hidden
+      && generation === audioRuntime.sfxGeneration
+      && audioRuntime.sfxRequests.get(audio) === request;
     try {
       audio.pause();
     } catch { /* the audio element may still be initializing */ }
     audio.volume = AUDIO_VOLUMES[name];
     const startPlayback = () => {
+      if (!isAllowed()) return;
       let started = false;
       const playNow = () => {
-        if (started) return;
+        if (started || !isAllowed()) return;
         started = true;
         audio.play().catch(() => {});
       };
@@ -1246,17 +1269,38 @@ function playSfx(name, { markSpecific = name !== "click" } = {}) {
   if (markSpecific) audioRuntime.lastSpecificAt = performance.now();
 }
 
-function fadeBgmTo(targetVolume, duration = 520) {
-  const bgm = audioRuntime.bgm;
-  if (!bgm) return;
+function bgmKeyForCurrentPage() {
+  return state.currentPage === "inn" ? "inn" : "board";
+}
+
+function bgmVolumeForKey(key) {
+  return key === "inn" ? AUDIO_VOLUMES.bgmInn : AUDIO_VOLUMES.bgmBoard;
+}
+
+function fadeBgmTracksTo(targetKey, duration = 520) {
+  const bgms = audioRuntime.bgms;
+  const target = bgms?.[targetKey];
+  if (!target) return;
   if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
+  const fadeDuration = Math.max(1, duration);
   const startedAt = performance.now();
-  const initialVolume = bgm.volume;
+  const initialVolumes = Object.fromEntries(
+    Object.entries(bgms).map(([key, audio]) => [key, audio.volume]),
+  );
   const step = (now) => {
-    const progress = Math.max(0, Math.min(1, (now - startedAt) / duration));
-    bgm.volume = Math.max(0, Math.min(1, initialVolume + (targetVolume - initialVolume) * progress));
+    const progress = Math.max(0, Math.min(1, (now - startedAt) / fadeDuration));
+    Object.entries(bgms).forEach(([key, audio]) => {
+      const targetVolume = key === targetKey ? bgmVolumeForKey(key) : 0;
+      const initialVolume = initialVolumes[key] ?? 0;
+      audio.volume = Math.max(0, Math.min(1, initialVolume + (targetVolume - initialVolume) * progress));
+    });
     if (progress < 1) audioRuntime.fadeFrame = requestAnimationFrame(step);
-    else audioRuntime.fadeFrame = null;
+    else {
+      audioRuntime.fadeFrame = null;
+      Object.entries(bgms).forEach(([key, audio]) => {
+        if (key !== targetKey) audio.pause();
+      });
+    }
   };
   audioRuntime.fadeFrame = requestAnimationFrame(step);
 }
@@ -1293,18 +1337,35 @@ function startBgmIfAllowed(fadeDuration = 520) {
     startOpeningAudioIfAllowed();
     return;
   }
-  if (!audioRuntime.bgmEnabled || document.hidden || !audioRuntime.bgm) return;
-  if (!audioRuntime.bgm.paused && audioRuntime.bgmStarted) return;
-  const playAttempt = audioRuntime.bgm.play();
+  if (!audioRuntime.bgmEnabled || document.hidden || !audioRuntime.bgms) return;
+  const targetKey = bgmKeyForCurrentPage();
+  const target = audioRuntime.bgms[targetKey];
+  if (!target) return;
+  const requestId = ++audioRuntime.bgmRequestId;
+  if (audioRuntime.activeBgmKey === targetKey && !target.paused && audioRuntime.bgmStarted) {
+    // A newer scene request may have started another track before play() resolved.
+    Object.entries(audioRuntime.bgms).forEach(([key, audio]) => {
+      if (key !== targetKey && audio.volume === 0) audio.pause();
+    });
+    return;
+  }
+  const normalizedFadeDuration = typeof fadeDuration === "number" ? fadeDuration : 520;
+  target.volume = audioRuntime.activeBgmKey && audioRuntime.activeBgmKey !== targetKey
+    ? 0
+    : target.volume;
+  const playAttempt = target.play();
   if (!playAttempt) return;
   playAttempt
     .then(() => {
-      if (audioRuntime.openingSession || !audioRuntime.bgmEnabled || document.hidden) {
-        audioRuntime.bgm.pause();
+      if (audioRuntime.openingSession || !audioRuntime.bgmEnabled || document.hidden
+        || bgmKeyForCurrentPage() !== targetKey) {
+        target.pause();
         return;
       }
+      if (requestId !== audioRuntime.bgmRequestId) return;
+      audioRuntime.activeBgmKey = targetKey;
       audioRuntime.bgmStarted = true;
-      fadeBgmTo(AUDIO_VOLUMES.bgm, typeof fadeDuration === "number" ? fadeDuration : 520);
+      fadeBgmTracksTo(targetKey, normalizedFadeDuration);
     })
     .catch(() => {});
 }
@@ -1353,12 +1414,15 @@ function toggleBgm() {
   saveAudioPreferences();
   renderAudioControls();
   if (!audioRuntime.bgmEnabled) {
+    audioRuntime.bgmRequestId += 1;
     if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
     audioRuntime.fadeFrame = null;
-    audioRuntime.bgm?.pause();
+    Object.values(audioRuntime.bgms ?? {}).forEach((audio) => audio.pause());
     audioRuntime.opening?.pause();
     setOpeningSoundPrompt(false);
-    if (audioRuntime.bgm) audioRuntime.bgm.volume = 0;
+    Object.values(audioRuntime.bgms ?? {}).forEach((audio) => {
+      audio.volume = 0;
+    });
     return;
   }
   startBgmIfAllowed();
@@ -1372,6 +1436,7 @@ function toggleSfx() {
   saveAudioPreferences();
   renderAudioControls();
   if (!audioRuntime.sfxEnabled) {
+    audioRuntime.sfxGeneration += 1;
     audioRuntime.pools.forEach((pool) => pool.forEach((audio) => audio.pause()));
     return;
   }
@@ -1408,7 +1473,12 @@ function queueBoardClickSound() {
 
 function handleAudioVisibility() {
   if (document.hidden) {
-    audioRuntime.bgm?.pause();
+    audioRuntime.bgmRequestId += 1;
+    audioRuntime.sfxGeneration += 1;
+    if (audioRuntime.fadeFrame) cancelAnimationFrame(audioRuntime.fadeFrame);
+    audioRuntime.fadeFrame = null;
+    audioRuntime.pools.forEach((pool) => pool.forEach((audio) => audio.pause()));
+    Object.values(audioRuntime.bgms ?? {}).forEach((audio) => audio.pause());
     audioRuntime.opening?.pause();
     return;
   }
@@ -2246,6 +2316,7 @@ function previewLongscrollRepairRenewal(sceneNumber) {
   render();
   renderLongscrollCastQaNav();
   centerInnSceneOnPosition(milestone.longscrollRegionIds);
+  playSfx("repairComplete");
   playRepairCompleteEffect(milestone);
 }
 
@@ -4198,6 +4269,7 @@ async function switchPage(page) {
         pendingRepairAfterStoryMilestoneId = null;
       }
       render();
+      if (page !== previousPage) startBgmIfAllowed(1600);
       if (page === "board") tickGenerators();
       saveState();
     });
@@ -6460,6 +6532,7 @@ function completeRepairFromPlayer(milestoneId) {
 }
 
 async function closeRepairPlayer(milestone, { completed = false } = {}) {
+  if (openRepairMilestoneId !== milestone.id) return;
   if (completed) {
     repairReturnCastMilestoneId = milestone.id;
     pendingRepairAfterStoryMilestoneId = null;
@@ -6473,6 +6546,7 @@ async function closeRepairPlayer(milestone, { completed = false } = {}) {
   centerInnSceneOnPosition(milestone.longscrollRegionIds);
   saveState();
   if (!completed) return;
+  playSfx("repairComplete");
   const revealHold = playRepairCompleteEffect(milestone);
   setTimeout(() => {
     if (state.currentPage !== "inn") {
