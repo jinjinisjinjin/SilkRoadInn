@@ -155,6 +155,7 @@
   }
 
   viewport.addEventListener("pointerdown", (event) => {
+    if (!completion.hidden || event.target.closest("#completion")) return;
     viewport.setPointerCapture(event.pointerId);
     pointers.set(event.pointerId, {
       x: event.clientX,
@@ -236,8 +237,17 @@
     zoomAt(event.clientX, event.clientY, scale * Math.exp(-event.deltaY * 0.0014));
   }, { passive: false });
 
-  completion.addEventListener("pointerup", (event) => {
+  completion.setAttribute("role", "button");
+  completion.tabIndex = 0;
+  completion.setAttribute("aria-label", "修缮完成，继续");
+  completion.addEventListener("pointerdown", (event) => event.stopPropagation());
+  completion.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); dismissCompletion(event); }
+  });
+  completion.addEventListener("click", dismissCompletion);
+  function dismissCompletion(event) {
     event.stopPropagation();
+    if (completion.hidden || completion.classList.contains("is-dismissing")) return;
     completion.classList.add("is-dismissing");
     window.setTimeout(() => {
       completion.hidden = true;
@@ -248,7 +258,7 @@
         );
       }
     }, 340);
-  });
+  }
 
   window.addEventListener("resize", initialFrame);
   const repairEconomy = window.SilkRoadRepairEconomy?.register({

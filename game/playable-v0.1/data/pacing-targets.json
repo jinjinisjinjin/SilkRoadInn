@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "basis": "calendar_resource_budget",
+  "status": "chapter_budget_candidate_pending_natural_validation",
+  "targetCalendarDays": 30,
+  "acceptableCalendarDays": [
+    28,
+    42
+  ],
+  "audience": {
+    "purchasesWithRealMoney": false,
+    "visitsPerDay": [
+      2,
+      3
+    ],
+    "sessionMinutes": [
+      5,
+      10
+    ],
+    "firstSessionMinutes": [
+      20,
+      30
+    ],
+    "gemExchange": "earned_gems_optional_not_assumed_daily"
+  },
+  "hardCalendarGates": false,
+  "chapters": [
+    {
+      "chapter": 1,
+      "targetDurationDays": 2,
+      "targetEndDayOffset": 2,
+      "repairs": [
+        {
+          "repairId": "tutorial_complete",
+          "targetDurationDays": 0.25,
+          "targetStartDayOffset": 0,
+          "targetEndDayOffset": 0.25
+        },
+        {
+          "repairId": "kitchen_repair",
+          "targetDurationDays": 0.75,
+          "targetStartDayOffset": 0.25,
+          "targetEndDayOffset": 1
+        },
+        {
+          "repairId": "codex_first_phase",
+          "targetDurationDays": 1,
+          "targetStartDayOffset": 1,
+          "targetEndDayOffset": 2
+        }
+      ]
+    },
+    {
+      "chapter": 2,
+      "targetDurationDays": 7,
+      "targetEndDayOffset": 9,
+      "repairs": [
+        {
+          "repairId": "lv2_front_feast",
+          "targetDurationDays": 0.75,
+          "targetStartDayOffset": 2,
+          "targetEndDayOffset": 2.75
+        },
+        {
+          "repairId": "lv2_west_market",
+          "targetDurationDays": 1,
+          "targetStartDayOffset": 2.75,
+          "targetEndDayOffset": 3.75
+        },
+        {
+          "repairId": "lv2_flower_rack",
+          "targetDurationDays": 1,
+          "targetStartDayOffset": 3.75,
+          "targetEndDayOffset": 4.75
+        },
+        {
+          "repairId": "lv2_north_shop",
+          "targetDurationDays": 1.25,
+          "targetStartDayOffset": 4.75,
+          "targetEndDayOffset": 6
+        },
+        {
+          "repairId": "lv2_south_shop",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 6,
+          "targetEndDayOffset": 7.5
+        },
+        {
+          "repairId": "lv2_well",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 7.5,
+          "targetEndDayOffset": 9
+        }
+      ]
+    },
+    {
+      "chapter": 3,
+      "targetDurationDays": 9,
+      "targetEndDayOffset": 18,
+      "repairs": [
+        {
+          "repairId": "lv3_upper_hall",
+          "targetDurationDays": 1.25,
+          "targetStartDayOffset": 9,
+          "targetEndDayOffset": 10.25
+        },
+        {
+          "repairId": "lv3_north_court",
+          "targetDurationDays": 1.25,
+          "targetStartDayOffset": 10.25,
+          "targetEndDayOffset": 11.5
+        },
+        {
+          "repairId": "lv3_west_gate",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 11.5,
+          "targetEndDayOffset": 13
+        },
+        {
+          "repairId": "lv3_east_court",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 13,
+          "targetEndDayOffset": 14.5
+        },
+        {
+          "repairId": "lv3_garden",
+          "targetDurationDays": 1.75,
+          "targetStartDayOffset": 14.5,
+          "targetEndDayOffset": 16.25
+        },
+        {
+          "repairId": "lv3_watchtower",
+          "targetDurationDays": 1.75,
+          "targetStartDayOffset": 16.25,
+          "targetEndDayOffset": 18
+        }
+      ]
+    },
+    {
+      "chapter": 4,
+      "targetDurationDays": 12,
+      "targetEndDayOffset": 30,
+      "repairs": [
+        {
+          "repairId": "lv4_south_shed",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 18,
+          "targetEndDayOffset": 19.5
+        },
+        {
+          "repairId": "lv4_central_market",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 19.5,
+          "targetEndDayOffset": 21
+        },
+        {
+          "repairId": "lv4_south_street",
+          "targetDurationDays": 1.5,
+          "targetStartDayOffset": 21,
+          "targetEndDayOffset": 22.5
+        },
+        {
+          "repairId": "lv4_lanes",
+          "targetDurationDays": 1.75,
+          "targetStartDayOffset": 22.5,
+          "targetEndDayOffset": 24.25
+        },
+        {
+          "repairId": "lv4_east_shed",
+          "targetDurationDays": 1.75,
+          "targetStartDayOffset": 24.25,
+          "targetEndDayOffset": 26
+        },
+        {
+          "repairId": "lv4_east_court",
+          "targetDurationDays": 2,
+          "targetStartDayOffset": 26,
+          "targetEndDayOffset": 28
+        },
+        {
+          "repairId": "lv4_lantern_city",
+          "targetDurationDays": 2,
+          "targetStartDayOffset": 28,
+          "targetEndDayOffset": 30
+        }
+      ]
+    }
+  ],
+  "measurementRules": {
+    "orderCountIsDurationProxy": false,
+    "assumeEveryPlayerUses720DailyStamina": false,
+    "countUnimplementedBonuses": false,
+    "countTestResourceGrants": false,
+    "countDairyAsInstantUnlimitedSupply": false,
+    "classifySimulationsAsNaturalPlay": false
+  },
+  "acceptance": [
+    "同一版本、普通零氪、每日2–3次回访，主线完成目标28–42天；30天为调参基准，不是日期锁。",
+    "单次回访5–10分钟；首次20–30分钟。观察交单、合成、修缮子步骤与长期目标推进，不要求每次完成整处修缮。",
+    "分别记录体力、奶房批次、成品奖励、宝石、铜钱与空间成本；先核实实际可领取供给，再校准消耗。",
+    "自然档和修改资源的场景分开保存；抽样模拟与目标表均不能作为自然完成日期。"
+  ]
+}

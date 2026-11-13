@@ -166,32 +166,12 @@
     "boardCleanupSalesPercent": 2
   },
   "repairPacing": {
-    "targetCompletedOrdersMin": 270,
-    "targetCompletedOrdersMax": 345,
-    "targetOrdersPerRepair": {
-      "first": [
-        2,
-        4
-      ],
-      "early": [
-        9,
-        14
-      ],
-      "middle": [
-        15,
-        22
-      ],
-      "late": [
-        23,
-        33
-      ],
-      "final": [
-        36,
-        45
-      ]
-    },
-    "costFormula": "round50(target_orders_x_stage_median_order_coins_divided_by_0.70)",
+    "basis": "calendar_resource_budget",
+    "targetConfig": "pacing-targets.json",
+    "costSource": "progression.milestones[].repairParts[].cost",
+    "calibrationStatus": "chapter_budget_candidate_pending_natural_validation",
     "dynamicScaling": false,
+    "hardCalendarGates": false,
     "directCoinRefunds": false
   },
   "boardCleanup": {

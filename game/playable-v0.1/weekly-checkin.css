@@ -308,8 +308,9 @@
   overflow: hidden;
   color: #533824;
   font: 800 11px/1.25 "Songti SC", serif;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-height: 28px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .weekly-checkin-day.current {

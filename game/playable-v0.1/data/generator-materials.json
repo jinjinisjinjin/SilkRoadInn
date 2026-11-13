@@ -4,6 +4,7 @@
   "assetRoot": "generator-materials-v03",
   "stagesPerCategory": 3,
   "legacyIdMap": {
+    "boxmat_livestock_pen_01": "material_dairy_01",
     "boxmat_milk_room_01": "material_dairy_01",
     "material_milk_01": "material_dairy_01",
     "material_milk_02": "material_dairy_02",

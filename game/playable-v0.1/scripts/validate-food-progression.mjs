@@ -29,6 +29,7 @@ const sandbox = createContext({
   foodLineMaxLevels: new Map(generators.categories.map((category) => [category.foodLineId, 8])),
   codexById: new Map(), toast: () => {},
   getOrder: (id) => orders.orders.find((order) => order.id === id),
+  nextStoryOrderId: () => null,
 });
 function loadFunction(name) {
   const start = source.indexOf(`function ${name}(`);
@@ -39,7 +40,7 @@ function loadFunction(name) {
 for (const name of ["normalizeProductionMultiplier", "availableProductionMultipliers", "effectiveProductionMultiplier",
   "productionOutputLevel", "manualGeneratorStaminaCost", "maximumFoodLevelForLine", "rememberUnlockedFoodLevel",
   "rememberUnlockedFoodItem", "syncUnlockedFoodLevels", "orderDemandLinesUnlocked", "grantGiftPack",
-  "backfillGeneratorProgressionGifts", "repairPartCosts", "pickOrder"]) loadFunction(name);
+  "backfillGeneratorProgressionGifts", "repairPartCosts", "progressedOrderCandidates", "pickOrder"]) loadFunction(name);
 for (const [start, end] of [["const GIFT_PACKS =", "const LOCKED_CELL_ITEM_ROWS"],
   ["const GENERATOR_CATEGORY_UNLOCKS =", "const GENERATOR_ORDER_QA_VISIBLE_BY_STAGE"]]) {
   runInContext(source.slice(source.indexOf(start), source.indexOf(end)), sandbox);
@@ -92,13 +93,13 @@ for (const milestone of progression.milestones) {
   for (const entry of unlocks.filter((entry) => entry.completedRepairId === milestone.id)) {
     openLines.add(entry.categoryId);
     assert.equal(supplied.get(entry.categoryId), entry.categoryId === "dairy" ? 1 : 8);
-    assert.equal(milestone.innLevel, { dairy: 2, spice: 3, fruit: 4, drink: 5, meat: 6 }[entry.categoryId]);
+    assert.equal(milestone.innLevel, { dairy: 1, spice: 3, fruit: 4, drink: 5, meat: 6 }[entry.categoryId]);
   }
 }
 assert.equal(progression.milestones.reduce((sum, milestone) =>
-  sum + sandbox.repairPartCosts(milestone).reduce((total, cost) => total + cost, 0), 0), 39600);
+  sum + sandbox.repairPartCosts(milestone).reduce((total, cost) => total + cost, 0), 0), 53060);
 const firstRepair = progression.milestones.find((milestone) => milestone.id === "tutorial_complete");
-assert.deepEqual(sandbox.repairPartCosts(firstRepair), [10, 120, 130, 140, 150, 160, 170, 180, 200]);
+assert.deepEqual(sandbox.repairPartCosts(firstRepair), [10, 20, 30, 40, 50, 60, 70, 90, 110]);
 assert.equal(orders.orders.find((order) => order.id === "order_001_guard_lubing")?.reward?.coins, 10);
 
 // Half-open legacy packs retain the same output positions and total rewards.
@@ -129,4 +130,13 @@ for (let index = 0; index < 100; index++) {
   const next = sandbox.pickOrder();
   assert.ok(next.demand.every((d) => byId.get(d.itemId)?.level < 5));
 }
-console.log("Food progression passed: all 22 repair gates, six lines, deterministic gifts, legacy gifts, discovery gates, multipliers, difficult-order limit and 39,600 repair cost.");
+state.visibleOrders = [];
+// This reservation case assumes the main dish's generator is already available.
+// Missing-generator mastery prerequisites are covered in validate-main-order-upgrade.
+owned = new Map(generators.categories.map((category) => [category.id, 6]));
+sandbox.nextStoryOrderId = () => hard.id;
+for (let index = 0; index < 100; index++) {
+  const next = sandbox.pickOrder();
+  assert.ok(next.id === hard.id || next.demand.every((d) => byId.get(d.itemId)?.level < 5), "Reserve the long order slot for the upcoming main quest");
+}
+console.log("Food progression passed: all 22 repair gates, six lines, deterministic gifts, legacy gifts, discovery gates, multipliers, difficult-order limit and 53,060 repair cost.");

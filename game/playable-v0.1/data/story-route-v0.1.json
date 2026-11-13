@@ -27,9 +27,11 @@
             2
           ],
           "requires": {
-            "coins": 10,
+            "coins": 480,
             "completedOrders": 1,
-            "orders": ["order_001_guard_lubing"]
+            "orders": [
+              "order_001_guard_lubing"
+            ]
           }
         },
         {
@@ -45,8 +47,10 @@
             "repairs": [
               "02"
             ],
-            "coins": 175,
-            "orders": ["order_011_dunhuang_woman_lubing"]
+            "coins": 810,
+            "orders": [
+              "order_011_dunhuang_woman_lubing"
+            ]
           }
         },
         {
@@ -62,8 +66,10 @@
             "repairs": [
               "04"
             ],
-            "coins": 180,
-            "orders": ["order_005_monk_humabing"]
+            "coins": 1080,
+            "orders": [
+              "order_005_monk_humabing"
+            ]
           }
         }
       ]
@@ -86,8 +92,10 @@
             "repairs": [
               "11"
             ],
-            "coins": 80,
-            "orders": ["order_014_musician_youhubing"]
+            "coins": 1880,
+            "orders": [
+              "order_014_musician_youhubing"
+            ]
           }
         },
         {
@@ -103,8 +111,10 @@
             "repairs": [
               "03"
             ],
-            "coins": 95,
-            "orders": ["order_004_changan_lubing"]
+            "coins": 1880,
+            "orders": [
+              "order_004_changan_lubing"
+            ]
           }
         },
         {
@@ -120,8 +130,10 @@
             "repairs": [
               "05"
             ],
-            "coins": 110,
-            "orders": ["order_006_camel_worker_youhubing"]
+            "coins": 1990,
+            "orders": [
+              "order_006_camel_worker_youhubing"
+            ]
           }
         },
         {
@@ -137,8 +149,10 @@
             "repairs": [
               "06"
             ],
-            "coins": 130,
-            "orders": ["order_007_persian_attendant_congchi"]
+            "coins": 1990,
+            "orders": [
+              "order_007_persian_attendant_congchi"
+            ]
           }
         },
         {
@@ -154,8 +168,10 @@
             "repairs": [
               "15"
             ],
-            "coins": 150,
-            "orders": ["order_008_uighur_yangrou"]
+            "coins": 2110,
+            "orders": [
+              "order_008_uighur_yangrou"
+            ]
           }
         },
         {
@@ -172,8 +188,10 @@
             "repairs": [
               "16"
             ],
-            "coins": 170,
-            "orders": ["order_009_mystery_suibing"]
+            "coins": 2230,
+            "orders": [
+              "order_009_mystery_suibing"
+            ]
           }
         }
       ]
@@ -196,8 +214,10 @@
             "repairs": [
               "17-18"
             ],
-            "coins": 190,
-            "orders": ["order_010_caravan_gulouzi"]
+            "coins": 2390,
+            "orders": [
+              "order_010_caravan_gulouzi"
+            ]
           }
         },
         {
@@ -213,8 +233,10 @@
             "repairs": [
               "07"
             ],
-            "coins": 215,
-            "orders": ["order_015_monk_rumi"]
+            "coins": 2520,
+            "orders": [
+              "order_015_monk_rumi"
+            ]
           }
         },
         {
@@ -230,8 +252,10 @@
             "repairs": [
               "08"
             ],
-            "coins": 245,
-            "orders": ["order_016_uighur_milk"]
+            "coins": 2520,
+            "orders": [
+              "order_016_uighur_milk"
+            ]
           }
         },
         {
@@ -247,8 +271,10 @@
             "repairs": [
               "09"
             ],
-            "coins": 275,
-            "orders": ["order_017_temple_laojiang"]
+            "coins": 2650,
+            "orders": [
+              "order_017_temple_laojiang"
+            ]
           }
         },
         {
@@ -264,8 +290,10 @@
             "repairs": [
               "10"
             ],
-            "coins": 310,
-            "orders": ["order_018_traveler_lubing_rumi"]
+            "coins": 2650,
+            "orders": [
+              "order_018_traveler_lubing_rumi"
+            ]
           }
         },
         {
@@ -282,8 +310,10 @@
             "repairs": [
               "12"
             ],
-            "coins": 350,
-            "orders": ["order_019_sogdian_huma_laojiang"]
+            "coins": 2770,
+            "orders": [
+              "order_019_sogdian_huma_laojiang"
+            ]
           }
         }
       ]
@@ -306,8 +336,10 @@
             "repairs": [
               "13-14"
             ],
-            "coins": 460,
-            "orders": ["order_lv4_south_shed_stocking"]
+            "coins": 3130,
+            "orders": [
+              "order_lv4_south_shed_stocking"
+            ]
           }
         },
         {
@@ -323,8 +355,10 @@
             "repairs": [
               "19"
             ],
-            "coins": 520,
-            "orders": ["order_lv4_central_market_feast"]
+            "coins": 3130,
+            "orders": [
+              "order_lv4_central_market_feast"
+            ]
           }
         },
         {
@@ -342,8 +376,10 @@
             "repairs": [
               "20"
             ],
-            "coins": 590,
-            "orders": ["order_lv4_south_street_trade"]
+            "coins": 3260,
+            "orders": [
+              "order_lv4_south_street_trade"
+            ]
           }
         },
         {
@@ -359,8 +395,10 @@
             "repairs": [
               "21-23"
             ],
-            "coins": 670,
-            "orders": ["order_021_lanes_continuation"]
+            "coins": 3260,
+            "orders": [
+              "order_021_lanes_continuation"
+            ]
           }
         },
         {
@@ -376,8 +414,10 @@
             "repairs": [
               "24"
             ],
-            "coins": 760,
-            "orders": ["order_022_shed_continuation"]
+            "coins": 3400,
+            "orders": [
+              "order_022_shed_continuation"
+            ]
           }
         },
         {
@@ -393,8 +433,10 @@
             "repairs": [
               "25"
             ],
-            "coins": 860,
-            "orders": ["order_023_court_continuation"]
+            "coins": 3400,
+            "orders": [
+              "order_023_court_continuation"
+            ]
           }
         },
         {
@@ -410,8 +452,10 @@
             "repairs": [
               "26"
             ],
-            "coins": 980,
-            "orders": ["order_024_lantern_continuation"]
+            "coins": 3530,
+            "orders": [
+              "order_024_lantern_continuation"
+            ]
           }
         }
       ]

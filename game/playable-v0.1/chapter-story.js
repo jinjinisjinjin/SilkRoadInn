@@ -181,7 +181,7 @@
       title: "让远客停脚",
       scene: "chapter-two north-shop",
       steps: [
-        ["求法僧人", "西行求法僧", portraits.monk, "left", "贫僧错过宿处，本想借檐下一夜。若北边那间旧屋能挡风，往后的旅人便不必再向黑处赶。"],
+        ["求法僧人", "西行求法僧", portraits.monk, "left", "贫僧带来一卷长安食抄。北铺货架若修好，行囊与来货便有处安放。"],
       ],
     },
     "after:lv2_north_shop": {
@@ -189,7 +189,7 @@
       title: "北铺开张",
       scene: "chapter-two north-shop completed",
       steps: [
-        ["求法僧人", "西行求法僧", portraits.monk, "right", "今夜门内有火，檐下有灯。贫僧走了许多路，知道这两样有多难得。"],
+        ["求法僧人", "西行求法僧", portraits.monk, "right", "货架摆齐，行囊也有了去处。贫僧能安心把这卷食抄摊开了。"],
       ],
     },
     "before:lv2_south_shop": {
@@ -522,12 +522,12 @@
       ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "往后这里不只摆花，也备一卷干布、一盏热水。遇上急雨的人，不必先开口求助。"],
     ],
     "before:lv2_north_shop": [
-      ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "檐下的风正对着睡处，借住一夜也会冻醒。既然要留人，就不能只给一块屋顶。"],
-      ["求法僧人", "西行求法僧", portraits.monk, "left", "补住窗缝，再垫高卧席便够了。旅人要的并非华屋，只是今夜不必继续赶路。"],
+      ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "先修稳货架，再收拾铺面。客人放下行囊，也好安心看看带来的货。"],
+      ["求法僧人", "西行求法僧", portraits.monk, "left", "铺子开了，食抄也留在这里。往来人翻一翻，或许还能添上几样异乡吃食。"],
     ],
     "after:lv2_north_shop": [
-      ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "我在门后放了干毡和一盏小灯。后来的人即使深夜抵达，也能自己找到一处暖地。"],
-      ["求法僧人", "西行求法僧", portraits.monk, "right", "施主留住的不是一个夜晚，是旅人明日还能继续上路的力气。"],
+      ["掌柜", "流沙驿新任掌柜", portraits.keeper, "left", "行囊放这边，来货摆那边。翻过食抄，再来尝尝驿里的热饼。"],
+      ["求法僧人", "西行求法僧", portraits.monk, "right", "行李有了着落，贫僧也能安心停脚了。这卷食抄，就留给往来人接着添写。"],
     ],
     "before:lv2_south_shop": [
       ["掌柜", "流沙驿新任掌柜", portraits.keeper, "right", "鲜乳怕热，也怕与香料混放。南边旧铺若清出来，北道带来的滋味才能真正留下。"],
@@ -647,7 +647,7 @@
     "after:lv2_front_feast": narration("入夜前", "新席面从门内一直排到窗边。乐声响起后，原本只想买一张饼的旅人也放下行囊，坐了下来。"),
     "after:lv2_west_market": narration("灯火初亮", "一盏、两盏，西市的灯沿着摊位依次亮起。货箱让出街心，第一批客人循着光走进来。"),
     "after:lv2_flower_rack": narration("雨声渐缓", "雨水顺着新篷布滑到檐外，花叶在灯下轻轻晃动。避雨的一家人终于把湿透的行囊放了下来。"),
-    "after:lv2_north_shop": narration("夜深以后", "北铺的窗缝不再灌风，门后备好了干毡和小灯。迟到的旅人推门时，不必再惊动整座驿站。"),
+    "after:lv2_north_shop": narration("北铺重开", "货架重新立稳，布包与货箱各归其位。食抄摊开，北铺又有客人进门。"),
     "after:lv2_south_shop": narration("南铺开门", "木架被垫高，鲜乳与香料分开放置。来自北道的气味第一次安稳留在流沙驿里。"),
     "after:lv2_well": narration("井绳落下", "六双手轮流拉起同一桶清水。井边新刻的取水次序还带着石粉，争吵声却已经停了。"),
     "after:lv3_upper_hall": narration("第一盏房灯", "楼上的窗纸透出暖光。受伤的伙计终于睡熟，守货的人也第一次把背靠在墙上。"),
@@ -958,7 +958,7 @@
       {
         id: "chapter2-shelter",
         title: "风雨留客",
-        summary: "屋檐挡住急雨，北铺留住晚归人，驿站开始成为旅途中的落脚处。",
+        summary: "屋檐挡住急雨，北铺安放行囊与来货，驿站开始成为旅人的落脚处。",
         segmentIds: [
           "before:lv2_flower_rack",
           "after:lv2_flower_rack",
@@ -1197,6 +1197,7 @@
   let progress;
   let qaState;
   let reviewMode = false;
+  let reviewContinues = false;
   let ui;
   let cinematicTimer = null;
   let cinematicPlaying = false;
@@ -1414,7 +1415,7 @@
       && qaState.index === chapterSegments[qaState.chapter].length - 1
       && qaState.chapter < 4);
     const nextActionLabel = atLastStep && reviewMode
-      ? "结束回顾"
+      ? reviewContinues ? "下一段" : "结束回顾"
       : atLastStep && active.reward
       ? "查看奖励"
       : atLastStep && hasNextQaSegment
@@ -1515,6 +1516,7 @@
     progress = options.onProgress ?? null;
     qaState = options.qa ?? null;
     reviewMode = Boolean(options.review);
+    reviewContinues = Boolean(options.reviewContinues);
     const storyChapter = segmentStoryChapter.get(id);
     view.eyebrow.textContent = storyChapter ? `第${storyChapter.number}章 · ${storyChapter.title}` : segment.eyebrow;
     view.title.textContent = segment.title;

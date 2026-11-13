@@ -270,8 +270,17 @@
     paint();
   }, { passive: false });
 
-  completion.addEventListener("pointerup", (event) => {
+  completion.setAttribute("role", "button");
+  completion.tabIndex = 0;
+  completion.setAttribute("aria-label", "修缮完成，继续");
+  completion.addEventListener("pointerdown", (event) => event.stopPropagation());
+  completion.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); dismissCompletion(event); }
+  });
+  completion.addEventListener("click", dismissCompletion);
+  function dismissCompletion(event) {
     event.stopPropagation();
+    if (completion.hidden || completion.classList.contains("is-dismissing")) return;
     completion.classList.add("is-dismissing");
     window.setTimeout(() => {
       completion.hidden = true;
@@ -282,7 +291,7 @@
         );
       }
     }, 350);
-  });
+  }
 
   window.addEventListener("resize", initialFrame);
   window.addEventListener("keydown", (event) => {

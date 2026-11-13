@@ -140,7 +140,8 @@ for (const order of orders.orders) {
     `${order.id} pays ${order.reward.coins}, expected ${expectedReward}`,
   );
   assert(!("originalCoins" in order.reward), `${order.id} still has originalCoins`);
-  assert(!("firstClearBonusCoins" in order.reward), `${order.id} still has a first-clear coin bonus`);
+  const firstClearBonuses = { order_008_uighur_yangrou: 50, order_009_mystery_suibing: 130, order_010_caravan_gulouzi: 320 };
+  assert((order.reward.firstClearBonusCoins ?? 0) === (firstClearBonuses[order.id] ?? 0), `${order.id} has an unexpected first-clear bonus`);
   assert(!("minCompletedOrders" in order), `${order.id} still has an order-count gate`);
   assert(!("minUnlockedGeneratorCategories" in order), `${order.id} still has a chapter-era generator gate`);
   assert(!("requiredCodexIds" in order), `${order.id} still has a codex gate`);
@@ -164,6 +165,8 @@ for (const order of orders.orders) {
 }
 
 for (const milestone of progression.milestones) {
+  assert(milestone.repairParts?.length === 9, `${milestone.id} must expose all nine part costs`);
+  assert(milestone.repairCost === milestone.repairParts.reduce((sum, part) => sum + part.cost, 0), `${milestone.id} total must match paid parts`);
   assert(
     !Object.prototype.hasOwnProperty.call(milestone.rewards ?? {}, "coins"),
     `${milestone.id} still refunds repair coins`,

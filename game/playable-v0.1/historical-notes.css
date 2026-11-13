@@ -753,6 +753,8 @@
 
 .historical-note-reward-items {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   align-content: start;
   justify-content: center;
   gap: 12px;
@@ -761,6 +763,7 @@
 
 .historical-note-reward-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: clamp(8px, 3vw, 15px);
 }
