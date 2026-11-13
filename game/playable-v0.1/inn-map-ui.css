@@ -660,3 +660,33 @@
 .longscroll-map > .longscroll-region {
   animation: none;
 }
+
+/* Reserve space for every control, including the late-game renown entry. */
+#app[data-page="board"] .resources {
+  display:grid;
+  grid-template-columns:minmax(64px,1.05fr) minmax(64px,1fr) minmax(62px,.95fr) repeat(4,26px);
+  gap:2px; align-items:center;
+}
+#app[data-page="board"] .resources:has(#renownEventBtn[hidden]) {
+  grid-template-columns:minmax(64px,1.05fr) minmax(64px,1fr) minmax(62px,.95fr) repeat(3,26px);
+}
+#app[data-page="board"] .resources > * { order:initial; }
+#app[data-page="board"] .resources > .resource-pill {
+  width:auto; min-width:0; height:26px; min-height:26px; gap:2px; padding:1px 2px; font-size:13px;
+}
+#app[data-page="board"] .resources > .resource-pill > b { min-width:0; white-space:nowrap; }
+#app[data-page="board"] .resources > .resource-pill > img { width:18px; height:18px; flex:none; }
+#app[data-page="board"] .resources .resource-plus { width:16px; height:16px; min-height:16px; flex:none; margin-left:auto; }
+#app[data-page="board"] .resources .board-stamina-ring { width:18px; height:18px; }
+#app[data-page="board"] .resources .board-stamina-ring img { width:15px; height:15px; }
+#app[data-page="board"] .resources > .board-stamina-resource { position:relative; justify-content:space-between; }
+#app[data-page="board"] .resources .board-stamina-timer:not([hidden]) {
+  position:absolute; top:calc(100% + 2px); left:50%; transform:translateX(-50%);
+  flex-direction:row; align-items:center; gap:4px; padding:1px 4px; border-radius:6px;
+  background:rgba(61,43,29,.78); pointer-events:none;
+}
+#app[data-page="board"] .resources .board-stamina-timer > span,
+#app[data-page="board"] .resources .board-stamina-timer > strong { font-size:9px; }
+#app[data-page="board"] .resources > button { width:26px; min-width:26px; height:28px; min-height:28px; padding:0; }
+#app[data-page="board"] .resources > .production-multiplier { font-size:11px; }
+#app[data-page="board"] .resources .renown-seal { width:23px; height:23px; font-size:15px; }

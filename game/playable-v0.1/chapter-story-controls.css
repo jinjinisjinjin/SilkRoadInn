@@ -93,7 +93,7 @@
 }
 
 .chapter-story-copy > p {
-  flex: 1 1 76px;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -111,6 +111,15 @@
 
 @media (max-height: 700px) {
   .chapter-story-copy > p {
-    flex-basis: 62px;
+    flex-basis: auto;
   }
+}
+
+/* Short dialogue gets its natural height; optional history yields space first. */
+.chapter-story-copy > p { flex:0 0 auto; max-height:42dvh; }
+.chapter-story-copy > .chapter-story-footnote { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+@media (orientation:landscape) and (max-height:520px) {
+  .chapter-story-modal { width:min(100vw,680px); }
+  .chapter-story-panel { bottom:8px; max-height:calc(100% - 72px); padding:32px 18px 10px; }
+  .chapter-story-portrait { top:-34px; width:64px; height:64px; }
 }

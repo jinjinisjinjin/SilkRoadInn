@@ -98,7 +98,7 @@
       if (storageLessonActive || storageSuccessUntil) {
         storageLessonActive = false;
         storageSuccessUntil = 0;
-        updateGuideState({ boardStorageSeen: true });
+        updateGuideState(storageContext?.lockedMerge ? { boardMergeHintSeen: true } : { boardStorageSeen: true });
       } else {
         retireCoreGuide({ dismissed: true });
       }
@@ -247,16 +247,20 @@
   }
 
   function showStorageLesson({ success = false } = {}) {
-    const source = success ? null : storageTutorialSource();
-    const storage = document.querySelector("#storageBtn");
+    const merge = success ? null : storageContext?.lockedMerge;
+    const source = success ? null : merge
+      ? document.querySelector(`.cell[data-index="${merge.fromIndex}"]`) : storageTutorialSource();
+    const storage = merge
+      ? document.querySelector(`.cell[data-index="${merge.targetIndex}"]`) : document.querySelector("#storageBtn");
     layer.classList.add("storage-lesson");
     layer.classList.toggle("storage-success", success);
     layer.querySelector(".new-player-guide-skip").setAttribute("aria-label", "关闭收纳提示");
     const text = success
-      ? "已收好，需要时点柜子取回。"
+      ? "已收好。"
+      : merge ? `把${merge.itemName}拖到发亮的同级棋格。`
       : storageDragging ? "拖到左下角柜子，松手收好。"
-        : source ? "案板放满了。把这枚食材拖进柜子，腾出一个空位。"
-          : "案板放满了。选一枚你想暂存的食材，拖进左下角柜子。";
+        : source ? "拖进柜子，腾出空格。"
+          : "把食材拖进左下角柜子。";
     showGuide({ text, targets: storageDragging || success || !source ? [storage] : [source, storage],
       drag: Boolean(source && !storageDragging && !success) });
     if (source) {
@@ -301,11 +305,9 @@
     return target;
   }
 
-  function showPostRepairBoardGuide(state, completedRepair = false) {
+  function showPostRepairBoardGuide(state) {
     showGuide({
-      text: completedRepair
-        ? "前厅已经修好。点小石磨继续备餐，完成订单攒够铜钱，再回长卷修下一处。"
-        : "门面第一处已经修好。点小石磨继续备餐，完成订单后，再回长卷修下一件。",
+      text: "点小石磨，继续备餐。",
       targets: [boardCellFor("gen_mill_01", state)],
       variant: POST_REPAIR_GUIDE_CLASS,
     });
@@ -332,7 +334,7 @@
     }
     if (storageLessonActive) {
       window.dispatchEvent(new Event("silkroad:storage-guide-request"));
-      if (page !== "board" || !boardIsFull(state) || !storageContext?.canStore) {
+      if (page !== "board" || !boardIsFull(state) || (!storageContext?.canStore && !storageContext?.lockedMerge)) {
         storageLessonActive = false;
         storageDragging = false;
         hideGuide();
@@ -353,12 +355,20 @@
       return;
     }
 
+    // Players may continue cooking without taking the optional codex detour.
+    // A completed first repair is stronger progress than that old menu hint.
+    if (state.renovationChoices?.[FIRST_REPAIR_ID] && tutorialStep < 5) {
+      retireCoreGuide({ completed: true, coreHintsRetired: true });
+      hideGuide();
+      return;
+    }
+
     if (tutorialStep <= 3 && page === "inn") {
       const returnCopy = [
-        "点右下角的后厨入口，回案板取第一份麦面。",
-        "回到后厨，再备一份麦面并合成炉饼。",
-        "炉饼已经做好，回后厨交给周甲。",
-        "首单已经完成，回后厨看看刚收录的食物。",
+        "点右下角，进入后厨。",
+        "返回后厨，合成炉饼。",
+        "返回后厨，交付炉饼。",
+        "返回后厨，查看食鉴。",
       ];
       showGuide({
         text: returnCopy[tutorialStep],
@@ -369,7 +379,7 @@
 
     if (tutorialStep === 0 && page === "board") {
       showGuide({
-        text: "先点案板中央的小石磨，生成一份麦面剂。",
+        text: "点小石磨，取一份麦面剂。",
         targets: [boardCellFor("gen_mill_01", state)],
       });
       return;
@@ -380,12 +390,12 @@
       const lockedTarget = lockedMergeTarget(state, savedGuide);
       if (!dough.length) {
         showGuide({
-          text: "再点一次小石磨，生成一份麦面剂。",
+          text: "再点小石磨，取一份麦面剂。",
           targets: [boardCellFor("gen_mill_01", state)],
         });
       } else if (lockedTarget) {
         showGuide({
-          text: "麦面剂做好了。把它拖到左边锁格里的相同食物上，解开棋格并合成炉饼。",
+          text: "拖到发亮的同级食物上。",
           targets: [dough[0], lockedTarget],
           drag: true,
         });
@@ -401,7 +411,7 @@
       const order = [...document.querySelectorAll(".order-card.ready")]
         .find((card) => card.getAttribute("aria-label")?.includes("沙州驿卒"));
       showGuide({
-        text: "炉饼做好了。点上方的交付，把热饼递给沙州驿卒周甲。",
+        text: "点「交付」，送出炉饼。",
         targets: [order?.querySelector(".deliver-btn") || order],
       });
       return;
@@ -409,7 +419,7 @@
 
     if (tutorialStep === 3 && page === "board") {
       showGuide({
-        text: "新食谱已经记下。点卷轴，看看《丝路食鉴》。",
+        text: "点卷轴，打开食鉴。",
         targets: [document.querySelector("#boardCodexBtn")],
       });
       return;
@@ -418,13 +428,13 @@
     if (tutorialStep === 4) {
       if (page === "inn") {
         showGuide({
-          text: "回到后厨，再打开《丝路食鉴》看看食物详情。",
+          text: "返回后厨，查看食鉴。",
           targets: [document.querySelector("#innKitchenBtn")],
         });
         return;
       }
       showGuide({
-        text: "再打开《丝路食鉴》，点一下已点亮的小图查看详情。",
+        text: "打开食鉴，点高亮的食物。",
         targets: [document.querySelector("#boardCodexBtn")],
       });
       return;
@@ -439,12 +449,12 @@
     if (repairs[FIRST_REPAIR_ID]) {
       if (page === "inn") {
         showGuide({
-          text: "前厅已经修好了。点右下角返回后厨，继续接待新的客人。",
+          text: "点右下角，返回后厨。",
           targets: [document.querySelector("#innKitchenBtn")],
         });
         return;
       }
-      showPostRepairBoardGuide(state, true);
+      showPostRepairBoardGuide(state);
       return;
     }
     const firstRepairParts = Array.isArray(state.repairProgress?.[FIRST_REPAIR_ID]?.completedParts)
@@ -453,7 +463,7 @@
     if (firstRepairParts.length > 0) {
       if (page === "inn") {
         showGuide({
-          text: "第一件已经修好了。点右下角返回后厨，继续接单攒下一件的铜钱。",
+          text: "点右下角，返回后厨。",
           targets: [document.querySelector("#innKitchenBtn")],
         });
         return;
@@ -469,14 +479,14 @@
 
     if (page === "board") {
       showGuide({
-        text: "首单赚到的 10 枚铜钱，正好能修好第一件。点右下角回流沙驿。",
+        text: "铜钱够了，返回客栈修缮。",
         targets: [document.querySelector("#stationHudBtn") || document.querySelector("#repairSideBtn")],
       });
       return;
     }
 
     showGuide({
-      text: "第一件所需的铜钱已经备齐。点长卷上的亮处，先听听门前客人的话，再开始修缮。",
+      text: "点发亮处，开始修缮。",
       targets: [repairTarget()],
     });
   }
@@ -495,9 +505,10 @@
       storageContext = event.detail;
     });
     window.addEventListener("silkroad:board-full-attempt", (event) => {
-      if (guideState().boardStorageSeen) return;
       storageContext = event.detail;
-      if (!storageContext?.canStore || !storageContext.storable.length) return;
+      if (storageContext?.lockedMerge && guideState().boardMergeHintSeen) return;
+      if (guideState().boardStorageSeen && !storageContext?.lockedMerge) return;
+      if (!storageContext?.lockedMerge && (!storageContext?.canStore || !storageContext.storable.length)) return;
       event.preventDefault();
       storageLessonActive = true;
       storageDragging = false;

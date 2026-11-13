@@ -3,7 +3,7 @@
   "generatorType": "manual_generator",
   "assetRoot": "generators/equipment",
   "levelsPerCategory": 6,
-  "temporaryOutputRule": "Manual generators have no charge limit or cooldown; each use is paced only by stamina, and upgrades add a conservative chance to output the matching level-2 food. Dairy uses a level-based hourly batch: 6/10/14/18/22/26 total outputs, delivered into its eight neighboring cells whenever space is available; higher levels keep fresh milk as the main output while increasing the chance of level-2 dairy food.",
+  "temporaryOutputRule": "Manual generators use fixed multiplier output: x1 spends 1 stamina for level-1 food, x2 spends 2 for level-2 food, and x4 spends 4 for level-3 food. Multiplier availability follows progression. Upgrades expand the reachable order level; manual production does not sample secondaryOutputWeight. Dairy alone samples those level weights and uses hourly batches of 6/10/14/18/22/26 outputs, delivered into neighboring empty cells; cooldown starts after the batch is exhausted.",
   "warehouse": {
     "acceptedLevel": 1,
     "defaultTarget": 8,

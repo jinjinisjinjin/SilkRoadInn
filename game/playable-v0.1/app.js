@@ -273,7 +273,6 @@ const SELL_CHAIN_LEVELS = Object.freeze({
   generator: 6,
   generatorMaterial: 4,
 });
-const STORAGE_GUIDE_VERSION = 1;
 const GENERATOR_MATERIAL_SCALE_PERCENT = Object.freeze({
   material_mill_01: 229,
   material_mill_02: 221,
@@ -335,7 +334,7 @@ const REPAIR_GATE_SEQUENCE = [
 ];
 const GENERATOR_CATEGORY_UNLOCKS = Object.freeze([
   { categoryId: "mill", completedRepairId: null },
-  { categoryId: "dairy", completedRepairId: "kitchen_repair" },
+  { categoryId: "dairy", completedRepairId: "tutorial_complete" },
   { categoryId: "spice", completedRepairId: "lv2_west_market" },
   { categoryId: "fruit", completedRepairId: "lv2_north_shop" },
   { categoryId: "drink", completedRepairId: "lv2_well" },
@@ -629,7 +628,7 @@ const GIFT_PACKS = {
     progressionCategory: "dairy",
     name: "奶房开张礼匣",
     itemId: ORDER_PROGRESS_GIFT_ITEM_ID,
-    description: "完成后厨修缮后获得，内含一座可直接使用的奶房。",
+    description: "前厅客座完工后获得，内含一座可直接使用的奶房。",
     rewards: [
       { type: "item", itemId: "gen_dairy_01", quantity: 1 },
     ],
@@ -703,7 +702,9 @@ const LOCKED_CELL_ITEM_ROWS = [
   ["hubing_02_lubing", "hubing_02_lubing", null, null, null, "hubing_02_lubing", "hubing_02_lubing"],
   ["hubing_03_humabing", "hubing_02_lubing", "hubing_02_lubing", "hubing_01_dough", "hubing_02_lubing", "hubing_02_lubing", "hubing_03_humabing"],
   ["dairy_01_milk", "material_dairy_01", "hubing_03_humabing", "hubing_02_lubing", "material_dairy_01", "dairy_01_milk", "fruit_01_putao"],
-  ["spice_02_ziran_mo", "meat_02_roumi_xian", "material_dairy_02", "dairy_03_laojiang", "fruit_02_gan_putao", "drink_02_putaojiang", "boxmat_livestock_pen_01"],
+  // This far corner may appear after the finite dairy-material gifts are spent.
+  // Use a repeatably craftable food so upgrading the dairy cannot strand it.
+  ["spice_02_ziran_mo", "meat_02_roumi_xian", "material_dairy_02", "dairy_03_laojiang", "fruit_02_gan_putao", "drink_02_putaojiang", "dairy_02_rumi"],
 ];
 
 const state = {
@@ -727,6 +728,7 @@ const state = {
   unlockedCells: [],
   revealedCells: [],
   visibleOrders: [],
+  orderArrivalSupport: null,
   unlockedCodex: new Set(),
   unlockedFoodLevels: {},
   coins: 0,
@@ -737,10 +739,12 @@ const state = {
   generationCount: 0,
   completedOrders: 0,
   completedOrderIds: [],
+  recentOrderIds: [],
   chapterOrderCounts: {},
   generatorLineOrderCounts: {},
   claimedGeneratorProgressRewards: [],
   claimedOrderProgressPacks: [],
+  regularCustomerGifts: { version: 1, assignment: null },
   claimedChapterRewards: [],
   coinsEarned: 0,
   storyFlags: {},
@@ -751,6 +755,7 @@ const state = {
   repairProgress: {},
   activeRepairId: null,
   activeChapterStory: null,
+  pendingRepairFollowupIds: [],
   repairPromptedFor: [],
   generatorStates: {},
   unlockedGeneratorCategories: [],
@@ -765,6 +770,8 @@ const state = {
   weeklyCheckinClaimedDays: 0,
   weeklyCheckinLastClaimDay: "",
   weeklyCheckinRound: 1,
+  weeklyCheckinRewardReceipts: {},
+  activityProgress: null,
   caravanRenown: null,
   shopPurchaseCycle: -1,
   shopPurchasedOfferIds: [],
@@ -1010,11 +1017,6 @@ const els = {
   storageGeneratorTab: document.querySelector("#storageGeneratorTab"),
   storageNormalPanel: document.querySelector("#storageNormalPanel"),
   storageFooter: document.querySelector("#storageFooter"),
-  storageGuide: document.querySelector("#storageGuide"),
-  storageGuideTitle: document.querySelector("#storageGuideTitle"),
-  storageGuideCopy: document.querySelector("#storageGuideCopy"),
-  storageGuideSkip: document.querySelector("#storageGuideSkip"),
-  storageGuideNext: document.querySelector("#storageGuideNext"),
   generatorWarehousePanel: document.querySelector("#generatorWarehousePanel"),
   generatorWarehouseCategories: document.querySelector("#generatorWarehouseCategories"),
   generatorWarehouseName: document.querySelector("#generatorWarehouseName"),
@@ -1108,7 +1110,6 @@ let storyArchiveCloseTimer = null;
 let storyArchivePageSwapTimer = null;
 let storyArchivePageDoneTimer = null;
 let activeStorageTab = "normal";
-let storageGuideStep = null;
 let generatorWarehouseAnimationTimer = null;
 let pendingConfirmResolve = null;
 let storyArchivePageTurning = false;
@@ -1118,6 +1119,9 @@ let historicalRewardAnimationRun = 0;
 let activeOrderFoodContext = null;
 let activeCodexItemId = null;
 const activeGeneratorOutputIndices = new Set();
+const generatorProductionAnimations = new WeakMap();
+let calendarEntriesRenderedDay = null;
+let staminaCountdownRenderKey = null;
 const activeDailyPouchStates = new Set();
 const activeDailyPouchOutputIndices = new Set();
 const audioRuntime = {
@@ -1391,6 +1395,29 @@ function renderAudioControls() {
     button.classList.toggle("is-on", enabled);
     button.setAttribute("aria-pressed", String(enabled));
   });
+  if (panelOpen) positionAudioSettings();
+}
+
+function positionAudioSettings() {
+  const panel = els.audioSettingsPanel;
+  if (!panel || panel.hidden) return;
+  const button = [els.soundToggleBtn, els.innSoundToggleBtn]
+    .find((entry) => entry?.getClientRects().length);
+  const container = panel.offsetParent;
+  if (!button || !container) return;
+  const anchor = button.getBoundingClientRect();
+  const bounds = container.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const viewportLeft = viewport?.offsetLeft ?? 0;
+  const minLeft = Math.max(bounds.left, viewportLeft) + 12;
+  const maxRight = Math.min(bounds.right, viewportLeft + (viewport?.width ?? window.innerWidth)) - 12;
+  panel.style.maxWidth = `${Math.max(0, maxRight - minLeft)}px`;
+  const width = panel.getBoundingClientRect().width;
+  const left = Math.max(minLeft, Math.min(anchor.right - width, maxRight - width));
+  panel.style.left = `${left - bounds.left + container.scrollLeft}px`;
+  panel.style.right = "auto";
+  panel.style.top = `${anchor.bottom + 10 - bounds.top + container.scrollTop}px`;
+  panel.style.setProperty("--audio-pointer-left", `${Math.max(12, Math.min(anchor.left + anchor.width / 2 - left - 7, width - 25))}px`);
 }
 
 function closeAudioSettings() {
@@ -1492,7 +1519,7 @@ function handleAudioVisibility() {
 async function loadJson(name) {
   const response = await fetch(
     `${DATA_PATH}${name}.json`,
-    name === "stamina" ? { cache: "no-store" } : undefined,
+    name === "stamina" ? { cache: "no-store" } : { cache: "no-cache" },
   );
   if (!response.ok) throw new Error(`无法加载 ${name}.json`);
   return response.json();
@@ -2635,6 +2662,8 @@ async function boot() {
     setTimeout(() => window.SilkRoadChapterStory?.playChapterQa(CHAPTER_STORY_QA_CHAPTER, CHAPTER_STORY_QA_SCENE), 80);
   } else if (CHAPTER_STORY_PREVIEW) {
     setTimeout(() => playChapterStory(CHAPTER_STORY_PREVIEW, null, { force: true }), 80);
+  } else if (!ISOLATED_QA_MODE && pendingRepairFollowup()) {
+    setTimeout(resumePendingRepairFollowup, 80);
   } else if (!ISOLATED_QA_MODE && state.activeChapterStory) {
     setTimeout(resumeActiveChapterStory, 80);
   } else if (!ISOLATED_QA_MODE && !state.storyFlags.chapter1StoryOpeningSeen && state.completedOrders === 0 && Object.keys(state.renovationChoices).length === 0) {
@@ -2903,7 +2932,7 @@ function repairPartCosts(milestone) {
     && configuredCosts.every((cost, index) => (
       milestone?.id === "tutorial_complete" && index === 0
         ? cost === 10
-        : cost >= 100 && cost <= 300
+        : Number.isSafeInteger(cost) && cost >= 10
     ))) {
     return configuredCosts;
   }
@@ -2988,10 +3017,11 @@ function normalizeHistoricalNoteRewards(value) {
       const bags = Array.isArray(reward.bags)
         ? reward.bags
           .filter(Array.isArray)
-          .map((bag) => bag.filter((itemId) => typeof itemId === "string").slice(0, 3))
+          // Tool rewards are appended to the food/coin bag; keep the full receipt on reload.
+          .map((bag) => bag.filter((itemId) => typeof itemId === "string"))
           .filter((bag) => bag.length > 0)
           .slice(0, 2)
-        : (legacyItemIds.length ? [legacyItemIds.slice(0, 3)] : []);
+        : (legacyItemIds.length ? [legacyItemIds] : []);
       return [noteId, {
         schemaVersion: HISTORICAL_REWARD_SCHEMA_VERSION,
         bags,
@@ -3145,6 +3175,7 @@ function defaultState() {
     revealedCells: initialRevealedCells(),
     boardRevealSchemaVersion: BOARD_REVEAL_SCHEMA_VERSION,
     visibleOrders: [REPAIR_GATE_SEQUENCE[0]],
+    orderArrivalSupport: normalizeOrderArrivalSupport(null, 0),
     unlockedCodex: ["codex_hubing_01"],
     unlockedFoodLevels: { hubing: 1 },
     foodDiscoverySchemaVersion: FOOD_DISCOVERY_SCHEMA_VERSION,
@@ -3157,10 +3188,12 @@ function defaultState() {
     generationCount: 0,
     completedOrders: 0,
     completedOrderIds: [],
+    recentOrderIds: [],
     chapterOrderCounts: { 1: 0, 2: 0, 3: 0, 4: 0 },
     generatorLineOrderCounts: emptyGeneratorLineOrderCounts(),
     claimedGeneratorProgressRewards: [],
     claimedOrderProgressPacks: [],
+    regularCustomerGifts: { version: 1, assignment: null },
     claimedChapterRewards: [],
     coinsEarned: 0,
     storyFlags: {},
@@ -3171,6 +3204,7 @@ function defaultState() {
     repairProgress: {},
     activeRepairId: null,
     activeChapterStory: null,
+    pendingRepairFollowupIds: [],
     repairPromptedFor: [],
     generatorStates: {},
     unlockedGeneratorCategories: ["mill"],
@@ -3185,6 +3219,8 @@ function defaultState() {
     weeklyCheckinClaimedDays: 0,
     weeklyCheckinLastClaimDay: "",
     weeklyCheckinRound: 1,
+    weeklyCheckinRewardReceipts: {},
+    activityProgress: null,
     caravanRenown: null,
     shopPurchaseCycle: currentDailyShopCycle(),
     shopPurchasedOfferIds: [],
@@ -3228,6 +3264,7 @@ function loadState() {
   }
   const saved = localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
+  const regularCustomerGiftMigration = Boolean(saved) && !data.regularCustomerGifts?.version;
   const generatorGiftMigration = Boolean(saved) && !data.generatorGiftProgressionVersion;
   const foodDiscoveryNeedsMigration = Boolean(saved)
     && Number(data.foodDiscoverySchemaVersion || 0) < FOOD_DISCOVERY_SCHEMA_VERSION;
@@ -3326,6 +3363,7 @@ function loadState() {
       data.boardRevealSchemaVersion,
     ),
     visibleOrders: loadedVisibleOrderIds.length ? loadedVisibleOrderIds : defaultState().visibleOrders,
+    orderArrivalSupport: normalizeOrderArrivalSupport(data.orderArrivalSupport, data.completedOrders),
     unlockedCodex: new Set(data.unlockedCodex?.length ? data.unlockedCodex : ["codex_hubing_01"]),
     unlockedFoodLevels: foodDiscoveryNeedsMigration ? {} : normalizeUnlockedFoodLevels(data.unlockedFoodLevels),
     foodDiscoverySchemaVersion: FOOD_DISCOVERY_SCHEMA_VERSION,
@@ -3346,10 +3384,12 @@ function loadState() {
     generationCount: data.generationCount ?? 0,
     completedOrders: data.completedOrders ?? 0,
     completedOrderIds: loadedOrderIds,
+    recentOrderIds: normalizeRecentOrderIds(data.recentOrderIds),
     chapterOrderCounts: normalizeChapterOrderCounts(data.chapterOrderCounts, data.completedOrders, data.innLevel),
     generatorLineOrderCounts: normalizeGeneratorLineOrderCounts(data.generatorLineOrderCounts, loadedOrderIds),
     claimedGeneratorProgressRewards: normalizeClaimedGeneratorProgressRewards(data.claimedGeneratorProgressRewards),
     claimedOrderProgressPacks: normalizeClaimedOrderProgressPacks(data.claimedOrderProgressPacks),
+    regularCustomerGifts: normalizeRegularCustomerGifts(data.regularCustomerGifts),
     claimedChapterRewards: Array.isArray(data.claimedChapterRewards)
       ? data.claimedChapterRewards.filter((chapter) => Number.isInteger(chapter) && chapter >= 1 && chapter <= 4)
       : [],
@@ -3366,6 +3406,7 @@ function loadState() {
     repairProgress: loadedRepairProgress,
     activeRepairId: loadedActiveRepairId,
     activeChapterStory: normalizeActiveChapterStory(data.activeChapterStory),
+    pendingRepairFollowupIds: [],
     repairPromptedFor: Array.isArray(data.repairPromptedFor) ? data.repairPromptedFor : [],
     generatorStates: normalizeGeneratorStates(data.generatorStates),
     unlockedGeneratorCategories: normalizeUnlockedGeneratorCategories(data.unlockedGeneratorCategories, data),
@@ -3386,6 +3427,8 @@ function loadState() {
     weeklyCheckinClaimedDays: Math.max(0, Math.min(7, Math.floor(Number(data.weeklyCheckinClaimedDays) || 0))),
     weeklyCheckinLastClaimDay: typeof data.weeklyCheckinLastClaimDay === "string" ? data.weeklyCheckinLastClaimDay : "",
     weeklyCheckinRound: Math.max(1, Math.floor(Number(data.weeklyCheckinRound) || 1)),
+    activityProgress: SilkRoadActivity.normalize(data.activityProgress, currentLocalDayKey()),
+    weeklyCheckinRewardReceipts: normalizeWeeklyRewardReceipts(data.weeklyCheckinRewardReceipts),
     caravanRenown: normalizeCaravanRenown(data.caravanRenown),
     shopPurchaseCycle: Number.isInteger(Number(data.shopPurchaseCycle))
       ? Number(data.shopPurchaseCycle)
@@ -3404,6 +3447,11 @@ function loadState() {
       ? Math.min(Number(data.lastTick), Date.now())
       : Date.now(),
   });
+  if (!ISOLATED_QA_MODE) {
+    state.pendingRepairFollowupIds = normalizePendingRepairFollowupIds(data.pendingRepairFollowupIds);
+    const followup = pendingRepairFollowup();
+    if (followup?.phase === "note") repairReturnCastMilestoneId = followup.milestone.id;
+  }
   if (state.activeChapterStory) {
     const segmentId = state.activeChapterStory.segmentId;
     if (state.storyFlags[`chapterStory:${segmentId}`] || state.storyFlags[`chapter1Story:${segmentId}`]) {
@@ -3482,10 +3530,12 @@ function loadState() {
   const foodUnlocksChanged = syncUnlockedFoodLevels({ includeCompletedOrders: true });
   const caravanRenownChanged = syncCaravanRenownState();
   if (generatorGiftMigration) backfillGeneratorProgressionGifts();
-  syncVisibleOrders();
+  if (regularCustomerGiftMigration) migrateRegularCustomerGiftRewards();
+  syncVisibleOrders({ allowArrivals: !saved });
   const caravanRenownOrdersChanged = syncCaravanRenownOrders();
   const innLevelAdvanced = !ISOLATED_QA_MODE && advanceInnLevelsIfReady({ announce: false });
-  if (generatorGiftMigration) saveState();
+  if (!ISOLATED_QA_MODE) saveState();
+  if (generatorGiftMigration || regularCustomerGiftMigration) saveState();
   if (recoveredStamina || hasLegacyOrderIds || hasLegacyStoryFlags || repairStateNeedsMigration || coinEconomyNeedsMigration || openingStaminaNeedsMigration || openingCopperNeedsMigration || foodDiscoveryNeedsMigration || boardRevealNeedsMigration || legacyStorageHasGenerators || generatorUnlocksChanged || generatorRewardsChanged || foodUnlocksChanged || caravanRenownChanged || caravanRenownOrdersChanged || trialGeneratorGranted || innLevelAdvanced || (PROGRESSION_FLOW_QA_MODE && !saved) || (CARAVAN_RENOWN_QA_MODE && !saved)) saveState();
   if (FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET || CARAVAN_RENOWN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET) {
     const url = new URL(location.href);
@@ -3515,6 +3565,7 @@ function saveState() {
       revealedCells: state.revealedCells,
       boardRevealSchemaVersion: BOARD_REVEAL_SCHEMA_VERSION,
       visibleOrders: state.visibleOrders,
+      orderArrivalSupport: state.orderArrivalSupport,
       unlockedCodex: [...state.unlockedCodex],
       unlockedFoodLevels: state.unlockedFoodLevels,
       foodDiscoverySchemaVersion: FOOD_DISCOVERY_SCHEMA_VERSION,
@@ -3528,10 +3579,12 @@ function saveState() {
       generationCount: state.generationCount,
       completedOrders: state.completedOrders,
       completedOrderIds: state.completedOrderIds,
+      recentOrderIds: state.recentOrderIds,
       chapterOrderCounts: state.chapterOrderCounts,
       generatorLineOrderCounts: state.generatorLineOrderCounts,
       claimedGeneratorProgressRewards: state.claimedGeneratorProgressRewards,
       claimedOrderProgressPacks: state.claimedOrderProgressPacks,
+      regularCustomerGifts: state.regularCustomerGifts,
       claimedChapterRewards: state.claimedChapterRewards,
       coinsEarned: state.coinsEarned,
       storyFlags: state.storyFlags,
@@ -3542,6 +3595,7 @@ function saveState() {
       repairProgress: state.repairProgress,
       activeRepairId: state.activeRepairId,
       activeChapterStory: state.activeChapterStory,
+      pendingRepairFollowupIds: state.pendingRepairFollowupIds,
       repairPromptedFor: state.repairPromptedFor,
       generatorStates: state.generatorStates,
       unlockedGeneratorCategories: state.unlockedGeneratorCategories,
@@ -3556,6 +3610,8 @@ function saveState() {
       weeklyCheckinClaimedDays: state.weeklyCheckinClaimedDays,
       weeklyCheckinLastClaimDay: state.weeklyCheckinLastClaimDay,
       weeklyCheckinRound: state.weeklyCheckinRound,
+      weeklyCheckinRewardReceipts: state.weeklyCheckinRewardReceipts,
+      activityProgress: state.activityProgress,
       caravanRenown: state.caravanRenown,
       shopPurchaseCycle: state.shopPurchaseCycle,
       shopPurchasedOfferIds: state.shopPurchasedOfferIds,
@@ -3609,6 +3665,9 @@ function renderStaminaCountdown() {
   const time = full
     ? ""
     : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  const renderKey = full ? "full" : `${state.lastTick}:${seconds}`;
+  if (staminaCountdownRenderKey === renderKey) return;
+  staminaCountdownRenderKey = renderKey;
   for (const [ring, timer, label, value] of [
     [els.boardStaminaRing, els.boardStaminaTimer, els.boardStaminaTimerLabel, els.boardStaminaTimerValue],
     [els.innStaminaRing, els.innStaminaTimer, els.innStaminaTimerLabel, els.innStaminaTimerValue],
@@ -3645,6 +3704,7 @@ function emptyGeneratorWarehouse() {
   return {
     selectedCategoryId: validGeneratorCategoryIds()[0] ?? "mill",
     progressByCategory: Object.fromEntries(validGeneratorCategoryIds().map((categoryId) => [categoryId, 0])),
+    storedStatesByCategory: {},
     readyItems: [],
   };
 }
@@ -3683,12 +3743,32 @@ function normalizeGeneratorWarehouse(value, legacyBag = []) {
       ? raw.selectedCategoryId
       : validGeneratorCategoryIds()[0] ?? "mill",
     progressByCategory,
+    storedStatesByCategory: normalizeWarehouseStoredStates(raw.storedStatesByCategory, progressByCategory),
     readyItems,
   };
 }
 
+function normalizeWarehouseStoredStates(value, counts) {
+  return Object.fromEntries(validGeneratorCategoryIds().map(categoryId => {
+    const itemId = generatorItemId(categoryId, generatorWarehouseAcceptedLevel());
+    const item = byId.get(itemId);
+    const saved = Array.isArray(value?.[categoryId]) ? value[categoryId] : [];
+    return [categoryId, Array.from({ length: counts[categoryId] ?? 0 }, (_, index) => {
+      const entry = saved[index]?.itemId === itemId ? saved[index] : null;
+      // Old count-only stores have no trustworthy remaining batch. Migrate once
+      // with a normal cooldown, rather than minting an immediately fresh batch.
+      return { itemId, charges: item?.generator?.chargeMax ?? 0,
+        remainingOutputs: Math.min(item?.generator?.outputCount ?? 0, Math.max(0, Math.floor(Number(entry?.remainingOutputs) || 0))),
+        cooldownEnd: entry && Number.isFinite(Number(entry.cooldownEnd)) ? Math.max(0, Number(entry.cooldownEnd))
+          : item?.type === "auto_generator" ? Date.now() + item.generator.cooldownSeconds * 1000 : 0 };
+    })];
+  }));
+}
+
 function generatorWarehouseEntry(categoryId) {
   const warehouse = state.generatorWarehouse ?? (state.generatorWarehouse = emptyGeneratorWarehouse());
+  warehouse.storedStatesByCategory ??= {};
+  warehouse.storedStatesByCategory[categoryId] ??= [];
   if (!Object.prototype.hasOwnProperty.call(warehouse.progressByCategory, categoryId)) {
     warehouse.progressByCategory[categoryId] = 0;
   }
@@ -3769,10 +3849,15 @@ function ownsGeneratorCategory(categoryId) {
     || Number(state.generatorWarehouse?.progressByCategory?.[categoryId]) > 0;
 }
 
+function freshWarehouseGeneratorState(itemId) {
+  const item = byId.get(itemId);
+  return { itemId, charges: item?.generator?.chargeMax ?? 0, remainingOutputs: item?.generator?.outputCount ?? 0, cooldownEnd: 0 };
+}
+
 function deliverGeneratorPieceReward(categoryId, level = 1) {
   const itemId = generatorItemId(categoryId, level);
   if (!byId.has(itemId)) return "invalid";
-  const boardIndex = randomUnlockedEmptyIndex();
+  const boardIndex = randomUnlockedEmptyIndex(itemId);
   if (boardIndex >= 0) {
     state.board[boardIndex] = itemId;
     state.pulseIndex = boardIndex;
@@ -3782,8 +3867,10 @@ function deliverGeneratorPieceReward(categoryId, level = 1) {
   if (Number(level) === generatorWarehouseAcceptedLevel()) {
     const entry = generatorWarehouseEntry(categoryId);
     state.generatorWarehouse.progressByCategory[categoryId] = entry.progress + 1;
+    state.generatorWarehouse.storedStatesByCategory[categoryId].push(freshWarehouseGeneratorState(itemId));
     if (state.generatorWarehouse.progressByCategory[categoryId] >= entry.target) {
       state.generatorWarehouse.progressByCategory[categoryId] -= entry.target;
+      state.generatorWarehouse.storedStatesByCategory[categoryId].splice(0, entry.target);
       state.generatorWarehouse.readyItems.push(entry.outputItemId);
     }
   } else {
@@ -3879,8 +3966,10 @@ function flushPendingGeneratorRewards() {
       const categoryId = item.generatorType;
       const entry = generatorWarehouseEntry(categoryId);
       state.generatorWarehouse.progressByCategory[categoryId] = entry.progress + 1;
+      state.generatorWarehouse.storedStatesByCategory[categoryId].push(freshWarehouseGeneratorState(itemId));
       if (state.generatorWarehouse.progressByCategory[categoryId] >= entry.target) {
         state.generatorWarehouse.progressByCategory[categoryId] -= entry.target;
+        state.generatorWarehouse.storedStatesByCategory[categoryId].splice(0, entry.target);
         state.generatorWarehouse.readyItems.push(entry.outputItemId);
       }
     } else {
@@ -3902,12 +3991,20 @@ function ensureStarterGenerator() {
   return changed;
 }
 
+function renderCalendarEntries() {
+  renderDailyPouchButtons();
+  renderWeeklyCheckinButton();
+  renderActivityEntry();
+  renderCaravanRenownEntry();
+  calendarEntriesRenderedDay = currentLocalDayKey();
+}
+
 function tickStamina() {
   tickGenerators();
   tickBonusBubbles();
-  renderDailyPouchButtons();
-  renderWeeklyCheckinButton();
-  renderCaravanRenownEntry();
+  // Actions refresh their entries through render(). The clock only needs to
+  // revisit calendar-dependent rewards when the local date changes.
+  if (calendarEntriesRenderedDay !== currentLocalDayKey()) renderCalendarEntries();
   if (els.dailyShopModal?.open) renderDailyShop();
   const recovered = recoverStaminaAt(Date.now());
   if (recovered > 0) {
@@ -3963,9 +4060,8 @@ function bindEvents() {
   els.stationHudBtn?.addEventListener("click", handleStationButton);
   els.repairSideBtn?.addEventListener("click", handleStationButton);
   els.rewardBagBtn?.addEventListener("click", openBag);
-  els.sevenDayActivityBtn?.addEventListener("click", () => {
-    location.href = "./design-previews/seven-day-activity-panel-v1.html?from=board&refresh=v6";
-  });
+  els.sevenDayActivityBtn?.addEventListener("click", () => openActivity());
+  document.querySelector("#activityModal")?.addEventListener("click", handleActivityClick);
   els.bagBtn.addEventListener("click", openBag);
   els.stationBtn.addEventListener("click", handleStationButton);
   els.boardReturnBtn.addEventListener("click", () => switchPage("board"));
@@ -3994,9 +4090,6 @@ function bindEvents() {
   els.storageUnlockBtn?.addEventListener("click", purchaseNextStorageSlot);
   els.storageNormalTab?.addEventListener("click", () => setStorageTab("normal"));
   els.storageGeneratorTab?.addEventListener("click", () => setStorageTab("generator"));
-  els.storageGuideSkip?.addEventListener("click", completeStorageGuide);
-  els.storageGuideNext?.addEventListener("click", advanceStorageGuide);
-  els.storageModal?.addEventListener("close", () => hideStorageGuide());
   els.generatorWarehouseCategories?.addEventListener("click", selectGeneratorWarehouseCategory);
   els.generatorWarehouseDeposit?.addEventListener("click", depositSelectedGenerator);
   els.generatorWarehouseWithdraw?.addEventListener("click", withdrawStoredGenerator);
@@ -4015,7 +4108,8 @@ function bindEvents() {
     if (historicalNoteTransitioning) return;
     const note = historicalNotesById.get(els.historicalNoteModal.dataset.noteId);
     const reward = note ? state.historicalNoteRewards?.[note.id] : null;
-    if (note?.repairId && reward?.claimed && repairReturnCastMilestoneId === note.repairId) {
+    if (note?.repairId && reward?.claimed
+      && (repairReturnCastMilestoneId === note.repairId || state.pendingRepairFollowupIds.includes(note.repairId))) {
       beginHistoricalCastTransitionAfterClose(note);
       return;
     }
@@ -4031,6 +4125,9 @@ function bindEvents() {
   els.innFinaleShowLetter?.addEventListener("click", openInnFinaleLetter);
   els.innFinaleViewPanorama?.addEventListener("click", showInnFinalePanorama);
   window.addEventListener("resize", measureInnFinaleCoverScale);
+  window.addEventListener("resize", positionAudioSettings);
+  window.visualViewport?.addEventListener("resize", positionAudioSettings);
+  window.visualViewport?.addEventListener("scroll", positionAudioSettings);
   els.innFinale?.addEventListener("cancel", (event) => {
     event.preventDefault();
     closeInnFinale();
@@ -4201,14 +4298,19 @@ function cancelInnPackageRelease() {
 }
 
 function render() {
+  syncUnlockedFoodLevels();
+  observeOrderArrivalOwnership();
+  syncStoryOrderAvailability();
+  syncMilkIntroductionOrder();
+  if (syncRegularCustomerGifts()) saveState();
   renderPage();
   els.coins.textContent = state.coins;
   els.stamina.textContent = state.stamina;
   els.innStamina.textContent = state.stamina;
   renderStaminaCountdown();
   if (els.gems) els.gems.textContent = state.gems ?? 0;
-  renderDailyPouchButtons();
-  renderWeeklyCheckinButton();
+  renderCalendarEntries();
+  if (document.querySelector("#activityModal")?.open) renderActivity();
   renderProductionMultiplier();
   if (els.codexProgress) els.codexProgress.textContent = `${state.unlockedCodex.size}/8`;
   els.generateBtn.disabled = !hasEmptyCell();
@@ -4274,7 +4376,9 @@ async function switchPage(page) {
       saveState();
     });
     if (page === "inn") {
-      setTimeout(maybePromptRepairGuide, 0);
+      setTimeout(() => {
+        if (!resumePendingRepairFollowup()) maybePromptRepairGuide();
+      }, 0);
     }
   } finally {
     pageSwitchInProgress = false;
@@ -4369,6 +4473,9 @@ function renderInnTasks(level) {
 }
 
 function renderInnScene(level, repairValue) {
+  // Keep an accepted clue interaction mounted through passive resource updates
+  // and the repair-return timer. Closing the note renders the latest scene.
+  if (activeLongscrollClueCamera?.map?.isConnected && !activeLongscrollClueCamera.cancelled) return;
   resetLongscrollClueCamera();
   const milestones = getMilestoneViews();
   const next = nextRepairMilestone();
@@ -4742,6 +4849,7 @@ function scheduleInnViewportRefocus() {
 }
 
 function centerInnSceneOnPosition(regionIds) {
+  if (activeLongscrollClueCamera) return false;
   const bounds = LONGSCROLL_REGION_BOUNDS[regionIds?.[0]];
   if (!bounds) return false;
   const [left, top, width, height] = bounds;
@@ -4832,7 +4940,6 @@ function renderMainlineDock() {
       <strong>主线进度</strong>
       <span>${Object.keys(state.renovationChoices).length}/${milestones.length}</span>
     </div>
-    ${renderOrderProgressGiftRail()}
     <div class="mainline-current">
       <b>${awaitingExpansion ? "下一阶段即将开启" : next ? next.sceneName ?? next.name : "本级修缮完成"}</b>
       <span>${awaitingExpansion ? "完成当前阶段后将自动开放后续修缮。" : next ? repairGate.ok ? next.nextText : repairGate.reason : "可以准备进入下一阶段。"}</span>
@@ -4863,49 +4970,9 @@ function renderMainlineDock() {
         : `<span class="mainline-action" aria-live="polite">正在开启下一阶段</span>`
     }
   `;
-  els.furnitureShop.querySelectorAll("[data-order-progress-pack]").forEach((button) => {
-    button.addEventListener("click", () => claimOrderProgressPack(button.dataset.orderProgressPack));
-  });
   els.furnitureShop.querySelectorAll("[data-mainline]").forEach((button) => {
     button.addEventListener("click", () => handleRepairNodeClick(button.dataset.mainline, button));
   });
-}
-
-function renderOrderProgressGiftRail() {
-  const chapter = activeStoryChapter();
-  const count = state.chapterOrderCounts[chapter] ?? 0;
-  const entries = (state.progressionConfig?.orderProgressPacks ?? []).filter((entry) => entry.chapter === chapter);
-  if (!entries.length) return "";
-  return `
-    <section class="order-progress-gifts" aria-label="本卷订单礼盒">
-      <div class="order-progress-copy"><b>${chapterName(chapter)}</b><span>本卷 ${count} 单</span></div>
-      <div class="order-progress-pack-list">
-        ${entries.map((entry) => {
-          const claimed = state.claimedOrderProgressPacks.includes(entry.id);
-          const ready = count >= entry.threshold && !claimed;
-          return `<button class="order-progress-pack ${claimed ? "claimed" : ready ? "ready" : "locked"}" data-order-progress-pack="${entry.id}" ${claimed || !ready ? "disabled" : ""} aria-label="${entry.name}">
-            <img src="./assets/ui/order_gift_coffer_v1.png" alt="" />
-            <span>${claimed ? "已领" : `${entry.threshold}单`}</span>
-          </button>`;
-        }).join("")}
-      </div>
-    </section>
-  `;
-}
-
-function claimOrderProgressPack(packId) {
-  const entry = (state.progressionConfig?.orderProgressPacks ?? []).find((item) => item.id === packId);
-  if (!entry || state.claimedOrderProgressPacks.includes(packId)) return;
-  const count = state.chapterOrderCounts[entry.chapter] ?? 0;
-  if (count < entry.threshold) {
-    toast(`本卷再完成${entry.threshold - count}单即可领取。`);
-    return;
-  }
-  state.claimedOrderProgressPacks.push(packId);
-  grantGiftPack(packId, 1);
-  keeper(`${entry.name}已送进行囊，回棋盘后可以把它放到空格里。`);
-  render();
-  saveState();
 }
 
 function buyFurniture(furnitureId) {
@@ -4996,7 +5063,7 @@ function beginRepairMilestone(milestone) {
     launchRepairPlayer(milestone);
     return;
   }
-  playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone), { force: true });
+  playChapterStory(`before:${milestone.id}`, () => launchRepairPlayer(milestone));
 }
 
 function playLongscrollRepairHaloEntry(milestone, afterAnimation) {
@@ -5361,6 +5428,68 @@ function playChapterStory(segmentId, onComplete, options = {}) {
   });
 }
 
+// The queue is saved with the final repair payment. Its phase is derived from
+// existing note/reward/story/letter checkpoints, so recovery never grants rewards.
+function isChapterClosingRepair(milestone) {
+  return state.progressionConfig.milestones.filter((entry) => entry.chapter === milestone.chapter).at(-1)?.id === milestone.id;
+}
+
+function repairFollowupPhase(milestone) {
+  if (!milestone || !isRepairCompleted(milestone.id) || !isChapterClosingRepair(milestone)) return null;
+  if (milestone.id === FINAL_REPAIR_MILESTONE_ID && state.storyFlags.innFinaleLetterSeen) return null;
+  const note = historicalNoteForRepair(milestone.id);
+  const reward = note ? state.historicalNoteRewards[note.id] : null;
+  // An older answered note may have no reward receipt. Do not regenerate it.
+  if (note && (!historicalNoteAnswered(note.id) || (reward && !reward.claimed))) return "note";
+  if (!chapterStorySeen(`after:${milestone.id}`)) return "story";
+  return milestone.id === FINAL_REPAIR_MILESTONE_ID ? "finale" : null;
+}
+
+function normalizePendingRepairFollowupIds(value) {
+  const milestones = state.progressionConfig.milestones;
+  // Older saves have no queue. Recover the latest completed repair only; do not
+  // replay every historical closing in a save that has already moved on.
+  const ids = Array.isArray(value)
+    ? value
+    : [milestones.filter((milestone) => isRepairCompleted(milestone.id)).at(-1)?.id];
+  return milestones.filter((milestone) => ids.includes(milestone.id) && repairFollowupPhase(milestone))
+    .map((milestone) => milestone.id);
+}
+
+function pendingRepairFollowup() {
+  for (const id of state.pendingRepairFollowupIds) {
+    const milestone = state.progressionConfig.milestones.find((entry) => entry.id === id);
+    const phase = repairFollowupPhase(milestone);
+    if (phase) return { milestone, phase };
+  }
+  return null;
+}
+
+function clearRepairFollowup(milestoneId) {
+  state.pendingRepairFollowupIds = state.pendingRepairFollowupIds.filter((id) => id !== milestoneId);
+}
+
+function resumePendingRepairFollowup() {
+  const followup = pendingRepairFollowup();
+  if (!followup || state.currentPage !== "inn") return false;
+  if (historicalNoteTransitioning || openRepairMilestoneId || document.querySelector("dialog[open]")) return true;
+  const { milestone, phase } = followup;
+  if (phase === "note") {
+    repairReturnCastMilestoneId = milestone.id;
+    render();
+    centerInnSceneOnPosition(milestone.longscrollRegionIds);
+    openHistoricalNote(historicalNoteForRepair(milestone.id).id);
+  } else if (phase === "story") {
+    repairReturnCastMilestoneId = null;
+    playChapterStory(`after:${milestone.id}`, () => finishRepairAfterStory(milestone), {
+      resume: state.activeChapterStory?.segmentId === `after:${milestone.id}`,
+    });
+  } else {
+    showInnFinale({ milestone });
+  }
+  return true;
+}
+
 function pendingChapterOpeningId() {
   const chapter = volumeForInnLevel(state.innLevel);
   if (chapter < 2 || chapter > 4 || state.storyFlags[`chapter${chapter}StoryOpeningSeen`]) return null;
@@ -5505,12 +5634,7 @@ function weightedHistoricalReward(options) {
 }
 
 function historicalRewardFoodId(level) {
-  const candidates = state.items.filter((item) =>
-    Number(item.level) === level
-    && typeof item.line === "string"
-    && foodLineMaxLevels.has(item.line)
-    && byId.has(item.id));
-  return candidates[Math.floor(Math.random() * candidates.length)]?.id ?? "hubing_03_humabing";
+  return usefulRewardFood(level)?.id ?? "hubing_01_dough";
 }
 
 function createHistoricalNoteReward(note, chosenIndex, grantSplitterIntroReward = false, grantUpgradeToolReward = false) {
@@ -5573,8 +5697,10 @@ function showHistoricalAnswerFeedback(note, chosenIndex) {
   els.historicalNoteFeedbackText.textContent = note.feedback;
   els.historicalNoteTakeaway.textContent = note.takeaway;
   els.historicalNoteFeedback.hidden = false;
-  els.historicalNoteSourcesPanel.hidden = false;
-  document.getElementById("historicalNoteSourceToggle").setAttribute("aria-expanded", "true");
+  document.getElementById("historicalNoteExplanation").hidden = false;
+  document.getElementById("historicalNoteSourceToggle").textContent = "详解与出处 ›";
+  els.historicalNoteSourcesPanel.hidden = true;
+  document.getElementById("historicalNoteSourceToggle").setAttribute("aria-expanded", "false");
 }
 
 function renderHistoricalNoteReward(note) {
@@ -5702,6 +5828,8 @@ function renderHistoricalNote(note) {
   els.historicalNoteSourcesPanel.hidden = true;
   const sourceToggle = document.getElementById("historicalNoteSourceToggle");
   sourceToggle.setAttribute("aria-expanded", "false");
+  sourceToggle.textContent = "资料出处 ›";
+  document.getElementById("historicalNoteExplanation").hidden = true;
   sourceToggle.onclick = () => {
     els.historicalNoteSourcesPanel.hidden = !els.historicalNoteSourcesPanel.hidden;
     sourceToggle.setAttribute("aria-expanded", String(!els.historicalNoteSourcesPanel.hidden));
@@ -5826,7 +5954,8 @@ async function playHistoricalCastTransition(completedMilestone) {
 
 async function beginHistoricalCastTransitionAfterClose(note) {
   const completedMilestone = getMilestoneViews().find((entry) => entry.id === note.repairId);
-  if (!completedMilestone || repairReturnCastMilestoneId !== note.repairId) return;
+  if (!completedMilestone || (repairReturnCastMilestoneId !== note.repairId
+    && !state.pendingRepairFollowupIds.includes(note.repairId))) return;
   historicalNoteTransitioning = true;
   const map = els.innScene?.querySelector(".longscroll-map");
   map?.classList.add("is-cast-transition-reset");
@@ -5834,19 +5963,9 @@ async function beginHistoricalCastTransitionAfterClose(note) {
   historicalNoteReturnChapter = null;
   try {
     await waitForHistoricalTransition(520);
-    if (isChapterRepairComplete(completedMilestone.chapter)) {
+    if (isChapterClosingRepair(completedMilestone)) {
       repairReturnCastMilestoneId = null;
-      playChapterStory(`after:${completedMilestone.id}`, () => {
-        if (
-          completedMilestone.id === FINAL_REPAIR_MILESTONE_ID
-          && shouldShowInnFinale()
-          && showInnFinale({ milestone: completedMilestone })
-        ) return;
-        restoreRepairReturnView(completedMilestone, {
-          promptNextRepair: false,
-          focusMilestone: completedMilestone,
-        });
-      });
+      playChapterStory(`after:${completedMilestone.id}`, () => finishRepairAfterStory(completedMilestone));
       return;
     }
     await playHistoricalCastTransition(completedMilestone);
@@ -6218,6 +6337,7 @@ function replayChapterStoryMoment(momentId) {
     const segmentId = archiveMoment.segmentIds[segmentIndex];
     player.play(segmentId, {
       review: true,
+      reviewContinues: segmentIndex < archiveMoment.segmentIds.length - 1,
       onComplete: (result) => {
         if (result?.completed && segmentIndex < archiveMoment.segmentIds.length - 1) {
           segmentIndex += 1;
@@ -6503,6 +6623,9 @@ function finalizeRepairMilestoneState(milestone) {
   progress.prepaidRemaining = 0;
   state.activeRepairId = null;
   state.renovationChoices[milestone.id] = "completed";
+  if (isChapterClosingRepair(milestone) && !state.pendingRepairFollowupIds.includes(milestone.id)) {
+    state.pendingRepairFollowupIds.push(milestone.id);
+  }
   applyRepairRewards(milestone);
   syncGeneratorCategoryUnlocks({ announce: true });
   if (isChapterRepairComplete(milestone.chapter)) applyChapterCompletionReward(milestone.chapter);
@@ -6555,6 +6678,7 @@ async function closeRepairPlayer(milestone, { completed = false } = {}) {
     }
     const historicalNote = historicalNoteForRepair(milestone.id);
     if (historicalNote && repairReturnCastMilestoneId === milestone.id) {
+      if (activeLongscrollClueCamera || els.historicalNoteModal?.open) return;
       render();
       centerInnSceneOnPosition(milestone.longscrollRegionIds);
       return;
@@ -6580,6 +6704,7 @@ function shouldShowInnFinale() {
 }
 
 function finishRepairAfterStory(milestone) {
+  if (milestone.id !== FINAL_REPAIR_MILESTONE_ID) clearRepairFollowup(milestone.id);
   if (milestone.id === FINAL_REPAIR_MILESTONE_ID && shouldShowInnFinale() && showInnFinale({ milestone })) return;
   const historicalNote = historicalNoteForRepair(milestone.id);
   if (historicalNote && !historicalNoteAnswered(historicalNote.id)) {
@@ -6668,6 +6793,7 @@ function closeInnFinale() {
   innFinaleTimers = [];
   els.innFinale.close();
   state.storyFlags.innFinaleLetterSeen = true;
+  clearRepairFollowup(FINAL_REPAIR_MILESTONE_ID);
   saveState();
   const milestone = innFinaleCloseMilestone;
   innFinaleCloseMilestone = null;
@@ -6692,8 +6818,13 @@ function restoreRepairReturnView(milestone, { promptNextRepair = true, focusMile
   }));
   saveState();
   const chapterOpeningId = pendingChapterOpeningId();
-  if (pendingInnUpgradeRevealLevel && chapterOpeningId) {
-    setTimeout(() => playChapterStory(chapterOpeningId, showPendingInnUpgradeReveal), 0);
+  if (pendingRepairFollowup()) {
+    setTimeout(resumePendingRepairFollowup, 0);
+  } else if (chapterOpeningId) {
+    setTimeout(() => playChapterStory(chapterOpeningId, () => {
+      if (pendingInnUpgradeRevealLevel) showPendingInnUpgradeReveal();
+      else maybePromptRepairGuide();
+    }), 0);
   } else if (pendingInnUpgradeRevealLevel) {
     setTimeout(showPendingInnUpgradeReveal, 0);
   } else if (promptNextRepair) {
@@ -7019,7 +7150,7 @@ function registerOrderProgressPacks() {
       ...starterGift,
       id: ORDER_PROGRESS_GIFT_ITEM_ID,
       name: "丝路礼匣",
-      modernName: "长卷与订单进度获得的奖励礼匣",
+      modernName: "旅途中收下的奖励礼匣",
       iconKey: "ui/order_gift_coffer_v1",
       source: "order_progress_gift",
     });
@@ -7531,6 +7662,16 @@ function canCompleteOrder(order) {
 }
 
 function renderOrders() {
+  // Keep waiting guests and their input targets mounted until the card's
+  // contents or missing-food counts actually change.
+  const renderKey = JSON.stringify(state.visibleOrders.map(orderId => {
+    const order = getOrder(orderId);
+    return order && [order.id, currentOrderCoinReward(order),
+      state.caravanRenown?.markedOrderIds?.includes(order.id) === true, regularCustomerGiftForOrder(order.id)?.id,
+      order.demand.map(demand => Math.max(0, demand.quantity - countItem(demand.itemId)))];
+  }));
+  if (els.orders.dataset.renderKey === renderKey) return;
+  els.orders.dataset.renderKey = renderKey;
   els.orders.innerHTML = "";
   const orderedOrderIds = state.visibleOrders
     .map((orderId, index) => ({ orderId, index, ready: canCompleteOrder(getOrder(orderId)) }))
@@ -7554,7 +7695,8 @@ function renderOrders() {
     card.className = `order-card ${canComplete ? "ready" : ""} ${hasRenownMark ? "renown-order" : ""}`;
     card.tabIndex = 0;
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `${order.npcName}订单详情`);
+    const customerGift = regularCustomerGiftForOrder(order.id);
+    card.setAttribute("aria-label", `${order.npcName}订单详情${customerGift ? "，附熟客回礼" : ""}`);
 
     const npcImg = document.createElement("img");
     npcImg.className = "npc-avatar";
@@ -7572,6 +7714,21 @@ function renderOrders() {
       renownMark.setAttribute("aria-label", "高价值推荐订单");
       renownMark.title = "完成这份高价值订单可获得1枚商旅荐印";
       reward.prepend(renownMark);
+    }
+
+    if (customerGift) {
+      const gift = document.createElement("button");
+      gift.type = "button";
+      gift.className = "regular-customer-gift";
+      gift.setAttribute("aria-label", `查看${regularCustomerGiftLabel(customerGift)}`);
+      gift.title = "熟客回礼";
+      gift.innerHTML = '<img src="./assets/ui/order_gift_coffer_v1.png" alt="" />';
+      gift.addEventListener("click", event => {
+        event.stopPropagation();
+        openRegularCustomerGiftPreview(order.id);
+      });
+      gift.addEventListener("keydown", event => event.stopPropagation());
+      reward.append(gift);
     }
 
     const foods = document.createElement("div");
@@ -7662,10 +7819,25 @@ function readyOrderBoardHighlightIndices() {
   return highlighted;
 }
 
-function renderBoard() {
-  els.board.innerHTML = "";
+function renderBoard(changedIndices = null) {
+  // Production only changes its destination cells. Preserve the other nodes,
+  // including active pointer targets and their running visual effects.
+  const existingCells = Array.from(els.board.children);
+  const changed = Array.isArray(changedIndices) && existingCells.length === state.board.length
+    ? new Set(changedIndices) : null;
+  if (!changed) els.board.innerHTML = "";
   const readyOrderHighlights = readyOrderBoardHighlightIndices();
   state.board.forEach((itemId, index) => {
+    if (changed && !changed.has(index)) {
+      const cell = existingCells[index];
+      cell.classList.toggle("selected", state.selectedIndex === index);
+      cell.classList.toggle("order-ready-item", readyOrderHighlights.has(index));
+      cell.classList.toggle("tutorial-focus", isTutorialBoardFocus(itemId));
+      cell.classList.toggle("merge-pop", state.pulseIndex === index);
+      cell.classList.toggle("unlock-pop", state.unlockPulseIndex === index);
+      cell.classList.toggle("receiving-item", activeGeneratorOutputIndices.has(index));
+      return;
+    }
     const cell = document.createElement("div");
     const locked = isBoardCellLocked(index);
     const revealed = isBoardCellRevealed(index);
@@ -7760,17 +7932,18 @@ function renderBoard() {
         if (event.key !== "Enter" && event.key !== " ") return;
         event.preventDefault();
         if (activeDailyPouchOutputIndices.has(index)) return;
-        handleCellClick(index);
+        handleCellClick(index, state.selectedIndex, event.timeStamp);
       });
     } else {
       cell.addEventListener("pointerdown", onCellPointerDown);
       cell.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" && event.key !== " ") return;
         event.preventDefault();
-        handleCellClick(index);
+        handleCellClick(index, state.selectedIndex, event.timeStamp);
       });
     }
-    els.board.append(cell);
+    if (changed) existingCells[index].replaceWith(cell);
+    else els.board.append(cell);
   });
 }
 
@@ -7915,18 +8088,18 @@ function preventBrowserSmartZoom() {
 
 function renderSelected() {
   const itemId = isBoardCellLocked(state.selectedIndex) ? null : state.board[state.selectedIndex];
+  const item = byId.get(itemId);
   const selectedPanel = els.sellBtn.closest(".selected");
   if (selectedPanel) selectedPanel.hidden = false;
   selectedPanel?.classList.toggle("empty", !itemId);
   selectedPanel?.classList.remove("no-sell");
-  setSellButtonAction({ mode: "unavailable", value: 0 });
+  setSellButtonAction(getPieceRemovalAction(item));
   if (!itemId) {
     els.selectedName.textContent = "轻点棋子查看";
     els.selectedText.textContent = "";
     els.sellBtn.disabled = true;
     return;
   }
-  const item = byId.get(itemId);
   if (!item) {
     els.selectedName.textContent = "未知物品";
     els.selectedText.textContent = "这件物品的数据还没配置完整。";
@@ -7966,7 +8139,7 @@ function renderSelected() {
     els.selectedName.textContent = item.name;
     els.selectedText.textContent = item.level === BONUS_STAMINA_MAX_LEVEL
       ? `双击收获${item.staminaValue}点体力`
-      : `两枚同级体力棋子可以合成下一等级；双击收获${item.staminaValue}点体力`;
+      : `同级可合成 · 双击领取${item.staminaValue}体力`;
     els.sellBtn.disabled = true;
     return;
   }
@@ -8011,12 +8184,12 @@ function renderSelected() {
     const cooldownSeconds = Math.max(0, Math.ceil((generatorState.cooldownEnd - Date.now()) / 1000));
     const batchSize = item.generator.outputCount;
     const productionStatus = item.type === "manual_generator"
-      ? "点击生成，消耗驼铃"
+      ? `每次 ${manualGeneratorStaminaCost(item)} 驼铃 · ${manualGeneratorOutputItem(item)?.name ?? "食品"}`
       : cooldownSeconds > 0
-        ? formatGeneratorCountdown(cooldownSeconds) + `后备好${batchSize}份奶食`
+        ? formatGeneratorCountdown(cooldownSeconds) + "后补满"
         : neighborEmptyIndices(state.selectedIndex).length > 0
-          ? `本轮剩余${generatorState.remainingOutputs}/${batchSize}份，奶食即将投放`
-          : `本轮剩余${generatorState.remainingOutputs}/${batchSize}份；腾出奶房相邻格，或移动奶房后继续`;
+          ? `余量 ${generatorState.remainingOutputs}/${batchSize} · 自动出料`
+          : `余量 ${generatorState.remainingOutputs}/${batchSize} · 周围需空格`;
     els.selectedName.textContent = /Lv\d+$/.test(item.name) ? item.name : item.name + " · Lv" + (item.level ?? 1);
     els.selectedText.textContent = productionStatus;
     setSellButtonAction(getPieceRemovalAction(item));
@@ -8075,6 +8248,9 @@ function getPieceRemovalAction(item) {
 
 function setSellButtonAction(action) {
   const { mode, value = 0 } = action;
+  const renderKey = `${mode}:${value}`;
+  if (els.sellBtn.dataset.renderKey === renderKey) return;
+  els.sellBtn.dataset.renderKey = renderKey;
   els.sellBtn.classList.remove("delete", "sell", "unavailable");
   els.sellBtn.classList.add(mode);
   els.sellBtn.dataset.action = mode;
@@ -8114,31 +8290,31 @@ function openSelectedPieceDetail() {
     const bubbleState = state.bubbleStates[itemId];
     const seconds = bubbleState ? Math.max(0, Math.ceil((bubbleState.expiresAt - Date.now()) / 1000)) : 0;
     els.pieceDetailMeta.textContent = "限时合成奖励";
-    els.pieceDetailText.textContent = "气泡中的棋子暂时不能使用，" + seconds + "秒后会变成一级铜币。";
+    els.pieceDetailText.textContent = "气泡倒计时 " + seconds + "秒 → 铜币 Lv1。";
     els.pieceDetailModal.showModal();
     return;
   }
   if (item.type === "bonus_coin") {
     els.pieceDetailMeta.textContent = `铜币 Lv${item.level} · 可收入${item.coinValue}枚`;
     els.pieceDetailText.textContent = item.level === BONUS_COIN_MAX_LEVEL
-      ? "已达最高等级，双击即可收入铜币。"
-      : "与另一枚同级铜币合成可以升级，也可直接双击收入。";
+      ? "已满级 · 双击领取。"
+      : "同级可合成 · 双击领取。";
     els.pieceDetailModal.showModal();
     return;
   }
   if (item.type === "bonus_ruby") {
     els.pieceDetailMeta.textContent = `红宝石 Lv${item.level} · 可收入${item.rubyValue}颗`;
     els.pieceDetailText.textContent = item.level === BONUS_RUBY_MAX_LEVEL
-      ? "已达最高等级，双击即可收入红宝石。"
-      : "与另一颗同级红宝石合成可以升级，也可直接双击收入。";
+      ? "已满级 · 双击领取。"
+      : "同级可合成 · 双击领取。";
     els.pieceDetailModal.showModal();
     return;
   }
   if (item.type === "bonus_stamina") {
     els.pieceDetailMeta.textContent = `体力棋子 Lv${item.level} · 可收获${item.staminaValue}点体力`;
     els.pieceDetailText.textContent = item.level === BONUS_STAMINA_MAX_LEVEL
-      ? "成熟双峰驼已经整装待发，双击即可收获100点体力。"
-      : "与另一枚同级体力棋子合成可以升级，也可直接双击收获体力。";
+      ? "已满级 · 双击领取。"
+      : "同级可合成 · 双击领取。";
     els.pieceDetailModal.showModal();
     return;
   }
@@ -8150,7 +8326,7 @@ function openSelectedPieceDetail() {
     const outputItem = manualGeneratorOutputItem(item);
     const staminaCost = manualGeneratorStaminaCost(item);
     const productionMultiplier = effectiveProductionMultiplier();
-    const productionText = `当前 ×${productionMultiplier} 模式：点击消耗${staminaCost}点驼铃，产出${outputItem?.name ?? "对应等级食品"}。无需等待，可连续使用。`;
+    const productionText = `×${productionMultiplier}：${staminaCost}驼铃 → ${outputItem?.name ?? "食品"}。`;
     els.pieceDetailText.textContent = productionText + generatorUpgradeDetail(item);
   } else if (item.type === "auto_generator") {
     const generatorState = getGeneratorState(item.id, boardGeneratorStateKey(state.selectedIndex));
@@ -8158,13 +8334,13 @@ function openSelectedPieceDetail() {
     const batchSize = item.generator.outputCount;
     const secondaryOutput = item.generator.pool.find((entry) => entry.itemId !== item.generator.pool[0]?.itemId);
     const outputChanceText = secondaryOutput
-      ? `每份有${secondaryOutput.weight}%概率直接产出${byId.get(secondaryOutput.itemId)?.name ?? "较高级奶食"}。`
-      : "每份都会产出鲜乳。";
+      ? `${byId.get(secondaryOutput.itemId)?.name ?? "高级奶食"} ${secondaryOutput.weight}%。`
+      : "产出鲜乳。";
     const productionText = cooldownSeconds > 0
-      ? `奶房正在备料，${formatGeneratorCountdown(cooldownSeconds)}后恢复${batchSize}份库存。`
+      ? `${formatGeneratorCountdown(cooldownSeconds)}后补满${batchSize}份。`
       : neighborEmptyIndices(state.selectedIndex).length > 0
-        ? `本轮还剩${generatorState.remainingOutputs}/${batchSize}份，将自动投放到周边空格。`
-        : `本轮还剩${generatorState.remainingOutputs}/${batchSize}份；腾出奶房相邻格，或移动奶房后继续投放。`;
+        ? `余量 ${generatorState.remainingOutputs}/${batchSize} · 自动出料。`
+        : `余量 ${generatorState.remainingOutputs}/${batchSize} · 周围需空格。`;
     els.pieceDetailText.textContent = productionText + outputChanceText + generatorUpgradeDetail(item);
   } else {
     els.pieceDetailText.textContent = codex?.shortText ?? item.modernName ?? "这枚棋子还没有配置详情。";
@@ -8244,7 +8420,8 @@ function renderWeeklyCheckin() {
   const currentIndex = claimable ? claimedDays : -1;
   els.weeklyCheckinGrid.replaceChildren();
 
-  WEEKLY_CHECKIN_REWARDS.forEach((reward, index) => {
+  WEEKLY_CHECKIN_REWARDS.forEach((_, index) => {
+    const reward = weeklyRewardForDay(index);
     const day = document.createElement("article");
     day.className = "weekly-checkin-day";
     if (index === 6) day.classList.add("weekly-checkin-day-seven");
@@ -8297,7 +8474,7 @@ function renderWeeklyCheckin() {
   if (els.weeklyCheckinHint) {
     els.weeklyCheckinHint.textContent = claimedDays >= 7
       ? "明日开启下一轮七日驿程"
-      : "每日可前行一步，错过也不会中断本轮驿程";
+      : "每日1次，漏签不重置。";
   }
 }
 
@@ -8317,18 +8494,22 @@ function claimWeeklyCheckin() {
     return;
   }
   const rewardIndex = state.weeklyCheckinClaimedDays;
-  const reward = WEEKLY_CHECKIN_REWARDS[rewardIndex];
+  const reward = weeklyRewardForDay(rewardIndex);
+  state.weeklyCheckinRewardReceipts ??= {};
+  state.weeklyCheckinRewardReceipts[`${state.weeklyCheckinRound}:${rewardIndex}`] = reward;
   reward.items.forEach((entry) => {
     if (entry.itemId) grantRewardItem(entry.itemId, entry.quantity ?? 1);
     else if (entry.packId) grantGiftPack(entry.packId, entry.quantity ?? 1);
   });
+  state.coins += reward.coins ?? 0;
+  state.coinsEarned += reward.coins ?? 0;
   state.weeklyCheckinClaimedDays += 1;
   state.weeklyCheckinLastClaimDay = currentLocalDayKey();
   playSfx("coin");
   render();
   renderWeeklyCheckin();
   saveState();
-  toast(`第${rewardIndex + 1}日行程礼已收入行囊。`);
+  toast(`第${rewardIndex + 1}日行程礼已收入行囊${reward.coins ? `，另到账${reward.coins}铜钱` : ""}。`);
 }
 
 function isCaravanRenownOrderCandidate(order) {
@@ -8487,19 +8668,29 @@ function buildCaravanRenownPlanItems(plan) {
 
 function buildCaravanRenownRewardItems() {
   const candidates = caravanRenownRewardDemandCandidates()
-    .sort((left, right) => (left.targetLevel - right.targetLevel)
-      || (right.missing - left.missing)
-      || (left.tieBreaker - right.tieBreaker));
-  const selectedCount = caravanRenownDemandSelectionCount(candidates.length);
-  const selectedPlans = candidates.slice(0, selectedCount).map(caravanRenownRewardPlan);
-  if (!selectedPlans.length) return [];
-
-  const minimumCount = Math.max(CARAVAN_RENOWN_REWARD_MIN, selectedPlans.length);
-  const desiredTotal = randomIntegerInclusive(minimumCount, CARAVAN_RENOWN_REWARD_MAX);
-  const plans = allocateCaravanRenownRewardCounts(selectedPlans, desiredTotal);
-  return shuffleCaravanRenownRewards(
-    plans.flatMap(buildCaravanRenownPlanItems).slice(0, CARAVAN_RENOWN_REWARD_MAX),
-  );
+    .sort((left, right) => (left.targetLevel - right.targetLevel) || (right.missing - left.missing));
+  const plans = candidates.slice(0, caravanRenownDemandSelectionCount(candidates.length)).map(caravanRenownRewardPlan);
+  const proposed = allocateCaravanRenownRewardCounts(plans, CARAVAN_RENOWN_REWARD_MIN).flatMap(buildCaravanRenownPlanItems);
+  const result = [];
+  let remaining = randomIntegerInclusive(8, 16);
+  for (const itemId of proposed) {
+    const original = byId.get(itemId);
+    const item = usefulRewardFood(original?.level ?? 1, original?.line);
+    const value = 2 ** Math.max(0, (item?.level ?? 1) - 1);
+    if (item && value <= remaining && result.length < CARAVAN_RENOWN_REWARD_MAX) {
+      result.push(item.id); remaining -= value;
+    }
+  }
+  // A small current demand must not collapse ten stamps into one Lv1 food.
+  // Remaining value supplies the same open production line for following orders.
+  while (remaining > 0 && result.length < CARAVAN_RENOWN_REWARD_MAX) {
+    const level = Math.min(3, Math.floor(Math.log2(remaining)) + 1);
+    const item = usefulRewardFood(level);
+    if (!item) break;
+    result.push(item.id);
+    remaining -= 2 ** Math.max(0, item.level - 1);
+  }
+  return shuffleCaravanRenownRewards(result);
 }
 
 function renderCaravanRenownEntry() {
@@ -8732,7 +8923,7 @@ function purchaseDailyShopOffer(event) {
       els.pieceDetailIcon.alt = item.name;
       els.pieceDetailName.textContent = item.name;
       els.pieceDetailMeta.textContent = `${item.level}级 · ${SHOP_FOOD_PRICES[item.level]}红宝石 · 本轮限购1份`;
-      els.pieceDetailText.textContent = "购买后收入奖励行囊，放到棋盘可用于合成或交付订单。";
+      els.pieceDetailText.textContent = "购得后收入行囊。";
       els.pieceDetailModal.showModal();
       return;
     }
@@ -8742,8 +8933,8 @@ function purchaseDailyShopOffer(event) {
     els.pieceDetailIcon.src = itemAssetSrc(item);
     els.pieceDetailIcon.alt = item.name;
     els.pieceDetailName.textContent = item.name;
-    els.pieceDetailMeta.textContent = "驿站小铺 · 收入奖励行囊";
-    els.pieceDetailText.textContent = `${pack.description ?? item.modernName} 放到棋盘后，轻点逐份领取；产出完毕后消失。`;
+    els.pieceDetailMeta.textContent = pack.dailyReward ? "每日免费1份" : "每轮限购1份 · 16小时换货";
+    els.pieceDetailText.textContent = staminaPackDescription(pack) || pack.description || item.modernName;
     els.pieceDetailModal.showModal();
     return;
   }
@@ -8766,6 +8957,7 @@ function purchaseDailyShopOffer(event) {
     toast(`红宝石不足，还差${offer.price - state.gems}颗。`);
     return;
   }
+  recordActivity("gems", offer.price);
   state.gems -= offer.price;
   state.shopPurchasedOfferIds.push(offer.id);
   if (offer.itemId) grantRewardItem(offer.itemId, 1);
@@ -8774,6 +8966,20 @@ function purchaseDailyShopOffer(event) {
   render();
   renderDailyShop();
   saveState();
+}
+
+function staminaPackDescription(pack) {
+  const rewards = pack.rewards ?? [];
+  if (!rewards.length || rewards.some(entry => byId.get(entry.itemId)?.type !== "bonus_stamina")) return "";
+  const counts = Array(BONUS_STAMINA_MAX_LEVEL + 1).fill(0);
+  for (const entry of rewards) counts[byId.get(entry.itemId).level] += entry.quantity ?? 1;
+  const direct = counts.reduce((sum, count, level) => sum + count * BONUS_STAMINA_VALUES[level], 0);
+  for (let level = 1; level < BONUS_STAMINA_MAX_LEVEL; level++) {
+    counts[level + 1] += Math.floor(counts[level] / 2);
+    counts[level] %= 2;
+  }
+  const merged = counts.reduce((sum, count, level) => sum + count * BONUS_STAMINA_VALUES[level], 0);
+  return `驼铃：直接领${direct}点 · 全部合成后领${merged}点。`;
 }
 
 function renderProductionMultiplier() {
@@ -8808,7 +9014,6 @@ function cycleProductionMultiplier() {
   state.productionMultiplier = multiplier;
   renderProductionMultiplier();
   renderSelected();
-  toast(`产出倍率切换为 ×${multiplier}`);
   keeper(multiplier === 4
     ? "手动生成器将消耗4倍驼铃，把四份基础产出压缩成1份3级食品。"
     : `手动生成器将消耗${multiplier}倍驼铃，直接产出${productionOutputLevel(multiplier)}级食品。`);
@@ -8890,7 +9095,7 @@ function onCellPointerDown(event) {
 
   if (item?.type === "bonus_bubble") {
     event.preventDefault();
-    handleCellClick(index, prevSelected);
+    handleCellClick(index, prevSelected, event.timeStamp);
     return;
   }
 
@@ -9090,7 +9295,7 @@ function useSplitterTool(toolIndex, targetIndex) {
   toast(`${target.name} → ${lowerItem.name} ×2`);
   setTimeout(() => {
     splitterPulseIndices.clear();
-    renderBoard();
+    els.board.querySelectorAll(".splitter-result-pop").forEach(cell => cell.classList.remove("splitter-result-pop"));
   }, 760);
   return true;
 }
@@ -9130,8 +9335,8 @@ async function endCellPointer(event) {
   if (!dragging || dragging.pointerId !== event.pointerId) return;
 
   const { fromIndex, itemId, moved, prevSelected } = dragging;
-  const toIndex = resolveDropIndex(event, dragging);
-  const droppedOnStorage = isStorageDropPoint(event.clientX, event.clientY);
+  const toIndex = moved ? resolveDropIndex(event, dragging) : null;
+  const droppedOnStorage = moved && isStorageDropPoint(event.clientX, event.clientY);
 
   cleanupCellPointer(event.currentTarget, event.pointerId);
   removeDragGhost();
@@ -9139,7 +9344,7 @@ async function endCellPointer(event) {
   dragging = null;
 
   if (!moved) {
-    handleCellClick(fromIndex, prevSelected);
+    handleCellClick(fromIndex, prevSelected, event.timeStamp);
     return;
   }
 
@@ -9272,7 +9477,13 @@ function getCellIndexFromPoint(x, y) {
   return null;
 }
 
-async function handleCellClick(index, prevSelected = state.selectedIndex) {
+function renderBoardSelection() {
+  els.board.querySelectorAll(".cell.selected").forEach(cell => cell.classList.remove("selected"));
+  if (state.selectedIndex !== null) els.board.querySelector(`[data-index="${state.selectedIndex}"]`)?.classList.add("selected");
+  renderSelected();
+}
+
+async function handleCellClick(index, prevSelected = state.selectedIndex, inputTime = performance.now()) {
   if (activeDailyPouchOutputIndices.has(index)) return;
   const activeSelectedGiftState = state.giftBoxStates[prevSelected];
   if (prevSelected !== index && activeDailyPouchStates.has(activeSelectedGiftState)) {
@@ -9352,8 +9563,8 @@ async function handleCellClick(index, prevSelected = state.selectedIndex) {
   }
 
   if (item?.type === "bonus_coin") {
-    const now = Date.now();
-    if (lastBonusCoinTapIndex === index && now - lastBonusCoinTapAt <= 450) {
+    const now = inputTime;
+    if (lastBonusCoinTapIndex === index && now >= lastBonusCoinTapAt && now - lastBonusCoinTapAt <= 450) {
       lastBonusCoinTapIndex = -1;
       lastBonusCoinTapAt = 0;
       collectBonusCoin(index);
@@ -9364,8 +9575,8 @@ async function handleCellClick(index, prevSelected = state.selectedIndex) {
   }
 
   if (item?.type === "bonus_ruby") {
-    const now = Date.now();
-    if (lastBonusRubyTapIndex === index && now - lastBonusRubyTapAt <= 450) {
+    const now = inputTime;
+    if (lastBonusRubyTapIndex === index && now >= lastBonusRubyTapAt && now - lastBonusRubyTapAt <= 450) {
       lastBonusRubyTapIndex = -1;
       lastBonusRubyTapAt = 0;
       collectBonusRuby(index);
@@ -9376,8 +9587,8 @@ async function handleCellClick(index, prevSelected = state.selectedIndex) {
   }
 
   if (item?.type === "bonus_stamina") {
-    const now = Date.now();
-    if (lastBonusStaminaTapIndex === index && now - lastBonusStaminaTapAt <= 450) {
+    const now = inputTime;
+    if (lastBonusStaminaTapIndex === index && now >= lastBonusStaminaTapAt && now - lastBonusStaminaTapAt <= 450) {
       lastBonusStaminaTapIndex = -1;
       lastBonusStaminaTapAt = 0;
       collectBonusStamina(index);
@@ -9395,7 +9606,7 @@ async function handleCellClick(index, prevSelected = state.selectedIndex) {
   // Deselect (tapped the already-selected cell)
   if (prevSelected === index) {
     state.selectedIndex = null;
-    render();
+    renderBoardSelection();
     return;
   }
 
@@ -9421,9 +9632,9 @@ async function handleCellClick(index, prevSelected = state.selectedIndex) {
     }
   }
 
-  // Select
+  // Selection does not replace pointer targets between taps.
   state.selectedIndex = index;
-  render();
+  renderBoardSelection();
 }
 
 function collectBonusCoin(index) {
@@ -9510,13 +9721,17 @@ function generatorUpgradeSummary(item) {
 }
 
 function generatorUpgradeDetail(item) {
+  if (!item) return "从行囊领取对应生成器。";
   const status = generatorUpgradeStatus(item);
-  if (status.maxLevel) return "已经达到Lv6最高等级。";
-  const sameLevelCount = state.board.filter((itemId) => itemId === item.id).length;
-  const mergeRule = `两个同类Lv${item.level}生成器可直接合成Lv${status.targetLevel}，不受驿站等级限制。`;
-  if (sameLevelCount >= 2) return `${mergeRule}当前案板已凑齐，拖到同级生成器上即可升级。`;
-  return `${mergeRule}Lv1生成器可由同系材料逐级合成；同系订单达标后，也可从奖励行囊领取副本。`;
+  const cap = state.economyConfig.orderPricing.availability.maxDemandLevelByGeneratorLevel[item.level] ?? 8;
+  if (status.maxLevel) return `已达 Lv6，订单最高 Lv${cap}。`;
+  const sameLevelCount = [...state.board, ...state.bag].filter(itemId => itemId === item.id).length;
+  const progress = status.rewardClaimed
+    ? `材料奖励已领取 · 同级 ${sameLevelCount}/2。`
+    : `同系订单 ${status.lineOrders}/${status.requiredLineOrders}${status.requiresMasteryOrder && !status.masteryComplete ? " · 尚需精通订单" : ""}。`;
+  return `Lv${item.level}×2 → Lv${status.targetLevel}。${progress}`;
 }
+
 function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   if (!isBoardCellRevealed(toIndex)) {
     toast("这格仍被风沙完全盖住，先从半露出的棋格向外推进。");
@@ -9537,6 +9752,7 @@ function unlockLockedCellByMerge(fromIndex, toIndex, itemId) {
   state.board[fromIndex] = null;
   const outputId = item?.mergeTo ?? itemId;
   state.board[toIndex] = outputId;
+  recordFoodMerge(item, byId.get(outputId));
   state.selectedIndex = toIndex;
   playSfx("merge");
   maybeCreateMergeBubble(item, outputId, toIndex);
@@ -9578,13 +9794,15 @@ function mergeCells(fromIndex, toIndex, itemId) {
   clearGeneratorState(boardGeneratorStateKey(toIndex));
   state.board[fromIndex] = null;
   state.board[toIndex] = item.mergeTo;
+  recordFoodMerge(item, byId.get(item.mergeTo));
   state.selectedIndex = toIndex;
   playSfx("merge");
   maybeCreateMergeBubble(item, item.mergeTo, toIndex);
   state.pulseIndex = toIndex;
   const next = byId.get(item.mergeTo);
   keeper(`做成了${next.name}。`);
-  chainMergeAt(toIndex);
+  // Each intentional merge produces exactly one next-level piece.
+  // Adjacent prepared orders remain available.
   clearPulseSoon();
   if (state.tutorialStep <= 1 && next.id === "hubing_02_lubing") {
     state.tutorialStep = 2;
@@ -9593,44 +9811,6 @@ function mergeCells(fromIndex, toIndex, itemId) {
   if (byId.get(state.board[toIndex])?.type === "auto_generator") {
     queueMicrotask(() => tickGenerators());
   }
-}
-
-function chainMergeAt(index) {
-  let currentId = state.board[index];
-  let current = byId.get(currentId);
-  while (current?.mergeTo) {
-    const neighbor = sameNeighborIndex(index, currentId);
-    if (neighbor === -1) break;
-    const sourceItem = current;
-    const outputItemId = current.mergeTo;
-    clearGeneratorState(boardGeneratorStateKey(neighbor));
-    clearGeneratorState(boardGeneratorStateKey(index));
-    state.board[neighbor] = null;
-    state.board[index] = outputItemId;
-    maybeCreateMergeBubble(sourceItem, outputItemId, index);
-    currentId = state.board[index];
-    current = byId.get(currentId);
-    state.pulseIndex = index;
-    unlockCodex(current.codexId);
-  }
-}
-
-function sameNeighborIndex(index, itemId) {
-  const row = Math.floor(index / BOARD_COLUMNS);
-  const col = index % BOARD_COLUMNS;
-  for (const [dr, dc] of [
-    [-1, 0],
-    [1, 0],
-    [0, -1],
-    [0, 1],
-  ]) {
-    const nr = row + dr;
-    const nc = col + dc;
-    if (nr < 0 || nr >= BOARD_ROWS || nc < 0 || nc >= BOARD_COLUMNS) continue;
-    const candidate = nr * BOARD_COLUMNS + nc;
-    if (state.board[candidate] === itemId) return candidate;
-  }
-  return -1;
 }
 
 function manualGeneratorOutputItem(item) {
@@ -9648,6 +9828,32 @@ function manualGeneratorStaminaCost(item) {
 }
 
 // Use live item metadata and orders, including matching food inside locked cells.
+function fullBoardLockedMergeHint() {
+  const orders = state.visibleOrders.map(getOrder).filter(Boolean);
+  const nextOrder = getOrder(nextStoryOrderId());
+  if (nextOrder && !orders.includes(nextOrder)) orders.push(nextOrder);
+  for (const order of orders) {
+    for (const demand of order.demand) {
+      const wanted = byId.get(demand.itemId);
+      if (!wanted || countItem(wanted.id) >= demand.quantity) continue;
+      for (const targetIndex of state.revealedCells) {
+        if (!isBoardCellRevealed(targetIndex)) continue;
+        const item = byId.get(lockedCellItemId(targetIndex));
+        const result = byId.get(item?.mergeTo);
+        if (!item || !result || item.type || result.line !== wanted.line || result.level > wanted.level) continue;
+        const fromIndex = state.board.findIndex((id, index) => id === item.id && !isBoardCellLocked(index));
+        if (fromIndex < 0) continue;
+        // Preserve portions already needed by waiting guests at this exact level.
+        const reserved = state.visibleOrders.flatMap(id => getOrder(id)?.demand ?? [])
+          .filter(entry => entry.itemId === item.id).reduce((sum, entry) => sum + entry.quantity, 0);
+        if (countItem(item.id) <= reserved) continue;
+        return { fromIndex, targetIndex, itemName: item.name, resultName: result.name, wantedName: wanted.name };
+      }
+    }
+  }
+  return null;
+}
+
 function storageGuideContext() {
   const demanded = new Set(state.visibleOrders.flatMap((id) => getOrder(id)?.demand ?? [])
     .map((demand) => demand.itemId));
@@ -9665,7 +9871,28 @@ function storageGuideContext() {
       && (isBoardCellRevealed(otherIndex) ? lockedCellItemId(otherIndex) : otherId) === itemId);
     if (item.codexId && !item.type && !demanded.has(itemId) && !hasMergePartner) recommended.push(index);
   });
-  return { canStore: firstEmptyBagIndex() !== -1, storable, recommended };
+  return { canStore: firstEmptyBagIndex() !== -1, storable, recommended, lockedMerge: fullBoardLockedMergeHint() };
+}
+
+function renderManualProduction(changedIndices) {
+  // Production changes food, stamina and the selected generator. Other screens,
+  // reward receipts and story entries keep their existing content until their
+  // own actions or the regular clock update them.
+  const discoveredFood = syncUnlockedFoodLevels();
+  if (discoveredFood) {
+    syncStoryOrderAvailability();
+    renderActivityEntry();
+    renderInnButton();
+  }
+  els.stamina.textContent = state.stamina;
+  els.innStamina.textContent = state.stamina;
+  renderStaminaCountdown();
+  els.generateBtn.disabled = !hasEmptyCell();
+  renderOrders();
+  renderBoard(changedIndices);
+  renderSelected();
+  renderTutorial();
+  renderGeneratorChainQaPanel();
 }
 
 function activateManualGenerator(index) {
@@ -9718,7 +9945,7 @@ function activateManualGenerator(index) {
   if (state.tutorialStep === 0) state.tutorialStep = 1;
   keeper(`${item.name}消耗${staminaCost}点驼铃，备好了${outputItem.name}。`);
   clearPulseSoon();
-  render();
+  renderManualProduction(generatedOutputs.map(({ targetIndex }) => targetIndex));
   generatedOutputs.forEach(({ targetIndex, itemId: outputItemId }) => {
     animateGeneratorOutput(index, targetIndex, outputItemId);
   });
@@ -9742,11 +9969,15 @@ function animateGeneratorOutput(sourceIndex, targetIndex, itemId) {
     return;
   }
 
-  sourceItem.classList.remove("generator-producing");
-  void sourceItem.offsetWidth;
-  sourceItem.classList.add("generator-producing");
   const sourceRect = sourceItem.getBoundingClientRect();
   const targetRect = targetCell.getBoundingClientRect();
+  generatorProductionAnimations.get(sourceItem)?.cancel();
+  generatorProductionAnimations.set(sourceItem, sourceItem.animate([
+    { transform: "scale(1)", offset: 0 },
+    { transform: "scale(0.9) translateY(2px)", offset: 0.36 },
+    { transform: "scale(1.08) translateY(-2px)", offset: 0.68 },
+    { transform: "scale(1)", offset: 1 },
+  ], { duration: 500, easing: "ease-out" }));
   const startX = sourceRect.left + sourceRect.width / 2;
   const startY = sourceRect.top + sourceRect.height / 2;
   const endX = targetRect.left + targetRect.width / 2;
@@ -9768,7 +9999,6 @@ function animateGeneratorOutput(sourceIndex, targetIndex, itemId) {
     if (finished) return;
     finished = true;
     flight.remove();
-    sourceItem.classList.remove("generator-producing");
     revealOutput();
   };
   const animation = flight.animate(
@@ -9825,6 +10055,21 @@ function formatGeneratorCountdown(totalSeconds) {
   return `${remainder}秒`;
 }
 
+function renderGeneratorCountdowns() {
+  state.board.forEach((itemId, index) => {
+    if (byId.get(itemId)?.type !== "auto_generator") return;
+    const entry = state.generatorStates[boardGeneratorStateKey(index)];
+    const seconds = Math.max(0, Math.ceil(((entry?.cooldownEnd ?? 0) - Date.now()) / 1000));
+    const badge = els.board.querySelector(`[data-index="${index}"] .generator-badge`);
+    if (badge && seconds > 0) {
+      const label = `${formatGeneratorCountdown(seconds)}后完成备料`;
+      badge.setAttribute("aria-label", label);
+      badge.title = label;
+    }
+  });
+  if (byId.get(state.board[state.selectedIndex])?.type === "auto_generator") renderSelected();
+}
+
 function tickGenerators() {
   let changed = false;
   let shouldSave = false;
@@ -9833,7 +10078,7 @@ function tickGenerators() {
     const entry = state.generatorStates[stateKey];
     const before = entry.cooldownEnd;
     getGeneratorState(entry.itemId, stateKey);
-    if (before > Date.now() || (before && !state.generatorStates[stateKey].cooldownEnd)) changed = true;
+    if (before && !state.generatorStates[stateKey].cooldownEnd) changed = true;
     if (before && !state.generatorStates[stateKey].cooldownEnd) shouldSave = true;
   });
   state.board.forEach((itemId, index) => {
@@ -9867,13 +10112,19 @@ function tickGenerators() {
     changed = true;
     shouldSave = true;
   });
-  if (changed) {
-    render();
+  if (changed && state.currentPage === "board") {
+    renderOrders();
+    renderBoard();
+    renderSelected();
     generatedOutputs.forEach(({ sourceIndex, targetIndex, itemId }) => {
       animateGeneratorOutput(sourceIndex, targetIndex, itemId);
     });
   }
-  if (shouldSave) saveState();
+  if (!changed && state.currentPage === "board") renderGeneratorCountdowns();
+  if (shouldSave) {
+    saveState();
+    renderActivityEntry();
+  }
 }
 
 function pickFromWeightedPool(pool) {
@@ -9915,6 +10166,10 @@ function unlockCodex(codexId) {
   state.unlockedCodex.add(codexId);
   activeCodexItemId = item.id;
   const firstRecipeTutorial = state.tutorialStep <= 1 && item.id === "hubing_02_lubing";
+  if (!firstRecipeTutorial) {
+    toast(`食鉴新收录 · ${entry.name}`);
+    return;
+  }
   els.unlockIcon.src = itemAssetSrc(item);
   els.unlockName.textContent = entry.name;
   els.unlockText.textContent = entry.shortText;
@@ -9948,10 +10203,11 @@ function pickGeneratedItem() {
 
 function completeOrder(orderId) {
   const order = getOrder(orderId);
-  if (!order) return;
+  if (!order || !state.visibleOrders.includes(orderId)) return;
   for (const demand of order.demand) {
     if (countItem(demand.itemId) < demand.quantity) return;
   }
+  const customerGift = regularCustomerGiftForOrder(orderId);
   const chapter = activeStoryChapter();
   const firstClear = !state.completedOrderIds.includes(order.id);
   const coinReward = currentOrderCoinReward(order);
@@ -9961,12 +10217,16 @@ function completeOrder(orderId) {
   state.coins += coinReward;
   state.coinsEarned += coinReward;
   state.completedOrders += 1;
+  if (order.demand.some(demand => byId.get(demand.itemId)?.level >= 3)) recordActivity("orders3");
+  if (order.demand.some(demand => byId.get(demand.itemId)?.level >= 4)) recordActivity("orders4");
   state.chapterOrderCounts[chapter] = (state.chapterOrderCounts[chapter] ?? 0) + 1;
   recordGeneratorOrderProgress(order);
   showCoinBurst(coinReward);
   if (firstClear) {
     state.completedOrderIds.push(order.id);
   }
+  const giftGranted = customerGift && grantRegularCustomerGift(customerGift.id);
+  recordRecentOrder(order.id);
   recordCaravanRenownOrder(order);
   syncGeneratorProgressRewards({ announce: true });
   if (state.tutorialStep === 2 && order.id === "order_001_guard_lubing") {
@@ -9985,6 +10245,7 @@ function completeOrder(orderId) {
   if (firstClear && historicalNoteForOrder(orderId)) {
     toast("已收录一则路上见闻，可在剧情回顾中阅读。");
   }
+  if (giftGranted) showRegularCustomerGiftReceived(customerGift);
   maybePromptRepairGuide();
 }
 
@@ -10117,7 +10378,7 @@ function renderOrderDetail() {
   const historicalNote = historicalNoteForOrder(order.id);
   els.historicalOrderTeaser.hidden = !historicalNote || historicalNoteUnlocked(historicalNote);
   if (historicalNote && !els.historicalOrderTeaser.hidden) {
-    els.historicalOrderTeaser.textContent = "首次交付这位旅人的订单后，可在剧情回顾里读一则「路上见闻」。";
+    els.historicalOrderTeaser.textContent = "首交解锁一则见闻。";
   }
   els.orderDetailDemandList.innerHTML = demandStates
     .map(
@@ -10133,7 +10394,13 @@ function renderOrderDetail() {
       `
     )
     .join("");
-  els.orderDetailRecipe.textContent = demandStates.map(({ item }) => recipeHint(item)).join("；");
+  const storedHints = demandStates.flatMap(({ item, missing }) => {
+    const stored = state.bag.filter(id => id === item.id).length;
+    return missing > 0 && stored > 0 ? [`柜中：${item.name}×${stored}`] : [];
+  });
+  const firstClearBonus = state.completedOrderIds.includes(order.id) ? 0 : Number(order.reward?.firstClearBonusCoins) || 0;
+  els.orderDetailRecipe.textContent = [...storedHints, ...(firstClearBonus ? [`含首交奖励 ${firstClearBonus} 铜钱`] : [])].join(" · ");
+  els.orderDetailRecipe.hidden = !els.orderDetailRecipe.textContent;
   els.orderDetailCompleteBtn.disabled = !canComplete;
   els.orderDetailCompleteBtn.textContent = canComplete ? `交付得${currentOrderCoinReward(order)}铜币` : `还差${missingTotal}`;
   els.orderDetailCodexBtn.disabled = !codexUnlocked;
@@ -10166,7 +10433,7 @@ function maybePromptRepairGuide() {
 
 function recipeHint(item) {
   if (!item.mergeFrom) {
-    if (item.line === "dairy") return "点击奶房食盒消耗驼铃，有机会收下鲜乳。";
+    if (item.line === "dairy") return "奶房每小时自动备料，不消耗驼铃；腾出相邻空格收下奶食。";
     if (item.line === "hubing") return "点击小石磨消耗驼铃，有机会收下麦面剂。";
     return "点击对应食盒消耗驼铃，有机会收下基础食材。";
   }
@@ -10222,7 +10489,9 @@ function orderDemandLinesUnlocked(order) {
     const maxDemandLevel = Number(maxDemandByGeneratorLevel[generatorLevel]) || 8;
     const demandLevel = Number(item.level) || 1;
     if (demandLevel > maxDemandLevel) return false;
-    if (!requireDiscoveredDemandItem || demandLevel <= 2) return true;
+    // The current repair must be a visible goal before its first food is made.
+    // Ownership and producer level above still apply; ordinary orders keep discovery gates.
+    if (!requireDiscoveredDemandItem || demandLevel <= 2 || order.id === nextStoryOrderId()) return true;
     return (Number(state.unlockedFoodLevels[item.line]) || 0) >= demandLevel;
   });
 }
@@ -10236,15 +10505,22 @@ function orderProgressConditionsMet(order) {
   return true;
 }
 
+function dairyIntroductionAllows(order) {
+  if (!order.requiredGeneratorCategories?.includes("dairy") || (state.generatorLineOrderCounts.dairy ?? 0) >= 4) return true;
+  // Existing waiting guests stay; the first fresh batch serves four short lessons.
+  return state.visibleOrders.includes(order.id) || order.id.startsWith("order_ch1_guide_dairy_");
+}
+
 function isOrderEligible(order, {
   ignoreVisible = false,
   ignoreWeight = false,
+  preserveExisting = false,
 } = {}) {
   if (!order) return false;
   if (order.oneTime && state.completedOrderIds.includes(order.id)) return false;
   if (!ignoreVisible && state.visibleOrders.includes(order.id)) return false;
   if (!ignoreWeight && order.weight <= 0) return false;
-  return orderDemandLinesUnlocked(order) && orderProgressConditionsMet(order);
+  return (preserveExisting || dairyIntroductionAllows(order)) && orderDemandLinesUnlocked(order) && orderProgressConditionsMet(order);
 }
 
 function orderItemCoinValue(itemId) {
@@ -10305,14 +10581,142 @@ function missingVisibleOrderBandId(bands) {
 }
 
 function nextStoryOrderId() {
-  const milestone = nextRepairMilestone();
+  // Finding the next order needs configuration only, not every repair's UI
+  // labels, reward text and generator preparation hints.
+  const milestone = state.progressionConfig.milestones.find(entry => !state.renovationChoices[entry.id]);
   if (!milestone || milestoneInnLevel(milestone) > state.innLevel) return null;
   return (milestone.conditions?.completedOrderIds ?? []).find(
     (orderId) => !state.completedOrderIds.includes(orderId),
   ) ?? null;
 }
 
-function syncVisibleOrders() {
+function normalizeOrderArrivalSupport(value, completedOrders) {
+  const current = Math.max(0, Math.floor(Number(completedOrders) || 0));
+  const saved = value?.schemaVersion === 1 ? value : {};
+  const validCount = (count) => Number.isSafeInteger(count) && count >= 0 && count <= current;
+  return {
+    schemaVersion: 1,
+    lastCompletedOrders: validCount(saved.lastCompletedOrders) ? saved.lastCompletedOrders : current,
+    shortDrought: validCount(saved.shortDrought) ? saved.shortDrought : 0,
+    lastProtectedOrder: validCount(saved.lastProtectedOrder) ? saved.lastProtectedOrder : null,
+    acquiredAtOrders: Object.fromEntries(["spice", "fruit", "drink", "meat"]
+      .filter((category) => validCount(saved.acquiredAtOrders?.[category]))
+      .map((category) => [category, saved.acquiredAtOrders[category]])),
+  };
+}
+
+function observeOrderArrivalOwnership() {
+  state.orderArrivalSupport ??= normalizeOrderArrivalSupport(null, state.completedOrders);
+  for (const category of ["spice", "fruit", "drink", "meat"]) {
+    if (state.orderArrivalSupport.acquiredAtOrders[category] === undefined
+      && highestOwnedGeneratorLevel(category) > 0) {
+      state.orderArrivalSupport.acquiredAtOrders[category] = state.completedOrders ?? 0;
+    }
+  }
+}
+
+function createOrderArrivalSupportEvent({ allowArrivals = true } = {}) {
+  observeOrderArrivalOwnership();
+  const saved = state.orderArrivalSupport;
+  const current = state.completedOrders ?? 0;
+  const delivery = allowArrivals && current > saved.lastCompletedOrders;
+  let served = false;
+  const visible = () => state.visibleOrders.map(getOrder).filter(Boolean);
+  const count = (id) => effectiveBoardItemCount(id) + (state.bag ?? []).filter((itemId) => itemId === id).length;
+  const recipe = (order) => order.demand.reduce((total, demand) => {
+    const item = byId.get(demand.itemId);
+    total[item.line === "dairy" ? "milk" : "manual"] += demand.quantity * 2 ** (item.level - 1);
+    return total;
+  }, { manual: 0, milk: 0 });
+  const milkUsable = (order) => {
+    const stock = new Map([...byId.values()].filter((item) => item.line === "dairy")
+      .map((item) => [item.level, count(item.id)]));
+    // Reserve lower demands first. Existing higher food cannot be split, and
+    // future timed milk output is not treated as a currently usable target.
+    const wanted = order.demand.filter((demand) => byId.get(demand.itemId)?.line === "dairy")
+      .map((demand) => ({ level: byId.get(demand.itemId).level, quantity: demand.quantity }))
+      .sort((a, b) => a.level - b.level);
+    const take = (level, quantity) => {
+      const exact = Math.min(quantity, stock.get(level) ?? 0);
+      stock.set(level, (stock.get(level) ?? 0) - exact);
+      return exact === quantity || (level > 1 && take(level - 1, 2 * (quantity - exact)));
+    };
+    return wanted.every((demand) => take(demand.level, demand.quantity));
+  };
+  const hasShort = () => visible().some((order) => {
+    const demandCounts = new Map();
+    for (const demand of order.demand) {
+      demandCounts.set(demand.itemId, (demandCounts.get(demand.itemId) ?? 0) + demand.quantity);
+    }
+    return [...demandCounts].every(([id, quantity]) => count(id) >= quantity)
+      || (recipe(order).manual <= 4 && milkUsable(order));
+  });
+  const pendingIntro = () => {
+    for (const category of ["spice", "fruit", "drink", "meat"]) {
+      const acquired = saved.acquiredAtOrders[category];
+      if (acquired === undefined || highestOwnedGeneratorLevel(category) < 1
+        || (state.generatorLineOrderCounts?.[category] ?? 0) > 0) continue;
+      const line = state.generatorConfig.categories.find((entry) => entry.id === category)?.foodLineId;
+      if (visible().some((order) => order.demand.some((demand) => byId.get(demand.itemId)?.line === line))) continue;
+      const pool = state.ordersConfig.orders.filter((order) => order.guideGeneratorCategory === category
+        && isOrderEligible(order) && order.demand.every((demand) => byId.get(demand.itemId).level <= 2));
+      if (pool.length) return { pool, age: current - acquired };
+    }
+    return null;
+  };
+  const weighted = (candidates) => {
+    const fresh = candidates.filter((order) => !(state.recentOrderIds ?? []).includes(order.id));
+    const pool = fresh.length ? fresh : candidates;
+    const newNpc = pool.filter((order) => !visible().some((guest) => guest.npcId === order.npcId));
+    const choices = newNpc.length ? newNpc : pool;
+    let roll = Math.random() * choices.reduce((sum, order) => sum + order.weight, 0);
+    return choices.find((order) => (roll -= order.weight) < 0) ?? choices[choices.length - 1];
+  };
+  return {
+    rescueMilkQueue() {
+      const guests = visible();
+      if (!guests.length || !guests.every(order => recipe(order).milk > 0 && !milkUsable(order))) return;
+      const pool = state.ordersConfig.orders.filter(order => {
+        if (!isOrderEligible(order)) return false;
+        const cost = recipe(order);
+        return cost.milk === 0 && cost.manual >= 2 && cost.manual <= 4;
+      });
+      // Deterministic recovery also repairs old blocked saves without rerolling
+      // guests on refresh. Keep every waiting order, with at most one extra short order.
+      pool.sort((a, b) => Number((state.recentOrderIds ?? []).includes(a.id))
+        - Number((state.recentOrderIds ?? []).includes(b.id))
+        || calculatedOrderCoinReward(a) - calculatedOrderCoinReward(b) || a.id.localeCompare(b.id));
+      if (!pool.length) return;
+      state.visibleOrders.push(pool[0].id);
+      saved.lastProtectedOrder = current;
+      served = true;
+    },
+    pick({ force = false } = {}) {
+      if (!allowArrivals || served) return null;
+      const intro = pendingIntro();
+      let pool = intro && (!force || (delivery && intro.age >= 2)) ? intro.pool : [];
+      if (!pool.length && delivery && saved.shortDrought + 1 >= 2
+        && current - (saved.lastProtectedOrder ?? -Infinity) >= 4 && !hasShort()) {
+        pool = state.ordersConfig.orders.filter((order) => {
+          if (!isOrderEligible(order)) return false;
+          const cost = recipe(order);
+          return cost.milk === 0 && cost.manual >= 2 && cost.manual <= 4;
+        });
+      }
+      if (!pool.length) return null;
+      const order = weighted(pool);
+      served = true;
+      saved.lastProtectedOrder = current;
+      return order;
+    },
+    finish() {
+      if (delivery) saved.shortDrought = hasShort() ? 0 : saved.shortDrought + 1;
+      saved.lastCompletedOrders = current;
+    },
+  };
+}
+
+function syncVisibleOrders({ allowArrivals = true } = {}) {
   if (CARAVAN_RENOWN_QA_MODE) {
     const qaOrderIds = [
       "order_012_changan_maid_lubing",
@@ -10335,18 +10739,15 @@ function syncVisibleOrders() {
       }));
     return;
   }
-  const maxVisible = Math.max(2, Math.floor(Number(state.ordersConfig.maxVisibleOrders) || 7));
-  const targetVisible = Math.min(maxVisible, rollVisibleOrderTarget());
-  const bands = state.economyConfig?.orderPricing?.bands ?? [];
-  const preserveWaitingGuests = state.ordersConfig.arrivalPolicy?.preserveWaitingGuests !== false;
+  const support = createOrderArrivalSupportEvent({ allowArrivals });
+  const preserveWaitingGuests = !allowArrivals || state.ordersConfig.arrivalPolicy?.preserveWaitingGuests !== false;
   const previous = preserveWaitingGuests ? [...state.visibleOrders] : [];
   state.visibleOrders = [];
   for (const orderId of previous) {
-    if (state.visibleOrders.length >= maxVisible) break;
     const existing = getOrder(orderId);
     if (existing
       && !state.visibleOrders.includes(existing.id)
-      && isOrderEligible(existing, { ignoreVisible: true })) {
+      && isOrderEligible(existing, { ignoreVisible: true, preserveExisting: true })) {
       state.visibleOrders.push(existing.id);
     }
   }
@@ -10355,14 +10756,29 @@ function syncVisibleOrders() {
   if (storyOrder && !state.visibleOrders.includes(storyOrderId)
     && isOrderEligible(storyOrder, { ignoreVisible: true, ignoreWeight: true })) {
     state.visibleOrders.unshift(storyOrderId);
-    if (state.visibleOrders.length > maxVisible) state.visibleOrders.length = maxVisible;
   }
+  // Loading restores the current guests, not a new arrival event. Keep the
+  // main-order check above and recover empty/invalid saves so play cannot stall.
+  if (!allowArrivals && state.visibleOrders.length) {
+    support.rescueMilkQueue();
+    support.finish();
+    return;
+  }
+  const maxVisible = Math.max(2, Math.floor(Number(state.ordersConfig.maxVisibleOrders) || 7));
+  const targetVisible = Math.min(maxVisible, rollVisibleOrderTarget());
+  const bands = state.economyConfig?.orderPricing?.bands ?? [];
   while (state.visibleOrders.length < targetVisible) {
     const bandId = missingVisibleOrderBandId(bands);
-    const next = pickOrder(bandId) ?? pickOrder();
+    const next = support.pick() ?? pickOrder(bandId) ?? pickOrder();
     if (!next) break;
     state.visibleOrders.push(next.id);
   }
+  if (state.visibleOrders.length < maxVisible) {
+    const extra = support.pick({ force: true });
+    if (extra) state.visibleOrders.push(extra.id);
+  }
+  support.rescueMilkQueue();
+  support.finish();
 }
 
 function syncDemoOrder() {
@@ -10374,7 +10790,53 @@ function getOrder(orderId) {
 }
 
 function currentOrderCoinReward(order) {
-  return calculatedOrderCoinReward(order);
+  const firstClearBonus = state.completedOrderIds.includes(order?.id) ? 0 : Math.max(0, Number(order?.reward?.firstClearBonusCoins) || 0);
+  return calculatedOrderCoinReward(order) + firstClearBonus;
+}
+
+function normalizeRecentOrderIds(value) {
+  return (Array.isArray(value) ? value : [])
+    .filter((id) => typeof id === "string" && getOrder(id))
+    .slice(-8);
+}
+
+function recordRecentOrder(orderId) {
+  state.recentOrderIds = [...(state.recentOrderIds ?? []), orderId].slice(-8);
+}
+
+function progressedOrderCandidates(candidates) {
+  const config = state.ordersConfig.generationPolicy?.progressedDemand;
+  if (!config || state.innLevel < config.minInnLevel) return candidates;
+  const mainOrderId = nextStoryOrderId();
+  const recent = (state.recentOrderIds ?? []).slice(-Math.max(0, Number(config.repeatLookback) || 0));
+  if (config.repeatLookback > 0 && recent.length) {
+    const fresh = candidates.filter((order) => !recent.includes(order.id)
+      || order.oneTime || order.generatorMasteryCategory || order.id === mainOrderId);
+    if (fresh.length) candidates = fresh;
+  }
+  // Cache owned levels once for this selection instead of scanning the board
+  // again for every food in every candidate order.
+  const minUnitsByLine = new Map(state.generatorConfig.categories.map((category) => [
+    category.foodLineId,
+    Number(config.minUnitsByGeneratorLevel?.[highestOwnedGeneratorLevel(category.id)]) || 0,
+  ]));
+  const grown = candidates.filter((order) => {
+    if (order.oneTime || order.generatorMasteryCategory || order.id === mainOrderId) return true;
+    const demandUnits = order.demand.reduce((sum, demand) => {
+      const item = byId.get(demand.itemId);
+      return sum + 2 ** (Number(item?.level) - 1) * demand.quantity;
+    }, 0);
+    const threshold = Math.max(0, ...order.demand.map((demand) => {
+      const item = byId.get(demand.itemId);
+      return minUnitsByLine.get(item?.line) || 0;
+    }));
+    return demandUnits >= threshold;
+  });
+  // Keep small orders in rotation and retain a usable fallback when the
+  // currently discovered foods cannot supply a larger alternative.
+  if (!grown.length) return candidates;
+  if (config.preferenceChance !== undefined && Math.random() >= config.preferenceChance) return candidates;
+  return grown;
 }
 
 function pickOrder(bandId = null) {
@@ -10383,10 +10845,25 @@ function pickOrder(bandId = null) {
   const highLimit = Number(safety.maxSimultaneousOrdersAtOrAboveItemLevel) || 1;
   const isHighOrder = (order) => order?.demand.some((demand) => Number(byId.get(demand.itemId)?.level) >= highLevel);
   const highCount = state.visibleOrders.filter((id) => isHighOrder(getOrder(id))).length;
+  const mainOrder = getOrder(nextStoryOrderId());
+  const reservedForMain = isHighOrder(mainOrder);
+  // A pending Lv8 main dish may need the Lv6 generator earned by mastery.
+  // Reserve the high-order slot for that prerequisite until it is reachable.
+  const preparesMainGenerator = (order) => Boolean(order?.generatorMasteryCategory
+    && mainOrder?.demand.some((demand) => {
+      const item = byId.get(demand.itemId);
+      const category = state.generatorConfig.categories.find((entry) => entry.foodLineId === item?.line);
+      if (category?.id !== order.generatorMasteryCategory) return false;
+      const ownedLevel = highestOwnedGeneratorLevel(category.id);
+      const cap = Number(state.economyConfig?.orderPricing?.availability?.maxDemandLevelByGeneratorLevel?.[ownedLevel]) || 8;
+      return Number(item.level) > cap;
+    }));
   const allCandidates = state.ordersConfig.orders.filter((order) => isOrderEligible(order)
-    && (highCount < highLimit || !isHighOrder(order)));
-  const bandCandidates = allCandidates.filter((order) => orderMatchesBand(order, bandId));
-  const candidates = bandCandidates.length ? bandCandidates : bandId ? [] : allCandidates;
+    && (highCount < highLimit || !isHighOrder(order))
+    && (!reservedForMain || !isHighOrder(order) || order.id === mainOrder?.id || preparesMainGenerator(order)));
+  const progressed = progressedOrderCandidates(allCandidates);
+  const bandCandidates = progressed.filter((order) => orderMatchesBand(order, bandId));
+  const candidates = bandCandidates.length ? bandCandidates : bandId ? [] : progressed;
   if (!candidates.length) return null;
   const band = (state.economyConfig?.orderPricing?.bands ?? []).find((entry) => entry.id === bandId);
   const unservedMastery = candidates.filter(
@@ -10634,41 +11111,44 @@ function clearBoardReturnGuide() {
 }
 
 function getMilestoneViews() {
-  return state.progressionConfig.milestones.map((milestone) => {
-    const checks = getMilestoneChecks(milestone.conditions);
-    const done = checks.every((check) => check.done);
-    const percent = Math.round((checks.reduce((sum, check) => sum + check.ratio, 0) / checks.length) * 100);
-    return {
-      id: milestone.id,
-      chapter: milestone.chapter ?? 1,
-      innLevel: milestoneInnLevel(milestone),
-      name: milestone.name,
-      done,
-      percent,
-      requirementText: checks.map((check) => check.label).join(" · "),
-      nextText: checks.find((check) => !check.done)?.nextLabel ?? rewardText(milestone),
-      rewardText: rewardText(milestone),
-      sceneName: milestone.sceneName,
-      scenePosition: milestone.scenePosition,
-      speaker: milestone.speaker,
-      npcId: milestone.npcId,
-      conditions: milestone.conditions,
-      repairCost: milestone.repairCost,
-      repairParts: milestone.repairParts,
-      renovationChoices: milestone.renovationChoices,
-      storyText: milestone.storyText,
-      repairValue: milestone.repairValue,
-      playerUrl: milestone.playerUrl,
-      playerPointId: milestone.playerPointId,
-      longscrollRegionIds: milestone.longscrollRegionIds ?? [],
-      completionText: milestone.completionText,
-      rewards: milestone.rewards,
-    };
-  });
+  return state.progressionConfig.milestones.map(milestoneView);
+}
+
+function milestoneView(milestone) {
+  const checks = getMilestoneChecks(milestone.conditions);
+  const done = checks.every((check) => check.done);
+  const percent = Math.round((checks.reduce((sum, check) => sum + check.ratio, 0) / checks.length) * 100);
+  return {
+    id: milestone.id,
+    chapter: milestone.chapter ?? 1,
+    innLevel: milestoneInnLevel(milestone),
+    name: milestone.name,
+    done,
+    percent,
+    requirementText: checks.map((check) => check.label).join(" · "),
+    nextText: checks.find((check) => !check.done)?.nextLabel ?? rewardText(milestone),
+    rewardText: rewardText(milestone),
+    sceneName: milestone.sceneName,
+    scenePosition: milestone.scenePosition,
+    speaker: milestone.speaker,
+    npcId: milestone.npcId,
+    conditions: milestone.conditions,
+    repairCost: milestone.repairCost,
+    repairParts: milestone.repairParts,
+    renovationChoices: milestone.renovationChoices,
+    storyText: milestone.storyText,
+    repairValue: milestone.repairValue,
+    playerUrl: milestone.playerUrl,
+    playerPointId: milestone.playerPointId,
+    longscrollRegionIds: milestone.longscrollRegionIds ?? [],
+    completionText: milestone.completionText,
+    rewards: milestone.rewards,
+  };
 }
 
 function nextRepairMilestone() {
-  return getMilestoneViews().find((milestone) => !state.renovationChoices[milestone.id]);
+  const milestone = state.progressionConfig.milestones.find(entry => !state.renovationChoices[entry.id]);
+  return milestone ? milestoneView(milestone) : undefined;
 }
 
 function selectedRenovationChoice(milestone) {
@@ -10706,7 +11186,7 @@ function getMilestoneChecks(conditions) {
         done: state.completedOrderIds.includes(orderId),
         ratio: state.completedOrderIds.includes(orderId) ? 1 : 0,
         label: state.completedOrderIds.includes(orderId) ? `${label} 1/1` : `${label} 0/1`,
-        nextLabel: `交付「${order?.npcName ?? orderId}」压轴订单`,
+        nextLabel: order ? orderGateDescription(order) : `交付「${orderId}」订单`,
       });
     });
   }
@@ -10896,59 +11376,6 @@ function openStorage() {
 
 function showStorageModal() {
   if (!els.storageModal.open) els.storageModal.showModal();
-  requestAnimationFrame(maybeShowStorageGuide);
-}
-
-function maybeShowStorageGuide() {
-  if (!els.storageModal?.open
-    || !els.storageGuide
-    || !generatorWarehouseUnlocked()
-    || state.generatorWarehouseGuideSeen) return;
-  storageGuideStep = "generator";
-  els.storageGuide.hidden = false;
-  els.storageNormalTab?.parentElement?.classList.add("guide-active");
-  renderStorageGuideStep();
-}
-
-function renderStorageGuideStep() {
-  if (!storageGuideStep || !els.storageGuide) return;
-  const isGeneratorStep = storageGuideStep === "generator";
-  activeStorageTab = isGeneratorStep ? "generator" : "normal";
-  renderStorage();
-  els.storageGuide.dataset.step = storageGuideStep;
-  els.storageGuideTitle.textContent = isGeneratorStep ? "生成器仓库" : "普通储物";
-  els.storageGuideCopy.textContent = isGeneratorStep
-    ? "收纳 Lv1 生成器；同类集满 8 枚，会凝成 1 枚 Lv4。"
-    : "食材与普通道具收在这里，需要时可以取回棋盘。";
-  els.storageGuideNext.textContent = "知道了";
-  els.storageGuide.querySelectorAll(".storage-guide-progress i").forEach((dot, index) => {
-    dot.classList.toggle("active", index === 0);
-  });
-  els.storageGuide.querySelector(".storage-guide-progress")?.setAttribute(
-    "aria-label",
-    "第1步，共1步",
-  );
-  els.storageNormalTab?.classList.toggle("storage-guide-target", !isGeneratorStep);
-  els.storageGeneratorTab?.classList.toggle("storage-guide-target", isGeneratorStep);
-}
-
-function advanceStorageGuide() {
-  completeStorageGuide();
-}
-
-function completeStorageGuide() {
-  if (storageGuideStep === "generator") state.generatorWarehouseGuideSeen = true;
-  else state.storageGuideVersion = STORAGE_GUIDE_VERSION;
-  hideStorageGuide();
-  saveState();
-}
-
-function hideStorageGuide() {
-  storageGuideStep = null;
-  if (els.storageGuide) els.storageGuide.hidden = true;
-  els.storageNormalTab?.parentElement?.classList.remove("guide-active");
-  els.storageNormalTab?.classList.remove("storage-guide-target");
-  els.storageGeneratorTab?.classList.remove("storage-guide-target");
 }
 
 function setStorageTab(tab) {
@@ -10958,12 +11385,6 @@ function setStorageTab(tab) {
   }
   activeStorageTab = tab === "generator" ? "generator" : "normal";
   renderStorage();
-  if (activeStorageTab === "generator" && !state.generatorWarehouseGuideSeen) {
-    storageGuideStep = "generator";
-    els.storageGuide.hidden = false;
-    els.storageNormalTab?.parentElement?.classList.add("guide-active");
-    renderStorageGuideStep();
-  }
 }
 
 function selectGeneratorWarehouseCategory(event) {
@@ -11009,6 +11430,10 @@ function depositGeneratorAtBoardIndex(boardIndex, { openWarehouse = false } = {}
       (candidateId) => candidateId === categoryId || state.unlockedGeneratorCategories.includes(candidateId),
     );
   }
+  const storedState = { ...getGeneratorState(itemId, boardGeneratorStateKey(boardIndex)) };
+  state.generatorWarehouse.storedStatesByCategory ??= {};
+  state.generatorWarehouse.storedStatesByCategory[categoryId] ??= [];
+  state.generatorWarehouse.storedStatesByCategory[categoryId].push(storedState);
   delete state.generatorStates[boardGeneratorStateKey(boardIndex)];
   state.board[boardIndex] = null;
   state.selectedIndex = null;
@@ -11057,6 +11482,8 @@ function withdrawStoredGenerator() {
   }
   const itemId = generatorItemId(categoryId, generatorWarehouseAcceptedLevel());
   state.generatorWarehouse.progressByCategory[categoryId] -= 1;
+  const storedState = state.generatorWarehouse.storedStatesByCategory?.[categoryId]?.shift();
+  if (storedState) state.generatorStates[boardGeneratorStateKey(boardIndex)] = storedState;
   state.board[boardIndex] = itemId;
   state.selectedIndex = boardIndex;
   state.pulseIndex = boardIndex;
@@ -11096,10 +11523,7 @@ function openRubyRecharge() {
 }
 
 function explainStorageInvite() {
-  const requiredNewPlayers = Number(
-    state.economyConfig?.premiumCurrency?.storage?.inviteUnlock?.requiredNewPlayers,
-  ) || 1;
-  toast(`平台邀请功能尚未接入。开放后，每成功邀请${requiredNewPlayers}位新掌柜，可免费开启1个仓位。`);
+  toast("邀请扩容暂未开放。");
 }
 
 function openStaminaPurchase() {
@@ -11118,7 +11542,7 @@ function renderStaminaPurchase() {
   if (els.staminaPurchaseRule) {
     const multiplier = Math.max(1, Number(staminaPurchaseConfig().priceMultiplier) || 2);
     const nextPrice = Math.round(price * multiplier);
-    els.staminaPurchaseRule.textContent = `本次${price}颗，下一次${nextPrice}颗；每日重置`;
+    els.staminaPurchaseRule.textContent = `本次${price}颗红宝石，下次${nextPrice}颗\n每日0点重置`;
   }
   els.staminaPurchaseConfirm?.setAttribute("aria-label", `花费${price}颗红宝石购买${amount}点驼铃`);
 }
@@ -11132,6 +11556,7 @@ function purchaseStamina() {
     renderStaminaPurchase();
     return;
   }
+  recordActivity("gems", price);
   state.gems -= price;
   state.stamina += amount;
   state.staminaPurchasesToday += 1;
@@ -11152,6 +11577,7 @@ function purchaseNextStorageSlot() {
     toast(`红宝石不足，还差${price - state.gems}颗。`);
     return;
   }
+  recordActivity("gems", price);
   state.gems -= price;
   state.unlockedStorageSlots += 1;
   while (state.bag.length < state.unlockedStorageSlots) state.bag.push(null);
@@ -11256,7 +11682,7 @@ function renderGeneratorWarehouse() {
     <figure><img src="${itemAssetSrc(baseItem)}" alt="${baseItem?.name ?? "基础生成器"}" /><figcaption>Lv1 ×${entry.target}</figcaption></figure>
     <i aria-hidden="true">›</i>
     <figure><img src="${itemAssetSrc(outputItem)}" alt="${outputItem?.name ?? "高阶生成器"}" /><figcaption>Lv${generatorWarehouseOutputLevel()} ×1</figcaption></figure>`;
-  els.generatorWarehouseHint.textContent = `收纳${entry.target}枚${baseItem?.name ?? "Lv1生成器"}，自动凝成1枚${outputItem?.name ?? "高阶生成器"}；各品类进度互不影响。`;
+  els.generatorWarehouseHint.textContent = "存取不重置冷却。";
   els.generatorWarehouseStoredIcon.src = itemAssetSrc(baseItem);
   els.generatorWarehouseStoredIcon.alt = baseItem?.name ?? "基础生成器";
   els.generatorWarehouseStoredCount.textContent = `×${entry.progress}`;
@@ -11386,6 +11812,7 @@ function storeBoardItemToStorage(boardIndex) {
     toast("柜中暂存已满。");
     return;
   }
+  transferGeneratorState(itemId, boardGeneratorStateKey(boardIndex), bagGeneratorStateKey(bagIndex));
   state.bag[bagIndex] = itemId;
   state.board[boardIndex] = null;
   if (giftPack?.shopOffer && giftState) {
@@ -11452,7 +11879,7 @@ function placeRewardItemFromBag(itemId) {
       return;
     }
   }
-  const boardIndex = randomUnlockedEmptyIndex();
+  const boardIndex = randomUnlockedEmptyIndex(itemId);
   if (boardIndex === -1) {
     toast("案板已满，这份奖励仍留在行囊中。");
     return;
@@ -11811,11 +12238,12 @@ function openGiftBoxOnBoard(index) {
       toast("案板已满，先腾出空位再开礼盒包。");
       return;
     }
-    const placed = placeRewardItem(reward.itemId, reward.quantity ?? 1);
+    const rewardItemId = migrateLegacyGeneratorId(reward.itemId);
+    const placed = placeRewardItem(rewardItemId, reward.quantity ?? 1);
     if (!placed) return;
-    const item = byId.get(reward.itemId);
+    const item = byId.get(rewardItemId);
     keeper(`${pack.name}取出：${item?.name ?? "奖励"}。`);
-    tryBuildGeneratorFromMaterials(reward.itemId);
+    tryBuildGeneratorFromMaterials(rewardItemId);
   } else if (reward.type === "coins") {
     state.coins += reward.amount;
     showCoinBurst(reward.amount);
@@ -11835,7 +12263,7 @@ function openGiftBoxOnBoard(index) {
 
 function placeRewardItem(itemId, quantity) {
   for (let i = 0; i < quantity; i += 1) {
-    const index = firstEmptyIndexFromTop();
+    const index = byId.get(itemId)?.type === "auto_generator" ? randomUnlockedEmptyIndex(itemId) : firstEmptyIndexFromTop();
     if (index === -1) return false;
     state.board[index] = itemId;
     state.pulseIndex = index;
@@ -11957,11 +12385,12 @@ function renderCodex() {
     ? "food-detail"
     : closeTutorialActive ? "close" : "";
   const hint = els.codexModal.querySelector(".codex-index-hint");
-  if (hint) hint.textContent = detailTutorialActive
-    ? "点击高亮的食物图标，打开详情与札记"
-    : closeTutorialActive
-      ? "点击右上角的关闭按钮，前往流沙驿修缮"
-      : "点击已点亮的小图，可直接查看食物详情与札记";
+  if (hint) {
+    hint.hidden = !detailTutorialActive && !closeTutorialActive;
+    hint.textContent = detailTutorialActive
+      ? "点高亮的食物，查看札记。"
+      : closeTutorialActive ? "关闭食鉴，返回客栈。" : "";
+  }
   let tutorialTargetAssigned = false;
 
   lines.forEach((line) => {
@@ -12275,12 +12704,15 @@ function firstEmptyIndexFromTop() {
   return -1;
 }
 
-function randomUnlockedEmptyIndex() {
+function randomUnlockedEmptyIndex(itemId = null) {
   const candidates = state.board
     .map((itemId, index) => (!itemId && !isBoardCellLocked(index) ? index : null))
     .filter((index) => index !== null);
   if (!candidates.length) return -1;
-  return candidates[Math.floor(Math.random() * candidates.length)];
+  const usable = byId.get(itemId)?.type === "auto_generator"
+    ? candidates.filter(index => neighborEmptyIndices(index).length > 0) : [];
+  const pool = usable.length ? usable : candidates;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function firstEmptyBagIndex() {
@@ -12331,7 +12763,7 @@ function clearPulseSoon() {
     state.pulseIndex = null;
     state.bubblePulseIndex = null;
     state.unlockPulseIndex = null;
-    renderBoard();
+    els.board.querySelectorAll(".merge-pop, .unlock-pop, .bubble-born").forEach(cell => cell.classList.remove("merge-pop", "unlock-pop", "bubble-born"));
   }, 760);
 }
 

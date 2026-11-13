@@ -7,17 +7,18 @@
     <meta name="theme-color" content="#2b1b13" />
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=selected-sand-board-v2-grid" />
+    <link rel="stylesheet" href="./styles.css?v=audio-anchor-20261017" />
     <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
-    <link rel="stylesheet" href="./weekly-checkin.css?v=weekly-checkin-v3-daily-title" />
+    <link rel="stylesheet" href="./activity.css?v=integration-fixes-20261015-final" />
+    <link rel="stylesheet" href="./weekly-checkin.css?v=full-playtest-fixes-20261010" />
     <link rel="stylesheet" href="./renown-event.css?v=caravan-renown-v8-poster" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=opening-cinematic-v1" />
-    <link rel="stylesheet" href="./chapter-story-controls.css?v=chapter-story-controls-v5" />
+    <link rel="stylesheet" href="./chapter-story-controls.css?v=integration-fixes-20261015-final" />
     <link rel="stylesheet" href="./story-archive.css?v=story-archive-v16-notice-dot" />
     <link rel="stylesheet" href="./historical-notes.css?v=historical-notes-v23-archive-thumbnails" />
     <link rel="stylesheet" href="./historical-notes-brocade.css?v=brocade-a-3" />
-    <link rel="stylesheet" href="./inn-map-ui.css?v=mobile-resource-fit-v2-region-reveal-v1-stamina-compact-v1-board-v1-timer-type-v3-timer-gap-v1-full-compact-v1-chapter-diamonds-v1-side-pouch-v1" />
+    <link rel="stylesheet" href="./inn-map-ui.css?v=integration-fixes-20261015-final" />
     <link rel="stylesheet" href="./longscroll-characters.css?v=repair-halo-v2-phone-fit-v1-renewal-v1-cast-journey-v1" />
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
     <link rel="stylesheet" href="./new-player-guide.css?v=post-repair-action-v1" />
@@ -77,7 +78,7 @@
                 <span id="rewardBagBadge" class="reward-bag-badge" hidden>0</span>
               </button>
             </div>
-            <button id="sevenDayActivityBtn" class="seven-day-activity-entry has-reward" type="button" aria-label="打开七日任务，有奖励可领取" title="七日任务">
+            <button id="sevenDayActivityBtn" class="seven-day-activity-entry" type="button" aria-label="打开七日任务" title="七日任务">
               <span class="seven-day-entry-cord" aria-hidden="true"></span>
               <svg class="seven-day-route-icon" viewBox="0 0 48 62" aria-hidden="true">
                 <defs>
@@ -336,21 +337,26 @@
             <span class="historical-note-inquiry-label">驿路小猜谜 · 点选后揭晓</span>
             <h3 id="historicalNoteQuestion"></h3>
             <div id="historicalNoteChoices" class="historical-note-choices" role="group" aria-labelledby="historicalNoteQuestion"></div>
-            <button id="historicalNoteSourceToggle" class="historical-note-source-toggle" type="button" aria-controls="historicalNoteSourcesPanel" aria-expanded="false">资料出处 ›</button>
+            <button id="historicalNoteSourceToggle" class="historical-note-source-toggle" type="button" aria-controls="historicalNoteSourcesPanel" aria-expanded="false">详解与出处 ›</button>
             <div id="historicalNoteFeedback" class="historical-note-feedback" role="status" aria-live="polite" hidden>
               <strong id="historicalNoteFeedbackLabel"></strong>
-              <h4 id="historicalNoteClueTitle"></h4>
-              <p id="historicalNoteEvidence"></p>
-              <p id="historicalNoteFeedbackText"></p>
-              <figure id="historicalNoteVisual" class="historical-note-visual" hidden>
-                <img id="historicalNoteImage" alt="" loading="lazy" />
-                <figcaption><span id="historicalNoteImageCaption"></span><a id="historicalNoteImageCredit" target="_blank" rel="noopener noreferrer"></a><a id="historicalNoteImageLicense" target="_blank" rel="noopener noreferrer"></a></figcaption>
-              </figure>
               <p id="historicalNoteTakeaway" class="historical-note-takeaway"></p>
             </div>
           </section>
         </div>
-        <footer id="historicalNoteSourcesPanel" class="historical-note-sources" hidden><strong>想继续探索？看看史料出处</strong><div id="historicalNoteSources"></div></footer>
+        <footer id="historicalNoteSourcesPanel" class="historical-note-sources" hidden>
+          <div id="historicalNoteExplanation" hidden>
+            <h4 id="historicalNoteClueTitle"></h4>
+            <p id="historicalNoteEvidence"></p>
+            <figure id="historicalNoteVisual" class="historical-note-visual" hidden>
+              <img id="historicalNoteImage" alt="" loading="lazy" />
+              <figcaption><span id="historicalNoteImageCaption"></span><a id="historicalNoteImageCredit" target="_blank" rel="noopener noreferrer"></a><a id="historicalNoteImageLicense" target="_blank" rel="noopener noreferrer"></a></figcaption>
+            </figure>
+            <p id="historicalNoteFeedbackText"></p>
+          </div>
+          <strong>资料出处</strong>
+          <div id="historicalNoteSources"></div>
+        </footer>
         <section id="historicalNoteReward" class="historical-note-reward" aria-label="见闻奖励" hidden>
           <div id="historicalNoteRewardBags" class="historical-note-reward-bags"></div>
           <div id="historicalNoteRewardItems" class="historical-note-reward-items" aria-live="polite"></div>
@@ -429,7 +435,7 @@
           <span>类别</span><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b><b>7</b><b>8</b>
         </div>
         <div class="codex-matrix" id="codexList" role="grid" aria-label="六类食物的一至八阶总谱"></div>
-        <p class="codex-index-hint">点击已点亮的小图，可直接查看食物详情与札记</p>
+        <p class="codex-index-hint" hidden></p>
       </div>
     </dialog>
     <dialog id="codexDetailModal" class="modal">
@@ -511,10 +517,15 @@
         <div class="order-detail-head"><img id="orderDetailAvatar" class="order-detail-avatar" alt="" /><div><h2 id="orderDetailNpc"></h2><p id="orderDetailDialogue"></p></div></div>
         <p id="historicalOrderTeaser" class="historical-order-teaser" hidden></p>
         <section class="order-detail-demand"><div id="orderDetailDemandList" class="order-detail-demand-list"></div></section>
-        <section class="order-recipe-box"><h3>合成提示</h3><p id="orderDetailRecipe"></p></section>
+        <p id="orderDetailRecipe" class="order-detail-note" hidden></p>
         <div class="modal-actions"><button id="orderDetailCodexBtn">查看食鉴</button><button id="orderDetailCompleteBtn" class="primary">交付</button></div>
       </div>
     </dialog>
+    <dialog id="customerGiftModal" class="customer-gift-modal" aria-label="熟客回礼">
+      <div class="customer-gift-content"></div>
+      <button type="button" class="customer-gift-close" data-close="customerGiftModal" aria-label="关闭熟客回礼" autofocus>×</button>
+    </dialog>
+    <div id="customerGiftReceived" class="customer-gift-received" role="status" aria-live="polite" hidden></div>
     <dialog id="orderFoodModal" class="modal order-food-modal" aria-labelledby="orderFoodTitle">
       <section class="modal-inner order-food-detail">
         <button class="close order-food-close" data-close="orderFoodModal" aria-label="关闭食物合成路线">×</button>
@@ -592,17 +603,6 @@
             <img src="./assets/ui/ui_storage_tab_generator_v2.png" alt="" />
           </button>
         </nav>
-        <section id="storageGuide" class="storage-guide" data-step="normal" hidden aria-label="柜中仓位首次引导">
-          <div class="storage-guide-card">
-            <strong id="storageGuideTitle">普通储物</strong>
-            <p id="storageGuideCopy">食材与普通道具收在这里，需要时可以取回棋盘。</p>
-            <div class="storage-guide-progress" aria-label="第1步，共1步"><i class="active"></i></div>
-            <div class="storage-guide-actions">
-              <button id="storageGuideSkip" type="button">跳过</button>
-              <button id="storageGuideNext" type="button">知道了</button>
-            </div>
-          </div>
-        </section>
         <div id="storageNormalPanel" class="storage-normal-panel">
           <div class="storage-interior"><div class="storage-slot-scroll" id="storageSlotList"></div></div>
         </div>
@@ -615,7 +615,7 @@
             </header>
             <div class="generator-warehouse-progress" aria-hidden="true"><i id="generatorWarehouseProgress"></i></div>
             <div id="generatorWarehouseRecipe" class="generator-warehouse-recipe"></div>
-            <p id="generatorWarehouseHint">将棋盘上的 Lv1 生成器收入柜中，积满后会凝成高阶生成器。</p>
+            <p id="generatorWarehouseHint">存取不重置冷却。</p>
           </article>
           <div class="generator-warehouse-actions">
             <button id="generatorWarehouseWithdraw" class="generator-warehouse-slot stored" type="button">
@@ -650,7 +650,7 @@
           <div class="daily-shop-balance"><span>现有</span><i class="ruby-icon" aria-hidden="true"></i><b id="dailyShopBalance">0</b></div>
         </header>
         <footer class="daily-shop-footer">
-          <span>距换货</span><b id="dailyShopRefresh">16:00:00</b><small>购得道具会放入奖励行囊</small>
+          <span>距换货</span><b id="dailyShopRefresh">16:00:00</b><small>购得后收入行囊</small>
         </footer>
         <section id="dailyShopOffers" class="daily-shop-stall" aria-label="驿站小铺货架，可上下滑动" tabindex="0">
 
@@ -659,8 +659,7 @@
           <article class="daily-shop-card daily-shop-pouch-card" aria-label="每日免费宝袋">
             <strong>西域晨礼宝袋</strong>
             <button type="button" class="daily-shop-detail" data-shop-detail="gift_daily_pomegranate_01" aria-label="查看西域晨礼宝袋详情"><img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" /></button>
-            <p>每日免费一份</p>
-            <small>每日限领 1</small>
+            <p>每日免费1份</p>
             <button id="dailyShopClaimPouch" type="button">免费领取</button>
           </article>
           <article class="daily-shop-card" data-shop-offer="wealth">
@@ -683,6 +682,13 @@
         </section>
       </div>
     </dialog>
+    <dialog id="activityModal" class="modal activity-modal" aria-labelledby="activityTitle">
+      <div class="modal-inner activity-inner">
+        <button class="close" data-close="activityModal" aria-label="关闭奖励窗口">×</button>
+        <header><h2 id="activityTitle">七日有礼</h2></header>
+        <div id="activityContent"></div>
+      </div>
+    </dialog>
     <dialog id="weeklyCheckinModal" class="modal weekly-checkin-modal" aria-labelledby="weeklyCheckinTitle">
       <div class="weekly-checkin-inner">
         <button class="close" data-close="weeklyCheckinModal" aria-label="关闭七日驿程">×</button>
@@ -698,7 +704,7 @@
         <section id="weeklyCheckinGrid" class="weekly-checkin-grid" aria-label="七日签到奖励"></section>
         <footer class="weekly-checkin-footer">
           <button id="weeklyCheckinClaim" type="button">收下今日行礼</button>
-          <small id="weeklyCheckinHint">每日可前行一步，错过也不会中断本轮驿程</small>
+          <small id="weeklyCheckinHint">每日1次，漏签不重置。</small>
         </footer>
       </div>
     </dialog>
@@ -735,7 +741,9 @@
             <strong>+<b id="staminaPurchaseAmount">100</b></strong>
           </div>
         </section>
-        <button id="staminaPurchaseConfirm" class="primary stamina-purchase-confirm" type="button">
+        <p id="staminaPurchaseCount" class="stamina-purchase-count"></p>
+        <p id="staminaPurchaseRule" class="stamina-purchase-rule" aria-live="polite"></p>
+        <button id="staminaPurchaseConfirm" class="primary stamina-purchase-confirm" type="button" aria-describedby="staminaPurchaseRule">
           <i class="ruby-icon" aria-hidden="true"></i><b id="staminaPurchasePrice">10</b><span>兑换</span>
         </button>
       </div>
@@ -781,9 +789,13 @@
       </div>
     </dialog>
 
-    <script src="./chapter-story.js?v=opening-audio-v1"></script>
+    <script src="./chapter-story.js?v=full-playtest-fixes-20261010"></script>
     <script src="./historical-notes.js?v=historical-notes-v10"></script>
-    <script src="./new-player-guide.js?v=dynamic-frontier-post-repair-v1"></script>
-    <script src="./app.js?v=scene-audio-lifecycle-v2-rare-tool-sparkles-v6-caravan-renown-v5-poster"></script>
+    <script src="./new-player-guide.js?v=copy-audit-20261011"></script>
+    <script src="./seven-day-activity.js?v=activity-pacing-20261112"></script>
+    <script src="./progression-help.js?v=lean-ui-20261011"></script>
+    <script src="./activity-ui.js?v=activity-pacing-20261112"></script>
+    <script src="./regular-customer-gifts.js?v=floating-gift-20261015"></script>
+    <script src="./app.js?v=audio-anchor-20261017"></script>
   </body>
 </html>

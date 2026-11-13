@@ -93,17 +93,35 @@
       "sceneName": "前厅客座",
       "speaker": "孟氏",
       "npcId": "npc_dunhuang_woman",
-      "repairCost": 10,
+      "repairCost": 480,
       "repairParts": [
-        { "cost": 10 },
-        { "cost": 120 },
-        { "cost": 130 },
-        { "cost": 140 },
-        { "cost": 150 },
-        { "cost": 160 },
-        { "cost": 170 },
-        { "cost": 180 },
-        { "cost": 200 }
+        {
+          "cost": 10
+        },
+        {
+          "cost": 20
+        },
+        {
+          "cost": 30
+        },
+        {
+          "cost": 40
+        },
+        {
+          "cost": 50
+        },
+        {
+          "cost": 60
+        },
+        {
+          "cost": 70
+        },
+        {
+          "cost": 90
+        },
+        {
+          "cost": 110
+        }
       ],
       "repairValue": 60,
       "scenePosition": "front",
@@ -116,9 +134,18 @@
       "completionText": "孟氏轻轻拍去长凳上的浮尘。前厅终于能让赶路的人坐下，流沙驿也有了第一处人声。",
       "conditions": {
         "completedOrders": 1,
-        "completedOrderIds": ["order_001_guard_lubing"]
+        "completedOrderIds": [
+          "order_001_guard_lubing"
+        ]
       },
-      "rewards": {},
+      "rewards": {
+        "giftPacks": [
+          {
+            "id": "gift_dairy_opening_01",
+            "quantity": 1
+          }
+        ]
+      },
       "renovationChoices": []
     },
     {
@@ -129,7 +156,7 @@
       "sceneName": "炉灶重整",
       "speaker": "城外农户",
       "npcId": "npc_farmer",
-      "repairCost": 175,
+      "repairCost": 810,
       "repairValue": 45,
       "scenePosition": "kitchen",
       "playerPointId": "04",
@@ -143,17 +170,41 @@
         "completedRepairs": [
           "tutorial_complete"
         ],
-        "completedOrderIds": ["order_011_dunhuang_woman_lubing"]
-      },
-      "rewards": {
-        "giftPacks": [
-          {
-            "id": "gift_dairy_opening_01",
-            "quantity": 1
-          }
+        "completedOrderIds": [
+          "order_011_dunhuang_woman_lubing"
         ]
       },
-      "renovationChoices": []
+      "rewards": {},
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 50
+        },
+        {
+          "cost": 60
+        },
+        {
+          "cost": 70
+        },
+        {
+          "cost": 80
+        },
+        {
+          "cost": 90
+        },
+        {
+          "cost": 100
+        },
+        {
+          "cost": 110
+        },
+        {
+          "cost": 120
+        },
+        {
+          "cost": 130
+        }
+      ]
     },
     {
       "id": "codex_first_phase",
@@ -163,7 +214,7 @@
       "sceneName": "食单上墙",
       "speaker": "佛寺女施主",
       "npcId": "npc_temple_donor",
-      "repairCost": 180,
+      "repairCost": 1080,
       "repairValue": 62,
       "scenePosition": "wall",
       "playerPointId": "11",
@@ -177,14 +228,45 @@
         "completedRepairs": [
           "kitchen_repair"
         ],
-        "completedOrderIds": ["order_005_monk_humabing"]
+        "completedOrderIds": [
+          "order_005_monk_humabing"
+        ]
       },
       "rewards": {
         "unlockOrders": [
           "order_009_mystery_suibing"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 80
+        },
+        {
+          "cost": 90
+        },
+        {
+          "cost": 100
+        },
+        {
+          "cost": 110
+        },
+        {
+          "cost": 120
+        },
+        {
+          "cost": 130
+        },
+        {
+          "cost": 140
+        },
+        {
+          "cost": 150
+        },
+        {
+          "cost": 160
+        }
+      ]
     },
     {
       "id": "lv2_front_feast",
@@ -194,7 +276,7 @@
       "sceneName": "前厅开席",
       "speaker": "粟特胡商",
       "npcId": "npc_sogdian_merchant",
-      "repairCost": 80,
+      "repairCost": 1880,
       "repairValue": 72,
       "scenePosition": "yard",
       "playerPointId": "03",
@@ -208,7 +290,9 @@
         "completedRepairs": [
           "codex_first_phase"
         ],
-        "completedOrderIds": ["order_014_musician_youhubing"]
+        "completedOrderIds": [
+          "order_014_musician_youhubing"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -221,7 +305,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 160
+        },
+        {
+          "cost": 170
+        },
+        {
+          "cost": 180
+        },
+        {
+          "cost": 200
+        },
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 230
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 260
+        }
+      ]
     },
     {
       "id": "lv2_west_market",
@@ -231,7 +344,7 @@
       "sceneName": "西市开张",
       "speaker": "粟特胡商",
       "npcId": "npc_sogdian_merchant",
-      "repairCost": 95,
+      "repairCost": 1880,
       "repairValue": 78,
       "scenePosition": "front",
       "playerPointId": "05",
@@ -245,7 +358,9 @@
         "completedRepairs": [
           "lv2_front_feast"
         ],
-        "completedOrderIds": ["order_004_changan_lubing"]
+        "completedOrderIds": [
+          "order_004_changan_lubing"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -258,7 +373,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 160
+        },
+        {
+          "cost": 170
+        },
+        {
+          "cost": 180
+        },
+        {
+          "cost": 200
+        },
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 230
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 260
+        }
+      ]
     },
     {
       "id": "lv2_flower_rack",
@@ -268,7 +412,7 @@
       "sceneName": "花架留客",
       "speaker": "孟氏",
       "npcId": "npc_dunhuang_woman",
-      "repairCost": 110,
+      "repairCost": 1990,
       "repairValue": 84,
       "scenePosition": "kitchen",
       "playerPointId": "06",
@@ -282,7 +426,9 @@
         "completedRepairs": [
           "lv2_west_market"
         ],
-        "completedOrderIds": ["order_006_camel_worker_youhubing"]
+        "completedOrderIds": [
+          "order_006_camel_worker_youhubing"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -295,7 +441,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 170
+        },
+        {
+          "cost": 180
+        },
+        {
+          "cost": 200
+        },
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 230
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 260
+        },
+        {
+          "cost": 270
+        }
+      ]
     },
     {
       "id": "lv2_north_shop",
@@ -305,7 +480,7 @@
       "sceneName": "北铺开张",
       "speaker": "求法僧人",
       "npcId": "npc_pilgrim_monk",
-      "repairCost": 130,
+      "repairCost": 1990,
       "repairValue": 90,
       "scenePosition": "wall",
       "playerPointId": "15",
@@ -313,13 +488,15 @@
       "longscrollRegionIds": [
         15
       ],
-      "storyText": "花架下的客人问起北边铺面。先有一间能留人的屋，远路客才肯歇脚。",
-      "completionText": "北铺开张，流沙驿第一次真正留住了远路客。",
+      "storyText": "花架下的客人问起北边铺面。修稳货架，行囊与来货就有了安放的地方。",
+      "completionText": "北铺重开，行囊与来货各归其位，远客安心停脚。",
       "conditions": {
         "completedRepairs": [
           "lv2_flower_rack"
         ],
-        "completedOrderIds": ["order_007_persian_attendant_congchi"]
+        "completedOrderIds": [
+          "order_007_persian_attendant_congchi"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -332,7 +509,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 170
+        },
+        {
+          "cost": 180
+        },
+        {
+          "cost": 200
+        },
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 230
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 260
+        },
+        {
+          "cost": 270
+        }
+      ]
     },
     {
       "id": "lv2_south_shop",
@@ -342,7 +548,7 @@
       "sceneName": "南铺开张",
       "speaker": "回鹘牧民",
       "npcId": "npc_uighur_herder",
-      "repairCost": 150,
+      "repairCost": 2110,
       "repairValue": 96,
       "scenePosition": "yard",
       "playerPointId": "16",
@@ -356,7 +562,9 @@
         "completedRepairs": [
           "lv2_north_shop"
         ],
-        "completedOrderIds": ["order_008_uighur_yangrou"]
+        "completedOrderIds": [
+          "order_008_uighur_yangrou"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -369,7 +577,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 180
+        },
+        {
+          "cost": 200
+        },
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 230
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 260
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 290
+        }
+      ]
     },
     {
       "id": "lv2_well",
@@ -379,7 +616,7 @@
       "sceneName": "井台初成",
       "speaker": "周甲",
       "npcId": "npc_shazhou_guard",
-      "repairCost": 170,
+      "repairCost": 2230,
       "repairValue": 104,
       "scenePosition": "front",
       "playerPointId": "17-18",
@@ -394,7 +631,9 @@
         "completedRepairs": [
           "lv2_south_shop"
         ],
-        "completedOrderIds": ["order_009_mystery_suibing"]
+        "completedOrderIds": [
+          "order_009_mystery_suibing"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -408,7 +647,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 200
+        },
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 230
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 260
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 300
+        }
+      ]
     },
     {
       "id": "lv3_upper_hall",
@@ -418,7 +686,7 @@
       "sceneName": "楼馆迎宾",
       "speaker": "求法僧人",
       "npcId": "npc_pilgrim_monk",
-      "repairCost": 190,
+      "repairCost": 2390,
       "repairValue": 112,
       "scenePosition": "kitchen",
       "playerPointId": "07",
@@ -432,7 +700,9 @@
         "completedRepairs": [
           "lv2_well"
         ],
-        "completedOrderIds": ["order_010_caravan_gulouzi"]
+        "completedOrderIds": [
+          "order_010_caravan_gulouzi"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -445,7 +715,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 210
+        },
+        {
+          "cost": 220
+        },
+        {
+          "cost": 240
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 280
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 310
+        },
+        {
+          "cost": 320
+        }
+      ]
     },
     {
       "id": "lv3_north_court",
@@ -455,7 +754,7 @@
       "sceneName": "北院安居",
       "speaker": "求法僧人",
       "npcId": "npc_pilgrim_monk",
-      "repairCost": 215,
+      "repairCost": 2520,
       "repairValue": 120,
       "scenePosition": "wall",
       "playerPointId": "08",
@@ -469,7 +768,9 @@
         "completedRepairs": [
           "lv3_upper_hall"
         ],
-        "completedOrderIds": ["order_015_monk_rumi"]
+        "completedOrderIds": [
+          "order_015_monk_rumi"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -482,7 +783,36 @@
           }
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 220
+        },
+        {
+          "cost": 240
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 280
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 310
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 340
+        }
+      ]
     },
     {
       "id": "lv3_west_gate",
@@ -492,7 +822,7 @@
       "sceneName": "西门整饬",
       "speaker": "长安使者",
       "npcId": "npc_changan_envoy",
-      "repairCost": 245,
+      "repairCost": 2520,
       "repairValue": 128,
       "scenePosition": "yard",
       "playerPointId": "09",
@@ -506,14 +836,45 @@
         "completedRepairs": [
           "lv3_north_court"
         ],
-        "completedOrderIds": ["order_016_uighur_milk"]
+        "completedOrderIds": [
+          "order_016_uighur_milk"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "westGateCleared"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 220
+        },
+        {
+          "cost": 240
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 280
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 310
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 340
+        }
+      ]
     },
     {
       "id": "lv3_east_court",
@@ -523,7 +884,7 @@
       "sceneName": "东院留客",
       "speaker": "长安侍女",
       "npcId": "npc_changan_maid",
-      "repairCost": 275,
+      "repairCost": 2650,
       "repairValue": 136,
       "scenePosition": "front",
       "playerPointId": "10",
@@ -537,14 +898,45 @@
         "completedRepairs": [
           "lv3_west_gate"
         ],
-        "completedOrderIds": ["order_017_temple_laojiang"]
+        "completedOrderIds": [
+          "order_017_temple_laojiang"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "eastCourtReady"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 240
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 280
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 310
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 340
+        },
+        {
+          "cost": 350
+        }
+      ]
     },
     {
       "id": "lv3_garden",
@@ -554,7 +946,7 @@
       "sceneName": "花影庭园",
       "speaker": "佛寺女施主",
       "npcId": "npc_temple_donor",
-      "repairCost": 310,
+      "repairCost": 2650,
       "repairValue": 144,
       "scenePosition": "kitchen",
       "playerPointId": "12",
@@ -568,14 +960,45 @@
         "completedRepairs": [
           "lv3_east_court"
         ],
-        "completedOrderIds": ["order_018_traveler_lubing_rumi"]
+        "completedOrderIds": [
+          "order_018_traveler_lubing_rumi"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "gardenAwake"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 240
+        },
+        {
+          "cost": 250
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 280
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 310
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 340
+        },
+        {
+          "cost": 350
+        }
+      ]
     },
     {
       "id": "lv3_watchtower",
@@ -585,7 +1008,7 @@
       "sceneName": "望楼通途",
       "speaker": "周氏",
       "npcId": "npc_temple_donor",
-      "repairCost": 350,
+      "repairCost": 2770,
       "repairValue": 152,
       "scenePosition": "wall",
       "playerPointId": "13-14",
@@ -600,14 +1023,45 @@
         "completedRepairs": [
           "lv3_garden"
         ],
-        "completedOrderIds": ["order_019_sogdian_huma_laojiang"]
+        "completedOrderIds": [
+          "order_019_sogdian_huma_laojiang"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "roadReopened"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 250
+        },
+        {
+          "cost": 270
+        },
+        {
+          "cost": 280
+        },
+        {
+          "cost": 290
+        },
+        {
+          "cost": 310
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 340
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        }
+      ]
     },
     {
       "id": "lv4_south_shed",
@@ -617,7 +1071,7 @@
       "sceneName": "南棚聚货",
       "speaker": "康十一",
       "npcId": "npc_caravan_leader",
-      "repairCost": 460,
+      "repairCost": 3130,
       "repairValue": 170,
       "scenePosition": "front",
       "playerPointId": "19",
@@ -631,7 +1085,9 @@
         "completedRepairs": [
           "lv3_watchtower"
         ],
-        "completedOrderIds": ["order_lv4_south_shed_stocking"]
+        "completedOrderIds": [
+          "order_lv4_south_shed_stocking"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -640,7 +1096,36 @@
           "southShedStocked"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 290
+        },
+        {
+          "cost": 300
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        }
+      ]
     },
     {
       "id": "lv4_central_market",
@@ -650,7 +1135,7 @@
       "sceneName": "中市开席",
       "speaker": "康十一",
       "npcId": "npc_caravan_leader",
-      "repairCost": 520,
+      "repairCost": 3130,
       "repairValue": 180,
       "scenePosition": "kitchen",
       "playerPointId": "20",
@@ -664,14 +1149,45 @@
         "completedRepairs": [
           "lv4_south_shed"
         ],
-        "completedOrderIds": ["order_lv4_central_market_feast"]
+        "completedOrderIds": [
+          "order_lv4_central_market_feast"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "centralMarketReady"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 290
+        },
+        {
+          "cost": 300
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        }
+      ]
     },
     {
       "id": "lv4_south_street",
@@ -681,7 +1197,7 @@
       "sceneName": "南市连街",
       "speaker": "粟特胡商",
       "npcId": "npc_sogdian_merchant",
-      "repairCost": 590,
+      "repairCost": 3260,
       "repairValue": 190,
       "scenePosition": "wall",
       "playerPointId": "21-23",
@@ -697,14 +1213,45 @@
         "completedRepairs": [
           "lv4_central_market"
         ],
-        "completedOrderIds": ["order_lv4_south_street_trade"]
+        "completedOrderIds": [
+          "order_lv4_south_street_trade"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "southStreetLinked"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 300
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        },
+        {
+          "cost": 420
+        }
+      ]
     },
     {
       "id": "lv4_lanes",
@@ -714,7 +1261,7 @@
       "sceneName": "巷路相接",
       "speaker": "孟氏",
       "npcId": "npc_dunhuang_woman",
-      "repairCost": 670,
+      "repairCost": 3260,
       "repairValue": 200,
       "scenePosition": "yard",
       "playerPointId": "24",
@@ -728,14 +1275,45 @@
         "completedRepairs": [
           "lv4_south_street"
         ],
-        "completedOrderIds": ["order_021_lanes_continuation"]
+        "completedOrderIds": [
+          "order_021_lanes_continuation"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "lanesOpen"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 300
+        },
+        {
+          "cost": 320
+        },
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        },
+        {
+          "cost": 420
+        }
+      ]
     },
     {
       "id": "lv4_east_shed",
@@ -745,7 +1323,7 @@
       "sceneName": "东棚盈市",
       "speaker": "康十一",
       "npcId": "npc_caravan_leader",
-      "repairCost": 760,
+      "repairCost": 3400,
       "repairValue": 210,
       "scenePosition": "front",
       "playerPointId": "25",
@@ -759,14 +1337,45 @@
         "completedRepairs": [
           "lv4_lanes"
         ],
-        "completedOrderIds": ["order_022_shed_continuation"]
+        "completedOrderIds": [
+          "order_022_shed_continuation"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "eastShedFull"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 320
+        },
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        },
+        {
+          "cost": 420
+        },
+        {
+          "cost": 440
+        }
+      ]
     },
     {
       "id": "lv4_east_court",
@@ -776,7 +1385,7 @@
       "sceneName": "东院焕新",
       "speaker": "长安侍女",
       "npcId": "npc_changan_maid",
-      "repairCost": 860,
+      "repairCost": 3400,
       "repairValue": 220,
       "scenePosition": "kitchen",
       "playerPointId": "26",
@@ -790,14 +1399,45 @@
         "completedRepairs": [
           "lv4_east_shed"
         ],
-        "completedOrderIds": ["order_023_court_continuation"]
+        "completedOrderIds": [
+          "order_023_court_continuation"
+        ]
       },
       "rewards": {
         "storyFlags": [
           "eastCourtBright"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 320
+        },
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        },
+        {
+          "cost": 420
+        },
+        {
+          "cost": 440
+        }
+      ]
     },
     {
       "id": "lv4_lantern_city",
@@ -807,7 +1447,7 @@
       "sceneName": "灯火连城",
       "speaker": "康十一",
       "npcId": "npc_caravan_leader",
-      "repairCost": 980,
+      "repairCost": 3530,
       "repairValue": 240,
       "scenePosition": "wall",
       "playerPointId": "27",
@@ -821,7 +1461,9 @@
         "completedRepairs": [
           "lv4_east_court"
         ],
-        "completedOrderIds": ["order_024_lantern_continuation"]
+        "completedOrderIds": [
+          "order_024_lantern_continuation"
+        ]
       },
       "rewards": {
         "storyFlags": [
@@ -829,7 +1471,36 @@
           "lanternsLinked"
         ]
       },
-      "renovationChoices": []
+      "renovationChoices": [],
+      "repairParts": [
+        {
+          "cost": 330
+        },
+        {
+          "cost": 350
+        },
+        {
+          "cost": 360
+        },
+        {
+          "cost": 380
+        },
+        {
+          "cost": 390
+        },
+        {
+          "cost": 410
+        },
+        {
+          "cost": 420
+        },
+        {
+          "cost": 440
+        },
+        {
+          "cost": 450
+        }
+      ]
     }
   ],
   "chapterCompletionRewards": [
@@ -887,133 +1558,181 @@
       "id": "gift_order_ch1_4",
       "chapter": 1,
       "threshold": 4,
-      "name": "第1卷·4单礼盒",
-      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 30,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "mill"
+      "materialCategory": "mill",
+      "occasion": {
+        "afterOrderId": "order_001_guard_lubing",
+        "preferredFoodLine": "hubing"
+      }
     },
     {
       "id": "gift_order_ch1_8",
       "chapter": 1,
       "threshold": 8,
-      "name": "第1卷·8单礼盒",
-      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 40,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "mill"
+      "materialCategory": "mill",
+      "occasion": {
+        "afterRepairId": "tutorial_complete",
+        "preferredFoodLine": "dairy"
+      }
     },
     {
       "id": "gift_order_ch1_12",
       "chapter": 1,
       "threshold": 12,
-      "name": "第1卷·12单礼盒",
-      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 60,
       "rubyQuantity": 1,
       "materialQuantity": 4,
-      "materialCategory": "mill"
+      "materialCategory": "mill",
+      "occasion": {
+        "afterRepairId": "kitchen_repair",
+        "preferredFoodLine": "hubing"
+      }
     },
     {
       "id": "gift_order_ch2_4",
       "chapter": 2,
       "threshold": 4,
-      "name": "第2卷·4单礼盒",
-      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 60,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "dairy"
+      "materialCategory": "dairy",
+      "occasion": {
+        "afterRepairId": "codex_first_phase",
+        "preferredFoodLine": "dairy"
+      }
     },
     {
       "id": "gift_order_ch2_8",
       "chapter": 2,
       "threshold": 8,
-      "name": "第2卷·8单礼盒",
-      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 80,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "dairy"
+      "materialCategory": "dairy",
+      "occasion": {
+        "afterRepairId": "lv2_west_market",
+        "preferredFoodLine": "spice"
+      }
     },
     {
       "id": "gift_order_ch2_12",
       "chapter": 2,
       "threshold": 12,
-      "name": "第2卷·12单礼盒",
-      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 100,
       "rubyQuantity": 1,
       "materialQuantity": 4,
-      "materialCategory": "dairy"
+      "materialCategory": "dairy",
+      "occasion": {
+        "afterRepairId": "lv2_north_shop",
+        "preferredFoodLine": "fruit"
+      }
     },
     {
       "id": "gift_order_ch3_4",
       "chapter": 3,
       "threshold": 4,
-      "name": "第3卷·4单礼盒",
-      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 100,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "drink"
+      "materialCategory": "drink",
+      "occasion": {
+        "afterRepairId": "lv2_well",
+        "preferredFoodLine": "drink"
+      }
     },
     {
       "id": "gift_order_ch3_8",
       "chapter": 3,
       "threshold": 8,
-      "name": "第3卷·8单礼盒",
-      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 120,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "drink"
+      "materialCategory": "drink",
+      "occasion": {
+        "afterRepairId": "lv3_north_court",
+        "preferredFoodLine": "meat"
+      }
     },
     {
       "id": "gift_order_ch3_12",
       "chapter": 3,
       "threshold": 12,
-      "name": "第3卷·12单礼盒",
-      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 160,
       "rubyQuantity": 1,
       "materialQuantity": 4,
-      "materialCategory": "drink"
+      "materialCategory": "drink",
+      "occasion": {
+        "afterRepairId": "lv3_east_court",
+        "preferredFoodLine": "drink"
+      }
     },
     {
       "id": "gift_order_ch4_4",
       "chapter": 4,
       "threshold": 4,
-      "name": "第4卷·4单礼盒",
-      "description": "完成本卷4单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 150,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "fruit"
+      "materialCategory": "fruit",
+      "occasion": {
+        "afterRepairId": "lv3_watchtower",
+        "preferredFoodLine": "fruit"
+      }
     },
     {
       "id": "gift_order_ch4_8",
       "chapter": 4,
       "threshold": 8,
-      "name": "第4卷·8单礼盒",
-      "description": "完成本卷8单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 200,
       "rubyQuantity": 1,
       "materialQuantity": 2,
-      "materialCategory": "fruit"
+      "materialCategory": "fruit",
+      "occasion": {
+        "afterRepairId": "lv4_central_market",
+        "preferredFoodLine": "fruit"
+      }
     },
     {
       "id": "gift_order_ch4_12",
       "chapter": 4,
       "threshold": 12,
-      "name": "第4卷·12单礼盒",
-      "description": "完成本卷12单后领取，内含铜币棋子、红宝石和常用生成器材料。",
+      "name": "熟客回礼",
+      "description": "客人的一份心意，内含铜币棋子、红宝石和生成器材料。",
       "coinAmount": 250,
       "rubyQuantity": 1,
       "materialQuantity": 4,
-      "materialCategory": "fruit"
+      "materialCategory": "fruit",
+      "occasion": {
+        "afterRepairId": "lv4_east_shed",
+        "preferredFoodLine": "fruit"
+      }
     }
   ]
 }

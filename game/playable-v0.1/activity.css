@@ -1,0 +1,99 @@
+.activity-modal { width:min(94vw,440px); max-height:90dvh; padding:0; color:#523724; border:2px solid #ab7948; border-radius:22px; background:#f8e9ca; }
+.activity-inner { padding:24px 18px 20px; overflow-y:auto; max-height:88dvh; box-sizing:border-box; border:0; background:transparent; }
+.activity-inner header { margin-right:36px; }
+.activity-inner h2 { margin:0 0 24px; font:600 30px/1.3 "Songti SC","STSong",serif; }
+.activity-inner button { cursor:pointer; min-height:42px; padding:0; color:#603d29; background:transparent; border:0; box-shadow:none; font:inherit; }
+.activity-inner button:disabled { cursor:default; color:#a28a62; }
+.activity-inner button:not(:disabled):active { transform:scale(.97); }
+.activity-inner button:focus-visible { outline:2px solid #89523b; outline-offset:3px; }
+.activity-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:0 0 18px; }
+.activity-days button { position:relative; aspect-ratio:1; min-height:0; border:1px solid #c9a66d; border-radius:50%; font:600 18px/1 Georgia,serif; }
+.activity-days button.is-locked { color:#aa936c; border-color:#dcc595; }
+.activity-days button[aria-pressed="true"] { background:#884b36; color:#fff0c7; border-color:#884b36; outline:1px solid #b48a52; outline-offset:3px; }
+.activity-days .has-reward::after { content:""; position:absolute; width:8px; height:8px; border:2px solid #fff0c6; border-radius:50%; background:#b83d32; right:0; top:-2px; pointer-events:none; }
+.activity-day-note { margin:0 0 8px; font-size:12px; color:#967751; }
+.activity-tasks { display:grid; }
+.activity-task { display:grid; grid-template-columns:54px minmax(0,1fr) 44px; align-items:center; gap:10px; padding:17px 0; border-bottom:1px solid #dfc593; }
+.activity-task:last-child { border-bottom:0; }
+.activity-task strong { display:block; font-size:15px; line-height:1.4; }
+.activity-task small { display:block; color:#91633f; font-size:10px; margin-top:3px; }
+.activity-task progress,.activity-core-progress { display:block; width:100%; height:6px; accent-color:#687d44; margin:9px 0 5px; border:0; border-radius:5px; overflow:hidden; background:#e2c999; }
+.activity-task progress::-webkit-progress-bar,.activity-core-progress::-webkit-progress-bar { background:#e2c999; }
+.activity-task progress::-webkit-progress-value,.activity-core-progress::-webkit-progress-value { background:#687d44; border-radius:5px; }
+.activity-task > div > span { font:13px/1.4 Georgia,serif; color:#98784f; }
+.activity-task button { font-size:13px; }
+.activity-task button.is-ready { color:#fff3d2; border-radius:18px; background:#884b36; }
+.activity-reward { display:flex; flex-direction:column; align-items:center; gap:1px; font-size:13px; text-align:center; }
+.activity-reward img { display:block; width:46px; height:46px; object-fit:contain; pointer-events:none; }
+.activity-material-reward img { transform:scale(1.5); }
+.activity-reward b { display:block; font-weight:600; }
+.activity-stage-heading { display:flex; align-items:center; justify-content:space-between; border-top:1px solid #c9a66d; padding-top:18px; margin-top:8px; font-size:14px; }
+.activity-stages { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:14px; }
+.activity-stages button { padding:4px 2px; border-radius:14px; font-size:12px; }
+.activity-stages button.is-ready { background:rgba(201,151,75,.18); box-shadow:inset 0 0 0 1px #bc8b49; }
+.activity-stages button > b { display:block; margin-top:6px; }
+@media (max-width:350px) { .activity-inner { padding:22px 14px 16px; } .activity-days { gap:5px; } .activity-task { grid-template-columns:46px minmax(0,1fr) 42px; gap:8px; } .activity-task strong { font-size:14px; } }
+
+.reward-bubble .regular-customer-gift {
+  display:grid; place-items:center; flex:0 0 28px; width:28px; height:28px;
+  min-height:0; padding:0; border:0; border-radius:5px; background:transparent;
+  box-shadow:none; cursor:pointer;
+}
+#app .reward-bubble .regular-customer-gift img { width:26px; height:26px; object-fit:contain; }
+.regular-customer-gift:focus-visible { outline:2px solid #ffe3a1; outline-offset:2px; }
+.customer-gift-modal {
+  width:min(calc(100vw - 24px),390px); max-width:none;
+  max-height:calc(100dvh - 24px); margin:auto; padding:0;
+  border:0; background:transparent; color:#f5deb1; overflow:auto;
+}
+.customer-gift-modal::backdrop { background:rgba(39,27,18,.9); }
+.customer-gift-stage {
+  position:relative; isolation:isolate; display:grid; justify-items:center;
+  gap:18px; box-sizing:border-box; width:100%; padding:56px 12px 30px;
+  color:#f5deb1; text-align:center;
+}
+.customer-gift-stage::before {
+  content:""; position:absolute; z-index:-1; inset:60px 0 65px;
+  background:radial-gradient(ellipse,rgba(232,174,69,.27),rgba(201,139,51,.08) 45%,transparent 70%);
+  pointer-events:none;
+}
+.customer-gift-title { margin:0; font:500 28px/1.4 "Songti SC","STSong",serif; letter-spacing:4px; }
+.customer-gift-coffer {
+  display:block; width:min(78vw,288px,42dvh); height:min(78vw,288px,42dvh);
+  object-fit:contain; filter:drop-shadow(0 12px 16px rgba(0,0,0,.3));
+}
+.customer-gift-rewards { display:flex; justify-content:center; gap:14px; }
+.customer-gift-rewards > span { display:grid; justify-items:center; gap:8px; width:66px; }
+.customer-gift-rewards img { display:block; width:50px; height:54px; object-fit:contain; }
+.customer-gift-rewards b { position:relative; font:500 18px/1.2 Georgia,serif; color:#fae7bd; }
+.customer-gift-material img { transform:scale(1.7); }
+.customer-gift-close {
+  position:absolute; top:0; right:2px; display:grid; place-items:center;
+  width:44px; height:44px; min-height:44px; padding:0;
+  border:0; background:transparent; box-shadow:none; color:#f2d7a6;
+  font:300 32px/1 Arial,sans-serif; cursor:pointer;
+}
+.customer-gift-close:focus-visible { outline:2px solid #f2d7a6; outline-offset:-5px; border-radius:8px; }
+.customer-gift-received:not([hidden]) {
+  position:fixed; inset:0; z-index:120; display:grid; place-items:center;
+  pointer-events:none; background:rgba(39,27,18,.68);
+  animation:customer-gift-receive 1.25s ease both;
+}
+.customer-gift-received .customer-gift-stage { width:min(calc(100vw - 24px),390px); }
+@keyframes customer-gift-receive {
+  0% { opacity:0; } 15%,72% { opacity:1; } 100% { opacity:0; }
+}
+@media (max-height:500px) {
+  .customer-gift-stage { padding:42px 10px 14px; gap:8px; }
+  .customer-gift-title { font-size:22px; }
+  .customer-gift-coffer { width:min(54vw,36dvh); height:min(54vw,36dvh); }
+  .customer-gift-rewards img { width:40px; height:40px; }
+  .customer-gift-rewards > span { gap:3px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .customer-gift-received:not([hidden]) { animation:none; }
+}
+@media (max-width:600px) {
+  .reward-bubble .regular-customer-gift { flex-basis:24px; width:24px; height:24px; }
+  #app .reward-bubble .regular-customer-gift img { width:23px; height:23px; }
+}

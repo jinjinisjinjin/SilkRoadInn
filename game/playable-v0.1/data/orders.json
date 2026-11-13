@@ -16,15 +16,15 @@
   },
   "contentPlan": {
     "status": "order_pool_integrated",
-    "currentOrderCount": 172,
-    "targetOrderCount": 172,
+    "currentOrderCount": 174,
+    "targetOrderCount": 174,
     "countsByType": {
       "mixed": 76,
       "rareCaravan": 37,
       "repairMain": 5,
       "regular": 12,
       "quick": 36,
-      "generatorGuide": 6
+      "generatorGuide": 8
     },
     "flowRule": "orders_are_not_chapter_gates",
     "availabilityRule": "owned_generator_line_reachable_level_and_discovered_food",
@@ -61,9 +61,9 @@
       }
     ],
     "targetCountsByPriceBand": {
-      "quick": 60,
       "regular": 75,
-      "goal": 37
+      "goal": 37,
+      "quick": 62
     }
   },
   "slotPolicy": {
@@ -174,7 +174,20 @@
         "generatorLevel": 6,
         "maxDemandItemLevel": 8
       }
-    ]
+    ],
+    "progressedDemand": {
+      "minInnLevel": 3,
+      "preferenceChance": 0.6,
+      "repeatLookback": 3,
+      "minUnitsByGeneratorLevel": {
+        "1": 0,
+        "2": 0,
+        "3": 4,
+        "4": 8,
+        "5": 8,
+        "6": 12
+      }
+    }
   },
   "orders": [
     {
@@ -695,7 +708,8 @@
       ],
       "reward": {
         "coins": 93,
-        "codexExp": 24
+        "codexExp": 24,
+        "firstClearBonusCoins": 50
       },
       "weight": 5,
       "unlock": "available_when_producible",
@@ -720,7 +734,8 @@
       "reward": {
         "coins": 153,
         "codexExp": 45,
-        "codexShard": 1
+        "codexShard": 1,
+        "firstClearBonusCoins": 130
       },
       "weight": 3,
       "unlock": "available_when_producible",
@@ -745,7 +760,8 @@
       "reward": {
         "coins": 250,
         "codexExp": 90,
-        "completeLv1": true
+        "completeLv1": true,
+        "firstClearBonusCoins": 320
       },
       "weight": 0,
       "unlock": "available_when_producible",
@@ -1596,11 +1612,11 @@
       "demand": [
         {
           "itemId": "dairy_01_milk",
-          "quantity": 2
+          "quantity": 1
         }
       ],
       "reward": {
-        "coins": 6,
+        "coins": 3,
         "codexExp": 1
       },
       "weight": 80,
@@ -1610,7 +1626,7 @@
       "requiredGeneratorCategories": [
         "dairy"
       ],
-      "dialogue": "奶房刚收拾好，先接住两盏鲜乳。它会自行向四周落奶，记得给旁边留出空位。",
+      "dialogue": "奶房刚收拾好，先接住一盏鲜乳。它会自行向四周落奶，记得给旁边留出空位。",
       "priceBand": "quick"
     },
     {
@@ -5727,6 +5743,60 @@
       "recommendedGeneratorLevel": 4,
       "dialogue": "佛寺女施主要2份酥油、一份香料盐和一份蒲桃酒，备齐后便可交付。",
       "priceBand": "goal"
+    },
+    {
+      "id": "order_ch1_guide_dairy_milk_single",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "npcId": "npc_farmer",
+      "npcName": "刘大（城外农户）",
+      "demand": [
+        {
+          "itemId": "dairy_01_milk",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 3,
+        "codexExp": 1
+      },
+      "weight": 80,
+      "unlock": "available_when_producible",
+      "orderTier": "guide",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "dairy"
+      ],
+      "dialogue": "再留一盏鲜乳给赶路的人。奶房这批鲜乳足够完成四份入门食单。",
+      "priceBand": "quick"
+    },
+    {
+      "id": "order_ch1_guide_dairy_rumi_second",
+      "chapter": 1,
+      "orderType": "generatorGuide",
+      "contentSource": "handcrafted",
+      "npcId": "npc_dunhuang_woman",
+      "npcName": "孟氏",
+      "demand": [
+        {
+          "itemId": "dairy_02_rumi",
+          "quantity": 1
+        }
+      ],
+      "reward": {
+        "coins": 10,
+        "codexExp": 1
+      },
+      "weight": 80,
+      "unlock": "available_when_producible",
+      "orderTier": "guide",
+      "oneTime": true,
+      "requiredGeneratorCategories": [
+        "dairy"
+      ],
+      "dialogue": "把余下两盏鲜乳合成乳糜。完成四份奶食订单，行囊就会送来另一座奶房，两座可合成新一级。",
+      "priceBand": "quick"
     }
   ]
 }

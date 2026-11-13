@@ -12,9 +12,7 @@ const textExtensions = new Set([".css", ".html", ".js", ".json", ".svg", ".webma
 const rasterSourceExtensions = new Set([".png", ".jpg", ".jpeg"]);
 const skippedDirectories = new Set(["dist", "node_modules", "scripts", "design-previews", ".playwright-cli"]);
 const skippedFiles = new Set(["README.md", "package.json", "package-lock.json", "vercel.json", ".DS_Store"]);
-const productionDesignPreviews = Object.freeze([
-  path.join("design-previews", "seven-day-activity-panel-v1.html"),
-]);
+const productionDesignPreviews = Object.freeze([]);
 
 if (path.relative(sourceRoot, outputRoot) !== "dist") {
   throw new Error("The production output must be the game's own dist directory.");
