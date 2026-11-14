@@ -850,8 +850,6 @@ const els = {
   weeklyCheckinBtn: document.querySelector("#weeklyCheckinBtn"),
   weeklyCheckinModal: document.querySelector("#weeklyCheckinModal"),
   weeklyCheckinGrid: document.querySelector("#weeklyCheckinGrid"),
-  weeklyCheckinTrail: document.querySelector("#weeklyCheckinTrail"),
-  weeklyCheckinProgress: document.querySelector("#weeklyCheckinProgress"),
   weeklyCheckinClaim: document.querySelector("#weeklyCheckinClaim"),
   weeklyCheckinHint: document.querySelector("#weeklyCheckinHint"),
   renownEventBtn: document.querySelector("#renownEventBtn"),
@@ -8437,44 +8435,61 @@ function renderWeeklyCheckin() {
     }
 
     const dayLabel = document.createElement("small");
-    dayLabel.textContent = `第${index + 1}日`;
+    dayLabel.className = "weekly-checkin-day-label";
+    dayLabel.textContent = index === currentIndex ? "今日" : index === 6 ? "第七日" : `${index + 1}日`;
     const icons = document.createElement("div");
     icons.className = "weekly-checkin-reward-icons";
+    const appendRewardIcon = (src, name, quantity, directCoins = false) => {
+      const unit = document.createElement("span");
+      unit.className = "weekly-checkin-reward-unit";
+      const icon = document.createElement("img");
+      icon.src = src;
+      icon.alt = name;
+      unit.append(icon);
+      if (directCoins || quantity > 1) {
+        const count = document.createElement("span");
+        count.className = "weekly-checkin-reward-count";
+        count.textContent = `${directCoins ? "+" : "×"}${quantity}`;
+        unit.classList.add("has-count");
+        unit.append(count);
+      }
+      icons.append(unit);
+    };
     reward.items.forEach((entry) => {
       const item = weeklyCheckinRewardItem(entry);
       if (!item) return;
-      const icon = document.createElement("img");
-      icon.src = itemAssetSrc(item);
-      icon.alt = "";
-      icons.append(icon);
+      appendRewardIcon(itemAssetSrc(item), item.name, entry.quantity ?? 1);
     });
+    if (reward.coins > 0) {
+      appendRewardIcon("./assets/ui/ui_coin_copper.png", "铜钱", reward.coins, true);
+    }
+    icons.style.setProperty("--weekly-reward-count", String(Math.max(1, icons.childElementCount)));
+    if (icons.childElementCount > 2) icons.classList.add("is-dense");
     const label = document.createElement("strong");
+    label.className = "weekly-checkin-reward-description";
     label.textContent = reward.label;
     day.append(dayLabel, icons, label);
+    if (index < claimedDays) {
+      const claimed = document.createElement("span");
+      claimed.className = "weekly-checkin-claimed-mark";
+      claimed.textContent = "✓";
+      claimed.setAttribute("aria-hidden", "true");
+      day.append(claimed);
+      day.setAttribute("aria-label", `第${index + 1}日奖励已领取：${reward.label}`);
+    }
     els.weeklyCheckinGrid.append(day);
   });
 
-  if (els.weeklyCheckinTrail) {
-    els.weeklyCheckinTrail.replaceChildren();
-    WEEKLY_CHECKIN_REWARDS.forEach((_, index) => {
-      const marker = document.createElement("i");
-      marker.textContent = String(index + 1);
-      if (index < claimedDays) marker.className = "done";
-      else if (index === currentIndex) marker.className = "current";
-      els.weeklyCheckinTrail.append(marker);
-    });
-  }
-  if (els.weeklyCheckinProgress) els.weeklyCheckinProgress.textContent = `${claimedDays}/7`;
   if (els.weeklyCheckinClaim) {
     els.weeklyCheckinClaim.disabled = !claimable;
     els.weeklyCheckinClaim.textContent = claimable
-      ? `收下第 ${claimedDays + 1} 日行礼`
-      : claimedDays >= 7 ? "本轮驿程已完成" : "今日已经前行";
+      ? "领取"
+      : claimedDays >= 7 ? "本轮已领" : "今日已领";
   }
   if (els.weeklyCheckinHint) {
     els.weeklyCheckinHint.textContent = claimedDays >= 7
       ? "明日开启下一轮七日驿程"
-      : "每日1次，漏签不重置。";
+      : "每日一次 · 漏签不重置";
   }
 }
 
