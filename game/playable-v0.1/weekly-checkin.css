@@ -214,8 +214,13 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transform: scale(0.84);
+  transform-origin: center;
   filter: drop-shadow(0 3px 2px rgba(78, 41, 17, 0.24));
 }
+
+.weekly-checkin-reward-unit.is-coin img { transform: scale(0.72); }
+.weekly-checkin-reward-unit.is-food img { transform: scale(0.96); }
 
 .weekly-checkin-reward-count {
   position: absolute;

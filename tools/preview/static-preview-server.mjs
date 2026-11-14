@@ -18,6 +18,8 @@ const mime = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
+  ".m4a": "audio/mp4",
+  ".wav": "audio/wav",
 };
 
 function resolveFrom(baseRoot, pathname) {
@@ -52,6 +54,7 @@ createServer((request, response) => {
   response.writeHead(200, {
     "Content-Type": mime[extname(filePath).toLowerCase()] || "application/octet-stream",
     "Cache-Control": "no-cache",
+    "X-SilkRoadInn-Preview-Root": encodeURIComponent(root),
   });
   createReadStream(filePath).pipe(response);
 }).listen(port, host, () => {
