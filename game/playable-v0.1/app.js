@@ -8439,9 +8439,11 @@ function renderWeeklyCheckin() {
     dayLabel.textContent = index === currentIndex ? "今日" : index === 6 ? "第七日" : `${index + 1}日`;
     const icons = document.createElement("div");
     icons.className = "weekly-checkin-reward-icons";
-    const appendRewardIcon = (src, name, quantity, directCoins = false) => {
+    const appendRewardIcon = (src, name, quantity, directCoins = false, coinItem = false, foodItem = false) => {
       const unit = document.createElement("span");
       unit.className = "weekly-checkin-reward-unit";
+      if (directCoins || coinItem) unit.classList.add("is-coin");
+      if (foodItem) unit.classList.add("is-food");
       const icon = document.createElement("img");
       icon.src = src;
       icon.alt = name;
@@ -8458,7 +8460,7 @@ function renderWeeklyCheckin() {
     reward.items.forEach((entry) => {
       const item = weeklyCheckinRewardItem(entry);
       if (!item) return;
-      appendRewardIcon(itemAssetSrc(item), item.name, entry.quantity ?? 1);
+      appendRewardIcon(itemAssetSrc(item), item.name, entry.quantity ?? 1, false, item.id.startsWith(BONUS_COIN_PREFIX), foodLineMaxLevels.has(item.line));
     });
     if (reward.coins > 0) {
       appendRewardIcon("./assets/ui/ui_coin_copper.png", "铜钱", reward.coins, true);
