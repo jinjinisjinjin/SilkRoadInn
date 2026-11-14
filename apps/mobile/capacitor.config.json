@@ -1,0 +1,19 @@
+{
+  "appId": "com.silkroadinn.game",
+  "appName": "丝路食肆",
+  "webDir": "../../game/playable-v0.1/dist",
+  "backgroundColor": "#2b1b13",
+  "loggingBehavior": "debug",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#2b1b13",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "native"
+    }
+  }
+}

@@ -3297,16 +3297,16 @@ button:disabled {
 #app[data-page="board"] .npc-avatar {
   position: absolute;
   left: -2px;
-  top: 0;
+  top: 34px;
   width: 100px;
-  height: 112px;
+  height: calc(100% - 38px);
   object-fit: contain;
   object-position: bottom center;
 }
 #app[data-page="board"] .reward-bubble {
   position: absolute;
   z-index: 3;
-  top: 28px;
+  top: 0;
   right: 0;
   min-width: 55px;
   height: 31px;
@@ -7332,6 +7332,7 @@ button:disabled {
   border: 2px solid rgba(126, 86, 41, 0.48);
   border-radius: 14px;
   object-fit: cover;
+  object-position: center top;
   background: #dcbf86;
 }
 
@@ -10276,12 +10277,13 @@ body {
 
   #app[data-page="board"] .npc-avatar {
     left: 0;
+    top: 26px;
     width: 61px;
-    height: 69px;
+    height: calc(100% - 28px);
   }
 
   #app[data-page="board"] .reward-bubble {
-    top: 8px;
+    top: 0;
     right: 1px;
     min-width: 39px;
     height: 20px;
@@ -10514,8 +10516,8 @@ body {
   #app[data-page="board"] {
     --mobile-resources-top: max(30px, calc(env(safe-area-inset-top) + 30px));
     --mobile-orders-top: calc(var(--mobile-resources-top) + 40px);
-    --mobile-orders-height: clamp(80px, 14dvh, 126px);
-    --mobile-side-entry-size: min(36px, calc((var(--mobile-orders-height) - 8px) / 3));
+    --mobile-side-entry-size: clamp(36px, 5.83dvh, 46px);
+    --mobile-orders-height: max(clamp(80px, 14dvh, 126px), calc(var(--mobile-side-entry-size) * 3 + 8px));
     --mobile-stack-top: calc(var(--mobile-orders-top) + var(--mobile-orders-height) + 6px);
     --mobile-stack-bottom: max(30px, env(safe-area-inset-bottom));
     --mobile-hud-height: clamp(56px, 7dvh, 64px);
@@ -10537,14 +10539,17 @@ body {
     left: 6px;
     width: var(--mobile-side-entry-size);
     grid-template-columns: var(--mobile-side-entry-size);
+    grid-auto-rows: var(--mobile-side-entry-size);
     grid-auto-flow: row;
+    align-content: start;
+    align-self: start;
     gap: 4px;
   }
 
   #app[data-page="board"] .side-entry {
     width: var(--mobile-side-entry-size);
     height: var(--mobile-side-entry-size);
-    padding: clamp(3px, 1.2vw, 5px);
+    padding: 2px;
     border-radius: 11px;
   }
 
@@ -10559,25 +10564,38 @@ body {
 
   #app[data-page="board"] .order-card {
     flex-basis: clamp(108px, 29vw, 124px);
-    min-height: var(--mobile-orders-height);
+    min-height: 0;
+    height: 100%;
   }
 
   #app[data-page="board"] .npc-avatar {
     left: 0;
+    top: 24px;
     width: 74%;
-    height: calc(var(--mobile-orders-height) - 7px);
+    height: calc(100% - 26px);
   }
 
   #app[data-page="board"] .reward-bubble {
-    top: clamp(8px, 2dvh, 17px);
+    top: 0;
     right: 1px;
     min-width: 40px;
-    height: 22px;
+    height: 20px;
     padding: 1px 5px 1px 2px;
-    font-size: 13px;
+    font-size: 11.5px;
   }
 
   #app[data-page="board"] .reward-bubble img {
+    width: 16px;
+    height: 16px;
+  }
+
+  #app[data-page="board"] .reward-bubble .regular-customer-gift {
+    flex-basis: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  #app[data-page="board"] .reward-bubble .regular-customer-gift img {
     width: 18px;
     height: 18px;
   }
@@ -11307,6 +11325,10 @@ body {
   opacity: 1;
   filter: saturate(0.96) brightness(1.04) drop-shadow(0 2px 2px rgba(72, 40, 18, 0.2));
   transform: translateY(6%) scale(0.72);
+}
+
+#app[data-page="board"] .cell.locked-revealed .locked-material-preview {
+  transform: translate(-50%, -46%) scale(0.72);
 }
 
 #app[data-page="board"] .cell.locked-revealed .locked-dust {

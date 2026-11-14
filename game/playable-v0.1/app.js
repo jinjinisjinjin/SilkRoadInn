@@ -390,7 +390,7 @@ const LONGSCROLL_FULL_BODY_STANDEES = Object.freeze({
 });
 const INN_CORE_ASSETS = [
   "./assets/longscroll/base/阶段0_未修缮长卷_1254x1254.png",
-  "./assets/longscroll/states-webp/22_done_state_v0.1.webp",
+  "./assets/longscroll/repaired-clean-v2.webp",
   "./assets/ui/ui_station_tavern.png",
   "./assets/keeper_portrait.png",
   "./assets/keeper_story_portrait_v2.png",
@@ -429,7 +429,7 @@ const STARTUP_REQUIRED_ASSETS = Object.freeze([...new Set([
 ])]);
 const LONGSCROLL_ROOT = "./assets/longscroll";
 const LONGSCROLL_BASE_SOURCE = `${LONGSCROLL_ROOT}/base/阶段0_未修缮长卷_1254x1254.png`;
-const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/states-webp/22_done_state_v0.1.webp`;
+const LONGSCROLL_REPAIRED_SOURCE = `${LONGSCROLL_ROOT}/repaired-clean-v2.webp`;
 const FINAL_REPAIR_MILESTONE_ID = "lv4_lantern_city";
 const HISTORICAL_NOTES = window.SilkRoadHistoricalNotes ?? [];
 const historicalNotesById = new Map(HISTORICAL_NOTES.map((note) => [note.id, note]));
@@ -690,18 +690,18 @@ const GIFT_PACKS = {
     rewards: Array.from({ length: 4 }, () => ({ type: "item", itemId: "material_meat_01", quantity: 1 })),
   },
 };
-// The buried board is authored from the centre outwards. Early frontier cells
-// support the opening mill orders; generator materials and later food lines sit
-// farther out so uncovering the board also teaches the progression order.
+// Keep a mill-food route out of the opening area, with progressively varied
+// neighboring rewards. Materials retain their authored positions; unlocked
+// cells always use their saved inventory rather than this buried layout.
 const LOCKED_CELL_ITEM_ROWS = [
   ["hubing_04_youhubing", "meat_03_roupu", "fruit_03_yezao", "dairy_03_laojiang", "spice_03_hujiao_li", "drink_03_sanlejiang", "hubing_04_youhubing"],
-  ["hubing_03_humabing", "hubing_02_lubing", "material_mill_02", "hubing_02_lubing", "material_dairy_02", "dairy_02_rumi", "hubing_03_humabing"],
-  ["hubing_02_lubing", "hubing_01_dough", "material_mill_01", "hubing_01_dough", "material_mill_01", "hubing_01_dough", "hubing_02_lubing"],
-  ["hubing_02_lubing", "hubing_01_dough", null, null, null, "hubing_01_dough", "hubing_02_lubing"],
-  ["hubing_01_dough", "hubing_01_dough", null, null, null, "hubing_01_dough", "hubing_02_lubing"],
-  ["hubing_02_lubing", "hubing_02_lubing", null, null, null, "hubing_02_lubing", "hubing_02_lubing"],
-  ["hubing_03_humabing", "hubing_02_lubing", "hubing_02_lubing", "hubing_01_dough", "hubing_02_lubing", "hubing_02_lubing", "hubing_03_humabing"],
-  ["dairy_01_milk", "material_dairy_01", "hubing_03_humabing", "hubing_02_lubing", "material_dairy_01", "dairy_01_milk", "fruit_01_putao"],
+  ["hubing_04_youhubing", "dairy_02_rumi", "material_mill_02", "hubing_03_humabing", "material_dairy_02", "fruit_02_gan_putao", "hubing_04_youhubing"],
+  ["hubing_03_humabing", "hubing_02_lubing", "material_mill_01", "hubing_02_lubing", "material_mill_01", "dairy_01_milk", "hubing_03_humabing"],
+  ["dairy_02_rumi", "hubing_01_dough", null, null, null, "hubing_03_humabing", "fruit_01_putao"],
+  ["hubing_03_humabing", "hubing_01_dough", null, null, null, "hubing_02_lubing", "dairy_02_rumi"],
+  ["hubing_04_youhubing", "dairy_01_milk", null, null, null, "dairy_01_milk", "hubing_03_humabing"],
+  ["spice_01_huma", "hubing_03_humabing", "dairy_02_rumi", "hubing_02_lubing", "hubing_03_humabing", "fruit_01_putao", "fruit_02_gan_putao"],
+  ["dairy_03_laojiang", "material_dairy_01", "hubing_04_youhubing", "spice_02_ziran_mo", "material_dairy_01", "dairy_01_milk", "fruit_03_yezao"],
   // This far corner may appear after the finite dairy-material gifts are spent.
   // Use a repeatably craftable food so upgrading the dairy cannot strand it.
   ["spice_02_ziran_mo", "meat_02_roumi_xian", "material_dairy_02", "dairy_03_laojiang", "fruit_02_gan_putao", "drink_02_putaojiang", "dairy_02_rumi"],
@@ -10388,7 +10388,7 @@ function renderOrderDetail() {
   const firstItem = demandStates[0]?.item;
   const codexUnlocked = isFoodItemUnlocked(firstItem);
 
-  els.orderDetailAvatar.src = `./assets/npc/${order.npcId}.png`;
+  els.orderDetailAvatar.src = `./assets/npc_standee/${order.npcId}.png?v=${NPC_STANDEE_VERSION}`;
   els.orderDetailAvatar.alt = order.npcName;
   els.orderDetailNpc.textContent = order.npcName;
   els.orderDetailDialogue.textContent = order.dialogue;
