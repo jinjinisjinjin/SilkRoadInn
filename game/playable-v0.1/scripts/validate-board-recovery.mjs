@@ -72,7 +72,45 @@ console.log('Board recovery: precise merges, input timestamps, no cooldown repai
   load(ctx, ['boardIndex', 'isInitialActiveCell', 'isBoardCellLocked', 'isBoardCellRevealed',
     'lockedCellItemId', 'migrateLegacyGeneratorId', 'orthogonalNeighborIndices',
     'revealLockedNeighbors', 'boardGeneratorStateKey', 'unlockLockedCellByMerge',
-    'initialRevealedCells', 'normalizeRevealedCells', 'buildConfiguredGeneratorItems']);
+    'initialRevealedCells', 'normalizeRevealedCells', 'buildConfiguredGeneratorItems',
+    'generatorMaterialItemId', 'buildConfiguredGeneratorMaterialItems']);
+  for (const item of ctx.buildConfiguredGeneratorMaterialItems(ctx.state.generatorMaterialConfig)) {
+    ctx.byId.set(item.id, item);
+  }
+  const buried = Array.from({length: 63}, (_, index) => ctx.lockedCellItemId(index))
+    .map((id, index) => ({index, item: id && ctx.byId.get(id)}))
+    .filter(({index}) => !ctx.isInitialActiveCell(index));
+  assert.equal(buried.length, 54);
+  for (const {index, item} of buried) {
+    assert.ok(item?.mergeTo, `Buried cell ${index} must contain a valid mergeable item`);
+  }
+  assert.equal(ctx.lockedCellItemId(29), 'hubing_01_dough', 'Keep the first guided merge available');
+  function reachableFoods(lines) {
+    const opened = new Set(Array.from({length: 63}, (_, i) => i).filter(ctx.isInitialActiveCell));
+    const frontier = new Set(ctx.initialRevealedCells());
+    let advanced;
+    do {
+      advanced = false;
+      for (const index of [...frontier]) {
+        const item = ctx.byId.get(ctx.lockedCellItemId(index));
+        if (!lines.has(item?.line)) continue;
+        frontier.delete(index);
+        opened.add(index);
+        for (const next of ctx.orthogonalNeighborIndices(index)) if (!opened.has(next)) frontier.add(next);
+        advanced = true;
+      }
+    } while (advanced);
+    return {opened, frontier};
+  }
+  const early = reachableFoods(new Set(['hubing']));
+  assert.ok(early.opened.size >= 20, 'Opening orders need room before the dairy unlock');
+  assert.ok([...early.frontier].some(i => ctx.byId.get(ctx.lockedCellItemId(i))?.line === 'dairy'),
+    'The opening route should preview the next food line');
+  const allFoods = reachableFoods(new Set(['hubing', 'dairy', 'fruit', 'spice', 'meat', 'drink']));
+  for (const {index, item} of buried.filter(({item}) => !item?.generatorMaterialCategory)) {
+    assert.ok(allFoods.opened.has(index), `Food cell ${index} must not be trapped behind finite materials`);
+  }
+  console.log(`Buried layout: 54 valid mergeable cells; ${early.opened.size} mill-reachable spaces; food routes remain independent of finite materials.`);
   const target = ctx.lockedCellItemId(62), food = ctx.byId.get(target);
   assert.equal(food?.line, 'dairy');
   assert.ok(food && !food.generatorMaterialCategory && !food.boxMaterial,
