@@ -47,406 +47,330 @@
   50% { filter: brightness(1.09) drop-shadow(0 0 5px rgba(236, 194, 99, 0.46)); }
 }
 
+/* The painted skin contains decoration only. Rewards, dates and states are live DOM. */
 .modal.weekly-checkin-modal {
-  width: min(94vw, 410px);
+  width: min(96vw, calc((100dvh - 24px) * 0.75), 480px);
   max-width: none;
-  max-height: 96dvh;
+  max-height: none;
+  margin: auto;
   padding: 0;
   overflow: visible;
   border: 0;
-  border-radius: 18px;
-  color: #4c3425;
+  border-radius: 0;
+  color: #673c27;
   background: transparent;
-  box-shadow: 0 28px 90px rgba(27, 17, 11, 0.7);
+  box-shadow: none;
 }
 
 .weekly-checkin-modal::backdrop {
-  background: rgba(28, 21, 16, 0.77);
-  backdrop-filter: blur(5px) saturate(0.72);
+  background: rgba(28, 21, 16, 0.76);
+  backdrop-filter: blur(5px) saturate(0.8);
 }
 
 .weekly-checkin-inner {
   position: relative;
-  overflow: hidden;
-  padding: 0 17px 17px;
-  border: 3px solid #765033;
-  border-radius: 18px;
-  background:
-    linear-gradient(90deg, transparent 0 9px, rgba(125, 87, 46, 0.07) 10px, transparent 11px calc(100% - 11px), rgba(125, 87, 46, 0.07) calc(100% - 10px), transparent calc(100% - 9px)),
-    repeating-linear-gradient(0deg, rgba(111, 78, 39, 0.025) 0 1px, transparent 1px 5px),
-    #efe2bd;
-  box-shadow:
-    inset 0 0 0 2px #faedc9,
-    inset 0 0 0 6px rgba(132, 91, 48, 0.18),
-    0 5px 0 #493021;
-}
-
-.weekly-checkin-inner::before,
-.weekly-checkin-inner::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-}
-
-.weekly-checkin-inner::before {
-  z-index: 0;
-  inset: 0 0 auto;
-  height: 104px;
-  border-bottom: 3px solid #c79b58;
-  background:
-    radial-gradient(70px 32px at 18% 102%, rgba(238, 207, 139, 0.19) 0 49%, transparent 51%),
-    radial-gradient(108px 43px at 48% 105%, rgba(238, 207, 139, 0.13) 0 49%, transparent 51%),
-    radial-gradient(78px 35px at 83% 103%, rgba(238, 207, 139, 0.16) 0 49%, transparent 51%),
-    linear-gradient(142deg, #6d4434, #965641 53%, #68402f);
-  box-shadow: inset 0 -12px 20px rgba(61, 31, 20, 0.2);
-}
-
-.weekly-checkin-inner::after {
-  z-index: 0;
-  right: 8px;
-  bottom: 7px;
-  left: 8px;
-  height: 36%;
-  opacity: 0.16;
-  background:
-    radial-gradient(ellipse at 12% 92%, #9a7048 0 2px, transparent 3px),
-    radial-gradient(ellipse at 86% 73%, #9a7048 0 2px, transparent 3px),
-    linear-gradient(168deg, transparent 49%, #9a7048 50% 50.7%, transparent 51.7%);
+  aspect-ratio: 3 / 4;
+  container-type: inline-size;
+  background: url("./assets/ui/weekly_checkin_dunhuang_skin_v1.webp") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 12px 22px rgba(30, 16, 8, 0.46));
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
 }
 
 .weekly-checkin-inner > .close {
   position: absolute;
-  z-index: 8;
-  top: 11px;
-  right: 11px;
+  z-index: 5;
+  top: 3.4%;
+  right: 5%;
   display: grid;
-  width: 38px;
-  height: 38px;
-  min-height: 38px;
-  padding: 0 0 2px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
   place-items: center;
-  border: 2px solid #d7b777;
+  border: 0;
   border-radius: 50%;
-  color: #754333;
-  background: linear-gradient(#fff1c9, #e7cf99);
-  box-shadow: inset 0 0 0 2px rgba(255, 250, 225, 0.72), 0 3px 0 #563829, 0 5px 8px rgba(49, 29, 18, 0.32);
-  font: 25px/1 Georgia, serif;
-}
-
-.weekly-checkin-inner > .close:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px rgba(255, 250, 225, 0.5), 0 1px 0 #563829; }
-.weekly-checkin-inner > .close:focus-visible { outline: 2px solid #fff0bd; outline-offset: 3px; }
-
-.weekly-checkin-head {
-  position: relative;
-  z-index: 1;
-  min-height: 95px;
-  padding: 16px 48px 0;
-  text-align: center;
-  color: #fff0c9;
-  text-shadow: 0 2px 2px rgba(53, 27, 19, 0.72);
-}
-
-.weekly-checkin-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #e9d29d;
-  font: 700 10px/1.2 "Songti SC", serif;
-  letter-spacing: 2px;
-}
-
-.weekly-checkin-eyebrow::before,
-.weekly-checkin-eyebrow::after {
-  content: "";
-  width: 16px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.65;
-}
-
-.weekly-checkin-head h2 {
-  margin: 7px 0 0;
-  color: #fff4ce;
-  font: 900 31px/1.08 "Songti SC", serif;
-  letter-spacing: 7px;
-}
-
-.weekly-checkin-progress {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin: 11px 3px 13px;
-  padding: 10px 11px;
-  border: 1px solid #b9955e;
-  border-radius: 11px;
-  color: #75563d;
-  background: rgba(249, 237, 202, 0.82);
-  box-shadow: inset 0 0 0 2px rgba(255, 251, 229, 0.72), 0 2px 5px rgba(81, 52, 31, 0.12);
-  font: 700 10px/1 "Songti SC", serif;
-}
-
-.weekly-checkin-progress > span { white-space: nowrap; letter-spacing: 1px; }
-.weekly-checkin-progress > b { color: #914536; font: 800 13px/1 Georgia, serif; }
-
-.weekly-checkin-trail {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.weekly-checkin-trail::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 6px;
-  left: 6px;
-  height: 2px;
-  background: #c0a06a;
-  transform: translateY(-50%);
-}
-
-.weekly-checkin-trail i {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  justify-self: center;
-  border: 1px solid #a88859;
-  border-radius: 50%;
-  color: #896946;
-  background: #ddc795;
-  box-shadow: inset 0 1px 2px rgba(255, 250, 225, 0.58), 0 1px 2px rgba(80, 53, 30, 0.18);
-  font: 700 8px/1 Georgia, serif;
-  font-style: normal;
-}
-
-.weekly-checkin-trail i.done {
-  border-color: #557364;
-  color: #f4e9c7;
-  background: #537a69;
-}
-
-.weekly-checkin-trail i.current {
-  border-color: #a04d35;
-  color: #fff3cc;
-  background: #a9553b;
-  box-shadow: 0 0 0 3px rgba(211, 157, 73, 0.24), 0 0 9px rgba(192, 117, 43, 0.45);
-}
-
-.weekly-checkin-grid {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
-  padding: 8px;
-  border: 1px solid rgba(153, 112, 65, 0.5);
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 249, 222, 0.78), transparent 55%),
-    rgba(219, 193, 139, 0.28);
-  box-shadow: inset 0 0 12px rgba(112, 75, 39, 0.12);
-}
-
-.weekly-checkin-day {
-  position: relative;
-  min-width: 0;
-  min-height: 110px;
-  padding: 24px 5px 8px;
-  overflow: hidden;
-  border: 1px solid #b48e55;
-  border-radius: 9px;
-  color: #503725;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.58), transparent 44%),
-    repeating-linear-gradient(0deg, rgba(125, 85, 44, 0.025) 0 1px, transparent 1px 4px),
-    #f1dfae;
-  box-shadow: inset 0 0 0 2px rgba(255, 249, 220, 0.68), 0 3px 0 rgba(91, 59, 34, 0.19);
-  text-align: center;
-  transition: transform 150ms ease, filter 150ms ease;
-}
-
-.weekly-checkin-day > small {
-  position: absolute;
-  top: 7px;
-  left: 8px;
-  color: #896644;
-  font: 800 10px/1 "Songti SC", serif;
-  letter-spacing: 0.5px;
-}
-
-.weekly-checkin-reward-icons {
-  display: flex;
-  height: 55px;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-
-.weekly-checkin-reward-icons img {
-  width: 55px;
-  height: 55px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 2px rgba(74, 42, 19, 0.2));
-}
-
-.weekly-checkin-reward-icons img + img {
-  width: 40px;
-  height: 40px;
-  margin-left: -10px;
-}
-
-.weekly-checkin-day strong {
-  display: block;
-  margin-top: 3px;
-  overflow: hidden;
-  color: #533824;
-  font: 800 11px/1.25 "Songti SC", serif;
-  min-height: 28px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.weekly-checkin-day.current {
-  border: 2px solid #b45a37;
-  padding: 23px 4px 7px;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(255, 224, 123, 0.55), transparent 58%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), transparent 45%),
-    #f3d991;
-  box-shadow: inset 0 0 0 2px #fff1c2, 0 0 0 2px rgba(204, 142, 62, 0.18), 0 5px 10px rgba(95, 56, 27, 0.22);
-  transform: translateY(-2px);
-}
-
-.weekly-checkin-day.current::before {
-  content: "今日";
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  padding: 2px 6px;
-  border-radius: 8px;
-  color: #fff1ca;
-  background: #9b4e38;
-  box-shadow: 0 1px 0 #613225;
-  font: 700 8px/1 "Songti SC", serif;
-}
-
-.weekly-checkin-day.claimed { filter: saturate(0.55); opacity: 0.72; }
-
-.weekly-checkin-day.claimed::after {
-  content: "已领";
-  position: absolute;
-  right: 7px;
-  bottom: 7px;
-  display: grid;
-  width: 29px;
-  height: 29px;
-  place-items: center;
-  border: 2px solid rgba(139, 55, 40, 0.76);
-  border-radius: 50%;
-  color: rgba(139, 55, 40, 0.86);
-  font: 800 9px/1 "Songti SC", serif;
-  transform: rotate(-12deg);
-}
-
-.weekly-checkin-day.future { filter: saturate(0.72); opacity: 0.7; }
-.weekly-checkin-day.future .weekly-checkin-reward-icons img { filter: sepia(0.18) drop-shadow(0 3px 2px rgba(74, 42, 19, 0.15)); }
-
-.weekly-checkin-day-seven {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 112px 1fr;
-  min-height: 98px;
-  padding: 13px 18px 10px;
-  align-items: center;
-  border-color: #aa7841;
-  text-align: left;
-  background:
-    radial-gradient(circle at 16% 50%, rgba(255, 226, 126, 0.5), transparent 34%),
-    linear-gradient(112deg, #f2d99b, #e1ba71);
-}
-
-.weekly-checkin-day-seven > small { top: 9px; left: 11px; }
-.weekly-checkin-day-seven .weekly-checkin-reward-icons { height: 69px; }
-.weekly-checkin-day-seven .weekly-checkin-reward-icons img { width: 69px; height: 69px; }
-.weekly-checkin-day-seven .weekly-checkin-reward-icons img + img { width: 43px; height: 43px; margin-left: -11px; }
-.weekly-checkin-day-seven strong { font-size: 14px; white-space: normal; }
-
-.weekly-checkin-day-seven strong::after {
-  content: "第七日 · 终点厚礼";
-  display: block;
-  margin-top: 6px;
-  color: #8b633e;
-  font: 700 9px/1 "Songti SC", serif;
-  letter-spacing: 2px;
-}
-
-.weekly-checkin-footer {
-  position: relative;
-  z-index: 2;
-  margin-top: 12px;
-  text-align: center;
-}
-
-.weekly-checkin-footer button {
-  width: min(100%, 284px);
-  min-height: 46px;
-  padding: 9px 20px;
-  border: 2px solid #d3ad68;
-  border-radius: 10px;
-  color: #fff1c7;
-  background: linear-gradient(#a45b40, #7f3e30);
-  box-shadow: inset 0 0 0 2px #613329, inset 0 2px 1px rgba(255, 255, 255, 0.17), 0 4px 0 #513125;
-  font: 800 15px/1.2 "Songti SC", serif;
-  letter-spacing: 2px;
-  text-shadow: 0 1px 1px rgba(50, 26, 18, 0.55);
-}
-
-.weekly-checkin-footer button:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 0 0 2px #613329, 0 2px 0 #513125; }
-
-.weekly-checkin-footer button:disabled {
-  border-color: #ad956e;
-  color: #78664c;
-  background: #c6b38b;
-  box-shadow: inset 0 0 0 2px rgba(104, 79, 50, 0.15);
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0;
   text-shadow: none;
 }
 
-.weekly-checkin-footer small {
+.weekly-checkin-inner > .close::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(23px, 6cqw, 29px);
+  aspect-ratio: 1;
+  border: 1px solid #dcc18a;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #efd6a0, #c59957);
+  box-shadow: inset 0 0 0 1px #a96f3c, 0 1px 3px #542b1d73;
+}
+
+.weekly-checkin-inner > .close::after {
+  content: "×";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #79452c;
+  font: 500 clamp(17px, 4.5cqw, 22px) / 1 Georgia, serif;
+  text-shadow: 0 1px #f7e5bd;
+}
+
+.weekly-checkin-head {
+  position: absolute;
+  top: 11.9%;
+  left: 49.715%;
+  display: grid;
+  width: 60%;
+  height: 10%;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  pointer-events: none;
+}
+
+.modal.weekly-checkin-modal .weekly-checkin-head h2 {
+  margin: 0;
+  padding-left: 0.09em;
+  color: #ffe4a1;
+  font: 800 clamp(25px, 8.5cqw, 42px) / 1.2 "Songti SC", "STSong", serif;
+  letter-spacing: 0.09em;
+  text-shadow: 0 1px 0 #fff3c4, 0 2px 1px #703616, 0 3px 3px #6b281e;
+}
+
+.weekly-checkin-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.weekly-checkin-day {
+  /* Label centers follow the plaques in the 1086 × 1448 painted skin. */
+  --weekly-label-x: 49.7%;
+  --weekly-label-y: 2.9%;
+  position: absolute;
+  top: 23.4%;
+  left: 11.6%;
+  width: 24.8%;
+  height: 17.5%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  isolation: isolate;
+}
+
+.weekly-checkin-day:nth-child(3n + 2) { left: 38.1%; --weekly-label-x: 48.3%; }
+.weekly-checkin-day:nth-child(3n + 3) { left: 64.6%; --weekly-label-x: 46.1%; }
+.weekly-checkin-day:nth-child(n + 4) { top: 43.7%; --weekly-label-y: -3.15%; }
+
+.weekly-checkin-day-label {
+  position: absolute;
+  top: var(--weekly-label-y);
+  left: var(--weekly-label-x);
+  display: grid;
+  width: 80%;
+  height: 20%;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  color: #713e26;
+  font-size: clamp(12px, 3.9cqw, 19px);
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px #fff0cc;
+}
+
+.weekly-checkin-reward-icons {
+  position: absolute;
+  top: 22%;
+  right: 7%;
+  bottom: 15%;
+  left: 7%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3%;
+}
+
+.weekly-checkin-reward-unit {
+  position: relative;
+  display: grid;
+  flex: 0 1 calc(100% / var(--weekly-reward-count));
+  min-width: 0;
+  height: 100%;
+  place-items: center;
+}
+
+.weekly-checkin-reward-unit img {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
-  margin-top: 9px;
-  color: #7d674e;
-  font: 10px/1.35 "Songti SC", serif;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 2px rgba(78, 41, 17, 0.24));
 }
 
-@media (max-height: 690px), (max-width: 350px) {
-  .modal.weekly-checkin-modal { width: min(92vw, 360px); }
-  .weekly-checkin-inner { padding-right: 13px; padding-bottom: 12px; padding-left: 13px; }
-  .weekly-checkin-inner::before { height: 94px; }
-  .weekly-checkin-head { min-height: 86px; padding-top: 11px; }
-  .weekly-checkin-head h2 { font-size: 26px; }
-  .weekly-checkin-progress { margin-top: 8px; margin-bottom: 9px; padding: 7px 8px; }
-  .weekly-checkin-trail i { width: 18px; height: 18px; }
-  .weekly-checkin-grid { gap: 6px; padding: 6px; }
-  .weekly-checkin-day { min-height: 88px; padding-top: 19px; }
-  .weekly-checkin-reward-icons { height: 42px; }
-  .weekly-checkin-reward-icons img { width: 42px; height: 42px; }
-  .weekly-checkin-day strong { font-size: 9.5px; }
-  .weekly-checkin-day-seven { min-height: 76px; grid-template-columns: 92px 1fr; padding-top: 9px; padding-bottom: 7px; }
-  .weekly-checkin-day-seven .weekly-checkin-reward-icons { height: 52px; }
-  .weekly-checkin-day-seven .weekly-checkin-reward-icons img { width: 53px; height: 53px; }
-  .weekly-checkin-footer { margin-top: 9px; }
-  .weekly-checkin-footer button { min-height: 40px; }
-  .weekly-checkin-footer small { margin-top: 6px; font-size: 9px; }
+.weekly-checkin-reward-count {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 0;
+  color: #805b36;
+  background: transparent;
+  font: 500 clamp(11px, 2.8cqw, 14px) / 1.2 Georgia, "Songti SC", serif;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 1px #f9ebce;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .inn-weekly-checkin-entry.is-ready { animation: none; }
-  .weekly-checkin-day { transition: none; }
+.weekly-checkin-reward-unit.has-count img { height: calc(100% - 15px); }
+
+.weekly-checkin-reward-icons.is-dense {
+  gap: 2%;
+}
+
+.weekly-checkin-reward-icons.is-dense .weekly-checkin-reward-unit {
+  flex-basis: calc(100% / var(--weekly-reward-count));
+  height: 100%;
+}
+
+.weekly-checkin-reward-icons.is-dense .has-count img { height: calc(100% - 15px); }
+
+.weekly-checkin-day.current {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.weekly-checkin-day.current::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 8% -1% -2%;
+  border: 1px solid rgba(224, 157, 48, 0.9);
+  border-radius: 10%;
+  background: radial-gradient(ellipse, rgba(255, 215, 121, 0.35), transparent 72%);
+  box-shadow: inset 0 0 9px rgba(255, 211, 107, 0.56), 0 0 8px rgba(255, 196, 77, 0.55);
+  pointer-events: none;
+}
+
+.weekly-checkin-day.current .weekly-checkin-day-label {
+  color: #ac4528;
+}
+
+.weekly-checkin-day.claimed .weekly-checkin-reward-icons {
+  opacity: 0.67;
+  filter: saturate(0.7);
+}
+
+.weekly-checkin-claimed-mark {
+  position: absolute;
+  left: 2%;
+  bottom: 2%;
+  display: grid;
+  width: 20%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #e3c079;
+  border-radius: 50%;
+  color: #fff3d0;
+  background: linear-gradient(#96a282, #4a6956);
+  box-shadow: 0 1px 2px #6b48294d;
+  font: 700 clamp(11px, 3cqw, 15px) / 1 system-ui, sans-serif;
+}
+
+.weekly-checkin-day-seven {
+  top: 63.3% !important;
+  left: 10.9%;
+  width: 79.4%;
+  height: 17.6%;
+}
+
+.weekly-checkin-day-seven .weekly-checkin-day-label {
+  top: 16.25%;
+  left: 14.1%;
+  width: 28%;
+  height: 22%;
+  font-size: clamp(12px, 3.8cqw, 19px);
+}
+
+.weekly-checkin-day-seven .weekly-checkin-reward-icons {
+  top: 12%;
+  right: 13%;
+  bottom: 12%;
+  left: 28%;
+  gap: 8%;
+}
+
+.weekly-checkin-day-seven .weekly-checkin-claimed-mark {
+  left: 2%;
+  width: 7%;
+}
+
+.weekly-checkin-day-seven.current::before { inset: 1% 0 -1%; border-radius: 9% / 24%; }
+
+.weekly-checkin-reward-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.weekly-checkin-footer button {
+  position: absolute;
+  top: 86.9%;
+  left: 49.82%;
+  display: grid;
+  width: 43.6%;
+  height: 8%;
+  transform: translate(-50%, -50%);
+  min-height: 44px;
+  padding: 0 0 0 0.12em;
+  place-items: center;
+  border: 0;
+  border-radius: 18px;
+  color: #ffe7ac;
+  background: transparent;
+  font: 800 clamp(20px, 6.8cqw, 34px) / 1.1 "Songti SC", "STSong", serif;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px #fff2c0, 0 2px 2px #18372d;
+}
+
+.weekly-checkin-footer button:disabled {
+  color: #e0d2b4;
+  background: transparent;
+  font-size: clamp(14px, 4.6cqw, 23px);
+  text-shadow: 0 1px #375b48;
+}
+
+.weekly-checkin-footer small {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.weekly-checkin-day.current:focus-visible,
+.weekly-checkin-footer button:focus-visible {
+  outline: 2px solid #ffe6a1;
+  outline-offset: 3px;
+}
+
+.weekly-checkin-inner > .close:focus-visible { outline: none; }
+.weekly-checkin-inner > .close:focus-visible::before {
+  outline: 1px solid #ffe6a1;
+  outline-offset: 2px;
 }

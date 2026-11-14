@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./styles.css?v=audio-anchor-20261017" />
     <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
     <link rel="stylesheet" href="./activity.css?v=integration-fixes-20261015-final" />
-    <link rel="stylesheet" href="./weekly-checkin.css?v=full-playtest-fixes-20261010" />
+    <link rel="stylesheet" href="./weekly-checkin.css?v=dunhuang-polish-20261114" />
     <link rel="stylesheet" href="./renown-event.css?v=caravan-renown-v8-poster" />
     <link rel="stylesheet" href="./repair-progress.css?v=repair-progress-v5-brass-close" />
     <link rel="stylesheet" href="./chapter-story.css?v=opening-cinematic-v1" />
@@ -689,22 +689,16 @@
         <div id="activityContent"></div>
       </div>
     </dialog>
-    <dialog id="weeklyCheckinModal" class="modal weekly-checkin-modal" aria-labelledby="weeklyCheckinTitle">
+    <dialog id="weeklyCheckinModal" class="modal weekly-checkin-modal" aria-labelledby="weeklyCheckinTitle" aria-describedby="weeklyCheckinHint">
       <div class="weekly-checkin-inner">
         <button class="close" data-close="weeklyCheckinModal" aria-label="关闭七日驿程">×</button>
         <header class="weekly-checkin-head">
-          <span class="weekly-checkin-eyebrow">流沙驿 · 每日行笺</span>
           <h2 id="weeklyCheckinTitle">每日签到</h2>
         </header>
-        <div class="weekly-checkin-progress" aria-label="本轮签到进度">
-          <span>本轮行印</span>
-          <div id="weeklyCheckinTrail" class="weekly-checkin-trail" aria-hidden="true"></div>
-          <b id="weeklyCheckinProgress">0/7</b>
-        </div>
         <section id="weeklyCheckinGrid" class="weekly-checkin-grid" aria-label="七日签到奖励"></section>
         <footer class="weekly-checkin-footer">
-          <button id="weeklyCheckinClaim" type="button">收下今日行礼</button>
-          <small id="weeklyCheckinHint">每日1次，漏签不重置。</small>
+          <button id="weeklyCheckinClaim" type="button">领取</button>
+          <small id="weeklyCheckinHint">每日一次 · 漏签不重置</small>
         </footer>
       </div>
     </dialog>
@@ -796,6 +790,6 @@
     <script src="./progression-help.js?v=lean-ui-20261011"></script>
     <script src="./activity-ui.js?v=activity-pacing-20261112"></script>
     <script src="./regular-customer-gifts.js?v=floating-gift-20261015"></script>
-    <script src="./app.js?v=audio-anchor-20261017"></script>
+    <script src="./app.js?v=dunhuang-polish-20261114"></script>
   </body>
 </html>
