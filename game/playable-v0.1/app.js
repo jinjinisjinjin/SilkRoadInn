@@ -8356,8 +8356,9 @@ function renderBagButton() {
   }
   if (els.rewardBagBadge) {
     els.rewardBagBadge.hidden = rewardCount === 0;
-    els.rewardBagBadge.textContent = rewardCount > 99 ? "99+" : String(rewardCount);
+    if (els.rewardBagBadge.textContent !== String(rewardCount)) els.rewardBagBadge.textContent = String(rewardCount);
   }
+  if (els.bagModal?.open) renderBag();
 }
 
 function hasClaimedDailyPouch() {
@@ -11729,14 +11730,20 @@ function renderGeneratorWarehouse() {
 
 function renderBag() {
   if (!els.bagList) return;
-  const previousScrollTop = els.bagList.scrollTop;
-  els.bagList.innerHTML = "";
   const rewardEntries = state.rewardItems
     .map((entry) => ({ entry, item: byId.get(entry.itemId) }))
     .filter(({ entry, item }) => item && entry.quantity > 0);
   const giftEntries = state.giftPacks
     .map((entry) => ({ entry, pack: GIFT_PACKS[entry.id] }))
     .filter(({ entry, pack }) => pack && entry.quantity > 0);
+  const inventoryKey = JSON.stringify([
+    rewardEntries.map(({ entry }) => [entry.itemId, entry.quantity]),
+    giftEntries.map(({ entry }) => [entry.id, entry.quantity]),
+  ]);
+  if (els.bagList.dataset.inventoryKey === inventoryKey && els.bagList.children.length) return;
+  const previousScrollTop = els.bagList.scrollTop;
+  els.bagList.innerHTML = "";
+  els.bagList.dataset.inventoryKey = inventoryKey;
   els.bagList.classList.toggle("is-empty", !rewardEntries.length && !giftEntries.length);
 
   const grid = document.createElement("div");
@@ -12771,11 +12778,13 @@ function normalizeUnlockedStorageSlots(value, savedBag) {
 }
 
 function totalGiftPackCount() {
-  return state.giftPacks.reduce((sum, entry) => sum + entry.quantity, 0);
+  return state.giftPacks.filter((entry) => GIFT_PACKS[entry.id] && entry.quantity > 0)
+    .reduce((sum, entry) => sum + entry.quantity, 0);
 }
 
 function totalRewardBagCount() {
-  const itemCount = state.rewardItems.reduce((sum, entry) => sum + entry.quantity, 0);
+  const itemCount = state.rewardItems.filter((entry) => byId.has(entry.itemId) && entry.quantity > 0)
+    .reduce((sum, entry) => sum + entry.quantity, 0);
   return itemCount + totalGiftPackCount();
 }
 

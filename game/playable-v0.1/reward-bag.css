@@ -1,4 +1,11 @@
 /* The artwork supplies only the frame; inventory, text and controls stay live. */
+#app[data-page="board"] #rewardBagBadge {
+  width: auto;
+  padding-inline: 3px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .bag-modal {
   width: min(calc(100vw - 16px), 420px);
   max-width: none;
