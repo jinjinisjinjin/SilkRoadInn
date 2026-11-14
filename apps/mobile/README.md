@@ -1,6 +1,6 @@
 # SilkRoadInn Android prototype
 
-Version 0.1.4 (Android versionCode 5). This project bundles the production web
+Version 0.1.5 (Android versionCode 6). This project bundles the production web
 game for offline play using Capacitor 8.6.2. It uses the same rules and artwork
 as `game/playable-v0.1`.
 
@@ -35,9 +35,10 @@ required to run an installed build.
 ## Prototype status
 
 The Huawei Android 10 baseline covered a short generation/merge/order loop,
-background/resume, restart, offline launch and update preservation. The latest
-0.1.4 follow-up covered material visibility, buried-item layout and a normal
-resource opening loop. These are scoped checks, not full release acceptance.
+background/resume, restart, offline launch and update preservation. The 0.1.4 follow-up covered material visibility, buried-item layout and a
+normal resource opening loop. Version 0.1.5 adds the dense six-column reward
+bag; responsive, long-list placement, full-board safety and phone update/save
+checks passed. These are scoped checks, not full release acceptance.
 
 Progress currently uses WebView local storage. Native durable backups, save
 migration/import, wider device coverage, production app identity/icons and

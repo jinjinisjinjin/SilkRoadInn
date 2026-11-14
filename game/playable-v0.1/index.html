@@ -28,6 +28,8 @@
     <link rel="stylesheet" href="./inn-finale.css?v=inn-finale-v9" />
     <link rel="stylesheet" href="./new-player-guide.css?v=post-repair-action-v1" />
     <link rel="stylesheet" href="./generator-chain-qa.css?v=generator-chain-v1" />
+    <link rel="stylesheet" href="./reward-bag.css?v=brocade-six-20261115" />
+    <link rel="preload" href="./assets/ui/reward_bag_brocade_frame_v1.png" as="image" />
   </head>
   <body>
     <section class="startup-loading" id="startupLoading" data-state="loading" role="status" aria-live="polite">
@@ -540,10 +542,12 @@
         <div id="orderFoodRoute" class="order-food-route"></div>
       </section>
     </dialog>
-    <dialog id="bagModal" class="modal bag-modal" aria-label="行囊">
+    <dialog id="bagModal" class="modal bag-modal" aria-labelledby="bagTitle">
       <div class="modal-inner bag-modal-inner">
-        <button class="close" data-close="bagModal">×</button>
-        <div class="bag-list" id="bagList"></div>
+        <h2 class="bag-title" id="bagTitle">行囊</h2>
+        <button class="close" data-close="bagModal" aria-label="关闭行囊">×</button>
+        <div class="bag-list" id="bagList" role="region" aria-label="行囊物品" tabindex="0"></div>
+        <p class="bag-placement-hint">轻点物品，放入棋盘</p>
       </div>
     </dialog>
     <dialog id="debugModal" class="modal" aria-label="原型调试">
@@ -795,6 +799,6 @@
     <script src="./progression-help.js?v=lean-ui-20261011"></script>
     <script src="./activity-ui.js?v=activity-pacing-20261112"></script>
     <script src="./regular-customer-gifts.js?v=floating-gift-20261015"></script>
-    <script src="./app.js?v=sand-content-20261115"></script>
+    <script src="./app.js?v=brocade-bag-20261115"></script>
   </body>
 </html>

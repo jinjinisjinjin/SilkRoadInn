@@ -11729,6 +11729,7 @@ function renderGeneratorWarehouse() {
 
 function renderBag() {
   if (!els.bagList) return;
+  const previousScrollTop = els.bagList.scrollTop;
   els.bagList.innerHTML = "";
   const rewardEntries = state.rewardItems
     .map((entry) => ({ entry, item: byId.get(entry.itemId) }))
@@ -11736,9 +11737,7 @@ function renderBag() {
   const giftEntries = state.giftPacks
     .map((entry) => ({ entry, pack: GIFT_PACKS[entry.id] }))
     .filter(({ entry, pack }) => pack && entry.quantity > 0);
-  if (!rewardEntries.length && !giftEntries.length) {
-    return;
-  }
+  els.bagList.classList.toggle("is-empty", !rewardEntries.length && !giftEntries.length);
 
   const grid = document.createElement("div");
   grid.className = "bag-grid";
@@ -11749,9 +11748,12 @@ function renderBag() {
     slot.className = `bag-slot reward-item-slot ${item.type === "bonus_coin" ? "coin-reward-slot" : ""} ${item.type === "bonus_ruby" ? "ruby-reward-slot" : ""} ${item.type === "bonus_stamina" ? "stamina-reward-slot" : ""} ${item.type === "splitter_tool" ? "splitter-tool-slot" : ""} ${item.type === "upgrade_tool" ? "upgrade-tool-slot" : ""} ${isGeneratorPiece(item) ? "generator-piece" : ""} ${item.type === "generator_material" ? "generator-material-piece" : ""}`;
     slot.setAttribute("aria-label", `将1个${item.name}随机投放到棋盘，行囊内共${entry.quantity}个`);
     slot.title = `随机投放：${item.name}`;
+    if (item.type === "generator_material") {
+      slot.style.setProperty("--bag-material-scale", `${GENERATOR_MATERIAL_SCALE_PERCENT[item.id] ?? 220}%`);
+    }
     slot.innerHTML = `
+      <span class="bag-item-art"><img src="${itemAssetSrc(item)}" alt="${item.name}" /></span>
       <span class="bag-stack-count">×${entry.quantity}</span>
-      <img src="${itemAssetSrc(item)}" alt="${item.name}" />
     `;
     slot.addEventListener("click", () => placeRewardItemFromBag(entry.itemId));
     grid.append(slot);
@@ -11766,21 +11768,23 @@ function renderBag() {
     slot.setAttribute("aria-label", `将1个${pack.name}随机投放到棋盘，行囊内共${entry.quantity}个`);
     slot.title = `随机投放：${pack.name}`;
     slot.innerHTML = `
+      <span class="bag-item-art"><img src="${itemAssetSrc(item)}" alt="${pack.name}" /></span>
       <span class="bag-stack-count">×${entry.quantity}</span>
-      <img src="${itemAssetSrc(item)}" alt="${pack.name}" />
     `;
     slot.addEventListener("click", () => placeGiftPackOnBoard(entry.id));
     grid.append(slot);
   });
 
   const occupiedSlotCount = rewardEntries.length + giftEntries.length;
-  for (let index = occupiedSlotCount; index < 7; index += 1) {
+  const visibleSlotCount = Math.max(12, Math.ceil(occupiedSlotCount / 6) * 6);
+  for (let index = occupiedSlotCount; index < visibleSlotCount; index += 1) {
     const slot = document.createElement("span");
     slot.className = "bag-slot bag-slot-empty";
     slot.setAttribute("aria-hidden", "true");
     grid.append(slot);
   }
   els.bagList.append(grid);
+  els.bagList.scrollTop = previousScrollTop;
 }
 
 function refreshRewardBagAfterPlacement() {
