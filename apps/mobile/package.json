@@ -1,7 +1,7 @@
 {
   "name": "silkroadinn-mobile",
   "private": true,
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Android installation project for the verified SilkRoadInn web game",
   "scripts": {
     "build:web": "node ../../game/playable-v0.1/scripts/build-production.mjs",
