@@ -13,7 +13,7 @@
     <style>html,body{margin:0;background:#2b1b13}</style>
     <link rel="icon" href="./assets/hubing_lv02_lubing_cutout.png" type="image/png" />
     <link rel="stylesheet" href="./styles.css?v=sand-content-20261115" />
-    <link rel="stylesheet" href="./daily-shop.css?v=scrolling-stall-v7-four-point-ruby" />
+    <link rel="stylesheet" href="./daily-shop.css?v=merchant-paper-20261115" />
     <link rel="stylesheet" href="./activity.css?v=integration-fixes-20261015-final" />
     <link rel="stylesheet" href="./weekly-checkin.css?v=today-glow-20261115" />
     <link rel="stylesheet" href="./renown-event.css?v=caravan-renown-v8-poster" />
@@ -649,24 +649,22 @@
     </dialog>
     <dialog id="dailyShopModal" class="modal daily-shop-modal" aria-labelledby="dailyShopTitle">
       <div class="daily-shop-inner">
-        <div class="daily-shop-roof" aria-hidden="true"><span></span></div>
         <button class="close" data-close="dailyShopModal" aria-label="关闭驿站小铺">×</button>
         <header class="daily-shop-head">
           <div class="daily-shop-sign">
-            <small>丝路好物 · 今日相逢</small>
             <h2 id="dailyShopTitle">驿站小铺</h2>
           </div>
-          <div class="daily-shop-balance"><span>现有</span><i class="ruby-icon" aria-hidden="true"></i><b id="dailyShopBalance">0</b></div>
+          <div class="daily-shop-meta">
+            <div class="daily-shop-balance" aria-label="当前红宝石"><i class="ruby-icon" aria-hidden="true"></i><b id="dailyShopBalance">0</b></div>
+            <div class="daily-shop-footer"><span>换货</span><b id="dailyShopRefresh">16:00:00</b></div>
+          </div>
         </header>
-        <footer class="daily-shop-footer">
-          <span>距换货</span><b id="dailyShopRefresh">16:00:00</b><small>购得后收入行囊</small>
-        </footer>
         <section id="dailyShopOffers" class="daily-shop-stall" aria-label="驿站小铺货架，可上下滑动" tabindex="0">
 
           <div class="daily-shop-grid">
           <div class="daily-shop-shelf"><div class="daily-shop-section-title">每日好物</div>
           <article class="daily-shop-card daily-shop-pouch-card" aria-label="每日免费宝袋">
-            <strong>西域晨礼宝袋</strong>
+            <strong>晨礼宝袋</strong>
             <button type="button" class="daily-shop-detail" data-shop-detail="gift_daily_pomegranate_01" aria-label="查看西域晨礼宝袋详情"><img src="./assets/ui/ui_daily_pomegranate_pouch_v2.png" alt="" /></button>
             <p>每日免费1份</p>
             <button id="dailyShopClaimPouch" type="button">免费领取</button>
