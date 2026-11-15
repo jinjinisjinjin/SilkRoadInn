@@ -1,6 +1,6 @@
 # SilkRoadInn Android prototype
 
-Version 0.1.14 (Android versionCode 15). This project bundles the production web
+Version 0.1.15 (Android versionCode 16). This project bundles the production web
 game for offline play using Capacitor 8.6.2. It uses the same rules and artwork
 as `game/playable-v0.1`.
 
@@ -53,11 +53,41 @@ unlocking/catalogs, low-level foods, local-midnight refresh and energy-based
 food prices; legacy access and purchase records are preserved. Version0.1.13
 enlarges portrait-board guests, brings reward labels closer and improves
 storage-cabinet contrast. Version0.1.14 unifies both top resource-bar ruby
-icons with the faceted shop currency icon. These are
+icons with the faceted shop currency icon. Version0.1.15 adds automatic native
+backup and recovery of the entire game snapshot, including reward receipts. These are
 scoped checks, not full release acceptance.
 
-Progress currently uses WebView local storage. Native durable backups, save
-migration/import, wider device coverage, production app identity/icons and
-release signing are follow-up work. Keep backups before uninstalling or
-clearing application data. Installing a debug update requires the same signing
-key as the previous build.
+## Automatic save protection
+
+The WebView primary save remains synchronous. Each snapshot carries a revision
+and a CRC32 damage check. Android mirrors committed snapshots, in order, to two
+rotating SHA-256 verified files in the application's private `files/save-vault`
+directory. A synced temporary file is renamed over the older generation; the
+latest committed file is retained if a write fails. This needs no storage
+permission and adds no normal-play dialog.
+
+Startup checks the primary and both native generations before loading gameplay.
+The first upgrade preserves a valid legacy primary when no native generation
+exists. Once protected, an old unversioned file cannot rewind newer receipts.
+Subsequent recovery chooses
+the newest valid revision, never the largest currency balance. The entire
+snapshot is restored together: resource spending, order/repair progress and
+claim receipts are not independently merged. A damaged or missing primary is
+repaired from a valid native generation. If backup recency cannot be checked, or existing copies are all unreadable,
+startup retains them and shows a short save-specific retry message; it does not
+replace them with a new game. QA saves have separate keys, and the native reset
+method refuses the normal key.
+
+Native writes are asynchronous after the primary commit. Background/page-exit
+queues another checkpoint. An abrupt kill before a native write completes may
+recover the previous committed generation. These are local backups, not cloud
+sync, user-exported backups, or a guarantee of recovery after uninstalling or
+clearing all application data. If both destinations fail during play, a brief
+`进度暂未保存` toast indicates the real save failure.
+
+Run `npm run test:save` here (JDK21) for production Java file-store checks, and
+`npm run validate:save` in the web game for recovery/receipt/bridge tests. Real
+Huawei fault-injection cases use a separate application ID and never modify the
+formal game's save. Wider device coverage, manual export/import, production
+app identity/icons and release signing remain follow-up work. Installing a debug
+update requires the same signing key as the previous build.

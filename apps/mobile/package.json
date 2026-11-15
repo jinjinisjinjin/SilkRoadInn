@@ -1,14 +1,15 @@
 {
   "name": "silkroadinn-mobile",
   "private": true,
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Android installation project for the verified SilkRoadInn web game",
   "scripts": {
     "build:web": "node ../../game/playable-v0.1/scripts/build-production.mjs",
     "sync:android": "npm run build:web && cap sync android",
     "open:android": "cap open android",
     "build:android": "npm run sync:android && node scripts/build-android.mjs",
-    "build:android:offline": "npm run sync:android && node scripts/build-android.mjs --offline"
+    "build:android:offline": "npm run sync:android && node scripts/build-android.mjs --offline",
+    "test:save": "node scripts/test-native-save.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.2",

@@ -4,7 +4,7 @@
   "version": "0.3.0",
   "scripts": {
     "build": "node scripts/build-production.mjs",
-    "check": "npm run validate:history && npm run validate:story && npm run validate:story-recovery && npm run validate:economy && npm run validate:food && npm run validate:panorama && npm run validate:activity && npm run validate:regular-gifts && npm run validate:board && npm run validate:rewards && npm run validate:pacing && npm run validate:pacing-budget && npm run validate:repair-budget && npm run validate:main-order-upgrade && npm run validate:order-variety && npm run validate:order-arrivals && npm run validate:performance && npm run validate:inn-interactions && npm run validate:ui-feedback && npm run validate:integration && npm run validate:shop && npm run build",
+    "check": "npm run validate:history && npm run validate:story && npm run validate:story-recovery && npm run validate:economy && npm run validate:food && npm run validate:panorama && npm run validate:activity && npm run validate:regular-gifts && npm run validate:board && npm run validate:rewards && npm run validate:pacing && npm run validate:pacing-budget && npm run validate:repair-budget && npm run validate:main-order-upgrade && npm run validate:order-variety && npm run validate:order-arrivals && npm run validate:performance && npm run validate:inn-interactions && npm run validate:ui-feedback && npm run validate:integration && npm run validate:shop && npm run validate:save && npm run build",
     "validate:panorama": "node scripts/validate-panorama-assets.mjs",
     "validate:inn-interactions": "node scripts/validate-inn-interactions.mjs",
     "validate:economy": "node scripts/validate-economy.mjs",
@@ -26,7 +26,8 @@
     "validate:ui-feedback": "node scripts/validate-ui-feedback.mjs",
     "validate:regular-gifts": "node scripts/validate-regular-customer-gifts.mjs",
     "validate:integration": "node scripts/validate-integration-fixes.mjs",
-    "validate:shop": "node scripts/validate-shop-progression.mjs"
+    "validate:shop": "node scripts/validate-shop-progression.mjs",
+    "validate:save": "node scripts/validate-save-vault.mjs"
   },
   "devDependencies": {
     "sharp": "^0.34.5"

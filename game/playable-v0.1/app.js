@@ -2571,7 +2571,9 @@ function showStartupFailure(error) {
   console.error(error);
   els.startupLoading.dataset.state = "error";
   els.startupLoading.classList.remove("details-leaving", "is-leaving");
-  els.startupLoadingStatus.textContent = "加载失败，请检查网络后重试";
+  els.startupLoadingStatus.textContent = error?.code === "SAVE_UNREADABLE"
+    ? "存档暂时无法读取，请重试"
+    : "加载失败，请检查网络后重试";
   els.startupLoadingRetry.hidden = false;
   els.startupLoadingRetry.onclick = () => location.reload();
 }
@@ -2623,7 +2625,18 @@ async function boot() {
     codexByItemId.set(entry.itemId, entry);
   });
 
+  await window.SilkRoadSaveVault.prepare(SAVE_KEY, {
+    reset: FULL_GAME_TRIAL_RESET || PROGRESSION_FLOW_QA_RESET || GENERATOR_CHAIN_QA_RESET
+      || DAILY_SHOP_QA_RESET || CARAVAN_RENOWN_QA_RESET || SCISSORS_TOOL_QA_RESET || UPGRADE_TOOL_QA_RESET,
+  });
   loadState();
+  saveState();
+  await window.SilkRoadSaveVault.flush();
+  if (window.SilkRoadSaveVault.status().unavailable) {
+    const error = new Error("No writable save destination");
+    error.code = "SAVE_UNREADABLE";
+    throw error;
+  }
   initAudio();
   if (!ISOLATED_QA_MODE || GLOBAL_LOADING_QA_MODE) state.currentPage = "inn";
   const startupAssets = [...new Set([...STARTUP_REQUIRED_ASSETS, ...currentInnStartupAssets()])];
@@ -3298,7 +3311,7 @@ function loadState() {
     cleanUrl.searchParams.delete("reset");
     history.replaceState(null, "", cleanUrl);
   }
-  const saved = localStorage.getItem(SAVE_KEY);
+  const saved = window.SilkRoadSaveVault?.read(SAVE_KEY) ?? localStorage.getItem(SAVE_KEY);
   const data = saved ? JSON.parse(saved) : defaultState();
   const regularCustomerGiftMigration = Boolean(saved) && !data.regularCustomerGifts?.version;
   const generatorGiftMigration = Boolean(saved) && !data.generatorGiftProgressionVersion;
@@ -3581,9 +3594,7 @@ function loadState() {
 
 function saveState() {
   syncUnlockedFoodLevels();
-  localStorage.setItem(
-    SAVE_KEY,
-    JSON.stringify({
+  const serialized = JSON.stringify({
       repairProtocolVersion: REPAIR_PROTOCOL_VERSION,
       coinEconomyVersion: COIN_ECONOMY_VERSION,
       openingStaminaVersion: OPENING_STAMINA_VERSION,
@@ -3659,8 +3670,10 @@ function saveState() {
       currentPage: state.currentPage,
       tutorialStep: state.tutorialStep,
       lastTick: state.lastTick,
-    }),
-  );
+    });
+  if (typeof window !== "undefined" && window.SilkRoadSaveVault) {
+    window.SilkRoadSaveVault.write(SAVE_KEY, serialized);
+  } else localStorage.setItem(SAVE_KEY, serialized);
 }
 
 function applyOfflineRecovery() {
@@ -4053,6 +4066,20 @@ function tickStamina() {
 }
 
 function bindEvents() {
+  let saveWarningAt = 0;
+  window.addEventListener("silkroad:save-unavailable", () => {
+    if (Date.now() - saveWarningAt < 30000) return;
+    saveWarningAt = Date.now();
+    toast("进度暂未保存");
+  });
+  const persistBeforeLeaving = () => {
+    saveState();
+    void window.SilkRoadSaveVault.flush();
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) persistBeforeLeaving();
+  });
+  window.addEventListener("pagehide", persistBeforeLeaving);
   window.addEventListener("silkroad:new-player-guide-retired", () => {
     state.tutorialStep = Math.max(Number(state.tutorialStep) || 0, 6);
     keeper("查看新订单需要的食物，继续接待往来的客人。");
