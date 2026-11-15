@@ -166,7 +166,6 @@
   content: "";
   position: absolute;
   z-index: -1;
-  background: url("./assets/ui/weekly_checkin_wood_shelf_v1.png") 50% 51% / 100% 560% no-repeat;
   pointer-events: none;
 }
 .weekly-checkin-row::after {
@@ -174,6 +173,7 @@
   bottom: -1.5cqw;
   left: -1%;
   height: 5.5cqw;
+  background: url("./assets/ui/weekly_checkin_wood_shelf_v1.png") 50% 51% / 100% 560% no-repeat;
 }
 .weekly-checkin-row:last-child { grid-template-columns: minmax(0, 1fr); }
 .weekly-checkin-day {
@@ -275,12 +275,11 @@
   cursor: pointer;
 }
 .weekly-checkin-day.is-today::before {
-  right: 2%;
-  bottom: 4%;
-  left: 2%;
-  height: 7.2cqw;
-  background-size: 100% 470%;
+  inset: 18% 0 8%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 220, 128, 0.54), rgba(255, 209, 105, 0.2) 48%, transparent 76%);
 }
+.weekly-checkin-day.claimed.is-today::before { opacity: 0.65; }
 .weekly-checkin-day.is-today .weekly-checkin-day-label {
   min-width: 55%;
   border-radius: 999px;

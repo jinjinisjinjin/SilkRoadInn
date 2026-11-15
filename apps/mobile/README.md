@@ -1,6 +1,6 @@
 # SilkRoadInn Android prototype
 
-Version 0.1.7 (Android versionCode 8). This project bundles the production web
+Version 0.1.8 (Android versionCode 9). This project bundles the production web
 game for offline play using Capacitor 8.6.2. It uses the same rules and artwork
 as `game/playable-v0.1`.
 
@@ -41,7 +41,9 @@ bag; responsive, long-list placement, full-board safety and phone update/save
 checks passed. Version 0.1.6 synchronizes the exact reward-bag item total
 with its open inventory, including growing and shrinking stacks. Version 0.1.7
 replaces the daily check-in decoration with the approved wooden shelves and
-a movable base for today's reward; all reward data remains dynamic. These are
+a movable base for today's reward; all reward data remains dynamic. Version
+0.1.8 replaces that extra base with a static warm halo while retaining the
+shared wooden shelves and all reward rules. These are
 scoped checks, not full release acceptance.
 
 Progress currently uses WebView local storage. Native durable backups, save
