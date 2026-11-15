@@ -239,8 +239,8 @@ const DAILY_POUCH_ITEM_ID = "gift_pack_daily_pomegranate";
 const DAILY_POUCH_PACK_ID = "gift_daily_pomegranate_01";
 const SPLITTER_TOOL_ITEM_ID = "tool_splitter_scissors";
 const UPGRADE_TOOL_ITEM_ID = "tool_baiwei_jinjian";
-const SHOP_FOOD_PRICES = Object.freeze({ 4: 12, 5: 22, 6: 40, 7: 72, 8: 130 });
-const DAILY_SHOP_REFRESH_MS = 16 * 60 * 60 * 1000;
+// Base units × 10 gems / 100 energy × 1.5 convenience premium, rounded up.
+const SHOP_FOOD_PRICES = Object.freeze({ 2: 1, 3: 1, 4: 2, 5: 3, 6: 5, 7: 10, 8: 20 });
 const SHOP_WEALTH_ITEM_ID = "shop_wealth_figurine";
 const SHOP_WEALTH_PACK_ID = "shop_wealth_figurine_pack";
 const SHOP_SAXAUL_ITEM_ID = "shop_saxaul_tree";
@@ -773,6 +773,7 @@ const state = {
   weeklyCheckinRewardReceipts: {},
   activityProgress: null,
   caravanRenown: null,
+  shopUnlocked: false,
   shopPurchaseCycle: -1,
   shopPurchasedOfferIds: [],
   shopFoodItemIds: null,
@@ -2717,11 +2718,36 @@ function currentLocalDayKey(date = new Date()) {
 }
 
 function currentDailyShopCycle(now = Date.now()) {
-  return Math.floor(now / DAILY_SHOP_REFRESH_MS);
+  return currentLocalDayKey(new Date(now));
 }
 
 function nextDailyShopRefreshAt(now = Date.now()) {
-  return (currentDailyShopCycle(now) + 1) * DAILY_SHOP_REFRESH_MS;
+  const next = new Date(now);
+  next.setHours(24, 0, 0, 0);
+  return next.getTime();
+}
+
+function isDailyShopUnlocked() {
+  if (DAILY_SHOP_QA_MODE || STORY_ARCHIVE_QA_MODE || state.shopUnlocked) return true;
+  const invested = Boolean(state.renovationChoices?.[FIRST_TUTORIAL_REPAIR_ID])
+    || (state.repairProgress?.[FIRST_TUTORIAL_REPAIR_ID]?.completedParts?.length ?? 0) > 0;
+  return state.completedOrders >= 3 && invested;
+}
+
+function dailyShopFoodLimit(lineCount) {
+  return lineCount >= 5 ? 7 : lineCount >= 3 ? 5 : lineCount >= 2 ? 3 : 1;
+}
+
+function shopFoodCandidates() {
+  return [...byId.values()].filter((item) => SHOP_FOOD_PRICES[item.level]
+    && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(item.line)
+    && (DAILY_SHOP_QA_MODE || STORY_ARCHIVE_QA_MODE || orderDemandLinesUnlocked({ demand: [{ itemId: item.id }] })));
+}
+
+function normalizeShopCycle(value, now = Date.now()) {
+  // An old 16-hour rotation migrates without resetting receipts or rerolling goods.
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? value : currentDailyShopCycle(now);
 }
 
 function syncDailyShopCycle(now = Date.now()) {
@@ -2732,19 +2758,30 @@ function syncDailyShopCycle(now = Date.now()) {
     state.shopPurchasedOfferIds = [];
     state.shopFoodItemIds = DAILY_SHOP_QA_EMPTY ? [] : null;
   }
-  if (!Array.isArray(state.shopFoodItemIds)) {
-    const candidates = [...byId.values()].filter((item) =>
-      SHOP_FOOD_PRICES[item.level]
-      && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(item.line)
-      && (DAILY_SHOP_QA_MODE || STORY_ARCHIVE_QA_MODE || orderDemandLinesUnlocked({ demand: [{ itemId: item.id }] })));
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    const unlockedLineCount = new Set(candidates.map((item) => item.line)).size;
-    const offerLimit = unlockedLineCount <= 1 ? 3 : 6;
-    state.shopFoodItemIds = candidates.slice(0, offerLimit).map((item) => item.id);
-    changed = true;
+  if (!Array.isArray(state.shopFoodItemIds)) { state.shopFoodItemIds = []; changed = true; }
+  if (DAILY_SHOP_QA_EMPTY) return changed;
+  const candidates = shopFoodCandidates();
+  const categories = DAILY_SHOP_QA_MODE || STORY_ARCHIVE_QA_MODE
+    ? [...new Set(candidates.map(item => item.line))]
+    : state.generatorConfig.categories.filter(category => state.unlockedGeneratorCategories.includes(category.id)
+      && highestOwnedGeneratorLevel(category.id) > 0).map(category => category.foodLineId);
+  const target = dailyShopFoodLimit(categories.length);
+  const existing = new Set(state.shopFoodItemIds);
+  const represented = new Set(state.shopFoodItemIds.map(id => byId.get(id)?.line));
+  // Keep all existing goods/receipts; new categories may use a spare slot up to10 total.
+  const missing = categories.filter(line => !represented.has(line));
+  if (existing.size >= target && (!missing.length || existing.size >= 7)) return changed;
+  const ranked = candidates.filter(item => !existing.has(item.id)).map(item => ({ item,
+    rank: -Math.log(Math.max(Number.MIN_VALUE, Math.random())) / (item.level <= 3 ? 6 : item.level <= 5 ? 3 : 1),
+  })).sort((a, b) => a.rank - b.rank).map(entry => entry.item);
+  const add = item => { state.shopFoodItemIds.push(item.id); existing.add(item.id); represented.add(item.line); changed = true; };
+  for (const line of missing) {
+    const item = ranked.find(item => item.line === line && !existing.has(item.id));
+    if (item && existing.size < 7) add(item);
+  }
+  for (const item of ranked) {
+    if (existing.size >= target) break;
+    if (!existing.has(item.id)) add(item);
   }
   return changed;
 }
@@ -2774,7 +2811,7 @@ function renderShopFoodShelves() {
       shelf.className = "daily-shop-shelf";
       const title = document.createElement("div");
       title.className = "daily-shop-section-title";
-      title.textContent = index === 0 ? "行商好物 · 每16小时换货" : "行商好物";
+      title.textContent = index === 0 ? "行商好物 · 每日换货" : "行商好物";
       shelf.append(title);
       host.append(shelf);
     }
@@ -3220,6 +3257,7 @@ function defaultState() {
     weeklyCheckinRewardReceipts: {},
     activityProgress: null,
     caravanRenown: null,
+    shopUnlocked: false,
     shopPurchaseCycle: currentDailyShopCycle(),
     shopPurchasedOfferIds: [],
   shopFoodItemIds: null,
@@ -3428,10 +3466,9 @@ function loadState() {
     activityProgress: SilkRoadActivity.normalize(data.activityProgress, currentLocalDayKey()),
     weeklyCheckinRewardReceipts: normalizeWeeklyRewardReceipts(data.weeklyCheckinRewardReceipts),
     caravanRenown: normalizeCaravanRenown(data.caravanRenown),
-    shopPurchaseCycle: Number.isInteger(Number(data.shopPurchaseCycle))
-      ? Number(data.shopPurchaseCycle)
-      : currentDailyShopCycle(),
-    shopFoodItemIds: Array.isArray(data.shopFoodItemIds) ? [...new Set(data.shopFoodItemIds)].filter((id) => SHOP_FOOD_PRICES[byId.get(id)?.level] && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(byId.get(id)?.line)).slice(0, 6) : null,
+    shopUnlocked: typeof data.shopUnlocked === "boolean" ? data.shopUnlocked : true,
+    shopPurchaseCycle: normalizeShopCycle(data.shopPurchaseCycle),
+    shopFoodItemIds: Array.isArray(data.shopFoodItemIds) ? [...new Set(data.shopFoodItemIds)].filter((id) => SHOP_FOOD_PRICES[byId.get(id)?.level] && ["hubing", "dairy", "fruit", "drink", "meat", "spice"].includes(byId.get(id)?.line)).slice(0, 7) : null,
     shopPurchasedOfferIds: Array.isArray(data.shopPurchasedOfferIds)
       ? data.shopPurchasedOfferIds.filter((offerId) => (DAILY_SHOP_OFFERS.some((offer) => offer.id === offerId) || (typeof offerId === "string" && offerId.startsWith("food:"))))
       : [],
@@ -3611,6 +3648,7 @@ function saveState() {
       weeklyCheckinRewardReceipts: state.weeklyCheckinRewardReceipts,
       activityProgress: state.activityProgress,
       caravanRenown: state.caravanRenown,
+      shopUnlocked: state.shopUnlocked,
       shopPurchaseCycle: state.shopPurchaseCycle,
       shopPurchasedOfferIds: state.shopPurchasedOfferIds,
       shopFoodItemIds: state.shopFoodItemIds,
@@ -8366,10 +8404,13 @@ function hasClaimedDailyPouch() {
 }
 
 function renderDailyPouchButtons() {
+  const unlocked = isDailyShopUnlocked();
+  if (unlocked && !state.shopUnlocked) { state.shopUnlocked = true; saveState(); }
   const claimed = hasClaimedDailyPouch();
   [els.dailyPouchBtn].filter(Boolean).forEach((button) => {
-    button.disabled = false;
-    button.classList.toggle("is-ready", !claimed);
+    button.hidden = !unlocked;
+    button.disabled = !unlocked;
+    button.classList.toggle("is-ready", unlocked && !claimed);
     button.classList.toggle("is-claimed", claimed);
     const label = claimed ? "打开驿站小铺，今日宝袋已领取" : "打开驿站小铺，今日宝袋待领取";
     button.setAttribute("aria-label", label);
@@ -8931,7 +8972,7 @@ function renderDailyShop() {
 }
 
 function openDailyShop() {
-  if (!els.dailyShopModal) return;
+  if (!els.dailyShopModal || !isDailyShopUnlocked()) return;
   if (syncDailyShopCycle()) saveState();
   renderDailyShop();
   if (!els.dailyShopModal.open) {
@@ -8949,7 +8990,7 @@ function purchaseDailyShopOffer(event) {
       els.pieceDetailIcon.src = itemAssetSrc(item);
       els.pieceDetailIcon.alt = item.name;
       els.pieceDetailName.textContent = item.name;
-      els.pieceDetailMeta.textContent = `${item.level}级 · ${SHOP_FOOD_PRICES[item.level]}红宝石 · 本轮限购1份`;
+      els.pieceDetailMeta.textContent = `${item.level}级 · ${SHOP_FOOD_PRICES[item.level]}红宝石 · 每日限购1份`;
       els.pieceDetailText.textContent = "购得后收入行囊。";
       els.pieceDetailModal.showModal();
       return;
@@ -8960,7 +9001,7 @@ function purchaseDailyShopOffer(event) {
     els.pieceDetailIcon.src = itemAssetSrc(item);
     els.pieceDetailIcon.alt = item.name;
     els.pieceDetailName.textContent = item.name;
-    els.pieceDetailMeta.textContent = pack.dailyReward ? "每日免费1份" : "每轮限购1份 · 16小时换货";
+    els.pieceDetailMeta.textContent = pack.dailyReward ? "每日免费1份" : "每日限购1份";
     els.pieceDetailText.textContent = staminaPackDescription(pack) || pack.description || item.modernName;
     els.pieceDetailModal.showModal();
     return;
@@ -9048,6 +9089,7 @@ function cycleProductionMultiplier() {
 }
 
 function claimDailyPouch() {
+  if (!isDailyShopUnlocked()) return;
   if (hasClaimedDailyPouch()) {
     toast("今日宝袋已经领取，明日再来吧。");
     return;
