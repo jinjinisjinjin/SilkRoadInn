@@ -229,3 +229,5 @@
   .daily-shop-card { grid-template-rows: 52px 28px 44px; gap: 4px; }
   .daily-shop-shelf { padding-block: 12px; }
 }
+
+.daily-pouch-entry[hidden] { display:none !important; }
