@@ -8417,12 +8417,21 @@ function renderWeeklyCheckin() {
   const claimedDays = state.weeklyCheckinClaimedDays;
   const claimable = canClaimWeeklyCheckin();
   const currentIndex = claimable ? claimedDays : -1;
+  const todayIndex = claimable ? claimedDays
+    : state.weeklyCheckinLastClaimDay === currentLocalDayKey() ? claimedDays - 1 : -1;
   els.weeklyCheckinGrid.replaceChildren();
+  const rows = Array.from({ length: 3 }, () => {
+    const row = document.createElement("div");
+    row.className = "weekly-checkin-row";
+    els.weeklyCheckinGrid.append(row);
+    return row;
+  });
 
   WEEKLY_CHECKIN_REWARDS.forEach((_, index) => {
     const reward = weeklyRewardForDay(index);
     const day = document.createElement("article");
     day.className = "weekly-checkin-day";
+    if (index === todayIndex) day.classList.add("is-today");
     if (index === 6) day.classList.add("weekly-checkin-day-seven");
     if (index < claimedDays) day.classList.add("claimed");
     else if (index === currentIndex) day.classList.add("current");
@@ -8437,7 +8446,7 @@ function renderWeeklyCheckin() {
 
     const dayLabel = document.createElement("small");
     dayLabel.className = "weekly-checkin-day-label";
-    dayLabel.textContent = index === currentIndex ? "今日" : index === 6 ? "第七日" : `${index + 1}日`;
+    dayLabel.textContent = index === todayIndex ? "今日" : `第${index + 1}日`;
     const icons = document.createElement("div");
     icons.className = "weekly-checkin-reward-icons";
     const appendRewardIcon = (src, name, quantity, directCoins = false, coinItem = false, foodItem = false) => {
@@ -8449,7 +8458,7 @@ function renderWeeklyCheckin() {
       icon.src = src;
       icon.alt = name;
       unit.append(icon);
-      if (directCoins || quantity > 1) {
+      if (quantity > 0) {
         const count = document.createElement("span");
         count.className = "weekly-checkin-reward-count";
         count.textContent = `${directCoins ? "+" : "×"}${quantity}`;
@@ -8480,7 +8489,7 @@ function renderWeeklyCheckin() {
       day.append(claimed);
       day.setAttribute("aria-label", `第${index + 1}日奖励已领取：${reward.label}`);
     }
-    els.weeklyCheckinGrid.append(day);
+    rows[Math.min(2, Math.floor(index / 3))].append(day);
   });
 
   if (els.weeklyCheckinClaim) {

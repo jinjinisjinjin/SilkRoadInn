@@ -47,9 +47,9 @@
   50% { filter: brightness(1.09) drop-shadow(0 0 5px rgba(236, 194, 99, 0.46)); }
 }
 
-/* The painted skin contains decoration only. Rewards, dates and states are live DOM. */
+/* Wood and parchment are decoration only; rewards and all labels remain live DOM. */
 .modal.weekly-checkin-modal {
-  width: min(96vw, calc((100dvh - 24px) * 0.75), 480px);
+  width: min(96vw, calc((100dvh - 20px) * 2 / 3), 480px);
   max-width: none;
   max-height: none;
   margin: auto;
@@ -57,30 +57,27 @@
   overflow: visible;
   border: 0;
   border-radius: 0;
-  color: #673c27;
+  color: #643b21;
   background: transparent;
   box-shadow: none;
 }
-
 .weekly-checkin-modal::backdrop {
   background: rgba(28, 21, 16, 0.76);
-  backdrop-filter: blur(5px) saturate(0.8);
+  backdrop-filter: blur(4px) saturate(0.8);
 }
-
 .weekly-checkin-inner {
   position: relative;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 2 / 3;
   container-type: inline-size;
-  background: url("./assets/ui/weekly_checkin_dunhuang_skin_v1.webp") center / 100% 100% no-repeat;
-  filter: drop-shadow(0 12px 22px rgba(30, 16, 8, 0.46));
+  background: url("./assets/ui/weekly_checkin_wood_frame_v1.png") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 10px 18px rgba(30, 16, 8, 0.4));
   font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
 }
-
 .weekly-checkin-inner > .close {
   position: absolute;
   z-index: 5;
-  top: 3.4%;
-  right: 5%;
+  top: 8%;
+  right: 6%;
   display: grid;
   width: 44px;
   height: 44px;
@@ -96,107 +93,136 @@
   font-size: 0;
   text-shadow: none;
 }
-
 .weekly-checkin-inner > .close::before {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: clamp(23px, 6cqw, 29px);
+  width: clamp(22px, 6cqw, 28px);
   aspect-ratio: 1;
-  border: 1px solid #dcc18a;
+  border: 1px solid #927047;
   border-radius: 50%;
-  background: linear-gradient(135deg, #efd6a0, #c59957);
-  box-shadow: inset 0 0 0 1px #a96f3c, 0 1px 3px #542b1d73;
+  background: rgba(250, 232, 194, 0.35);
+  box-shadow: inset 0 1px rgba(255, 249, 226, 0.7);
 }
-
 .weekly-checkin-inner > .close::after {
   content: "×";
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  color: #79452c;
-  font: 500 clamp(17px, 4.5cqw, 22px) / 1 Georgia, serif;
-  text-shadow: 0 1px #f7e5bd;
+  color: #70512f;
+  font: 400 clamp(18px, 4.7cqw, 23px) / 1 Georgia, serif;
 }
-
 .weekly-checkin-head {
   position: absolute;
-  top: 11.9%;
-  left: 49.715%;
+  top: 8.7%;
+  left: 50%;
   display: grid;
-  width: 60%;
-  height: 10%;
-  transform: translate(-50%, -50%);
+  width: 66%;
+  height: 8%;
+  transform: translateX(-50%);
   place-items: center;
   pointer-events: none;
 }
-
 .modal.weekly-checkin-modal .weekly-checkin-head h2 {
+  position: relative;
   margin: 0;
-  padding-left: 0.09em;
-  color: #ffe4a1;
-  font: 800 clamp(25px, 8.5cqw, 42px) / 1.2 "Songti SC", "STSong", serif;
-  letter-spacing: 0.09em;
-  text-shadow: 0 1px 0 #fff3c4, 0 2px 1px #703616, 0 3px 3px #6b281e;
+  padding-left: 0.1em;
+  color: #603518;
+  font: 800 clamp(22px, 8.2cqw, 40px) / 1.2 "Songti SC", "STSong", serif;
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px rgba(255, 247, 222, 0.6);
 }
-
+.weekly-checkin-head::before,
+.weekly-checkin-head::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 9%;
+  height: 1px;
+  background: #b18b56;
+}
+.weekly-checkin-head::before { left: 0; }
+.weekly-checkin-head::after { right: 0; }
 .weekly-checkin-grid {
   position: absolute;
-  inset: 0;
+  top: 18.3%;
+  right: 8%;
+  bottom: 19%;
+  left: 8%;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 3cqw;
   pointer-events: none;
 }
-
-.weekly-checkin-day {
-  /* Label centers follow the plaques in the 1086 × 1448 painted skin. */
-  --weekly-label-x: 49.7%;
-  --weekly-label-y: 2.9%;
+.weekly-checkin-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 0;
+  isolation: isolate;
+}
+.weekly-checkin-row::after,
+.weekly-checkin-day.is-today::before {
+  content: "";
   position: absolute;
-  top: 23.4%;
-  left: 11.6%;
-  width: 24.8%;
-  height: 17.5%;
+  z-index: -1;
+  background: url("./assets/ui/weekly_checkin_wood_shelf_v1.png") 50% 51% / 100% 560% no-repeat;
+  pointer-events: none;
+}
+.weekly-checkin-row::after {
+  right: -1%;
+  bottom: -1.5cqw;
+  left: -1%;
+  height: 5.5cqw;
+}
+.weekly-checkin-row:last-child { grid-template-columns: minmax(0, 1fr); }
+.weekly-checkin-day {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
   padding: 0;
   border: 0;
   background: transparent;
   isolation: isolate;
 }
-
-.weekly-checkin-day:nth-child(3n + 2) { left: 38.1%; --weekly-label-x: 48.3%; }
-.weekly-checkin-day:nth-child(3n + 3) { left: 64.6%; --weekly-label-x: 46.1%; }
-.weekly-checkin-day:nth-child(n + 4) { top: 43.7%; --weekly-label-y: -3.15%; }
-
 .weekly-checkin-day-label {
   position: absolute;
-  top: var(--weekly-label-y);
-  left: var(--weekly-label-x);
+  top: 0;
+  left: 50%;
   display: grid;
-  width: 80%;
-  height: 20%;
-  transform: translate(-50%, -50%);
+  width: max-content;
+  min-width: 56%;
+  height: 19%;
+  transform: translateX(-50%);
+  padding-inline: 0.2em;
   place-items: center;
-  color: #713e26;
-  font-size: clamp(12px, 3.9cqw, 19px);
-  font-weight: 800;
+  color: #6b4228;
+  font-size: clamp(11px, 3.6cqw, 18px);
+  font-weight: 700;
   line-height: 1;
   white-space: nowrap;
-  text-shadow: 0 1px #fff0cc;
+  text-shadow: 0 1px #fff0d7;
 }
-
+.weekly-checkin-day-label::after {
+  content: "";
+  position: absolute;
+  right: 4%;
+  bottom: -2px;
+  left: 4%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c49b65, transparent);
+}
 .weekly-checkin-reward-icons {
   position: absolute;
-  top: 22%;
-  right: 7%;
-  bottom: 15%;
-  left: 7%;
+  top: 24%;
+  right: 5%;
+  bottom: 9%;
+  left: 5%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3%;
+  gap: 2%;
 }
-
 .weekly-checkin-reward-unit {
   position: relative;
   display: grid;
@@ -205,122 +231,90 @@
   height: 100%;
   place-items: center;
 }
-
 .weekly-checkin-reward-unit img {
   position: absolute;
   top: 0;
   left: 0;
   display: block;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 14px);
   object-fit: contain;
-  transform: scale(0.84);
+  transform: scale(0.92);
   transform-origin: center;
-  filter: drop-shadow(0 3px 2px rgba(78, 41, 17, 0.24));
+  filter: drop-shadow(0 2px 2px rgba(78, 41, 17, 0.22));
 }
-
-.weekly-checkin-reward-unit.is-coin img { transform: scale(0.72); }
-.weekly-checkin-reward-unit.is-food img { transform: scale(0.96); }
-
+.weekly-checkin-reward-unit.is-coin img { transform: scale(0.68); }
+.weekly-checkin-reward-unit.is-food img { transform: scale(1.04); }
 .weekly-checkin-reward-count {
   position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
   padding: 0;
-  color: #805b36;
+  color: #775330;
   background: transparent;
-  font: 500 clamp(11px, 2.8cqw, 14px) / 1.2 Georgia, "Songti SC", serif;
+  font: 500 clamp(10px, 2.9cqw, 14px) / 1.2 Georgia, "Songti SC", serif;
   text-align: center;
   white-space: nowrap;
-  text-shadow: 0 1px #f9ebce;
+  text-shadow: 0 1px #fff0d7;
 }
-
-.weekly-checkin-reward-unit.has-count img { height: calc(100% - 15px); }
-
 .weekly-checkin-reward-icons.is-dense {
-  gap: 2%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 2px 4%;
 }
-
-.weekly-checkin-reward-icons.is-dense .weekly-checkin-reward-unit {
-  flex-basis: calc(100% / var(--weekly-reward-count));
-  height: 100%;
+.weekly-checkin-reward-icons.is-dense .weekly-checkin-reward-unit img {
+  height: calc(100% - 11px);
 }
-
-.weekly-checkin-reward-icons.is-dense .has-count img { height: calc(100% - 15px); }
-
+.weekly-checkin-reward-icons.is-dense .weekly-checkin-reward-count {
+  font-size: clamp(9px, 2.4cqw, 12px);
+}
 .weekly-checkin-day.current {
   pointer-events: auto;
   cursor: pointer;
 }
-
-.weekly-checkin-day.current::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 8% -1% -2%;
-  border: 1px solid rgba(224, 157, 48, 0.9);
-  border-radius: 10%;
-  background: radial-gradient(ellipse, rgba(255, 215, 121, 0.35), transparent 72%);
-  box-shadow: inset 0 0 9px rgba(255, 211, 107, 0.56), 0 0 8px rgba(255, 196, 77, 0.55);
-  pointer-events: none;
+.weekly-checkin-day.is-today::before {
+  right: 2%;
+  bottom: 4%;
+  left: 2%;
+  height: 7.2cqw;
+  background-size: 100% 470%;
 }
-
-.weekly-checkin-day.current .weekly-checkin-day-label {
-  color: #ac4528;
+.weekly-checkin-day.is-today .weekly-checkin-day-label {
+  min-width: 55%;
+  border-radius: 999px;
+  color: #fff0d2;
+  background: #b76336;
+  text-shadow: 0 1px #824c2d;
 }
-
+.weekly-checkin-day.is-today .weekly-checkin-day-label::after { display: none; }
 .weekly-checkin-day.claimed .weekly-checkin-reward-icons {
-  opacity: 0.67;
-  filter: saturate(0.7);
+  opacity: 0.73;
+  filter: saturate(0.75);
 }
-
 .weekly-checkin-claimed-mark {
   position: absolute;
-  left: 2%;
-  bottom: 2%;
-  display: grid;
-  width: 20%;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid #e3c079;
-  border-radius: 50%;
-  color: #fff3d0;
-  background: linear-gradient(#96a282, #4a6956);
-  box-shadow: 0 1px 2px #6b48294d;
-  font: 700 clamp(11px, 3cqw, 15px) / 1 system-ui, sans-serif;
+  bottom: -2%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #a97643;
+  font: 700 clamp(12px, 3.8cqw, 19px) / 1 system-ui, sans-serif;
+  text-shadow: 0 1px #fff0ce;
 }
-
-.weekly-checkin-day-seven {
-  top: 63.3% !important;
-  left: 10.9%;
-  width: 79.4%;
-  height: 17.6%;
-}
-
 .weekly-checkin-day-seven .weekly-checkin-day-label {
-  top: 16.25%;
-  left: 14.1%;
-  width: 28%;
-  height: 22%;
-  font-size: clamp(12px, 3.8cqw, 19px);
+  min-width: 24%;
 }
-
 .weekly-checkin-day-seven .weekly-checkin-reward-icons {
-  top: 12%;
-  right: 13%;
-  bottom: 12%;
-  left: 28%;
+  right: 23%;
+  left: 23%;
   gap: 8%;
 }
-
-.weekly-checkin-day-seven .weekly-checkin-claimed-mark {
-  left: 2%;
-  width: 7%;
+.weekly-checkin-day-seven.is-today::before {
+  right: 20%;
+  left: 20%;
 }
-
-.weekly-checkin-day-seven.current::before { inset: 1% 0 -1%; border-radius: 9% / 24%; }
-
+.weekly-checkin-day-seven.is-today .weekly-checkin-day-label { min-width: 24%; }
 .weekly-checkin-reward-description {
   position: absolute;
   width: 1px;
@@ -330,52 +324,58 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-
 .weekly-checkin-footer button {
   position: absolute;
-  top: 86.9%;
-  left: 49.82%;
+  top: 84%;
+  left: 50%;
   display: grid;
-  width: 43.6%;
-  height: 8%;
-  transform: translate(-50%, -50%);
+  width: 54%;
+  height: 7.7%;
   min-height: 44px;
+  transform: translateX(-50%);
   padding: 0 0 0 0.12em;
   place-items: center;
-  border: 0;
-  border-radius: 18px;
-  color: #ffe7ac;
-  background: transparent;
-  font: 800 clamp(20px, 6.8cqw, 34px) / 1.1 "Songti SC", "STSong", serif;
+  border: 1px solid #976437;
+  border-radius: 999px;
+  color: #fff0d1;
+  background:
+    repeating-linear-gradient(1deg, transparent 0 3px, #a76d3c0a 3px 4px),
+    linear-gradient(170deg, #9a5b2f, #713c1f 60%, #874b27);
+  box-shadow: inset 0 0 0 2px #ba89514d, inset 0 2px 1px #f4cb8b66, 0 3px 3px #623d2250;
+  font: 800 clamp(17px, 6.4cqw, 31px) / 1.1 "Songti SC", "STSong", serif;
   letter-spacing: 0.12em;
-  text-shadow: 0 1px #fff2c0, 0 2px 2px #18372d;
+  text-shadow: 0 1px 1px #4b281b;
 }
-
 .weekly-checkin-footer button:disabled {
-  color: #e0d2b4;
-  background: transparent;
-  font-size: clamp(14px, 4.6cqw, 23px);
-  text-shadow: 0 1px #375b48;
+  color: #efe0c2;
+  background: linear-gradient(170deg, #a68a63, #8d7554);
+  font-size: clamp(13px, 4.5cqw, 22px);
 }
-
 .weekly-checkin-footer small {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+  top: 94%;
+  left: 10%;
+  width: 80%;
+  color: #896d4b;
+  font-size: clamp(10px, 2.6cqw, 13px);
+  line-height: 1.2;
+  text-align: center;
   white-space: nowrap;
 }
-
-.weekly-checkin-day.current:focus-visible,
-.weekly-checkin-footer button:focus-visible {
-  outline: 2px solid #ffe6a1;
-  outline-offset: 3px;
-}
-
+.weekly-checkin-day.current:focus-visible { outline: 2px solid #ad7841; outline-offset: 2px; border-radius: 8px; }
+.weekly-checkin-footer button:focus-visible { outline: 2px solid #684024; outline-offset: 3px; }
 .weekly-checkin-inner > .close:focus-visible { outline: none; }
-.weekly-checkin-inner > .close:focus-visible::before {
-  outline: 1px solid #ffe6a1;
-  outline-offset: 2px;
+.weekly-checkin-inner > .close:focus-visible::before { outline: 2px solid #684024; outline-offset: 2px; }
+@media (max-height: 440px) and (orientation: landscape) {
+  .modal.weekly-checkin-modal {
+    width: min(94vw, calc((100dvh - 20px) * 0.88), 480px);
+  }
+  .weekly-checkin-inner { aspect-ratio: 0.88; }
+  .weekly-checkin-head { top: 7%; }
+  .weekly-checkin-inner > .close { top: 5.5%; right: 4%; }
+  .weekly-checkin-grid { top: 19%; bottom: 23%; gap: 1.5cqw; }
+  .weekly-checkin-reward-icons { top: 23%; bottom: 6%; }
+  .weekly-checkin-reward-unit img { height: calc(100% - 12px); }
+  .weekly-checkin-footer button { top: 80%; height: 10.5%; min-height: 36px; }
+  .weekly-checkin-footer small { top: 93.5%; }
 }
