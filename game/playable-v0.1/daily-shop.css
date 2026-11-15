@@ -146,23 +146,15 @@
   -webkit-overflow-scrolling: touch;
 }
 .daily-shop-stall:focus-visible { outline: 2px solid #416f62; outline-offset: -2px; }
-.daily-shop-grid { display: block; }
-.daily-shop-shelf {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 17px 0;
-}
-#dailyShopFoodShelves .daily-shop-shelf { border-top: 1px solid #b8915a44; }
-.daily-shop-shelf[data-item-count="1"] { width: 33.333%; margin-inline: auto; grid-template-columns: minmax(0, 1fr); }
-.daily-shop-shelf[data-item-count="2"] { width: 66.666%; margin-inline: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.daily-shop-shelf[hidden],
-.daily-shop-section-title { display: none; }
+/* One continuous catalog: fixed goods and food share the same four columns. */
+.daily-shop-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px 6px; padding:12px 0; }
+.daily-shop-shelf, #dailyShopFoodShelves { display:contents; }
+.daily-shop-shelf[hidden], .daily-shop-section-title { display:none; }
 .daily-shop-card {
   position: relative;
   display: grid;
-  grid-template-rows: clamp(68px, 21cqw, 100px) 26px 44px;
-  gap: 6px;
+  grid-template-rows: clamp(50px, 15.5cqw, 70px) 30px 44px;
+  gap: 3px;
   min-width: 0;
   padding: 0 2px;
   align-items: center;
@@ -174,8 +166,9 @@
   width: 100%;
   margin: 0;
   color: #5c3c26;
-  font: 700 clamp(11px, 3.5cqw, 16px) / 1.2 "Songti SC", "STSong", serif;
-  white-space: nowrap;
+  font: 700 clamp(10px, 3cqw, 14px) / 1.2 "Songti SC", "STSong", serif;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .daily-shop-card > p,
 .daily-shop-card > small { display: none; }
@@ -195,42 +188,31 @@
 }
 .daily-shop-detail > img {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 92%;
+  height: 92%;
   object-fit: contain;
   filter: drop-shadow(0 3px 2px #623a2433);
 }
-.daily-shop-card > [data-shop-buy],
-.daily-shop-card > #dailyShopClaimPouch {
-  order: 2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
-  height: 44px;
-  min-height: 44px;
-  margin: 0;
-  padding: 4px 2px;
-  border: 1px solid #b29153;
-  border-radius: 7px;
-  background: linear-gradient(155deg, #47705a, #2e5141);
-  color: #fff0ce;
-  box-shadow: inset 0 0 0 1px #f4df9f33, inset 0 1px #d1d9ad44, 0 2px 2px #62492e29;
-  font: 700 clamp(16px, 4.5cqw, 21px) / 1.1 Georgia, serif;
+.daily-shop-card > [data-shop-buy], .daily-shop-card > #dailyShopClaimPouch {
+  --shop-price-fill:linear-gradient(155deg,#47705a,#2e5141);
+  position:relative; isolation:isolate; order:2; display:flex; justify-content:center; align-items:center;
+  gap:3px; width:100%; height:44px; min-height:44px; margin:0; padding:8px 3px;
+  border:0; border-radius:6px; background:transparent; color:#fff0ce; box-shadow:none;
+  font:700 clamp(13px,3.8cqw,18px)/1.1 Georgia,serif;
+}
+.daily-shop-card > [data-shop-buy]::before, .daily-shop-card > #dailyShopClaimPouch::before {
+  content:""; position:absolute; z-index:-1; inset:8px 1px; border:1px solid #b29153; border-radius:5px;
+  background:var(--shop-price-fill); box-shadow:inset 0 1px #e7dfb033,0 1px 2px #62492e22;
 }
 .daily-shop-card > #dailyShopClaimPouch {
-  background: linear-gradient(155deg, #b66c43, #934b31);
-  font: 700 clamp(11px, 3.1cqw, 15px) / 1.1 "Songti SC", "STSong", serif;
+  --shop-price-fill:linear-gradient(155deg,#b66c43,#934b31);
+  font:700 clamp(10px,2.8cqw,13px)/1.1 "Songti SC","STSong",serif;
 }
-.daily-shop-card > [data-shop-buy]:disabled,
-.daily-shop-card > #dailyShopClaimPouch:disabled {
-  color: #78654d;
-  background: linear-gradient(#ddcfb5, #cebb9a);
-  border-color: #b8a17a;
-  box-shadow: inset 0 1px #f7edd777;
-  font: 600 clamp(11px, 3.2cqw, 15px) / 1.1 "Songti SC", "STSong", serif;
+.daily-shop-card > [data-shop-buy]:disabled, .daily-shop-card > #dailyShopClaimPouch:disabled {
+  --shop-price-fill:linear-gradient(#ddcfb5,#cebb9a); color:#78654d;
+  font:600 clamp(9px,2.6cqw,12px)/1.1 "Songti SC","STSong",serif;
 }
+.daily-shop-card .ruby-icon { width:11px; height:11px; }
 .daily-shop-card.sold-out .daily-shop-detail > img { filter: grayscale(0.65); opacity: 0.6; }
 .daily-shop-detail:focus-visible,
 .daily-shop-card > [data-shop-buy]:focus-visible,
@@ -244,6 +226,6 @@
   .daily-shop-sign h2 { font-size: 24px; }
   .daily-shop-meta { min-height: 24px; padding-block: 2px; }
   .daily-shop-stall { max-height: 54dvh; }
-  .daily-shop-card { grid-template-rows: 60px 22px 44px; gap: 4px; }
+  .daily-shop-card { grid-template-rows: 52px 28px 44px; gap: 4px; }
   .daily-shop-shelf { padding-block: 12px; }
 }

@@ -1,6 +1,6 @@
 # SilkRoadInn Android prototype
 
-Version 0.1.9 (Android versionCode 10). This project bundles the production web
+Version 0.1.10 (Android versionCode 11). This project bundles the production web
 game for offline play using Capacitor 8.6.2. It uses the same rules and artwork
 as `game/playable-v0.1`.
 
@@ -45,7 +45,9 @@ a movable base for today's reward; all reward data remains dynamic. Version
 0.1.8 replaces that extra base with a static warm halo while retaining the
 shared wooden shelves and all reward rules. Version0.1.9 implements the
 approved merchant-paper shop: fixed header, three-column dynamic catalog and
-an independently scrolling product area with fully visible purchase buttons. These are
+an independently scrolling product area with fully visible purchase buttons.
+Version0.1.10 compacts all goods into four columns, reduces sprite and visible
+price sizes while retaining44px purchase hit areas. These are
 scoped checks, not full release acceptance.
 
 Progress currently uses WebView local storage. Native durable backups, save
